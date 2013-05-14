@@ -1,0 +1,250 @@
+#pragma semicolon 1
+
+// Support
+new     bool:           g_bLateLoad                                         = false;
+new     Handle:         g_hTrieRandomizableEntity                           = INVALID_HANDLE;       // trie for recognizing classnames of entities to replace
+new     Handle:         g_hTrieRandomizablePropPhysicsModel                 = INVALID_HANDLE;       // trie for recognizing models of prop_physics to replace
+new     Handle:         g_hTrieEntityCreated                                = INVALID_HANDLE;       // trie for recognizing classnames of entities to handle
+new     Handle:         g_hTrieMeleeType                                    = INVALID_HANDLE;       // trie for recognizing which melees are 'normal'
+new     Handle:         g_hTrieMaps                                         = INVALID_HANDLE;       // trie for recognizing intro maps
+new     Handle:         g_hTrieBlindable                                    = INVALID_HANDLE;       // trie for recognizing some problematic entities
+new     Handle:         g_hTriePenaltyItems                                 = INVALID_HANDLE;       // trie for recognizing items that carry a penalty on EVT_PEN_ITME
+new                     g_iMeleeClassCount                                  = 0;                    // melee weapons available?
+new     String:         g_sMeleeClass           [MELEE_CLASS_COUNT][MELEE_CLASS_LENGTH];            // available melee class-strings
+
+new                     g_bSecondHalf                                       = false;                // is this the second round-half?
+new     bool:           g_bMapStartDone                                     = false;                // has OnMapStart been executed? (to avoid double roundprep calls)
+new     bool:           g_bInRound                                          = false;                // are we in a live round?
+new     bool:           g_bIsFirstAttack                                    = false;                // is this / will this be the first attack of the round(half)?
+new     bool:           g_bModelsPrecached                                  = false;                // only true if models precached
+new     bool:           g_bFirstReportDone                                  = false;                // true once the first team has had its report for the round (triggered)
+new     bool:           g_bPlayersLeftStart                                 = false;                // true once the first survivor has left the start saferoom
+new     bool:           g_bSoundHooked                                      = false;                // true when there's a soundhook in place
+
+// Report (timer)
+//new     Handle:         g_hTimerCheckFirstHuman                             = INVALID_HANDLE;       // timer for checking moment first human has loaded in
+//new     bool:           g_bTimerCheckFirstHuman                             = false;                // is it running?
+new     Handle:         g_hTimerReport                                      = INVALID_HANDLE;       // timer for delaying roundstart report
+new     bool:           g_bTimerReport                                      = false;                // is it running?
+
+// Gift management
+new     Float:          g_fGiftReportTimeout                                = 0.0;                  // stores time when 'can't open gift' message last showed (to prevent multiple messages)
+new     Float:          g_fGiftUseTimeout       [MAXPLAYERS+1]              = {0.0,...};            // stores time when player last used gift (to prevent use spam after opening)
+
+// Tanks
+new     bool:           g_bIsTankInPlay                                     = false;
+new     bool:           g_bFirstTankSpawned                                 = false;
+new                     g_iTankClient                                       = 0;
+new     bool:           g_bTankWillSpawn                                    = false;
+new     bool:           g_bDoubleTank                                       = false;                // same, reversed, but for reporting uses only
+new     Float:          g_fTankFlowEarly                                    = 0.0;
+new     Float:          g_fTankFlowLate                                     = 0.0;
+new     Float:          g_fTankDeathLocation[3]                             = {0.0,...};            // last tank death location, for item drops
+new                     g_iMiniTankIndex;				                                            // current minitank in map
+new                     g_iMiniTankNum;				                                                // the number of minitanks to be spawned on the current map
+new     Float:          g_fArMiniTankFlows          [MULTITANK_MAX];                                // stores flow distances for the current round
+
+// Witches (Stabby)
+new     bool:           g_bWitchWillSpawn                                   = false;
+new     bool:           g_bMultiWitch                                       = false;                // whether we'll have multiple witches this round(half)
+new                     g_iWitchNum;				                                                // the number of witches to be spawned on the current map
+new                     g_iWitchIndex;                                                              // the index of the current witch (in the witch flows array)
+new     Float:          g_fArWitchFlows             [MULTIWITCH_MAX];                               // stores flow distances for the current round
+new     bool:           g_bArWitchSitting           [MULTIWITCH_MAX]        = {true,...};           // stores whether each witch is sitting or walking
+
+
+// SI Spawning / ghosts
+new     Handle:         g_confRaw                                           = INVALID_HANDLE;
+new     Handle:         g_setClass                                          = INVALID_HANDLE;
+new     Handle:         g_createAbility                                     = INVALID_HANDLE;
+new                     g_oAbility                                          = 0;
+new     Handle:         g_CallPushPlayer                                    = INVALID_HANDLE;       // for CreateExplosion() push
+new     Handle:         g_CallBileJarPlayer                                 = INVALID_HANDLE;       // for biling players at will
+
+
+new     Handle:         g_hSpawnGhostTimer      [MAXPLAYERS+1]              = {INVALID_HANDLE,...};
+new     bool:           g_bHasMaterialised      [MAXPLAYERS+1]              = {false,...};
+new     bool:           g_bHasSpawned           [MAXPLAYERS+1]              = {false,...};          // whether player X was spawned
+new     bool:           g_bHasGhost             [MAXPLAYERS+1]              = {false,...};          // whether player X currently holds a ghost
+new     bool:           g_bSpectateDeath        [MAXPLAYERS+1]              = {false,...};          // whether player X (if he 'died') died because of going spec
+
+new                     g_iSpectateGhost        [TEAM_SIZE];                                        // people that spectated while being SI ghosts.. remembered to avoid exploit
+new                     g_iSpectateGhostCount                               = 0;                    // amount of ghosts saved
+
+// Sack-exploitation checks
+new     Float:          g_fGotGhost             [MAXPLAYERS+1]              = {0.0,...};            // when player got their SI ghost most recently
+
+// Boomer tracking
+new                     g_iCommonBoomQueue                                  = 0;                    // how many common infected that will spawn are boomer(effect) created
+new     bool:           g_bBoomHighRewardMode                               = false;                // whether to reward for a 'normal' combo or a higher combo (2 vs 3)
+new                     g_iBoomedSurvivors      [MAXPLAYERS+1]              = {0,...};              // per client: which boomer vomited on it (first) - set to 0 when player is no longer it
+new                     g_iBoomsPerBoomer       [TEAM_SIZE]                 = {0,...};              // per iBoomersInCombo index: how many survivors did they get?
+new                     g_iBoomersInCombo       [TEAM_SIZE]                 = {0,...};              // the clients that are part of the current boomer combo
+new     Float:          g_fBoomTime             [TEAM_SIZE]                 = {0.0,...};            // when the boomer got its most recent boom
+
+// Blind infected
+new                     g_iArCreatedEntities    [ENTITY_COUNT];                                     // Stored entity ids for this roundhalf
+new                     g_iCreatedEntities                                  = 0;                    // size of CreatedEntities list
+new     Handle:         g_hBlockedEntities;
+
+// Available choices / Weighting
+new                     g_iArWeightedChoices    [STORED_MAX_COUNT];                                 // all the choices (every category * its weight)
+new                     g_iWeightedChoicesTotal;                                                    // total of WeightedChoices 'hat' filled
+new                     g_iWeightedChoicesStartUseful;                                              // where the useful choices start (skipping no-item)
+new                     g_iWeightedChoicesEndUseful;                                                // where the useful choices end (before junk)
+new                     g_iArSurvWeightedChoices[STORED_SURV_MAX_COUNT];                            // all the choices (every category * its weight) for survivor start
+new                     g_iSurvWeightedChoicesTotal;                                                // total of WeightedChoices 'hat' filled for survivor start
+new                     g_iArEventWeightedChoices[STORED_MAX_COUNT];                                // all the choices (every category * its weight) for events
+new                     g_iEventWeightedChoicesTotal;                                               // total of WeightedChoices 'hat' filled for events
+
+// Actual choices storage
+new                     g_strArStorage          [ENTITY_COUNT][strEntityData];                      // Stored entities, type is INDEX_
+new                     g_iStoredEntities                                   = 0;                    // size of strStoredEntities
+new     String:         g_sArStorageMelee       [ENTITY_COUNT][MELEE_CLASS_LENGTH];                 // Stored melee-class per entity
+new                     g_iArStorageSurv        [TEAM_SIZE];                                        // survivor starting choice INDEX_START_
+new                     g_iArStorageSurvHealth  [TEAM_SIZE];                                        // survivor starting health
+new                     g_iArStorageSurvMelee   [TEAM_SIZE];                                        // survivor starting choice (if melee): melee type
+new                     g_iArStorageSurvPills   [TEAM_SIZE];                                        // survivor starting choice did they get pills?
+new                     g_iArStorageSurvAmmo    [TEAM_SIZE];                                        // survivor starting choice -- if T1, ammo count
+new                     g_iSurvHandled                                      = 0;                    // how many of the survivor setups have already been handled for this roundhalf
+new     bool:           g_bSurvHandout                                      = false;                // whether we still need to hand out any starting setups this round
+new     Float:          g_fStorageDoors         [MAX_DOORS][3];                                     // which doors should be locked this round (2 halves), origin[2]
+new                     g_iDoorsLocked          [MAX_DOORS];                                        // which doors are currently locked (this half-round), entity-number
+new                     g_iDoorsLockedTotal                                 = 0;                    // amount of doors locked
+new                     g_iArStorageSpawns      [TEAM_SIZE]                 = {ZC_NOTINFECTED,...}; // classes for first attack
+
+new                     g_strTempItemSingle     [strEntityData];                                    // for temporary storage of 'to create' entities
+new     String:         g_sTempItemSingleMelee  [MELEE_CLASS_LENGTH]        = "";
+new     Float:          g_fTempItemSingleVelocity[3];                                               // velocity for spawn dynamics
+
+// Currently active in this round/map
+new                     g_iDifficultyRating                                 = 0;                    // how difficulty this round is expected to be.. (higher = more difficult)
+new     bool:           g_bGlows                                            = true;                 // whether survivors have glows this map
+new                     g_iIncaps                                           = INCAP_DEFAULT;        // how many incaps before b/w
+new                     g_iSpecialEvent                                     = -1;                   // what special event is active for this map
+new                     g_iSpecialEventExtra                                = PCK_NOITEM;           // which item (or item type) is special (or other int information)
+new                     g_iSpecialEventExtraSub                             = 0;                    // extra event-dependent int value
+new     String:         g_sSpecialEventExtra    [MELEE_CLASS_LENGTH]        = "";                   // which melee class is chosen (or other string information)
+new     bool:           g_bEarlyLock                                        = false;                // if a really early door is locked (to help survivors out with starting items)
+new                     g_iDefaultDistance                                  = 0;                    // how much distance the map is worth normally (at OnMapStart)
+new                     g_iDamageBonus                                      = 0;                    // how much bonus for this round (half) can be got (maximally)
+new     bool:           g_bNoColaItem                                       = false;                // disallow the cola item to spawn (anywhere but in the DeC2 store)
+
+// insight
+new     bool:           g_bInsightSurvDone                                  = false;                // already 'had insight'?
+new     bool:           g_bInsightInfDone                                   = false;
+new                     g_iCountItemGnomes                                  = 0;                    // present on this round
+new                     g_iCountItemCola                                    = 0;
+new                     g_iCountItemMedkits                                 = 0;
+new                     g_iCountItemDefibs                                  = 0;
+
+// Gnome / bonus scoring
+new                     g_iJustPickedItemUp                                 = 0;                    // player_use => item_pickup (so we can exclude non-picked up gnomes)
+new                     g_iGnomeJustDropped                                 = 0;                    // for onentitydestroyed => onentitycreated gnome switching
+new                     g_iGnomes                                           = 0;                    // how many gnomes/cola items are detected on the map
+new                     g_strArGnomes           [GNOME_MAX_COUNT][strGnomeData];                    // the gnomes/cola in this map
+new                     g_iGnomesHeld                                       = 0;                    // how many gnomes are held by survivors
+new                     g_iArGnomesHeld         [TEAM_SIZE];                                        // which gnomes are held (check for these entities to be destroyed on drop)
+
+new     bool:           g_bUsingPBonus                                      = false;                // whether we're using penaltybonus this round
+new     bool:           g_bArJustBeenGiven      [MAXPLAYERS]                = {false,...};          // whether the client has just been given something (for tracking pickups/pill passing)
+new     bool:           g_bArBlockPickupCall    [MAXPLAYERS]                = {false,...};          // whether we should ignore weapon equip/pickup calls for the player now
+new                     g_iBonusCount                                       = 0;                    // how many special event bonuses/penalties this roundhalf
+
+// special event stuff
+new                     g_iArGunAmmoCount       [MAXPLAYERS]                = 0;                    // for gun swap event: how many bullets does the survivor have left?
+new     bool:           g_bNoWeaponsNoAmmo                                  = false;                // whether to allow weapons or ammo to spawn at all
+new                     g_iKeyMaster                                        = 0;                    // which player is currently the key-master
+
+// ConVars
+new     Handle:         g_hArCvarWeight         [INDEX_TOTAL];                                      // cvar, per randomize-type, that sets an integer weight 
+new     Handle:         g_hArCvarSurvWeight     [INDEX_SURV_TOTAL];                                 // cvar, per randomize-type, that sets an integer weight -- for handing out starting weapon
+new     Handle:         g_hArCvarEvtWeight      [EVT_TOTAL];                                        // cvar, per randomize-type, that sets an integer weight -- for picking events
+
+new     Handle:         g_hCvarEqual                                        = INVALID_HANDLE;       // cvar flags what to equalize between teams
+//new     Handle:         g_hCvarDelay                                        = INVALID_HANDLE;       // cvar by how many seconds to delay the randomization (m_ModelName must be checkable)
+new     Handle:         g_hCvarDoReport                                     = INVALID_HANDLE;       // cvar whether to report anything at all
+new     Handle:         g_hCvarReportDelay                                  = INVALID_HANDLE;       // cvar by how many seconds to delay the report for special events
+new     Handle:         g_hCvarForcePhysics                                 = INVALID_HANDLE;       // cvar whether to force enabling physics on (relevant) spawned items
+new     Handle:         g_hCvarM60Ammo                                      = INVALID_HANDLE;       // cvar for setting m60 ammo
+new     Handle:         g_hCvarClipFactorInc                                = INVALID_HANDLE;       // cvar for factor of incendiary ammo clip
+new     Handle:         g_hCvarClipFactorExp                                = INVALID_HANDLE;       // cvar for factor of explosive ammo clip
+new     Handle:         g_hCvarRandomSpawns                                 = INVALID_HANDLE;       // cvar whether to make SI spawns random
+new     Handle:         g_hCvarSackProtection                               = INVALID_HANDLE;       // cvar whether to punish SI sacking (to any degree)
+new     Handle:         g_hCvarNoSupportSI                                  = INVALID_HANDLE;       // cvar whether to always spawn only cappers (for 2v2/3v3 etc)
+new     Handle:         g_hCvarTeamSize                                     = INVALID_HANDLE;       // cvar how many survivors in a team? used for balancing item spread (convar survivor_limit)
+new     Handle:         g_hCvarRestrictMelee                                = INVALID_HANDLE;       // cvar whether to restrict melee weapons to normal l4d2-material
+new     Handle:         g_hCvarRandomTank                                   = INVALID_HANDLE;       // cvar whether player selection for tank is random
+new     Handle:         g_hCvarBoomedTime                                   = INVALID_HANDLE;       // cvar boomed window in seconds
+new     Handle:         g_hCvarGnomeBonus                                   = INVALID_HANDLE;       // cvar how many points for a full gnome start->end delivery
+new     Handle:         g_hCvarGnomeFinaleFactor                            = INVALID_HANDLE;       // cvar scaling gnome bonus for finale maps
+new     Handle:         g_hCvarGnomeAllowRandom                             = INVALID_HANDLE;       // cvar whether gnomes can drop at random
+
+new     Handle:         g_hCvarFinaleItemUseful                             = INVALID_HANDLE;       // cvar the factor by which non-useful items are reduced for finale maps
+new     Handle:         g_hCvarStartItemNoJunk                              = INVALID_HANDLE;       // cvar the odds that junk gets changed to something useful in start saferoom
+new     Handle:         g_hCvarStartItemAmmo                                = INVALID_HANDLE;       // cvar the odds that there will be at least one ammo pile in start saferoom
+new     Handle:         g_hCvarStartItemGnome                               = INVALID_HANDLE;       // cvar the odds that there will be at least one gnome in the start saferoom (including handouts)
+
+
+new     Handle:         g_hCvarNoitemVariance                               = INVALID_HANDLE;       // cvar the variance of PCK_NOITEM
+new     Handle:         g_hCvarPillsChance                                  = INVALID_HANDLE;       // cvar odds that survivor is given pills/adren at start
+new     Handle:         g_hCvarHealthChance                                 = INVALID_HANDLE;       // cvar odds that survivor is given different starting health
+new     Handle:         g_hCvarHealthMin                                    = INVALID_HANDLE;       // cvar minimum amount of health a survivor will have
+new     Handle:         g_hCvarSpecialEventChance                           = INVALID_HANDLE;       // cvar the odds of a special event kicking in for a map
+new     Handle:         g_hCvarOutlineChance                                = INVALID_HANDLE;       // cvar the odds of there being survivor outlines this round
+new     Handle:         g_hCvarDoorLockedChance                             = INVALID_HANDLE;       // cvar the odds of any door being locked
+new     Handle:         g_hCvarStartSafeItem                                = INVALID_HANDLE;       // cvar chances an item in the start saferoom will exist
+new     Handle:         g_hCvarEndSafeItem                                  = INVALID_HANDLE;       // cvar chances an item in the end saferoom will exist
+new     Handle:         g_hCvarUncommonChance                               = INVALID_HANDLE;       // cvar the odds of any spawning common to become an uncommon
+new     Handle:         g_hCvarFallenChance                                 = INVALID_HANDLE;       // cvar the odds of any spawning uncommon to become a fallen survivor
+new     Handle:         g_hCvarJimmyChance                                  = INVALID_HANDLE;       // cvar the odds of any spawning uncommon to become jimmy gibbs
+new     Handle:         g_hCvarFirstQuadChance                              = INVALID_HANDLE;       // cvar the odds of the first attack being a quad cap
+new     Handle:         g_hCvarAmmoVarianceMore                             = INVALID_HANDLE;       // cvar the variance of ammo in fresh weapons, positive
+new     Handle:         g_hCvarAmmoVarianceLess                             = INVALID_HANDLE;       // cvar the variance of ammo in fresh weapons, negative
+new     Handle:         g_hCvarDoubleTankChance                             = INVALID_HANDLE;       // cvar the odds double tanks spawning in a round
+new     Handle:         g_hCvarMultiWitchChance                             = INVALID_HANDLE;       // cvar the odds multiple witch spawning in a round
+new     Handle:         g_hCvarTankFlowVariance                             = INVALID_HANDLE;       // cvar by how much to vary tank spawns around set points for 2-tank-rounds
+new     Handle:         g_hCvarItemDropChance                               = INVALID_HANDLE;       // cvar the odds of any common dropping an item
+new     Handle:         g_hCvarTankItemDropChance                           = INVALID_HANDLE;       // cvar the odds of tanks dropping some items
+new     Handle:         g_hCvarGiftPositiveChance                           = INVALID_HANDLE;       // cvar the odds of opening a gift resulting in something good
+new     Handle:         g_hCvarPipeDudChance                                = INVALID_HANDLE;       // cvar the odds of any pipebomb being a dud
+new     Handle:         g_hCvarAvoidIncapsChance                            = INVALID_HANDLE;       // cvar the odds of changing 1-incap-per-round back to 2 (so we can make it easier with a cvar)
+new     Handle:         g_hCvarFinaleAmmoChance                             = INVALID_HANDLE;       // cvar the odds that finale ammo is randomized
+
+new     Handle:         g_hCvarRandDistance                                 = INVALID_HANDLE;       // cvar whether we're using random distance points (mode)
+new     Handle:         g_hCvarRandDistVar                                  = INVALID_HANDLE;       // cvar the variance when using normal map distances
+new     Handle:         g_hCvarRandDistMin                                  = INVALID_HANDLE;       // cvar the minimum random distance points for a map
+new     Handle:         g_hCvarRandDistMax                                  = INVALID_HANDLE;       // cvar the maximum random distance
+new     Handle:         g_hCvarRandBonus                                    = INVALID_HANDLE;       // cvar whether we're using random damage bonus points (mode)
+new     Handle:         g_hCvarRandBonusBase                                = INVALID_HANDLE;       // cvar 0.0 = use static bonus; anything else = scale distance points to get bonus
+new     Handle:         g_hCvarRandBonusStatic                              = INVALID_HANDLE;       // cvar if we're using a static damage bonus value, this is it
+new     Handle:         g_hCvarRandBonusVar                                 = INVALID_HANDLE;       // cvar the variance when using bonus variance mode
+new     Handle:         g_hCvarRandBonusMin                                 = INVALID_HANDLE;       // cvar the minimum random distance points for a map
+new     Handle:         g_hCvarRandBonusMax                                 = INVALID_HANDLE;       // cvar the maximum random distance
+
+// Default convars
+new     Handle:         g_hCvarReadyUp                                      = INVALID_HANDLE;       // cvar handle for readyup checking
+
+// Default values
+new                     g_iTeamSize                                         = 4;
+new                     g_iDefSpawnTimeMin                                  = 15;
+new                     g_iDefSpawnTimeMax                                  = 18;
+new                     g_iDefCommonLimit                                   = 30;
+new                     g_iDefBackgroundLimit                               = 20;
+new                     g_iDefHordeSizeMin                                  = 5;
+new                     g_iDefHordeSizeMax                                  = 35;
+new                     g_iDefHordeTimeMin                                  = 30;
+new                     g_iDefHordeTimeMax                                  = 180;
+
+new                     g_iDefDefibPenalty                                  = 25;
+new                     g_iDefDefibDuration                                 = 3;
+new     Float:          g_fDefPillDecayRate                                 = 0.27;
+
+new                     g_iDefSpitterLimit                                  = 1;
+new                     g_iDefJockeyLimit                                   = 1;
+new                     g_iDefChargerLimit                                  = 1;
+
+new     Float:          g_fDefFFFactor                                      = 0.1;
+
+new                     g_iDefTankHealth                                    = 4000; // 2/3rds of versus value
+new                     g_iDefTankFrustTime                                 = 20;
