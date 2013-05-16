@@ -73,6 +73,12 @@ SUPPORT_RoundPreparation()
         }
     }
     
+    // launch storm if required
+    if (g_iSpecialEvent == _:EVT_WEATHER || g_iSpecialEvent == _:EVT_FOG)
+    {
+        SUPPORT_StormStart();
+    } 
+    
     // some things need to be delayed to work right
     g_hTimerReport = CreateTimer(DELAY_ROUNDPREP, Timer_DelayedRoundPrep, _, TIMER_FLAG_NO_MAPCHANGE);
     
@@ -124,6 +130,7 @@ EVENT_ResetOtherCvars()
     SetConVarFloat(FindConVar("survivor_friendly_fire_factor_normal"), g_fDefFFFactor);
     SetConVarInt(FindConVar("z_tank_health"), g_iDefTankHealth);
     SetConVarInt(FindConVar("z_frustration_lifetime"), g_iDefTankFrustTime);
+    SetConVarInt(FindConVar("vs_tank_damage"), g_iDefTankDamage);
     
     SetConVarInt(FindConVar("sv_force_time_of_day"), -1);
 }
@@ -239,16 +246,8 @@ EVENT_RoundStartPreparation()
         
         case EVT_ADREN: {
             /*
-                don't do this here:
+                don't set temp health here:
                 it would make survivors bleed out even in readyup...
-            
-            // start out with bleeding health
-            for (new i=1; i <= MaxClients; i++) {
-                if (IsSurvivor(i)) {
-                    SetEntityHealth(i, 1);
-                    SetEntPropFloat(i, Prop_Send, "m_healthBuffer", 100.0);
-                }
-            }
             */
         }
     }
@@ -274,7 +273,13 @@ EVENT_SurvivorsLeftSaferoom()
         }
         
         case EVT_KEYMASTER: {
-            EVENT_PickKeyMaster();
+            // first time keymaster gets picked with a visible report
+            EVENT_PickSpecialEventRole(-1, false);
+        }
+        
+        case EVT_PROTECT: {
+            // first time baby gets picked with a visible report
+            EVENT_PickSpecialEventRole(-1, false);
         }
     }
 }
@@ -527,16 +532,20 @@ EVENT_CheckSurvivorGun(client)
 
 
 
-// keymaster
-public Action: Timer_CheckKeyMaster(Handle:timer)
+// special roles for special events
+public Action: Timer_CheckSpecialEventRole(Handle:timer, any:leftStart)
 {
-    if (!g_iKeyMaster || !IsClientAndInGame(g_iKeyMaster) || !IsSurvivor(g_iKeyMaster) || !IsPlayerAlive(g_iKeyMaster) || IsFakeClient(g_iKeyMaster))
+    if (!g_iSpecialEventRole || !IsClientAndInGame(g_iSpecialEventRole) || !IsSurvivor(g_iSpecialEventRole) || !IsPlayerAlive(g_iSpecialEventRole) || IsFakeClient(g_iSpecialEventRole))
     {
-        EVENT_PickKeyMaster();
+        if (!leftStart) {
+            EVENT_PickSpecialEventRole(-1, true);
+        } else {
+            EVENT_PickSpecialEventRole();
+        }
     }
 }
 
-EVENT_PickKeyMaster(notClient=-1)
+EVENT_PickSpecialEventRole(notClient=-1, bool:notLeftStart=false)
 {
     // survivors
     new count = 0;
@@ -551,14 +560,29 @@ EVENT_PickKeyMaster(notClient=-1)
         }
     }
     
-    if (!count) { g_iKeyMaster = 0; return; }
+    // allow bots if there's no-one else
+    if (!count) {
+        for (new i=1; i <= MaxClients; i++)
+        {
+            if (i != notClient && IsClientInGame(i) && IsSurvivor(i) && IsPlayerAlive(i))
+            {
+                survivors[count] = i;
+                count++;
+            }
+        }
+    }
+    
+    if (!count) { g_iSpecialEventRole = 0; return; }
     
     // pick one at random
     new pick = GetRandomInt(0, count-1);
     
-    g_iKeyMaster = survivors[pick];
+    g_iSpecialEventRole = survivors[pick];
     
-    PrintToChatAll("\x01[\x05r\x01] New keymaster: only \x05%N\x01 can open doors.", g_iKeyMaster);
+    // report if it's after the saferoom exit (notLeftStart is for timer calls)
+    if (!notLeftStart && g_bPlayersLeftStart) {
+        ReportSpecialEventRole();
+    }
 }
 
 // Stabby's multi-witch stuff

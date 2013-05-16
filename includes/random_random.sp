@@ -9,24 +9,25 @@
 
 // Report randomness
 // --------------------------
-DoReport(client = 0)
+DoReport(client=0)
 {
     new String: sReport[MAX_REPORTLINES][REPLINELENGTH];
     new iLine = 0;
     
-    
-    // report distance / bonus changes
-    if (GetConVarInt(g_hCvarRandDistance) > 0 && GetConVarInt(g_hCvarRandBonus) > 0) {
-        Format(sReport[iLine], REPLINELENGTH, "Random map distance: \x05%i\x01, Bonus: \x04%i\x01.", L4D_GetVersusMaxCompletionScore(), g_iDamageBonus);
-        iLine++;
-    } else if (GetConVarInt(g_hCvarRandDistance) > 0) {
-        Format(sReport[iLine], REPLINELENGTH, "Random map distance: \x05%i\x01.", L4D_GetVersusMaxCompletionScore());
-        iLine++;
-    } else if (GetConVarInt(g_hCvarRandBonus) > 0) {
-        Format(sReport[iLine], REPLINELENGTH, "Random damage bonus: \x04%i\x01.", g_iDamageBonus);
-        iLine++;
+    if (!g_bCampaignMode)
+    {
+        // report distance / bonus changes
+        if (GetConVarInt(g_hCvarRandDistance) > 0 && GetConVarInt(g_hCvarRandBonus) > 0) {
+            Format(sReport[iLine], REPLINELENGTH, "Random map distance: \x05%i\x01, Bonus: \x04%i\x01.", L4D_GetVersusMaxCompletionScore(), g_iDamageBonus);
+            iLine++;
+        } else if (GetConVarInt(g_hCvarRandDistance) > 0) {
+            Format(sReport[iLine], REPLINELENGTH, "Random map distance: \x05%i\x01.", L4D_GetVersusMaxCompletionScore());
+            iLine++;
+        } else if (GetConVarInt(g_hCvarRandBonus) > 0) {
+            Format(sReport[iLine], REPLINELENGTH, "Random damage bonus: \x04%i\x01.", g_iDamageBonus);
+            iLine++;
+        }
     }
-    
     
     // report glows (only when gone?)
     if (GetConVarFloat(g_hCvarOutlineChance) < 1.0) {
@@ -73,6 +74,11 @@ DoReport(client = 0)
             PrintToChatAll("\x01[\x05r\x01] %s", sReport[i]);
         }
     }
+    
+    // special event role (prevent spamming this at start)
+    if (g_bFirstReportDone && g_bPlayersLeftStart) {
+        ReportSpecialEventRole(false, client);
+    }
 }
 
 DoInsightReport(team=-1)
@@ -102,9 +108,12 @@ DoInsightReport(team=-1)
         iLine++;
     }
     
-    // gnomes / cola
-    Format(sReport[iLine], REPLINELENGTH, "Bonus items: this map has \x05%d\x01 gnome%s and \x05%d\x01 cola pack%s.", g_iCountItemGnomes, (g_iCountItemGnomes == 1) ? "" : "s", g_iCountItemCola, (g_iCountItemCola == 1) ? "" : "s" );
-    iLine++;
+    if (!g_bCampaignMode)
+    {
+        // gnomes / cola
+        Format(sReport[iLine], REPLINELENGTH, "Bonus items: this map has \x05%d\x01 gnome%s and \x05%d\x01 cola pack%s.", g_iCountItemGnomes, (g_iCountItemGnomes == 1) ? "" : "s", g_iCountItemCola, (g_iCountItemCola == 1) ? "" : "s" );
+        iLine++;
+    }
     
     // medkits / defibs
     Format(sReport[iLine], REPLINELENGTH, "Health items: this map has \x05%d\x01 first aid kit%s and \x05%d\x01 defib%s.", g_iCountItemMedkits, (g_iCountItemMedkits == 1) ? "" : "s", g_iCountItemDefibs, (g_iCountItemDefibs == 1) ? "" : "s" );
@@ -128,6 +137,30 @@ DoInsightReport(team=-1)
     }
 }
 
+ReportSpecialEventRole(bool:isNew=false, client=0)
+{
+    new String: sReport[REPLINELENGTH] = "";
+    
+    switch (_:g_iSpecialEvent)
+    {
+        case EVT_KEYMASTER: {
+            Format(sReport, REPLINELENGTH, "%s keymaster: only \x05%N\x01 can open doors.", (isNew) ? "New" : "Current", g_iSpecialEventRole);
+        }
+        case EVT_PROTECT: {
+            Format(sReport, REPLINELENGTH, "%s baby: \x05%N\x01 needs protection.", (isNew) ? "New" : "Current", g_iSpecialEventRole);
+        }
+        default: { return; }
+    }
+    
+    if (strlen(sReport))
+    {
+        if (client) {
+            PrintToChat(client, "\x01[\x05r\x01] %s", sReport);
+        } else {
+            PrintToChatAll("\x01[\x05r\x01] %s", sReport);
+        }
+    }
+}
 // Make random stuff happen
 // --------------------------
 RANDOM_DetermineRandomStuff()
@@ -161,99 +194,101 @@ RANDOM_DetermineRandomStuff()
         }
     }
     
-    
-    // random distance
-    //      but let's not mess with changing distance halfway through a map though...
-    new distMode = GetConVarInt(g_hCvarRandDistance);
-    if (!g_bSecondHalf) {
-        // store default distance for map, so we can recalculate on the same basis for round 2
-        g_iDefaultDistance = L4D_GetVersusMaxCompletionScore();
-    }
-    new distNew = g_iDefaultDistance;
-    
-    if (distMode != 0 && !g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_POINTS))
+    // only worry about distance/bonus in versus
+    if (!g_bCampaignMode)
     {
-        if (distMode == 1)
-        {
-            // variance mode
-            new Float: varMin = GetConVarFloat(g_hCvarRandDistVar);
-            new Float: varMax = 1.0 + varMin;
-            varMin = 1.0 - varMin;
-            
-            distNew = RoundFloat(float(g_iDefaultDistance) * GetRandomFloat(varMin, varMax));
+        // random distance
+        //      but let's not mess with changing distance halfway through a map though...
+        new distMode = GetConVarInt(g_hCvarRandDistance);
+        if (!g_bSecondHalf) {
+            // store default distance for map, so we can recalculate on the same basis for round 2
+            g_iDefaultDistance = L4D_GetVersusMaxCompletionScore();
         }
-        else if (distMode == 2)
+        new distNew = g_iDefaultDistance;
+        
+        if (distMode != 0 && !g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_POINTS))
         {
-            // fully random mode
-            distNew = GetRandomInt( GetConVarInt(g_hCvarRandDistMin) , GetConVarInt(g_hCvarRandDistMax) );
-        }
-        
-        // make sure it's a neatly divisible number
-        distNew = RoundFloat(float(distNew) / 4.0) * 4;
-        
-        L4D_SetVersusMaxCompletionScore(distNew);
-        PrintDebug("[rand] Distance for this round: %i.", distNew);
-        
-    }
-    
-    /*
-    // set in damage bonus plugin (not using it there now, but might later)
-    RNDBNS_SetDistance(distNew);
-    */
-    
-    
-    // set damage bonus
-    new bonusMode = GetConVarInt(g_hCvarRandBonus);
-    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_POINTS)) {
-        // generate bonus size
-        new bonusNew;
-        new Float: bonusBase = GetConVarFloat(g_hCvarRandBonusBase);
-        if (bonusMode == 0)
-        {
-            // base value, no variation
-            if (bonusBase == 0.0) {
-                // static
-                bonusNew = GetConVarInt(g_hCvarRandBonusStatic);
-            } else {
-                // map distance relative
-                bonusNew = RoundFloat(bonusBase * distNew);
+            if (distMode == 1)
+            {
+                // variance mode
+                new Float: varMin = GetConVarFloat(g_hCvarRandDistVar);
+                new Float: varMax = 1.0 + varMin;
+                varMin = 1.0 - varMin;
+                
+                distNew = RoundFloat(float(g_iDefaultDistance) * GetRandomFloat(varMin, varMax));
             }
-        }
-        else if (bonusMode == 1)
-        {
-            // base value, no variation
-            if (bonusBase == 0.0) {
-                // static
-                bonusNew = GetConVarInt(g_hCvarRandBonusStatic);
-            } else {
-                // map distance relative
-                bonusNew = RoundFloat(bonusBase * distNew);
+            else if (distMode == 2)
+            {
+                // fully random mode
+                distNew = GetRandomInt( GetConVarInt(g_hCvarRandDistMin) , GetConVarInt(g_hCvarRandDistMax) );
             }
             
-            // variation from base
-            new Float: varMin = GetConVarFloat(g_hCvarRandBonusVar);
-            new Float: varMax = 1.0 + varMin;
-            varMin = 1.0 - varMin;
+            // make sure it's a neatly divisible number
+            distNew = RoundFloat(float(distNew) / 4.0) * 4;
             
-            bonusNew = RoundFloat(bonusNew * GetRandomFloat(varMin, varMax));
-        }
-        else if (bonusMode == 2)
-        {
-            // fully random
-            bonusNew = GetRandomInt( GetConVarInt(g_hCvarRandBonusMin) , GetConVarInt(g_hCvarRandBonusMax) );
+            L4D_SetVersusMaxCompletionScore(distNew);
+            PrintDebug("[rand] Distance for this round: %i.", distNew);
+            
         }
         
-        // make sure it's a neatly divisible number
-        bonusNew = RoundFloat(float(bonusNew) / 4.0) * 4;
+        /*
+        // set in damage bonus plugin (not using it there now, but might later)
+        RNDBNS_SetDistance(distNew);
+        */
         
-        g_iDamageBonus = bonusNew;
         
-        // update damage bonus plugin
-        RNDBNS_SetBonus(bonusNew);
-        
-        PrintDebug("[rand] Bonus for this round: %i.", bonusNew);
+        // set damage bonus
+        new bonusMode = GetConVarInt(g_hCvarRandBonus);
+        if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_POINTS)) {
+            // generate bonus size
+            new bonusNew;
+            new Float: bonusBase = GetConVarFloat(g_hCvarRandBonusBase);
+            if (bonusMode == 0)
+            {
+                // base value, no variation
+                if (bonusBase == 0.0) {
+                    // static
+                    bonusNew = GetConVarInt(g_hCvarRandBonusStatic);
+                } else {
+                    // map distance relative
+                    bonusNew = RoundFloat(bonusBase * distNew);
+                }
+            }
+            else if (bonusMode == 1)
+            {
+                // base value, no variation
+                if (bonusBase == 0.0) {
+                    // static
+                    bonusNew = GetConVarInt(g_hCvarRandBonusStatic);
+                } else {
+                    // map distance relative
+                    bonusNew = RoundFloat(bonusBase * distNew);
+                }
+                
+                // variation from base
+                new Float: varMin = GetConVarFloat(g_hCvarRandBonusVar);
+                new Float: varMax = 1.0 + varMin;
+                varMin = 1.0 - varMin;
+                
+                bonusNew = RoundFloat(bonusNew * GetRandomFloat(varMin, varMax));
+            }
+            else if (bonusMode == 2)
+            {
+                // fully random
+                bonusNew = GetRandomInt( GetConVarInt(g_hCvarRandBonusMin) , GetConVarInt(g_hCvarRandBonusMax) );
+            }
+            
+            // make sure it's a neatly divisible number
+            bonusNew = RoundFloat(float(bonusNew) / 4.0) * 4;
+            
+            g_iDamageBonus = bonusNew;
+            
+            // update damage bonus plugin
+            RNDBNS_SetBonus(bonusNew);
+            
+            PrintDebug("[rand] Bonus for this round: %i.", bonusNew);
+        }
     }
-    
     
     // will a tank/witch spawn?
     g_bTankWillSpawn = L4D2Direct_GetVSTankToSpawnThisRound( (g_bSecondHalf) ? 1 : 0 );
@@ -269,12 +304,7 @@ RANDOM_DetermineRandomStuff()
         EVENT_ResetOtherCvars();
         EVENT_HUDRestoreAll();
         
-        // reset after weather event
-        if ( g_iSpecialEvent == _:EVT_WEATHER ||  g_iSpecialEvent == _:EVT_FOG ) {
-            new Handle: hTmp = FindConVar("l4d2_storm_fogmode");
-            if (hTmp != INVALID_HANDLE) { SetConVarInt(hTmp, 0); }
-            SUPPORT_StormReset();
-        }
+        new previousEvent = g_iSpecialEvent;
         
         g_iSpecialEvent = -1;
         g_sSpecialEventExtra = "";
@@ -285,15 +315,16 @@ RANDOM_DetermineRandomStuff()
         new Float: fSpecialEventChance = GetConVarFloat(g_hCvarSpecialEventChance);
         if (g_bSecondHalf && g_iSpecialEvent != -1) { fSpecialEventChance = 1.0; }
         
-        if (GetRandomFloat(0.001,1.0) <= fSpecialEventChance) {
-            
+        if (GetRandomFloat(0.001,1.0) <= fSpecialEventChance)
+        {
             // pick random from the available weighted choice hat
             
             new randomIndex = GetRandomInt(0, (g_iEventWeightedChoicesTotal-1));
             g_iSpecialEvent = g_iArEventWeightedChoices[randomIndex];
 
-            // avoid random_storm requiring plugins on intro maps
-            if (mapnameType == MAPS_INTRO) {
+            // avoid random_storm requiring plugins on intro maps (or non-storm maps)
+            if (mapnameType == MAPS_INTRO || mapnameType == MAPS_NOSTORM)
+            {
                 new count = 0;  // just a safeguard to prevent eternal loops
                 while ((g_iSpecialEvent == EVT_WEATHER || g_iSpecialEvent == EVT_FOG) && count < 1000) {
                     count++;
@@ -309,18 +340,15 @@ RANDOM_DetermineRandomStuff()
                     g_iSpecialEventExtra = GetRandomInt(INDEX_PISTOL, INDEX_TOTAL - 1);
                     bDoItemRePrep = true;
                 }
-                
                 case EVT_GIFTS: {
                     g_iSpecialEventExtra = INDEX_GIFT;
                     bDoItemRePrep = true;
                 }
-                
                 case EVT_ABUNDANCE: {
                     EVENT_SetDifficulty(DIFFICULTY_NOCHANGE, DIFFICULTY_HARD);
                     bDoItemRePrep = true;
                     g_iDifficultyRating--;
                 }
-                
                 case EVT_UNCOMMON: {
                     if (GetRandomInt(0, 2) == 0) {
                         g_iSpecialEventExtra = GetRandomInt(0, sizeof(g_csUncommonModels) - 1);
@@ -335,48 +363,45 @@ RANDOM_DetermineRandomStuff()
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_EASY);
                     g_iDifficultyRating += 2;
                 } 
-                
                 case EVT_HORDE_HUGE: {
                     EVENT_SetDifficulty(DIFFICULTY_VERYHARD, DIFFICULTY_VERYEASY);
                     g_iDifficultyRating++;
                 }
-                
                 case EVT_HORDE_NONE: {
                     EVENT_SetDifficulty(DIFFICULTY_SUPEREASY, DIFFICULTY_VERYHARD);
                     g_iDifficultyRating--;
                 }
-                
                 case EVT_QUADS: {
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_EASY);
                     g_iDifficultyRating += 2;
                 }
                 case EVT_SNIPER: {
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
-                    g_iDifficultyRating += 1;
+                    g_iDifficultyRating++;
                 }
                 case EVT_WEATHER: {
-                    SUPPORT_StormStart();
-                    g_iDifficultyRating++;
+                    new Handle: hTmp = FindConVar("l4d2_storm_fogmode");
+                    if (hTmp != INVALID_HANDLE) { SetConVarInt(hTmp, 0); }
+                    g_iDifficultyRating++;  // because of FPS drops mainly
                 }
                 case EVT_FOG: {
                     EVENT_SetDifficulty(DIFFICULTY_NOCHANGE, DIFFICULTY_EASY);
                     new Handle: hTmp = FindConVar("l4d2_storm_fogmode");
                     if (hTmp != INVALID_HANDLE) { SetConVarInt(hTmp, 1); }
-                    SUPPORT_StormStart();
-                    g_iDifficultyRating++;
+                    g_iDifficultyRating += 3; // no outlines
                 }
                 case EVT_DEFIB: {
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_EASY);
                     SetConVarInt(FindConVar("vs_defib_penalty"), 5);
                     SetConVarInt(FindConVar("defibrillator_use_duration"), 2);
                     bDoItemRePrep = true;
-                    g_iDifficultyRating++;
+                    g_iDifficultyRating += 2;
                 }
                 case EVT_ADREN: {
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
                     bDoItemRePrep = true;
                     SetConVarFloat(FindConVar("pain_pills_decay_rate"), g_fDefPillDecayRate * EVENT_ADREN_DECAY);
-                    g_iDifficultyRating++;
+                    g_iDifficultyRating += 2;
                 }
                 case EVT_NOHUD: {
                     // handled in survivor setup handout / playerleftsaferoom, etc
@@ -422,6 +447,7 @@ RANDOM_DetermineRandomStuff()
                     // set health (lower)
                     SetConVarInt(FindConVar("z_tank_health"), MINITANKS_HEALTH);
                     SetConVarInt(FindConVar("z_frustration_lifetime"), MINITANK_FRUST_TIME);
+                    SetConVarInt(FindConVar("vs_tank_damage"), MINITANKS_DAMAGE);
                     
                     L4D2Direct_SetVSWitchToSpawnThisRound(0, false);
                     L4D2Direct_SetVSWitchToSpawnThisRound(1, false);
@@ -431,17 +457,33 @@ RANDOM_DetermineRandomStuff()
                     SUPPORT_MultiTankRandomization();
                     
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
-                    g_iDifficultyRating += 2;
+                    g_iDifficultyRating += 3;
                 }
                 case EVT_KEYMASTER: {
                     // don't need to do anything here
                 }
+                case EVT_BADCOMBO: {
+                    // not sure about difficulty.. it's only the start, but still
+                    //g_iDifficultyRating++;
+                }
+                case EVT_PROTECT: {
+                    g_iDifficultyRating++;
+                }
             }
             PrintDebug("[rand] Picked Special Event: %i (%s) [extra, %i, sub: %i, str: %s]", g_iSpecialEvent, g_csEventText[g_iSpecialEvent], g_iSpecialEventExtra, g_iSpecialEventExtraSub, g_sSpecialEventExtra);
-            
-        } else {
+        }
+        else
+        {
             g_iSpecialEvent = -1;
             PrintDebug("[rand] No Special Event.");
+        }
+        
+        // reset storm after weather event (but only if the event is not a storm this round)`
+        if ( ( previousEvent == _:EVT_WEATHER || previousEvent == _:EVT_FOG ) && g_iSpecialEvent != _:EVT_WEATHER && g_iSpecialEvent != _:EVT_FOG )
+        {
+            new Handle: hTmp = FindConVar("l4d2_storm_fogmode");
+            if (hTmp != INVALID_HANDLE) { SetConVarInt(hTmp, 0); }
+            SUPPORT_StormReset();
         }
     }
     
@@ -532,10 +574,13 @@ RANDOM_DetermineRandomStuff()
     } else {
         RestoreDoors();
     }
-        
-    // first attack spawns
-    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_FIRST_ATTACK)) {
-        RandomizeFirstSpawns();
+    
+    if (!g_bCampaignMode)
+    {
+        // first attack spawns
+        if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_FIRST_ATTACK)) {
+            RandomizeFirstSpawns();
+        }
     }
     
     // survivor outlines
@@ -768,6 +813,20 @@ RandomizeItems()
                     case INDEX_T1SHOTGUN: { randomPick = INDEX_SNIPER; }
                     case INDEX_T2RIFLE: { randomPick = INDEX_SNIPER; }
                     case INDEX_T2SHOTGUN: { randomPick = INDEX_SNIPER; }
+                }
+            }
+            else if (_:g_iSpecialEvent == EVT_BADCOMBO && g_strArStorage[curEnt][entInStartSaferoom]) {
+                // remove all primary and secondary weapons from start saferoom
+                switch (randomPick) {
+                    case INDEX_PISTOL: { randomPick = INDEX_NOITEM; }
+                    case INDEX_MELEE: { randomPick = INDEX_NOITEM; }
+                    case INDEX_T1SMG: { randomPick = INDEX_NOITEM; }
+                    case INDEX_T1SHOTGUN: { randomPick = INDEX_NOITEM; }
+                    case INDEX_T2RIFLE: { randomPick = INDEX_NOITEM; }
+                    case INDEX_T2SHOTGUN: { randomPick = INDEX_NOITEM; }
+                    case INDEX_SNIPER: { randomPick = INDEX_NOITEM; }
+                    case INDEX_T3: { randomPick = INDEX_NOITEM; }
+                    
                 }
             }
             
@@ -1360,32 +1419,74 @@ RandomizeSurvivorItems()
     new iCountPrimary = 0;      new iCountPills = 0;
     new iCountGift = 0;         new iCountAdren = 0;
     new iCountMelee = 0;
+    new iCountSecondary = 0;
     new iCountStrip = 0;
     new randomPick;
+    new secondaryPick;          // additional to primaries, if we force a minimum
     new meleeRandomPick;
     
+    new iMinPrimary = 1;
+    new iMinSecondary = 2;      // special case though, not used for now
+    
     new Float: fPillsChance = GetConVarFloat(g_hCvarPillsChance);
+    new bool: bPrimaryForced = false;
+    new bool: bSecondaryForced = false;
     
     new Float: fAmmoVarMore = 1.0 + GetConVarFloat(g_hCvarAmmoVarianceMore);
     new Float: fAmmoVarLess = 1.0 - GetConVarFloat(g_hCvarAmmoVarianceLess);
+
+
+    // minimum supplies for higher difficulty rounds
+    if (g_iDifficultyRating >= DIFF_RATING_4PRIM_THRESH) {
+        iMinPrimary = 4;
+        iMinSecondary = 4;
+    } else if (g_iDifficultyRating >= DIFF_RATING_3PRIM_THRESH)  {
+        iMinPrimary = 3;
+        iMinSecondary = 2;
+    } else if (g_iDifficultyRating >= DIFF_RATING_2PRIM_THRESH)  {
+        iMinPrimary = 2;
+        iMinSecondary = 1;
+    }
+    
     
     for (new i=0; i < TEAM_SIZE; i++)
     {
         // pick a random option
         // save it to array
         
-        randomPick = GetRandomInt(0, (g_iSurvWeightedChoicesTotal-1));
+        // primary: adjust for minima
+        if (i - iCountPrimary >= TEAM_SIZE - iMinPrimary) { bPrimaryForced = true; } else { bPrimaryForced = false; }
+        
+        randomPick = GetRandomInt( (bPrimaryForced) ? g_iSurvWeightedChoicesStartPrimary : 0 , (g_iSurvWeightedChoicesTotal-1));
         randomPick = g_iArSurvWeightedChoices[randomPick];
         
+        // are we giving a secondary? adjust for minima
+        if (i - iCountSecondary >= TEAM_SIZE - iMinSecondary) { bSecondaryForced = true; } else { bSecondaryForced = false; }
+        
+        if (bSecondaryForced || GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarExtraSecondaryChance)) {
+            secondaryPick = GetRandomInt(g_iSurvWeightedChoicesStartSecondary, g_iSurvWeightedChoicesEndSecondary);
+            secondaryPick = g_iArSurvWeightedChoices[secondaryPick];
+        } else {
+            secondaryPick = -1;
+        }
+        
         // adjust for l4d1 mode
-        if ( _:g_iSpecialEvent == EVT_L4D1 && (randomPick == INDEX_SURV_MELEE || randomPick == INDEX_SURV_MAGNUM) ) { randomPick = INDEX_SURV_DUALS; }
+        if ( _:g_iSpecialEvent == EVT_L4D1) {
+            if (randomPick == INDEX_SURV_MELEE || randomPick == INDEX_SURV_MAGNUM) { randomPick = INDEX_SURV_DUALS; }
+            if (secondaryPick == INDEX_SURV_MELEE || secondaryPick == INDEX_SURV_MAGNUM) { secondaryPick = INDEX_SURV_DUALS; }
+        }
         
         switch (randomPick)
         {
-            case INDEX_SURV_NOTHING: {      randomPick = PCK_NOITEM; iCountStrip++; }
-            case INDEX_SURV_PISTOL: {       randomPick = PCK_PISTOL; }
-            case INDEX_SURV_DUALS: {        randomPick = PCK_DUALS; iCountGift++; }
-            case INDEX_SURV_MAGNUM: {       randomPick = PCK_PISTOL_MAGNUM; iCountGift++; }
+            case INDEX_SURV_NOTHING: {
+                randomPick = PCK_NOITEM;
+                iCountStrip++;
+                // if we get nothing, keep secondary pick intact if we're forced to give a secondary
+                if (!bSecondaryForced) { secondaryPick = -1; }
+            }
+            case INDEX_SURV_PISTOL: {       randomPick = PCK_PISTOL; iCountSecondary++; secondaryPick = -1; }
+            case INDEX_SURV_DUALS: {        randomPick = PCK_DUALS; iCountSecondary++; iCountGift++; secondaryPick = -1; }
+            case INDEX_SURV_MAGNUM: {       randomPick = PCK_PISTOL_MAGNUM; iCountSecondary++; iCountGift++; secondaryPick = -1; }
             
             case INDEX_SURV_T1SMG: {
                 iCountPrimary++;
@@ -1423,11 +1524,39 @@ RandomizeSurvivorItems()
                 g_iArStorageSurvMelee[i] = meleeRandomPick;
                 iCountGift++;
                 iCountMelee++;
+                iCountSecondary++;
+                secondaryPick = -1;
             }
         }
         
+        if (secondaryPick != -1)
+        {
+            switch (secondaryPick)
+            {
+                case INDEX_SURV_PISTOL: {       secondaryPick = PCK_PISTOL; iCountSecondary++; }
+                case INDEX_SURV_DUALS: {        secondaryPick = PCK_DUALS; iCountSecondary++; }
+                case INDEX_SURV_MAGNUM: {       secondaryPick = PCK_PISTOL_MAGNUM; iCountSecondary++; }
+                
+                case INDEX_SURV_MELEE: {
+                    secondaryPick = PCK_MELEE;
+                    meleeRandomPick = GetRandomInt(0, sizeof(g_iMeleeClassCount) - 1);
+                    g_iArStorageSurvMelee[i] = meleeRandomPick;
+                    iCountMelee++;
+                    iCountSecondary++;
+                }
+                
+                default: { secondaryPick = PCK_NOITEM; /* shouldn't occur */ }
+            }
+        }
+        else
+        {
+            secondaryPick = PCK_NOITEM;
+        }
+        
+        
         // store current pick
         g_iArStorageSurv[i] = randomPick;
+        g_iArStorageSurvSec[i] = secondaryPick;
         
         
         // pills?
@@ -1464,8 +1593,12 @@ RandomizeSurvivorItems()
             PrintDebug("[rand] Adding melees to deal with special event.");
             for (new i=0; i < TEAM_SIZE; i++)
             {
-                if (g_iArStorageSurv[i] != _:PCK_MELEE) {
-                    g_iArStorageSurv[i] = PCK_MELEE;
+                if (g_iArStorageSurv[i] != _:PCK_MELEE && g_iArStorageSurvSec[i] != _:PCK_MELEE) {
+                    if (g_iArStorageSurv[i] == _:PCK_SMG || g_iArStorageSurv[i] == _:PCK_SMG_SILENCED || g_iArStorageSurv[i] == _:PCK_SMG_MP5 || g_iArStorageSurv[i] == _:PCK_PUMPSHOTGUN || g_iArStorageSurv[i] == _:PCK_SHOTGUN_CHROME) {
+                        g_iArStorageSurvSec[i] = PCK_MELEE;
+                    } else {
+                        g_iArStorageSurv[i] = PCK_MELEE;
+                    }
                     meleeRandomPick = GetRandomInt(0, sizeof(g_iMeleeClassCount) - 1);
                     g_iArStorageSurvMelee[i] = meleeRandomPick;
                     iCountMelee++;
@@ -1479,8 +1612,12 @@ RandomizeSurvivorItems()
             PrintDebug("[rand] Adding melees to deal with early locks.");
             for (new i=0; i < TEAM_SIZE; i++)
             {
-                if (g_iArStorageSurv[i] != _:PCK_MELEE) {
-                    g_iArStorageSurv[i] = PCK_MELEE;
+                if (g_iArStorageSurv[i] != _:PCK_MELEE && g_iArStorageSurvSec[i] != _:PCK_MELEE) {
+                    if (g_iArStorageSurv[i] == _:PCK_SMG || g_iArStorageSurv[i] == _:PCK_SMG_SILENCED || g_iArStorageSurv[i] == _:PCK_SMG_MP5 || g_iArStorageSurv[i] == _:PCK_PUMPSHOTGUN || g_iArStorageSurv[i] == _:PCK_SHOTGUN_CHROME) {
+                        g_iArStorageSurvSec[i] = PCK_MELEE;
+                    } else {
+                        g_iArStorageSurv[i] = PCK_MELEE;
+                    }
                     meleeRandomPick = GetRandomInt(0, sizeof(g_iMeleeClassCount) - 1);
                     g_iArStorageSurvMelee[i] = meleeRandomPick;
                     iCountMelee++;
@@ -1490,15 +1627,18 @@ RandomizeSurvivorItems()
         }
     }
     
+    /*
+        don't do this here (yet) .. too imprecise without taking start saferoom status into account
     // difficulty-rating based on items? weapons / pills
     if (iCountPrimary < 2) { g_iDifficultyRating++; }
     else if (iCountPrimary < 3 && iCountMelee < 2) { g_iDifficultyRating++; }
     else if (iCountStrip > 1) { g_iDifficultyRating++; }
     
     if (iCountAdren + iCountPills < 3 || (iCountPills == 0 && iCountAdren < TEAM_SIZE) ) { g_iDifficultyRating++; }
+    */
     
     // done
-    PrintDebug("[rand] Randomized and stored %i survivor setups (%i gifts, %i strips).", TEAM_SIZE, iCountGift, iCountStrip);
+    PrintDebug("[rand] Randomized and stored %i survivor setups (%i primaries, %i secondaries, %i strips).", TEAM_SIZE, iCountPrimary, iCountSecondary, iCountStrip);
     
     // enable handouts on team switch/join
     g_iSurvHandled = 0;
@@ -1560,6 +1700,70 @@ CheckSurvivorSetup()
     }
 }
 
+
+RandomizeFirstSpawns()
+{
+    // determine the first four spawns
+    //  avoids hassle with making the first attacks the same
+    //  and makes it possible to control quad cap on first attack
+
+    new tmpPick = 0;
+    new tmpSupCount = 0;
+    
+    new bool: bFirstQuad = bool:(GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarFirstQuadChance));
+    
+    // if we got the quad event, first attack is a quad too
+    if (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) { bFirstQuad = true; }
+    
+    for (new i=0; i < TEAM_SIZE; i++)
+    {
+        if (bFirstQuad)
+        {
+            // pick any random capper
+            tmpPick = GetRandomInt(ZC_SMOKER, (_:g_iSpecialEvent == EVT_L4D1) ? ZC_HUNTER : ZC_SPITTER);
+            if      (tmpPick == ZC_BOOMER)  { tmpPick = (GetRandomInt(0,1) == 0) ? ZC_SMOKER : ZC_HUNTER; }
+            else if (tmpPick == ZC_SPITTER) { tmpPick = (GetRandomInt(0,1) == 0) ? ZC_JOCKEY : ZC_CHARGER; }
+            g_iArStorageSpawns[i] = tmpPick;
+        }
+        else if (_:g_iSpecialEvent == EVT_L4D1)
+        {
+            tmpPick = GetRandomInt(ZC_SMOKER, ZC_HUNTER);
+            // check if there already is a boomer/smoker, if so, replace it
+            if (tmpPick == ZC_SMOKER) {
+                for (new j=0; j < i; j++) {
+                    if (g_iArStorageSpawns[j] == ZC_SMOKER) { tmpPick = ZC_HUNTER; }
+                }
+            } else if (tmpPick == ZC_BOOMER) {
+                for (new j=0; j < i; j++) {
+                    if (g_iArStorageSpawns[j] == ZC_BOOMER) { tmpPick = ZC_HUNTER; }
+                }
+            }
+            g_iArStorageSpawns[i] = tmpPick;
+            if (tmpPick == ZC_BOOMER) { tmpSupCount++; }
+        }
+        else
+        {
+            // pick any random SI (we'll check for quad later)
+            tmpPick = GetRandomInt(ZC_SMOKER, ZC_CHARGER);
+            g_iArStorageSpawns[i] = tmpPick;
+            if (tmpPick == ZC_BOOMER || tmpPick == ZC_SPITTER) { tmpSupCount++; }
+        }
+    }
+    
+    // check for quad if none supposed (only for 4v4)
+    if ( !bFirstQuad && !tmpSupCount && g_iTeamSize > 3 )
+    {
+        // no support, replace one
+        tmpPick = GetRandomInt(ZC_SMOKER, ZC_BOOMER);
+        if ( tmpPick == ZC_SMOKER) {
+            if (_:g_iSpecialEvent == EVT_L4D1) { tmpPick = ZC_BOOMER; } else { tmpPick = ZC_SPITTER; }
+        }
+        g_iArStorageSpawns[0] = tmpPick;
+    }
+
+    
+    PrintDebug("[rand] Picked four classes for first attack (%i, %i, %i, %i)(quad: %i).", g_iArStorageSpawns[0], g_iArStorageSpawns[1], g_iArStorageSpawns[2], g_iArStorageSpawns[3], bFirstQuad);
+}
 
 // Creating entities based on the randomized-entity-list
 // ------------------------------------------------------
@@ -1937,6 +2141,7 @@ ChangeSurvivorSetup(index, client)
     // for defib event
     if (_:g_iSpecialEvent == EVT_DEFIB) { GiveItem(client, "weapon_defibrillator", 0, 0); }
     
+    
     // starting health (don't change on bleedout event(s))
     if (_:g_iSpecialEvent != EVT_ADREN)
     {
@@ -1953,8 +2158,9 @@ ChangeSurvivorSetup(index, client)
     // if we're replacing the single pistol, remove it:
     if (    type == _:PCK_NOITEM
         ||  type == _:PCK_PISTOL_MAGNUM
-        ||  type == _:PCK_MELEE)
-    {
+        ||  type == _:PCK_MELEE
+        ||  g_iSpecialEvent == _:EVT_BADCOMBO
+    ) {
         new weaponIndex = GetPlayerWeaponSlot(client, PLAYER_SLOT_SECONDARY);
         
         if (weaponIndex > -1) {
@@ -1966,7 +2172,15 @@ ChangeSurvivorSetup(index, client)
             }
         }
     }
-        
+
+    // for bad combo event, give set items and don't do anything else
+    if (_:g_iSpecialEvent == EVT_BADCOMBO)
+    {
+        GiveItem(client, "weapon_chainsaw", 0, 0);
+        GiveItem(client, "weapon_grenade_launcher", EVENT_BADCOMBO_AMMO, GRENADE_LAUNCHER_OFFSET_IAMMO);
+        return;
+    }
+    
     new String:weaponname[STR_MAX_ITEMGIVEN] = "";
     
     switch (type)
@@ -2020,6 +2234,33 @@ ChangeSurvivorSetup(index, client)
         if (type == _:PCK_NOITEM)
         {
             UpdateAfterGnomeGiven(client);
+        }
+    }
+    
+    // add secondary (if required)
+    type = g_iArStorageSurvSec[index];
+    
+    if (type != _:PCK_NOITEM)
+    {
+        weaponname = "";
+        
+        switch (type)
+        {
+            case PCK_DUALS: {           weaponname = "weapon_pistol"; }
+            case PCK_PISTOL_MAGNUM: {   weaponname = "weapon_pistol_magnum"; }
+            case PCK_MELEE: {
+                // special case
+                PrintDebug("[rand] Handed melee weapon (%s) to %N.", g_sMeleeClass[(g_iArStorageSurvMelee[index])], client);
+                GiveItemMelee(client, g_sMeleeClass[(g_iArStorageSurvMelee[index])]);
+                weaponname = "";
+            }
+        }
+        
+        if (strlen(weaponname))
+        {
+            // debug reporting
+            PrintDebug("[rand] Handed %s to %N.", weaponname, client);
+            GiveItem(client, weaponname, ammo, ammoOffset);
         }
     }
 }
@@ -2204,7 +2445,7 @@ bool: RANDOM_PlayerGiftUse(client)
         else {
             // negative effect
            
-            randomPick = GetRandomInt(0, (g_bInsightInfDone) ? 7 : 8 );
+            randomPick = GetRandomInt(0, (g_bInsightInfDone || g_bCampaignMode) ? 7 : 8 );
             if (randomPick == 0 || randomPick == 2 || randomPick == 4 || randomPick == 6) { randomPick++; } // only insight has lower odds
             
             switch (randomPick) {
@@ -2725,9 +2966,9 @@ LockDoors()
 
 
 
+
 //  Randomization preparation
 //  ------------------------------
-
 
 // preparation of choice-hat (events)
 RANDOM_PrepareChoicesEvents()
@@ -2746,13 +2987,25 @@ RANDOM_PrepareChoicesEvents()
         //      EVT_ADREN: because most finales are campfests, which doesn't rush well
         //      EVT_MINITANKS: because distance works differently
         //      EVT_DOORS: because there are few doors on finales anyway
+        
         if (    L4D_IsMissionFinalMap()
             &&  ( _:g_iSpecialEvent == EVT_ADREN || _:g_iSpecialEvent == EVT_MINITANKS || _:g_iSpecialEvent == EVT_DOORS )
         ) {
             continue;
         }
         
-        
+        // remove some events if we're in campaign mode
+        //      EVT_QUADS: because AI isn't much fun anyway
+        //      EVT_L4D1: because it's not worth making the spawns compatible just for coop
+        //      EVT_FF: because that messes with skill level
+        //      EVT_MINITANKS: because of health values etc
+        //      all scoring events, because no score
+        if (    g_bCampaignMode
+            &&  (   _:g_iSpecialEvent == EVT_QUADS || _:g_iSpecialEvent == EVT_L4D1 || _:g_iSpecialEvent == EVT_FF || _:g_iSpecialEvent == EVT_MINITANKS
+                ||  _:g_iSpecialEvent == EVT_PEN_ITEM || _:g_iSpecialEvent == EVT_PEN_HEALTH || _:g_iSpecialEvent == EVT_PEN_M2 )
+        ) {
+            continue;
+        }
         
         for (new j=0; j < count; j++)
         {
@@ -2789,8 +3042,49 @@ RANDOM_PrepareChoices()
         PrintDebug("[rand] No-Item Variation set to 0 (for abundance).");
     } else {
         if (fNoitemVariance) {
-            fNoitemVariance = 1.0 + GetRandomFloat((-1 * fNoitemVariance), fNoitemVariance);
-            PrintDebug("[rand] No-Item Variation: %.1f.", fNoitemVariance);
+            
+            // let item variance be determined by difficulty setting in campaign mode
+            if (g_bCampaignMode)
+            {
+                new String:tmpStr[16];
+                GetConVarString(FindConVar("z_difficulty"), tmpStr, sizeof(tmpStr));
+                if (StrEqual(tmpStr, "impossible", false)) {
+                    fNoitemVariance = 2.0;
+                } else if (StrEqual(tmpStr, "hard", false)) {
+                    fNoitemVariance = 1.5;
+                } else if (StrEqual(tmpStr, "easy", false)) {
+                    fNoitemVariance = 0.5;
+                } else {
+                    fNoitemVariance = 1.0;
+                }
+            }
+            else
+            {
+                fNoitemVariance = 1.0 + GetRandomFloat((-1 * fNoitemVariance), fNoitemVariance);
+                
+                new Float: fVarianceTmp = 0.0;
+                // adjust for difficulty setting (weighs in 2-to-1)
+                if (g_iDifficultyRating <= DIFF_RATING_NOITEM_DIF_LOW) {
+                    fVarianceTmp = DIFF_RATING_NOITEM_HIGH;
+                } else if (g_iDifficultyRating >= DIFF_RATING_NOITEM_DIF_HIGH) {
+                    fVarianceTmp = DIFF_RATING_NOITEM_LOW;
+                } else {
+                    // scale tmp noitem variance according to difficulty within range (reverse because higher difficulty => lower noitem variance)
+                    fVarianceTmp = DIFF_RATING_NOITEM_LOW + ( (DIFF_RATING_NOITEM_HIGH - DIFF_RATING_NOITEM_LOW) * ( 1.0 - ( (float(g_iDifficultyRating) - DIFF_RATING_NOITEM_DIF_LOW) / DIFF_RATING_NOITEM_DIF_HIGH ) ) );
+                    //PrintDebug("[rand] Var calc: LOW: %.2f - HIGH-LOW: %.2f - scale: %.2f ", DIFF_RATING_NOITEM_LOW, DIFF_RATING_NOITEM_HIGH - DIFF_RATING_NOITEM_LOW, 1.0 - ( (float(g_iDifficultyRating) - DIFF_RATING_NOITEM_DIF_LOW) / DIFF_RATING_NOITEM_DIF_HIGH ));
+                }
+                
+                if (fVarianceTmp != 0.0) {
+                    // take average of 2* difficulty-rating variance + 1* random variance
+                    fNoitemVariance = ( (2.0 * fNoitemVariance) + (3.0 * fVarianceTmp) ) / 5;
+                    
+                    PrintDebug("[rand] No-Item Variation: %.1f (scaled towards: %.1f for difficulty).", fNoitemVariance, fVarianceTmp);
+                } else {
+                    PrintDebug("[rand] No-Item Variation: %.1f (not scaled according to difficulty).", fNoitemVariance);
+                }
+                
+                
+            }
         } else {
             fNoitemVariance = 1.0;
         }
@@ -2886,7 +3180,6 @@ RANDOM_PrepareChoices()
         total_items += iSpecialItemWeight;
     }
     
-    
     // store total items in weight array
     g_iWeightedChoicesTotal = total;
     
@@ -2912,6 +3205,10 @@ RANDOM_PrepareChoices()
             g_iArSurvWeightedChoices[total+j] = i;
         }
         total += count;
+        
+        // set start/end of secondary choices
+        if (i == INDEX_SURV_NOTHING) { g_iSurvWeightedChoicesStartSecondary = total; }
+        else if (i == INDEX_SURV_MAGNUM) { g_iSurvWeightedChoicesEndSecondary = total - count; g_iSurvWeightedChoicesStartPrimary = total; }
         
         //PrintDebug("[rand] choices weighted for: %i = %i", i, count);
     }

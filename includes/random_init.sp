@@ -17,6 +17,7 @@ INIT_DefineCVars()
     //g_hCvarDelay = CreateConVar(                            "rand_delay",                    "2.5",     "How many seconds after round start to wait before randomizing.", FCVAR_PLUGIN, true, 1.0, true, 50.0 );
     g_hCvarDoReport = CreateConVar(                         "rand_report",                   "1",       "Whether to do automatic reports at the start of a round.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
     g_hCvarReportDelay = CreateConVar(                      "rand_report_delay",            "15",       "How many seconds after first survivor joins map to wait before reporting special event.", FCVAR_PLUGIN, true, 1.0, true, 120.0 );
+    g_hCvarReportSackProt = CreateConVar(                   "rand_report_sackprotection",    "1",       "Whether sack-protection measures are reported to the relevant players.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
     g_hCvarRandomSpawns = CreateConVar(                     "rand_random_si",                "1",       "Whether SI spawns are fully random (or Valve-ordered).", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
     g_hCvarSackProtection = CreateConVar(                   "rand_si_sackprotection",        "1",       "Whether SI spawn sacking is punished (keeping a charger hoping to get a multi-charger attack, for instance).", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
     g_hCvarForcePhysics = CreateConVar(                     "rand_force_physics",            "0",       "Force physics enabled on (some) items.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
@@ -32,8 +33,9 @@ INIT_DefineCVars()
     g_hCvarGnomeAllowRandom = CreateConVar(                 "rand_gnome_random",             "0",       "Whether gnomes can drop at random (from gifts, common drops etc)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     
     g_hCvarNoitemVariance = CreateConVar(                   "rand_noitem_variance",          "0.25",    "Variance of weight for 'no item' in item randomizer.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    g_hCvarSpecialEventChance = CreateConVar(               "rand_event_chance",             "0.25",    "Chances of any map going in 'special event' mode.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    g_hCvarPillsChance = CreateConVar(                      "rand_pills_chance",             "0.34",    "Chance that a survivor is given pills at start.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
+    g_hCvarSpecialEventChance = CreateConVar(               "rand_event_chance",             "0.65",    "Chances of any map going in 'special event' mode.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarPillsChance = CreateConVar(                      "rand_pills_chance",             "0.45",    "Chance that a survivor is given pills at start.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
+    g_hCvarExtraSecondaryChance = CreateConVar(             "rand_secondary_chance",         "0.5",     "Chance that a survivor is given a secondary weapon if given a primary at start.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
     g_hCvarHealthChance = CreateConVar(                     "rand_health_chance",            "0.0",     "Chance that a survivor is given different starting health.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarHealthMin = CreateConVar(                        "rand_health_min",              "50",       "Minimum survivor starting health.", FCVAR_PLUGIN, true, 1.0, true, 100.0);
     g_hCvarOutlineChance = CreateConVar(                    "rand_outline_chance",           "0.85",    "Chances of there being survivor outlines this round.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -105,11 +107,11 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_UNCOMMON] = CreateConVar(        "rand_weight_evt_uncommon",      "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_CLOWNS] = CreateConVar(          "rand_weight_evt_circus",        "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_DOORS] = CreateConVar(           "rand_weight_evt_doors",         "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_QUADS] = CreateConVar(           "rand_weight_evt_quads",         "3",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_QUADS] = CreateConVar(           "rand_weight_evt_quads",         "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_WEATHER] = CreateConVar(         "rand_weight_evt_storm",         "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_FOG] = CreateConVar(             "rand_weight_evt_fog",           "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_ABUNDANCE] = CreateConVar(       "rand_weight_evt_abundance",     "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_SNIPER] = CreateConVar(          "rand_weight_evt_sniper",        "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_ABUNDANCE] = CreateConVar(       "rand_weight_evt_abundance",     "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_SNIPER] = CreateConVar(          "rand_weight_evt_sniper",        "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_GIFTS] = CreateConVar(           "rand_weight_evt_gifts",         "3",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_DEFIB] = CreateConVar(           "rand_weight_evt_defib",         "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_ADREN] = CreateConVar(           "rand_weight_evt_adren",         "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -123,6 +125,8 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_GUNSWAP] = CreateConVar(         "rand_weight_evt_gunswap",       "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_MINITANKS] = CreateConVar(       "rand_weight_evt_minitanks",     "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_KEYMASTER] = CreateConVar(       "rand_weight_evt_keymaster",     "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_BADCOMBO] = CreateConVar(        "rand_weight_evt_badcombo",      "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_PROTECT] = CreateConVar(         "rand_weight_evt_protect",       "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     // built in cvars (for tracking)
     g_hCvarReadyUp = FindConVar("l4d_ready_enabled");
@@ -155,7 +159,7 @@ INIT_CVarsGetDefault()
     
     g_iDefTankHealth =          GetConVarInt(FindConVar("z_tank_health"));
     g_iDefTankFrustTime =       GetConVarInt(FindConVar("z_frustration_lifetime"));
-    
+    g_iDefTankDamage =          GetConVarInt(FindConVar("vs_tank_damage"));
 }
 
 INIT_CVarsReset()
@@ -256,11 +260,14 @@ INIT_FillTries()
     SetTrieValue(g_hTrieMaps, "l4d2_stadium1_apartment",        MAPS_INTRO);
     SetTrieValue(g_hTrieMaps, "l4d_ihm01_forest",               MAPS_INTRO);
     SetTrieValue(g_hTrieMaps, "l4d2_diescraper1_apartment_33",  MAPS_INTRO);
-    
     SetTrieValue(g_hTrieMaps, "c1m2_streets",                   MAPS_NOCOLA);
+    SetTrieValue(g_hTrieMaps, "c4m3_sugarmill_b",               MAPS_NOSTORM);
+    SetTrieValue(g_hTrieMaps, "c4m4_milltown_b",                MAPS_NOSTORM);
+    
     
     g_hTrieBlindable = CreateTrie();
     SetTrieValue(g_hTrieBlindable, "predicted_viewmodel",       ENTITY_NOT_BLINDABLE);
+    SetTrieValue(g_hTrieBlindable, "instance_scripted_scene",   ENTITY_NOT_BLINDABLE);
     
     
     g_hTriePenaltyItems = CreateTrie();

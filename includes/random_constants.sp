@@ -95,10 +95,11 @@ const           INDEX_LAST_USEFUL       = 14;
 const           INDEX_SURV_NOTHING      = 0;            // indices for picking random starting setup for survivors
 const           INDEX_SURV_PISTOL       = 1;
 const           INDEX_SURV_DUALS        = 2;
-const           INDEX_SURV_MAGNUM       = 3;
-const           INDEX_SURV_T1SMG        = 4;
-const           INDEX_SURV_T1SHOT       = 5;
-const           INDEX_SURV_MELEE        = 6;
+const           INDEX_SURV_MELEE        = 3;
+const           INDEX_SURV_MAGNUM       = 4;
+const           INDEX_SURV_T1SMG        = 5;
+const           INDEX_SURV_T1SHOT       = 6;
+
 const           INDEX_SURV_TOTAL        = 7;
 
 
@@ -126,10 +127,12 @@ const           EVT_PEN_M2              = 20;
 const           EVT_GUNSWAP             = 21;
 const           EVT_MINITANKS           = 22;
 const           EVT_KEYMASTER           = 23;
+const           EVT_BADCOMBO            = 24;
+const           EVT_PROTECT             = 25;
 //const           EVT_PEN_TIME            = ;
 //const           EVT_WITCHHUNT           = ;
 
-const           EVT_TOTAL               = 24;
+const           EVT_TOTAL               = 26;
     
 const           EQ_ITEMS                = 1;            // flags for rand_equal cvar
 const           EQ_DOORS                = 2;
@@ -167,6 +170,7 @@ const Float:    MINITANKS_FLOW_VAR      = 0.025;        // tiny flow variation, 
 const Float:    MINITANKS_SCALE         = 0.67;         // scale the model by what?
 const Float:    MINITANK_MELEE_DMG      = 200.0;        // damage minitanks take from melee weapons
 const           MINITANK_FRUST_TIME     = 10;           // half normal frustration time
+const           MINITANKS_DAMAGE        = 20;           // minitanks punch does a bit less damage
 
 const Float:    ITEM_FACTOR_2V2         = 0.5;          // how many of the items available in #v# game
 const Float:    ITEM_FACTOR_3V3         = 0.75;
@@ -220,6 +224,9 @@ const           EVENT_PENALTY_M2_SI     = 15;           // EVT_PEN_M2       how 
 const Float:    EVENT_FF_FACTOR         = 0.3;          // EVT_NOHUD        bitmask for what to hide
 const Float:    EVENT_LOCKEDCHANCE      = 0.7;          // EVT_DOORS        most doors closed -- melees will be given on start
 const           EVENT_DOORS_MINMELEE    = 2;            // EVT_DOORS        how many melees at least for locked doors event?
+const           EVENT_BADCOMBO_AMMO     = 25;           // EVT_BADCOMBO     how many grenades ammo?
+const Float:    EVENT_PROTECT_WEAK      = 2.0;          // EVT_PROTECT      factor the damage changes for the weak player
+const Float:    EVENT_PROTECT_STRONG    = 0.75;         // EVT_PROTECT      factor the damage changes for the stronger players
 
 const           EARLY_DOORS_MINMELEE    = 1;            // how many melees at least for early locked doors
 
@@ -235,18 +242,18 @@ const           SILENCED_SURV           = 0;            // silent survivors
 const           SILENCED_SI             = 1;
 const           SILENCED_CI             = 2;            // not sure if I want to use this
 
-new const String: DOOR_SOUND[]              = "doors/latchlocked2.wav";
-new const String: EXPLOSION_SOUND[]         = "ambient/explosions/explode_1.wav";
-new const String: EXPLOSION_SOUND2[]        = "ambient/explosions/explode_2.wav";
-new const String: EXPLOSION_SOUND3[]        = "ambient/explosions/explode_3.wav";
-new const String: EXPLOSION_DEBRIS[]        = "animation/van_inside_debris.wav";
-new const String: BOOMGIFT_SOUND[]          = "player/boomer/voice/vomit/male_boomer_vomit_03.wav";
-new const String: PANICGIFT_SOUND[]         = "ambient/alarms/klaxon1.wav";
+new const String: DOOR_SOUND[]          = "doors/latchlocked2.wav";
+new const String: EXPLOSION_SOUND[]     = "ambient/explosions/explode_1.wav";
+new const String: EXPLOSION_SOUND2[]    = "ambient/explosions/explode_2.wav";
+new const String: EXPLOSION_SOUND3[]    = "ambient/explosions/explode_3.wav";
+new const String: EXPLOSION_DEBRIS[]    = "animation/van_inside_debris.wav";
+new const String: BOOMGIFT_SOUND[]      = "player/boomer/voice/vomit/male_boomer_vomit_03.wav";
+new const String: PANICGIFT_SOUND[]     = "ambient/alarms/klaxon1.wav";
 
-//new const String: MODEL_W_MOLOTOV[]         = "models/w_models/weapons/w_eq_molotov.mdl";
-new const String: MODEL_GASCAN[]            = "models/props_junk/gascan001a.mdl";
-new const String: MODEL_FIREWORKS[]         = "models/props_junk/explosive_box001.mdl";
-new const String: MODEL_L4D1AMMO[]          = "models/props_unique/spawn_apartment/coffeeammo.mdl";
+//new const String: MODEL_W_MOLOTOV[]     = "models/w_models/weapons/w_eq_molotov.mdl";
+new const String: MODEL_GASCAN[]        = "models/props_junk/gascan001a.mdl";
+new const String: MODEL_FIREWORKS[]     = "models/props_junk/explosive_box001.mdl";
+new const String: MODEL_L4D1AMMO[]      = "models/props_unique/spawn_apartment/coffeeammo.mdl";
 
 const           EXPLOSION_RADIUS        = 200;
 const Float:    EXPLOSION_POWER_HIGH    = 50.0;
@@ -277,8 +284,16 @@ const           WITCH_SEQUENCE_SITTING      = 4;
 const           DIFF_RATING_GLOW_THRESH     = 3;        // how high the round difficulty rating must be before we're more likely to keep glows on
 const           DIFF_RATING_INCAP_THRESH    = 4;        // how high before we keep minimum default incaps
 const           DIFF_RATING_PILL_THRESH     = 5;        // how high before we guarantee pills
+const           DIFF_RATING_2PRIM_THRESH    = 0;        // how high before we guarantee 2 primaries
+const           DIFF_RATING_3PRIM_THRESH    = 2;        // how high before we guarantee 3 primaries
+const           DIFF_RATING_4PRIM_THRESH    = 5;        // how high before we guarantee full load-out (primaries + secondaries)
+const Float:    DIFF_RATING_NOITEM_LOW      = 0.5;      // what a low no-item value is (for very difficult rounds)
+const Float:    DIFF_RATING_NOITEM_HIGH     = 1.5;      // what a high no-item value is (for very easy rounds)
+const           DIFF_RATING_NOITEM_DIF_HIGH = 6;        // when to force towards the lowest noitem value
+const           DIFF_RATING_NOITEM_DIF_LOW  = 0;        // when to force towards the highest noitem value
 
 const Float:    SACKPROT_MARGIN         = 0.1;          // seconds margin to remove from spawn timer to check for sack-actions (not really required)
+
 
 // structs, enums
 
@@ -299,7 +314,8 @@ enum mapsType                   // for use with tries to check map type (intro o
     MAPS_NORMAL,
     MAPS_INTRO,
     MAPS_FINALE,
-    MAPS_NOCOLA
+    MAPS_NOCOLA,                // DC2, no cola spawns
+    MAPS_NOSTORM                // HR3/4, no storm events
 }
 
 enum CreatedEntityType          // for use with tries to determine whether to handle onEntityCreated
@@ -441,7 +457,9 @@ new const String: g_csEventText[][] =
     "\x04Shove Penalty\x01 - Using m2 on special infected costs \x0415\x01 points.",
     "\x04Magic Gun Swap\x01",
     "\x04Mini-Tanks\x01 - Many small tanks will spawn.",
-    "\x04Keymaster\x01 - Only one player can use doors."
+    "\x04Keymaster\x01 - Only one player can use doors.",
+    "\x04Bad Combo\x01 - Start with GL and Chainsaw.",
+    "\x04Babysitting\x01 - The baby takes double damage from SI (the others 3/4th)."
 };
 
 new const String: g_csJunkModels[][] =
@@ -524,6 +542,20 @@ new const String: g_csCSSWeapons[][] =
     "weapon_rifle_sg552",
     "weapon_sniper_awp",
     "weapon_sniper_scout"
+};
+
+// friendly names for ZC_<CLASS> values
+new const String: g_csSIClassName[][] =
+{
+    "",
+    "smoker",
+    "boomer",
+    "hunter",
+    "spitter",
+    "jockey",
+    "charger",
+    "witch",
+    "tank"
 };
 
 enum WeaponId

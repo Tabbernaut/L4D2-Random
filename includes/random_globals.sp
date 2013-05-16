@@ -12,6 +12,7 @@ new     Handle:         g_hTriePenaltyItems                                 = IN
 new                     g_iMeleeClassCount                                  = 0;                    // melee weapons available?
 new     String:         g_sMeleeClass           [MELEE_CLASS_COUNT][MELEE_CLASS_LENGTH];            // available melee class-strings
 
+new     bool:           g_bCampaignMode                                     = false;                // are we playing a coop game?
 new                     g_bSecondHalf                                       = false;                // is this the second round-half?
 new     bool:           g_bMapStartDone                                     = false;                // has OnMapStart been executed? (to avoid double roundprep calls)
 new     bool:           g_bInRound                                          = false;                // are we in a live round?
@@ -93,6 +94,9 @@ new                     g_iWeightedChoicesTotal;                                
 new                     g_iWeightedChoicesStartUseful;                                              // where the useful choices start (skipping no-item)
 new                     g_iWeightedChoicesEndUseful;                                                // where the useful choices end (before junk)
 new                     g_iArSurvWeightedChoices[STORED_SURV_MAX_COUNT];                            // all the choices (every category * its weight) for survivor start
+new                     g_iSurvWeightedChoicesStartSecondary;                                       // where the useful secondary choices start
+new                     g_iSurvWeightedChoicesEndSecondary;                                         // where the useful secondary choices end (before magnum)
+new                     g_iSurvWeightedChoicesStartPrimary;                                         // where the useful primary choices start
 new                     g_iSurvWeightedChoicesTotal;                                                // total of WeightedChoices 'hat' filled for survivor start
 new                     g_iArEventWeightedChoices[STORED_MAX_COUNT];                                // all the choices (every category * its weight) for events
 new                     g_iEventWeightedChoicesTotal;                                               // total of WeightedChoices 'hat' filled for events
@@ -102,6 +106,7 @@ new                     g_strArStorage          [ENTITY_COUNT][strEntityData];  
 new                     g_iStoredEntities                                   = 0;                    // size of strStoredEntities
 new     String:         g_sArStorageMelee       [ENTITY_COUNT][MELEE_CLASS_LENGTH];                 // Stored melee-class per entity
 new                     g_iArStorageSurv        [TEAM_SIZE];                                        // survivor starting choice INDEX_START_
+new                     g_iArStorageSurvSec     [TEAM_SIZE];                                        // survivor starting choice INDEX_START_ (secondaries if first choice is a primary)
 new                     g_iArStorageSurvHealth  [TEAM_SIZE];                                        // survivor starting health
 new                     g_iArStorageSurvMelee   [TEAM_SIZE];                                        // survivor starting choice (if melee): melee type
 new                     g_iArStorageSurvPills   [TEAM_SIZE];                                        // survivor starting choice did they get pills?
@@ -126,6 +131,7 @@ new                     g_iSpecialEventExtra                                = PC
 new                     g_iSpecialEventExtraSub                             = 0;                    // extra event-dependent int value
 new     String:         g_sSpecialEventExtra    [MELEE_CLASS_LENGTH]        = "";                   // which melee class is chosen (or other string information)
 new     bool:           g_bEarlyLock                                        = false;                // if a really early door is locked (to help survivors out with starting items)
+new                     g_iSpecialEventRole                                 = 0;                    // for player-selecting special events
 new                     g_iDefaultDistance                                  = 0;                    // how much distance the map is worth normally (at OnMapStart)
 new                     g_iDamageBonus                                      = 0;                    // how much bonus for this round (half) can be got (maximally)
 new     bool:           g_bNoColaItem                                       = false;                // disallow the cola item to spawn (anywhere but in the DeC2 store)
@@ -154,7 +160,7 @@ new                     g_iBonusCount                                       = 0;
 // special event stuff
 new                     g_iArGunAmmoCount       [MAXPLAYERS]                = 0;                    // for gun swap event: how many bullets does the survivor have left?
 new     bool:           g_bNoWeaponsNoAmmo                                  = false;                // whether to allow weapons or ammo to spawn at all
-new                     g_iKeyMaster                                        = 0;                    // which player is currently the key-master
+//new                     g_iKeyMaster                                        = 0;                    // which player is currently the key-master
 
 // ConVars
 new     Handle:         g_hArCvarWeight         [INDEX_TOTAL];                                      // cvar, per randomize-type, that sets an integer weight 
@@ -165,6 +171,7 @@ new     Handle:         g_hCvarEqual                                        = IN
 //new     Handle:         g_hCvarDelay                                        = INVALID_HANDLE;       // cvar by how many seconds to delay the randomization (m_ModelName must be checkable)
 new     Handle:         g_hCvarDoReport                                     = INVALID_HANDLE;       // cvar whether to report anything at all
 new     Handle:         g_hCvarReportDelay                                  = INVALID_HANDLE;       // cvar by how many seconds to delay the report for special events
+new     Handle:         g_hCvarReportSackProt                               = INVALID_HANDLE;       // cvar whether to report sack protection measures
 new     Handle:         g_hCvarForcePhysics                                 = INVALID_HANDLE;       // cvar whether to force enabling physics on (relevant) spawned items
 new     Handle:         g_hCvarM60Ammo                                      = INVALID_HANDLE;       // cvar for setting m60 ammo
 new     Handle:         g_hCvarClipFactorInc                                = INVALID_HANDLE;       // cvar for factor of incendiary ammo clip
@@ -188,6 +195,7 @@ new     Handle:         g_hCvarStartItemGnome                               = IN
 
 new     Handle:         g_hCvarNoitemVariance                               = INVALID_HANDLE;       // cvar the variance of PCK_NOITEM
 new     Handle:         g_hCvarPillsChance                                  = INVALID_HANDLE;       // cvar odds that survivor is given pills/adren at start
+new     Handle:         g_hCvarExtraSecondaryChance                         = INVALID_HANDLE;       // cvar odds that survivor is given a secondary if he's already being given a primary
 new     Handle:         g_hCvarHealthChance                                 = INVALID_HANDLE;       // cvar odds that survivor is given different starting health
 new     Handle:         g_hCvarHealthMin                                    = INVALID_HANDLE;       // cvar minimum amount of health a survivor will have
 new     Handle:         g_hCvarSpecialEventChance                           = INVALID_HANDLE;       // cvar the odds of a special event kicking in for a map
@@ -248,3 +256,4 @@ new     Float:          g_fDefFFFactor                                      = 0.
 
 new                     g_iDefTankHealth                                    = 4000; // 2/3rds of versus value
 new                     g_iDefTankFrustTime                                 = 20;
+new                     g_iDefTankDamage                                    = 24;
