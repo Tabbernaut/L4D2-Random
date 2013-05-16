@@ -269,6 +269,7 @@ INIT_FillTries()
     g_hTrieBlindable = CreateTrie();
     SetTrieValue(g_hTrieBlindable, "predicted_viewmodel",       ENTITY_NOT_BLINDABLE);
     SetTrieValue(g_hTrieBlindable, "instance_scripted_scene",   ENTITY_NOT_BLINDABLE);
+    SetTrieValue(g_hTrieBlindable, "func_occluder",             ENTITY_NOT_BLINDABLE);
     
     
     g_hTriePenaltyItems = CreateTrie();
@@ -286,7 +287,7 @@ INIT_FillTries()
     
     SetTrieValue(g_hTriePenaltyItems, "weapon_melee",               ITEM_PICKUP_PENALTY_MELEE);
     SetTrieValue(g_hTriePenaltyItems, "weapon_pistol",              ITEM_PICKUP_PENALTY_PISTOL);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_pistol_magnum",       ITEM_PICKUP_PENALTY_PISTOL);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_pistol_magnum",       ITEM_PICKUP_PENALTY_MAGNUM);
     SetTrieValue(g_hTriePenaltyItems, "weapon_smg",                 ITEM_PICKUP_PENALTY_PRIMARY_T1);
     SetTrieValue(g_hTriePenaltyItems, "weapon_smg_silenced",        ITEM_PICKUP_PENALTY_PRIMARY_T1);
     SetTrieValue(g_hTriePenaltyItems, "weapon_pumpshotgun",         ITEM_PICKUP_PENALTY_PRIMARY_T1);
@@ -304,14 +305,14 @@ INIT_FillTries()
     SetTrieValue(g_hTriePenaltyItems, "weapon_sniper_scout",        ITEM_PICKUP_PENALTY_PRIMARY_T1);
     SetTrieValue(g_hTriePenaltyItems, "weapon_grenade_launcher",    ITEM_PICKUP_PENALTY_PRIMARY_T3);
     SetTrieValue(g_hTriePenaltyItems, "weapon_rifle_m60",           ITEM_PICKUP_PENALTY_PRIMARY_T3);
-    //SetTrieValue(g_hTriePenaltyItems, "fireworkcrate",          ITEM_PICKUP_CANISTER);
-    //SetTrieValue(g_hTriePenaltyItems, "gascan",                 ITEM_PICKUP_CANISTER);
-    //SetTrieValue(g_hTriePenaltyItems, "propanetank",            ITEM_PICKUP_CANISTER);
-    //SetTrieValue(g_hTriePenaltyItems, "oxygentank",             ITEM_PICKUP_CANISTER);
+    //SetTrieValue(g_hTriePenaltyItems, "fireworkcrate",              ITEM_PICKUP_CANISTER);
+    //SetTrieValue(g_hTriePenaltyItems, "gascan",                     ITEM_PICKUP_CANISTER);
+    //SetTrieValue(g_hTriePenaltyItems, "propanetank",                ITEM_PICKUP_CANISTER);
+    //SetTrieValue(g_hTriePenaltyItems, "oxygentank",                 ITEM_PICKUP_CANISTER);
     
     g_hTriePropItems = CreateTrie();
     SetTrieValue(g_hTriePropItems, "weapon_gnome",                  ITEM_PROP_GNOME);
-    SetTrieValue(g_hTriePropItems, "weapon_colabottles",            ITEM_PROP_COLA);
+    SetTrieValue(g_hTriePropItems, "weapon_cola_bottles",           ITEM_PROP_COLA);
     SetTrieValue(g_hTriePropItems, "weapon_gascan",                 ITEM_PROP_CANISTER);
     SetTrieValue(g_hTriePropItems, "weapon_fireworkcrate",          ITEM_PROP_CANISTER);
     SetTrieValue(g_hTriePropItems, "weapon_propanetank",            ITEM_PROP_CANISTER);
@@ -410,8 +411,7 @@ INIT_GetMeleeClasses()
 }
 
 /*
-    not used?
-
+    // not used?
 INIT_GetScriptName( const String:Class[MELEE_CLASS_LENGTH], String:ScriptName[MELEE_CLASS_LENGTH] )
 {
     for(new i = 0; i < g_iMeleeClassCount; i++) {
@@ -423,7 +423,6 @@ INIT_GetScriptName( const String:Class[MELEE_CLASS_LENGTH], String:ScriptName[ME
     Format(ScriptName, MELEE_CLASS_LENGTH, "%s", g_sMeleeClass[0]);     // waarom dit?
 }
 */
-
 
 // Precaching
 INIT_PrecacheModels(bool: noMapStarted = false)

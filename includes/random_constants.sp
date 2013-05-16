@@ -234,7 +234,7 @@ const Float:    EVENT_PROTECT_WEAK      = 2.0;          // EVT_PROTECT      fact
 const Float:    EVENT_PROTECT_STRONG    = 0.75;         // EVT_PROTECT      factor the damage changes for the stronger players
 
 const Float:    EVENT_ENC_W_T1          = 1.5;          // EVT_ENCUMBERED   for determining total player weight
-const Float:    EVENT_ENC_W_T2          = 2.0;
+const Float:    EVENT_ENC_W_T2          = 2.5;
 const Float:    EVENT_ENC_W_T3          = 3.5;
 const Float:    EVENT_ENC_W_PISTOL      = 0.5;          // magnum weighs 2 pistols
 const Float:    EVENT_ENC_W_MELEE       = 1.5;
@@ -243,7 +243,9 @@ const Float:    EVENT_ENC_W_KIT         = 1.5;
 const Float:    EVENT_ENC_W_PILL        = 0.5;
 const Float:    EVENT_ENC_W_PROP        = 2.5;          // propane tanks, gnome, cola, etc
 const Float:    EVENT_ENC_W_THRESH      = 4.1;          // EVT_ENCUMBERED   weight threshold for slowing down
-const Float:    EVENT_ENC_W_RANGE       = 6.0;          // EVT_ENCUMBERED   range on top of weight threshold (total weight can exceed 10.0)
+const Float:    EVENT_ENC_W_FAST_THRESH = 2.6;          //                  weight threshold for speeding up
+const Float:    EVENT_ENC_W_RANGE       = 6.0;          //                  range on top of weight threshold (total weight can exceed 10.0)
+const Float:    EVENT_ENC_FAST_MAX      = 0.5;          //                  max speed-up (1.0 + this value = speed factor)
 const Float:    EVENT_ENC_SLOW_MAX      = 0.8;          //                  max slowdown (1.0 - this value = speed factor)
 
 const           EARLY_DOORS_MINMELEE    = 1;            // how many melees at least for early locked doors
@@ -326,6 +328,7 @@ enum itemPickupPenalty          // for use with tries to check if an item should
     ITEM_PICKUP_PENALTY,
     ITEM_PICKUP_PENALTY_MELEE,
     ITEM_PICKUP_PENALTY_PISTOL,
+    ITEM_PICKUP_PENALTY_MAGNUM,
     ITEM_PICKUP_PENALTY_PRIMARY_T1,
     ITEM_PICKUP_PENALTY_PRIMARY_T2,
     ITEM_PICKUP_PENALTY_PRIMARY_T3
@@ -489,7 +492,7 @@ new const String: g_csEventText[][] =
     "\x04Keymaster\x01 - Only one player can use doors.",
     "\x04Bad Combo\x01 - Start with GL and Chainsaw.",
     "\x04Babysitting\x01 - The baby takes double damage from SI (the others 3/4th).",
-    "\x04Encumbered\x01 - Carrying more stuff makes you slower."
+    "\x04Encumbered\x01 - Carrying more stuff makes you slower. (try '!drop')"
 };
 
 new const String: g_csJunkModels[][] =

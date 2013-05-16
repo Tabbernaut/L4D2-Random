@@ -80,15 +80,9 @@
             
             
         event ideas:
-
+            
             - skeet shoot: bonus points for (really) skeeting hunters
                 higher chance of SI being hunters, only shotguns available
-            - 'encumbered': carrying more stuff makes you slower. kits, t2s, t3s weigh you down more.
-                    you just need left4downtown
-                    L4D_OnGetCrouchTopSpeed(target, &Float:retVal)
-                    L4D_OnGetRunTopSpeed(target, &Float:retVal)
-                    L4D_OnGetWalkTopSpeed(target, &Float:retVal)
-                    change return value
             
             in consideration over technical matters
             ================
@@ -108,22 +102,11 @@
             - gnome VIP: only one gnome spawns (start saferoom), it must be brought or the end saferoom won't close
                 or: gnome heaven, where the only way to score (many) points is to bring gnomes
                 - for example: given only 1 gnome: distance points are frozen unless gnome is held
-            - "tough start" -- give players 4 gnomes, give infected 2 boomers and 2 spitters until they get weapons
-                    - can't have a tank when this happens, though. may be tough to work out
             - weird SI: random SI abilities (CRox's code) -- just give every SI a random ability...
             - 'pistol round': only pistols (magnums included). No locked doors and easier ci/si. [maybe]
             - telepathic survivors
                 - or: holding gnome = telepathy: see infected outlines
-                    infected netprops:
-                        -Member: m_iGlowType (offset 4) (type integer) (bits 32)
-                        -Member: m_nGlowRange (offset 8) (type integer) (bits 32)
-                        -Member: m_glowColorOverride (offset 12) (type integer) (bits 32)
-                        -Member: m_bFlashing (offset 16) (type integer) (bits 1)
-                        -Member: m_nRenderFX (offset 276) (type integer) (bits 8)
-                        -Member: m_nRenderMode (offset 277) (type integer) (bits 8)
-                        -Member: m_fEffects (offset 204) (type integer) (bits 10)
-                        -Member: m_clrRender (offset 280) (type integer) (bits 32)
-                    may be used to change/force outlines...
+
             - axe effect / rockstar [stab]
                 everyone gets an axe/guitar, all common are female, no tank only spitters and boomettes
             - clockwork: clockwork timed spawns, deaths, rinse repeat (no tank?)
@@ -133,8 +116,6 @@
                     
             
         to-do:
-            - low:      test when SMAC starts whining about speedhacks (how much faster can you be?)
-            
             - low:      consider: make minitanks + hittables less powerful. use hittable control?
             
             - medium:   do a rating change based on the items available in the start saferoom (# primaries,
@@ -161,11 +142,7 @@
             - code:     "The SetEntProp functions have a parameter for the array index, use it instead of doing manually lookups and computing offsets."
             - code:     Clean up the explosion timer/particles code a bit.
             
-            
-        play with this..
-        // experiment - test
-        SetEntityGravity(entity, 400.0);
- */
+*/
  /*
         equal flags:
         ------------
@@ -229,6 +206,21 @@
             -Member: m_isInMissionStartArea (offset 11484) (type integer) (bits 1)
             -Member: m_bInBombZone (offset 10332) (type integer) (bits 1)
             -Member: m_bInBuyZone (offset 10333) (type integer) (bits 1)
+            
+        infected netprops:
+            -Member: m_iGlowType (offset 4) (type integer) (bits 32)
+            -Member: m_nGlowRange (offset 8) (type integer) (bits 32)
+            -Member: m_glowColorOverride (offset 12) (type integer) (bits 32)
+            -Member: m_bFlashing (offset 16) (type integer) (bits 1)
+            -Member: m_nRenderFX (offset 276) (type integer) (bits 8)
+            -Member: m_nRenderMode (offset 277) (type integer) (bits 8)
+            -Member: m_fEffects (offset 204) (type integer) (bits 10)
+            -Member: m_clrRender (offset 280) (type integer) (bits 32)
+        may be used to change/force outlines...
+        
+        play with this..
+            // experiment - test
+            SetEntityGravity(entity, 400.0);
  */
  
  
@@ -238,7 +230,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.11",
+    version = "1.0.12",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -338,7 +330,8 @@ public OnPluginStart()
     RegConsoleCmd("sm_rand", RandomReport_Cmd, "Report what special randomness is currently active.");
     RegConsoleCmd("sm_bonus", RandomBonus_Cmd, "Report the special current round bonus (or penalty).");
     RegConsoleCmd("sm_penalty", RandomBonus_Cmd, "Report the special current round bonus (or penalty).");
-
+    RegConsoleCmd("sm_drop", RandomDrop_Cmd, "Drop your currently selected weapon or item.");
+    
     // Admin and test commands
     RegAdminCmd("testgnomes", TestGnomes_Cmd, ADMFLAG_CHEATS, "...");
     RegAdminCmd("test_swap", TestSwap_Cmd, ADMFLAG_CHEATS, "...");
@@ -506,6 +499,18 @@ public Action: RandomBonus_Cmd(client, args)
     } else {
         PrintToChat(client, "\x01[\x05r\x01] This round has no special bonus or penalty.");
     }
+    return Plugin_Handled;
+}
+
+public Action: RandomDrop_Cmd(client, args)
+{
+    // only allow when able to drop anything
+    if ( !IsSurvivor(client) || !IsPlayerAlive(client) || IsHangingFromLedge(client) || IsIncapacitated(client) ) { return Plugin_Handled; }
+    
+    if ( SUPPORT_DropItem(client, true, 0, true) ) {
+        PrintToChat(client, "\x01[\x05r\x01] Dropped.");
+    }
+    
     return Plugin_Handled;
 }
 
