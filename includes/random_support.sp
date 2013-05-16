@@ -766,6 +766,87 @@ SUPPORT_MultiTankRoundPrep()
 
 // ===========================================================================
 
+// for encumbrance etc, target = client
+Float: SUPPORT_GetSpeedFactor(target)
+{
+    // check player's weight
+    new Float: fWeight = 0.0;
+    new Float: fSpeedFactor = 1.0;
+    new String: classname[64];
+    
+    new slotPrim = GetPlayerWeaponSlot(target, PLAYER_SLOT_PRIMARY);
+    new slotSec = GetPlayerWeaponSlot(target, PLAYER_SLOT_SECONDARY);
+    new slotThr = GetPlayerWeaponSlot(target, PLAYER_SLOT_THROWABLE);
+    new slotKit = GetPlayerWeaponSlot(target, PLAYER_SLOT_KIT);
+    new slotPill = GetPlayerWeaponSlot(target, PLAYER_SLOT_PILL);
+    
+    if (IsValidEntity(slotPrim)) {
+        GetEdictClassname(slotPrim, classname, sizeof(classname));
+        new itemPickupPenalty: itemHasPenalty;
+        if (GetTrieValue(g_hTriePenaltyItems, classname, itemHasPenalty))
+        {
+            if (itemHasPenalty == ITEM_PICKUP_PENALTY_PRIMARY_T3) {
+                fWeight += EVENT_ENC_W_T3;
+            } else if (itemHasPenalty == ITEM_PICKUP_PENALTY_PRIMARY_T2) {
+                fWeight += EVENT_ENC_W_T2;
+            } else if (itemHasPenalty == ITEM_PICKUP_PENALTY_PRIMARY_T1) {
+                fWeight += EVENT_ENC_W_T1;
+            }
+        }
+    }
+    
+    if (IsValidEntity(slotSec)) {
+        GetEdictClassname(slotSec, classname, sizeof(classname));
+        new itemPickupPenalty: itemHasPenalty;
+        if (GetTrieValue(g_hTriePenaltyItems, classname, itemHasPenalty))
+        {
+            if (itemHasPenalty == ITEM_PICKUP_PENALTY_PISTOL) {
+                fWeight += EVENT_ENC_W_PISTOL;
+                // dual wielding?
+                if (GetEntProp(slotSec, Prop_Send, "m_hasDualWeapons")) {
+                    fWeight += EVENT_ENC_W_PISTOL;
+                }
+            }
+            else if (itemHasPenalty == ITEM_PICKUP_PENALTY_MELEE) {
+                fWeight += EVENT_ENC_W_MELEE;
+            }
+        }
+    }
+    
+    if (IsValidEntity(slotThr)) { fWeight += EVENT_ENC_W_THROWABLE; }
+    if (IsValidEntity(slotKit)) { fWeight += EVENT_ENC_W_KIT; }
+    if (IsValidEntity(slotPill)) { fWeight += EVENT_ENC_W_PILL; }
+    
+    // check prop carring
+    new tmpEnt = GetEntPropEnt(target, Prop_Send, "m_hActiveWeapon");
+    if (IsValidEntity(tmpEnt)) {
+        GetEdictClassname(tmpEnt, classname, sizeof(classname));
+        new itemPropType: itemIsProp;
+        if (GetTrieValue(g_hTriePropItems, classname, itemIsProp))
+        {
+            fWeight += EVENT_ENC_W_PROP;
+        }
+        /*
+        else
+        {
+            PrintToChatAll("carrying: %s", classname);
+        }
+        */
+    }
+    
+    //PrintToChatAll("weight: %.2f", fWeight);
+    
+    // if weight is too great, set speed factor
+    if (fWeight > EVENT_ENC_W_THRESH + EVENT_ENC_W_RANGE) {
+        fSpeedFactor *= 1.0 - EVENT_ENC_SLOW_MAX;
+    }
+    else if (fWeight > EVENT_ENC_W_THRESH) {
+        fSpeedFactor *= 1.0 - ((fWeight - EVENT_ENC_W_THRESH) / EVENT_ENC_W_RANGE) * EVENT_ENC_SLOW_MAX;
+    }
+    
+    return fSpeedFactor;
+}
+
 
 /*
     Support functions, general

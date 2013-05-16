@@ -49,6 +49,7 @@
         
         ideas:
             - ?     - gift idea: key reversal effect, briefly. (negative effect)
+            - ?     - gift idea: X second slowdown (like EVT_ENCUMBERED)
             
             - ?     - scale mob size up with > 1 boom (say, 5-10 per extra survivor?)
             - ?     - scale gnome bonus to distance only (and partially) on running finales (entirely on parish, a bit on plantation)
@@ -132,6 +133,8 @@
                     
             
         to-do:
+            - low:      test when SMAC starts whining about speedhacks (how much faster can you be?)
+            
             - low:      consider: make minitanks + hittables less powerful. use hittable control?
             
             - medium:   do a rating change based on the items available in the start saferoom (# primaries,
@@ -608,7 +611,7 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
     ------------- */
 
 // for blind infected
-public Action: OnTransmit(entity, client)
+public Action:OnTransmit(entity, client)
 {
     if (GetClientTeam(client) != TEAM_INFECTED) return Plugin_Continue;
 
@@ -649,6 +652,43 @@ public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
 
     return Plugin_Continue;
 }
+
+// for encumbered mode
+public Action:L4D_OnGetRunTopSpeed(target, &Float:retVal)
+{
+    if (_:g_iSpecialEvent != EVT_ENCUMBERED || !IsClientAndInGame(target) || GetClientTeam(target) != TEAM_SURVIVOR) { return Plugin_Continue; }
+    
+    new Float: fSpeedFactor = SUPPORT_GetSpeedFactor(target);
+    if (fSpeedFactor != 1.0) {
+        retVal = retVal * fSpeedFactor;
+        return Plugin_Handled;
+    }
+    return Plugin_Continue;
+}
+
+public Action: L4D_OnGetWalkTopSpeed(target, &Float:retVal)
+{
+    if (_:g_iSpecialEvent != EVT_ENCUMBERED || !IsClientAndInGame(target) || GetClientTeam(target) != TEAM_SURVIVOR) { return Plugin_Continue; }
+    
+    new Float: fSpeedFactor = SUPPORT_GetSpeedFactor(target);
+    if (fSpeedFactor != 1.0) {
+        retVal = retVal * fSpeedFactor;
+        return Plugin_Handled;
+    }
+    return Plugin_Continue;
+}
+public Action:L4D_OnGetCrouchTopSpeed(target, &Float:retVal)
+{
+    if (_:g_iSpecialEvent != EVT_ENCUMBERED || !IsClientAndInGame(target) || GetClientTeam(target) != TEAM_SURVIVOR) { return Plugin_Continue; }
+    
+    new Float: fSpeedFactor = SUPPORT_GetSpeedFactor(target);
+    if (fSpeedFactor != 1.0) {
+        retVal = retVal * fSpeedFactor;
+        return Plugin_Handled;
+    }
+    return Plugin_Continue;
+}
+
 
 /*  SDK-Hooks
     ------------- */

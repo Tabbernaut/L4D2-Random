@@ -97,8 +97,8 @@ INIT_DefineCVars()
     g_hArCvarSurvWeight[INDEX_SURV_PISTOL] = CreateConVar(  "rand_weight_surv_pistol",      "15",       "Weight for picking survivor starting gear.", FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarSurvWeight[INDEX_SURV_DUALS] = CreateConVar(   "rand_weight_surv_duals",       "20",       "Weight for picking survivor starting gear.", FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarSurvWeight[INDEX_SURV_MAGNUM] = CreateConVar(  "rand_weight_surv_magnum",      "10",       "Weight for picking survivor starting gear.", FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarSurvWeight[INDEX_SURV_T1SMG] = CreateConVar(   "rand_weight_surv_t1smg",       "35",       "Weight for picking survivor starting gear.", FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarSurvWeight[INDEX_SURV_T1SHOT] = CreateConVar(  "rand_weight_surv_t1shotgun",   "35",       "Weight for picking survivor starting gear.", FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarSurvWeight[INDEX_SURV_T1SMG] = CreateConVar(   "rand_weight_surv_t1smg",       "40",       "Weight for picking survivor starting gear.", FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarSurvWeight[INDEX_SURV_T1SHOT] = CreateConVar(  "rand_weight_surv_t1shotgun",   "40",       "Weight for picking survivor starting gear.", FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarSurvWeight[INDEX_SURV_MELEE] = CreateConVar(   "rand_weight_surv_melee",       "10",       "Weight for picking survivor starting gear.", FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     g_hArCvarEvtWeight[EVT_ITEM] = CreateConVar(            "rand_weight_evt_item",          "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -127,6 +127,7 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_KEYMASTER] = CreateConVar(       "rand_weight_evt_keymaster",     "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_BADCOMBO] = CreateConVar(        "rand_weight_evt_badcombo",      "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_PROTECT] = CreateConVar(         "rand_weight_evt_protect",       "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_ENCUMBERED] = CreateConVar(      "rand_weight_evt_encumbered",    "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     // built in cvars (for tracking)
     g_hCvarReadyUp = FindConVar("l4d_ready_enabled");
@@ -271,43 +272,50 @@ INIT_FillTries()
     
     
     g_hTriePenaltyItems = CreateTrie();
-    SetTrieValue(g_hTriePenaltyItems, "melee",                  ITEM_PICKUP_PENALTY);
-    SetTrieValue(g_hTriePenaltyItems, "pain_pills",             ITEM_PICKUP_PENALTY);
-    SetTrieValue(g_hTriePenaltyItems, "adrenaline",             ITEM_PICKUP_PENALTY);
-    SetTrieValue(g_hTriePenaltyItems, "first_aid_kit",          ITEM_PICKUP_PENALTY);
-    SetTrieValue(g_hTriePenaltyItems, "defibrillator",          ITEM_PICKUP_PENALTY);
-    SetTrieValue(g_hTriePenaltyItems, "upgradepack_explosive",  ITEM_PICKUP_PENALTY);
-    SetTrieValue(g_hTriePenaltyItems, "upgradepack_incendiary", ITEM_PICKUP_PENALTY);
-    SetTrieValue(g_hTriePenaltyItems, "pipe_bomb",              ITEM_PICKUP_PENALTY);
-    SetTrieValue(g_hTriePenaltyItems, "molotov",                ITEM_PICKUP_PENALTY);
-    SetTrieValue(g_hTriePenaltyItems, "vomitjar",               ITEM_PICKUP_PENALTY);
-    SetTrieValue(g_hTriePenaltyItems, "chainsaw",               ITEM_PICKUP_PENALTY);
+    SetTrieValue(g_hTriePenaltyItems, "melee",                      ITEM_PICKUP_PENALTY_MELEE);
+    SetTrieValue(g_hTriePenaltyItems, "pain_pills",                 ITEM_PICKUP_PENALTY);
+    SetTrieValue(g_hTriePenaltyItems, "adrenaline",                 ITEM_PICKUP_PENALTY);
+    SetTrieValue(g_hTriePenaltyItems, "first_aid_kit",              ITEM_PICKUP_PENALTY);
+    SetTrieValue(g_hTriePenaltyItems, "defibrillator",              ITEM_PICKUP_PENALTY);
+    SetTrieValue(g_hTriePenaltyItems, "upgradepack_explosive",      ITEM_PICKUP_PENALTY);
+    SetTrieValue(g_hTriePenaltyItems, "upgradepack_incendiary",     ITEM_PICKUP_PENALTY);
+    SetTrieValue(g_hTriePenaltyItems, "pipe_bomb",                  ITEM_PICKUP_PENALTY);
+    SetTrieValue(g_hTriePenaltyItems, "molotov",                    ITEM_PICKUP_PENALTY);
+    SetTrieValue(g_hTriePenaltyItems, "vomitjar",                   ITEM_PICKUP_PENALTY);
+    SetTrieValue(g_hTriePenaltyItems, "chainsaw",                   ITEM_PICKUP_PENALTY);
     
+    SetTrieValue(g_hTriePenaltyItems, "weapon_melee",               ITEM_PICKUP_PENALTY_MELEE);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_pistol",              ITEM_PICKUP_PENALTY_PISTOL);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_pistol_magnum",       ITEM_PICKUP_PENALTY_PISTOL);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_smg",                 ITEM_PICKUP_PENALTY_PRIMARY_T1);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_smg_silenced",        ITEM_PICKUP_PENALTY_PRIMARY_T1);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_pumpshotgun",         ITEM_PICKUP_PENALTY_PRIMARY_T1);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_shotgun_chrome",      ITEM_PICKUP_PENALTY_PRIMARY_T1);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_autoshotgun",         ITEM_PICKUP_PENALTY_PRIMARY_T2);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_shotgun_spas",        ITEM_PICKUP_PENALTY_PRIMARY_T2);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_rifle",               ITEM_PICKUP_PENALTY_PRIMARY_T2);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_rifle_desert",        ITEM_PICKUP_PENALTY_PRIMARY_T2);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_rifle_ak47",          ITEM_PICKUP_PENALTY_PRIMARY_T2);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_hunting_rifle",       ITEM_PICKUP_PENALTY_PRIMARY_T2);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_sniper_military",     ITEM_PICKUP_PENALTY_PRIMARY_T2);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_smg_mp5",             ITEM_PICKUP_PENALTY_PRIMARY_T1);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_rifle_sg552",         ITEM_PICKUP_PENALTY_PRIMARY_T2);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_sniper_awp",          ITEM_PICKUP_PENALTY_PRIMARY_T2);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_sniper_scout",        ITEM_PICKUP_PENALTY_PRIMARY_T1);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_grenade_launcher",    ITEM_PICKUP_PENALTY_PRIMARY_T3);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_rifle_m60",           ITEM_PICKUP_PENALTY_PRIMARY_T3);
     //SetTrieValue(g_hTriePenaltyItems, "fireworkcrate",          ITEM_PICKUP_CANISTER);
     //SetTrieValue(g_hTriePenaltyItems, "gascan",                 ITEM_PICKUP_CANISTER);
     //SetTrieValue(g_hTriePenaltyItems, "propanetank",            ITEM_PICKUP_CANISTER);
     //SetTrieValue(g_hTriePenaltyItems, "oxygentank",             ITEM_PICKUP_CANISTER);
     
-    // weapons
-    SetTrieValue(g_hTriePenaltyItems, "weapon_pistol",              ITEM_PICKUP_PENALTY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_pistol_magnum",       ITEM_PICKUP_PENALTY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_smg",                 ITEM_PICKUP_PENALTY_PRIMARY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_smg_silenced",        ITEM_PICKUP_PENALTY_PRIMARY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_pumpshotgun",         ITEM_PICKUP_PENALTY_PRIMARY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_shotgun_chrome",      ITEM_PICKUP_PENALTY_PRIMARY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_autoshotgun",         ITEM_PICKUP_PENALTY_PRIMARY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_shotgun_spas",        ITEM_PICKUP_PENALTY_PRIMARY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_rifle",               ITEM_PICKUP_PENALTY_PRIMARY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_rifle_desert",        ITEM_PICKUP_PENALTY_PRIMARY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_rifle_ak47",          ITEM_PICKUP_PENALTY_PRIMARY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_hunting_rifle",       ITEM_PICKUP_PENALTY_PRIMARY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_sniper_military",     ITEM_PICKUP_PENALTY_PRIMARY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_smg_mp5",             ITEM_PICKUP_PENALTY_PRIMARY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_rifle_sg552",         ITEM_PICKUP_PENALTY_PRIMARY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_sniper_awp",          ITEM_PICKUP_PENALTY_PRIMARY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_sniper_scout",        ITEM_PICKUP_PENALTY_PRIMARY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_grenade_launcher",    ITEM_PICKUP_PENALTY_PRIMARY);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_rifle_m60",           ITEM_PICKUP_PENALTY_PRIMARY);
+    g_hTriePropItems = CreateTrie();
+    SetTrieValue(g_hTriePropItems, "weapon_gnome",                  ITEM_PROP_GNOME);
+    SetTrieValue(g_hTriePropItems, "weapon_colabottles",            ITEM_PROP_COLA);
+    SetTrieValue(g_hTriePropItems, "weapon_gascan",                 ITEM_PROP_CANISTER);
+    SetTrieValue(g_hTriePropItems, "weapon_fireworkcrate",          ITEM_PROP_CANISTER);
+    SetTrieValue(g_hTriePropItems, "weapon_propanetank",            ITEM_PROP_CANISTER);
+    SetTrieValue(g_hTriePropItems, "weapon_oxygentank",             ITEM_PROP_CANISTER);
 }
 
 // SDK Calls

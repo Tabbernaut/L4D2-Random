@@ -469,6 +469,9 @@ RANDOM_DetermineRandomStuff()
                 case EVT_PROTECT: {
                     g_iDifficultyRating++;
                 }
+                case EVT_ENCUMBERED: {
+                    g_iDifficultyRating++;
+                }
             }
             PrintDebug("[rand] Picked Special Event: %i (%s) [extra, %i, sub: %i, str: %s]", g_iSpecialEvent, g_csEventText[g_iSpecialEvent], g_iSpecialEventExtra, g_iSpecialEventExtraSub, g_sSpecialEventExtra);
         }

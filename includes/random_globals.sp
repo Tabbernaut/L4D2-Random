@@ -9,6 +9,7 @@ new     Handle:         g_hTrieMeleeType                                    = IN
 new     Handle:         g_hTrieMaps                                         = INVALID_HANDLE;       // trie for recognizing intro maps
 new     Handle:         g_hTrieBlindable                                    = INVALID_HANDLE;       // trie for recognizing some problematic entities
 new     Handle:         g_hTriePenaltyItems                                 = INVALID_HANDLE;       // trie for recognizing items that carry a penalty on EVT_PEN_ITME
+new     Handle:         g_hTriePropItems                                    = INVALID_HANDLE;       // trie for recognizing prop items that can be carried (for EVT_ENCUMBERED)
 new                     g_iMeleeClassCount                                  = 0;                    // melee weapons available?
 new     String:         g_sMeleeClass           [MELEE_CLASS_COUNT][MELEE_CLASS_LENGTH];            // available melee class-strings
 

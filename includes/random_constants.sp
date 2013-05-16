@@ -6,8 +6,12 @@ const           DEBUG_MODE              = 1;
 const           TEAM_SPECTATOR          = 1;
 const           TEAM_SURVIVOR           = 2;
 const           TEAM_INFECTED           = 3;
+
+const           PLAYER_SLOT_PRIMARY     = 0;
 const           PLAYER_SLOT_SECONDARY   = 1;
-const           PLAYER_SLOT_PRIMARY     = 0;    // 2?
+const           PLAYER_SLOT_THROWABLE   = 2;
+const           PLAYER_SLOT_KIT         = 3;
+const           PLAYER_SLOT_PILL         = 3;
 
 const           ASSAULT_RIFLE_OFFSET_IAMMO      = 12;
 const           SMG_OFFSET_IAMMO                = 20;
@@ -129,10 +133,11 @@ const           EVT_MINITANKS           = 22;
 const           EVT_KEYMASTER           = 23;
 const           EVT_BADCOMBO            = 24;
 const           EVT_PROTECT             = 25;
+const           EVT_ENCUMBERED          = 26;
 //const           EVT_PEN_TIME            = ;
 //const           EVT_WITCHHUNT           = ;
 
-const           EVT_TOTAL               = 26;
+const           EVT_TOTAL               = 27;
     
 const           EQ_ITEMS                = 1;            // flags for rand_equal cvar
 const           EQ_DOORS                = 2;
@@ -228,6 +233,19 @@ const           EVENT_BADCOMBO_AMMO     = 25;           // EVT_BADCOMBO     how 
 const Float:    EVENT_PROTECT_WEAK      = 2.0;          // EVT_PROTECT      factor the damage changes for the weak player
 const Float:    EVENT_PROTECT_STRONG    = 0.75;         // EVT_PROTECT      factor the damage changes for the stronger players
 
+const Float:    EVENT_ENC_W_T1          = 1.5;          // EVT_ENCUMBERED   for determining total player weight
+const Float:    EVENT_ENC_W_T2          = 2.0;
+const Float:    EVENT_ENC_W_T3          = 3.5;
+const Float:    EVENT_ENC_W_PISTOL      = 0.5;          // magnum weighs 2 pistols
+const Float:    EVENT_ENC_W_MELEE       = 1.5;
+const Float:    EVENT_ENC_W_THROWABLE   = 1.0;
+const Float:    EVENT_ENC_W_KIT         = 1.5;
+const Float:    EVENT_ENC_W_PILL        = 0.5;
+const Float:    EVENT_ENC_W_PROP        = 2.5;          // propane tanks, gnome, cola, etc
+const Float:    EVENT_ENC_W_THRESH      = 4.1;          // EVT_ENCUMBERED   weight threshold for slowing down
+const Float:    EVENT_ENC_W_RANGE       = 6.0;          // EVT_ENCUMBERED   range on top of weight threshold (total weight can exceed 10.0)
+const Float:    EVENT_ENC_SLOW_MAX      = 0.8;          //                  max slowdown (1.0 - this value = speed factor)
+
 const           EARLY_DOORS_MINMELEE    = 1;            // how many melees at least for early locked doors
 
 const           TANK_DROP_ITEMS_MIN     = 2;            // how many items a tank can drop minimally
@@ -303,10 +321,21 @@ enum entityBlindable            // for use with tries to check if an entity caus
     ENTITY_NOT_BLINDABLE
 }
 
-enum itemPickupPenalty          // for use with tries to check if an item should carry a penalty
+enum itemPickupPenalty          // for use with tries to check if an item should carry a penalty (also other detection comparison for events)
 {
     ITEM_PICKUP_PENALTY,
-    ITEM_PICKUP_PENALTY_PRIMARY
+    ITEM_PICKUP_PENALTY_MELEE,
+    ITEM_PICKUP_PENALTY_PISTOL,
+    ITEM_PICKUP_PENALTY_PRIMARY_T1,
+    ITEM_PICKUP_PENALTY_PRIMARY_T2,
+    ITEM_PICKUP_PENALTY_PRIMARY_T3
+}
+
+enum itemPropType               // for use with tries to check if an item is a carryable prop
+{
+    ITEM_PROP_GNOME,
+    ITEM_PROP_COLA,
+    ITEM_PROP_CANISTER
 }
 
 enum mapsType                   // for use with tries to check map type (intro or not)
@@ -459,7 +488,8 @@ new const String: g_csEventText[][] =
     "\x04Mini-Tanks\x01 - Many small tanks will spawn.",
     "\x04Keymaster\x01 - Only one player can use doors.",
     "\x04Bad Combo\x01 - Start with GL and Chainsaw.",
-    "\x04Babysitting\x01 - The baby takes double damage from SI (the others 3/4th)."
+    "\x04Babysitting\x01 - The baby takes double damage from SI (the others 3/4th).",
+    "\x04Encumbered\x01 - Carrying more stuff makes you slower."
 };
 
 new const String: g_csJunkModels[][] =
