@@ -1283,6 +1283,9 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false)
     if (_:g_iSpecialEvent == EVT_L4D1) {
         if (randomIndex == INDEX_MELEE || randomIndex == INDEX_T3) { randomIndex = INDEX_PISTOL; }
     }
+    else if (_:g_iSpecialEvent == EVT_GUNSWAP) {
+        if (randomIndex == INDEX_AMMO || randomIndex == INDEX_UPGRADE) { randomIndex = (GetRandomInt(0,1)) ? INDEX_THROWABLE : INDEX_PILL; }
+    }
     
     switch (randomIndex)
     {
@@ -1440,17 +1443,22 @@ RandomizeSurvivorItems()
 
 
     // minimum supplies for higher difficulty rounds
-    if (g_iDifficultyRating >= DIFF_RATING_4PRIM_THRESH) {
-        iMinPrimary = 4;
-        iMinSecondary = 4;
-    } else if (g_iDifficultyRating >= DIFF_RATING_3PRIM_THRESH)  {
-        iMinPrimary = 3;
-        iMinSecondary = 2;
-    } else if (g_iDifficultyRating >= DIFF_RATING_2PRIM_THRESH)  {
-        iMinPrimary = 2;
-        iMinSecondary = 1;
+    if (GetConVarBool(g_hCvarStartBalanceSurv))
+    {
+        if (g_iDifficultyRating >= DIFF_RATING_4PRIM_THRESH) {
+            iMinPrimary = 4;
+            iMinSecondary = 4;
+        } else if (g_iDifficultyRating >= DIFF_RATING_3PRIM_THRESH)  {
+            iMinPrimary = 3;
+            iMinSecondary = 2;
+        } else if (g_iDifficultyRating >= DIFF_RATING_2PRIM_THRESH)  {
+            iMinPrimary = 2;
+            iMinSecondary = 1;
+        }
+    } else {
+        iMinPrimary = 0;
+        iMinSecondary = 0;
     }
-    
     
     for (new i=0; i < TEAM_SIZE; i++)
     {
@@ -1573,7 +1581,7 @@ RandomizeSurvivorItems()
             g_iArStorageSurvPills[i] = PCK_PAIN_PILLS;
             iCountPills++;
         }
-        else if (GetRandomFloat(0.001, 1.0) <= fPillsChance || g_iDifficultyRating > DIFF_RATING_PILL_THRESH) {
+        else if ( GetRandomFloat(0.001, 1.0) <= fPillsChance || (GetConVarBool(g_hCvarStartBalanceSurv) && g_iDifficultyRating > DIFF_RATING_PILL_THRESH) ) {
             // randomly picked.. or difficulty forced
             randomPick = GetRandomInt(0, RATE_ADREN);
             
@@ -2325,8 +2333,10 @@ bool: RANDOM_PlayerGiftUse(client)
         
         // take random action (use targetpos location)
         new randomPick = 0;
+        new bool: inSaferoom = IsEntityInSaferoom(client, true);
         
-        if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarGiftPositiveChance)) {
+        if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarGiftPositiveChance))
+        {
             // positive effect
             
             randomPick = GetRandomInt(0, (g_bInsightSurvDone) ? 8 : 9 );
@@ -2341,6 +2351,12 @@ bool: RANDOM_PlayerGiftUse(client)
             
             // don't give solid health when in adren mode:
             if (_:g_iSpecialEvent == EVT_ADREN && randomPick == 0) { randomPick = 1; }
+            // don't give ammo during gunswap event
+            else if (_:g_iSpecialEvent == EVT_GUNSWAP && randomPick == 8) { randomPick = (GetRandomInt(0,1)) ? 2 : 6; }
+            
+            
+            // don't give positive effects that are useless in (closed) saferoom
+            if (inSaferoom && randomPick == 8) { randomPick == (GetRandomInt(0,1)) ? 6 : 9; }
             
             switch (randomPick)
             {
@@ -2445,11 +2461,15 @@ bool: RANDOM_PlayerGiftUse(client)
                 }
             }
         }
-        else {
+        else
+        {
             // negative effect
            
             randomPick = GetRandomInt(0, (g_bInsightInfDone || g_bCampaignMode) ? 7 : 8 );
             if (randomPick == 0 || randomPick == 2 || randomPick == 4 || randomPick == 6) { randomPick++; } // only insight has lower odds
+            
+            // don't give negative effects that are harmless in (closed) saferoom
+            if (inSaferoom && (randomPick == 3 || randomPick == 5) ) { randomPick == (GetRandomInt(0,1)) ? 7 : 8; }
             
             switch (randomPick) {
                 case 1: {   // explosion (small and big)

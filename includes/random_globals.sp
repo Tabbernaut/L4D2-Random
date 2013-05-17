@@ -75,6 +75,7 @@ new                     g_iSpectateGhostCount                               = 0;
 
 // Sack-exploitation checks
 new     Float:          g_fGotGhost             [MAXPLAYERS+1]              = {0.0,...};            // when player got their SI ghost most recently
+new     Float:          g_fDeathAfterGhost      [MAXPLAYERS+1]              = {0.0,...};            // the first SI death of another teammember after player got their ghost
 
 // Boomer tracking
 new                     g_iCommonBoomQueue                                  = 0;                    // how many common infected that will spawn are boomer(effect) created
@@ -192,7 +193,7 @@ new     Handle:         g_hCvarFinaleItemUseful                             = IN
 new     Handle:         g_hCvarStartItemNoJunk                              = INVALID_HANDLE;       // cvar the odds that junk gets changed to something useful in start saferoom
 new     Handle:         g_hCvarStartItemAmmo                                = INVALID_HANDLE;       // cvar the odds that there will be at least one ammo pile in start saferoom
 new     Handle:         g_hCvarStartItemGnome                               = INVALID_HANDLE;       // cvar the odds that there will be at least one gnome in the start saferoom (including handouts)
-
+new     Handle:         g_hCvarStartBalanceSurv                             = INVALID_HANDLE;       // cvar whether we'll adjust survivor handouts based on difficulty
 
 new     Handle:         g_hCvarNoitemVariance                               = INVALID_HANDLE;       // cvar the variance of PCK_NOITEM
 new     Handle:         g_hCvarPillsChance                                  = INVALID_HANDLE;       // cvar odds that survivor is given pills/adren at start

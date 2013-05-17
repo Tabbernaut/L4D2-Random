@@ -312,7 +312,7 @@ const Float:    DIFF_RATING_NOITEM_HIGH     = 1.5;      // what a high no-item v
 const           DIFF_RATING_NOITEM_DIF_HIGH = 6;        // when to force towards the lowest noitem value
 const           DIFF_RATING_NOITEM_DIF_LOW  = 0;        // when to force towards the highest noitem value
 
-const Float:    SACKPROT_MARGIN         = 0.1;          // seconds margin to remove from spawn timer to check for sack-actions (not really required)
+const Float:    SACKPROT_MARGIN         = 3.0;          // seconds margin: after this time, someone dying counts as the attack someone should join in to not be saving
 
 
 // structs, enums

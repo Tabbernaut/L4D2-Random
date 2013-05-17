@@ -41,7 +41,10 @@ SUPPORT_RoundPreparation()
     g_bNoWeaponsNoAmmo = false;
     
     // basic cleanup
-    SUPPORT_CleanArrays();
+    SUPPORT_CleanArrays();              // clear general arrays
+    ClearArray(g_hBlockedEntities);     // clear blind infected entities
+    ClearBoomerTracking();              // clear arrays for tracking boomer combo's
+    ResetGnomes();                      // clear gnome tracking array for bonus scoring
     
     // handle the randomization 
     RANDOM_DetermineRandomStuff();
@@ -71,9 +74,6 @@ SUPPORT_RoundPreparation()
         SetConVarInt(FindConVar("sm_pbonus_enable"), 0);
     }
     
-    ClearArray(g_hBlockedEntities);     // clear blind infected entities
-    ClearBoomerTracking();              // clear arrays for tracking boomer combo's
-    ResetGnomes();                      // clear gnome tracking array for bonus scoring
     EVENT_RoundStartPreparation();      // prepare survivors for special event
     
     SUPPORT_MultiWitchRoundPrep();      // prepare multi-witch for round, if any
@@ -126,6 +126,9 @@ SUPPORT_CleanArrays()
     {
         g_bArJustBeenGiven[i] = false;
         g_bArBlockPickupCall[i] = false;
+        
+        g_fGotGhost[i] = 0.0;
+        g_fDeathAfterGhost[i] = 0.0;
     }
     
     // arrays for ZC / class changing code
@@ -907,8 +910,11 @@ bool: SUPPORT_DropItem(client, bool:dropCurrent, count, bool:throwItem)
     if (dropCurrent)
     {
         new slot = SUPPORT_GetCurrentWeaponSlot(client);
-        if (slot >= 0) {
-            return SUPPORT_DropItemSlot(client, slot, throwItem); 
+        if (slot >= 0)
+        {
+            if (_:g_iSpecialEvent == EVT_GUNSWAP && slot == 0) {
+                return SUPPORT_DropItemSlot(client, slot, throwItem); 
+            }
         }
     }
     
@@ -931,7 +937,10 @@ bool: SUPPORT_DropItem(client, bool:dropCurrent, count, bool:throwItem)
         for (new i=0; i < count && m > 0; i++)
         {
             new r = GetRandomInt(0, m-1);
-            SUPPORT_DropItemSlot(client, slot[r], throwItem);
+            if (_:g_iSpecialEvent == EVT_GUNSWAP && slot[r] == 0)
+            {
+                SUPPORT_DropItemSlot(client, slot[r], throwItem);
+            }
             slot[r] = slot[m-1];
             m--;
         }

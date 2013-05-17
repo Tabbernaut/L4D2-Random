@@ -62,6 +62,7 @@ INIT_DefineCVars()
     g_hCvarStartItemNoJunk =  CreateConVar(                 "rand_item_start_nojunk",        "0.25",    "Chances items in start saferoom will be converted to something useful.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarStartItemAmmo =  CreateConVar(                   "rand_item_start_ammo",          "0.5",     "Chances that there will be at least one ammo pile in the start saferoom (if non are generated there).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarStartItemGnome =  CreateConVar(                  "rand_item_start_gnome",         "0.25",    "Chances that there will be at least one gnome in the start saferoom (if non are generated there).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarStartBalanceSurv = CreateConVar(                 "rand_item_start_balance_surv",  "1",       "If enabled, survivor handouts are adjusted based on the round's difficulty rating.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     
     g_hCvarRandDistance = CreateConVar(                     "rand_distance",                 "1",       "Distance mode: 0 = normal; 1 = variance from normal; 2 = full random.", FCVAR_PLUGIN, true, 0.0, true, 2.0);
     g_hCvarRandDistVar = CreateConVar(                      "rand_dist_var",                 "0.2",     "For distance variance: how much it can deviate from normal value.", FCVAR_PLUGIN, true, 0.1, true, 0.9);

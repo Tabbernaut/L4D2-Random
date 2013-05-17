@@ -50,16 +50,9 @@
         ideas:
             - ?     - gift idea: key reversal effect, briefly. (negative effect)
             - ?     - gift idea: X second slowdown (like EVT_ENCUMBERED)
+            - ?     - gift idea: ghost-effect for survivors for X seconds (no outlines for SI) (even if running)
             
             - ?     - scale mob size up with > 1 boom (say, 5-10 per extra survivor?)
-            - ?     - scale gnome bonus to distance only (and partially) on running finales (entirely on parish, a bit on plantation)
-            
-            - MAYBE - luck-tracker (per team probably best)
-                        some form of tracking per team or player, either just for the game or on a broader scope,
-                        how many times the player/team got lucky with randomness
-                        - gift effects
-                        - useless SI setups vs. many chargers in a row
-                        - pipe duds
             
             - MAYBE - mini-scavenge for specific rounds (decide per map)
                         do the research (how well possible? how much work? has anyone done it already?)
@@ -116,6 +109,11 @@
                     
             
         to-do:
+            - medium:   test sack detection.. probably best in game
+                        it seems like it misses detections now.. maybe because the check time is too long?
+            
+            - medium:   remove chat spam for commands (hide if !<command>)
+            
             - low:      consider: make minitanks + hittables less powerful. use hittable control?
             
             - medium:   do a rating change based on the items available in the start saferoom (# primaries,
@@ -123,8 +121,7 @@
                             This is possible, because the items are randomized AFTER the difficulty
                                 rating is determined.
             
-            - medium:   fix gnomes sometimes not being worth points (second roundhalf)
-                        [ does it still happen? test. ]
+            
             
             - medium:   minitank model scale. fixed?
                         [ see: http://code.google.com/p/my-left4dead-plugin/source/browse/branches/l4d_scale.sp ]
@@ -327,15 +324,15 @@ public OnPluginStart()
 
 
     // Commands
-    RegConsoleCmd("sm_rand", RandomReport_Cmd, "Report what special randomness is currently active.");
-    RegConsoleCmd("sm_bonus", RandomBonus_Cmd, "Report the special current round bonus (or penalty).");
-    RegConsoleCmd("sm_penalty", RandomBonus_Cmd, "Report the special current round bonus (or penalty).");
-    RegConsoleCmd("sm_drop", RandomDrop_Cmd, "Drop your currently selected weapon or item.");
+    RegConsoleCmd("sm_rand",    RandomReport_Cmd,   "Report what special randomness is currently active.");
+    RegConsoleCmd("sm_bonus",   RandomBonus_Cmd,    "Report the special current round bonus (or penalty).");
+    RegConsoleCmd("sm_penalty", RandomBonus_Cmd,    "Report the special current round bonus (or penalty).");
+    RegConsoleCmd("sm_drop",    RandomDrop_Cmd,     "Drop your currently selected weapon or item.");
     
     // Admin and test commands
-    RegAdminCmd("testgnomes", TestGnomes_Cmd, ADMFLAG_CHEATS, "...");
-    RegAdminCmd("test_swap", TestSwap_Cmd, ADMFLAG_CHEATS, "...");
-    RegAdminCmd("test_ents", TestEnts_Cmd, ADMFLAG_CHEATS, "...");
+    RegAdminCmd("rand_test_gnomes", TestGnomes_Cmd, ADMFLAG_CHEATS, "...");
+    RegAdminCmd("rand_test_swap",   TestSwap_Cmd,   ADMFLAG_CHEATS, "...");
+    RegAdminCmd("rand_test_ents",   TestEnts_Cmd,   ADMFLAG_CHEATS, "...");
         
     /*
         Listen for ghost-exploit check
@@ -345,9 +342,10 @@ public OnPluginStart()
         but no clue whether players were ghosts before then...
         [test if this works on server with config_plugins.cfg order ...]
     */
-    RegConsoleCmd("sm_spectate", ListenForSpectate_Cmd, "...");
-    RegConsoleCmd("say", ListenForSpectate_Say_Cmd, "...");
-    RegConsoleCmd("say_team", ListenForSpectate_Say_Cmd, "...");
+    RegConsoleCmd("sm_spectate",Spectate_Cmd,   "...");
+    RegConsoleCmd("say",        Say_Cmd,        "...");
+    RegConsoleCmd("say_team",   Say_Cmd,        "...");
+    
     
     // Blind infected
     g_hBlockedEntities = CreateArray(_:EntInfo);
@@ -514,13 +512,13 @@ public Action: RandomDrop_Cmd(client, args)
     return Plugin_Handled;
 }
 
-public Action: ListenForSpectate_Cmd(client, args)
+public Action: Spectate_Cmd(client, args)
 {
     if (g_bHasGhost[client]) { g_bSpectateDeath[client] = true; }
     
     return Plugin_Continue;
 }
-public Action: ListenForSpectate_Say_Cmd(client, args)
+public Action: Say_Cmd(client, args)
 {
     // get the string, determine whether it's a legit !spectate command
     new String: full[11];
@@ -531,6 +529,17 @@ public Action: ListenForSpectate_Say_Cmd(client, args)
     if (StrEqual(full, "!spectate")) {
         if (g_bHasGhost[client]) { g_bSpectateDeath[client] = true; }
     }
+    
+	if (IsChatTrigger())
+	{
+		decl String:sMessage[MAX_NAME_LENGTH];
+		GetCmdArg(1, sMessage, sizeof(sMessage));
+
+		if (StrEqual(sMessage, "!rand")) return Plugin_Handled;
+		else if (StrEqual (sMessage, "!drop")) return Plugin_Handled;
+		else if (StrEqual (sMessage, "!bonus")) return Plugin_Handled;
+		else if (StrEqual (sMessage, "!penalty")) return Plugin_Handled;
+	}
     
     return Plugin_Continue;
 }
@@ -1552,6 +1561,23 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
     
     if (!IsFakeClient(client))
     {
+        // sack protection, check if someone got a ghost and doesn't have a first death set yet
+        g_fGotGhost[client] = 0.0;
+        g_fDeathAfterGhost[client] = 0.0;
+        
+        if (!g_bIsFirstAttack)        // just a safeguard against false detections
+        {
+            for (new i=0; i <= MaxClients; i++) {
+                if (i == client) { continue; }
+                
+                if (g_fGotGhost[i] != 0.0 && g_fDeathAfterGhost[i] == 0.0 && GetGameTime() - g_fGotGhost[i] > SACKPROT_MARGIN)
+                {
+                    g_fDeathAfterGhost[i] = GetGameTime();
+                }
+            }
+        }
+        
+        
         g_bHasMaterialised[client] = false;
         g_bHasSpawned[client] = false;
         
@@ -1885,6 +1911,7 @@ public DetermineSpawnClass(any:client, any:iClass)
     if (!IsFakeClient(client))
     {
         g_fGotGhost[client] = GetGameTime();
+        g_fDeathAfterGhost[client] = 0.0;
     }
     
     new bool: checkSacking = false;
@@ -1932,7 +1959,7 @@ public DetermineSpawnClass(any:client, any:iClass)
     if (checkSacking && GetConVarBool(g_hCvarSackProtection))
     {
         // check if anyone is keeping a spawn
-        new Float: fSackTime = SACKPROT_MARGIN + GetConVarFloat(FindConVar("z_ghost_delay_min"));
+        new Float: fSackTime = GetConVarFloat(FindConVar("z_ghost_delay_min")) - 0.1;
         new classType = -1;
         new bestSaved = -1;
         new offendingClient = -1;
@@ -1940,7 +1967,7 @@ public DetermineSpawnClass(any:client, any:iClass)
         for (new i=1; i <= MaxClients; i++) {
             if (i == client || !IsClientInGame(i) ) { continue; }
             
-            if (IsInfected(i) && GetGameTime() - g_fGotGhost[i] > fSackTime && IsPlayerAlive(i) && IsPlayerGhost(i) && !IsTank(i))
+            if (IsInfected(i) && g_fDeathAfterGhost[i] != 0.0 && GetGameTime() - g_fDeathAfterGhost[i] > fSackTime && IsPlayerAlive(i) && IsPlayerGhost(i) && !IsTank(i))
             {
                 classType = GetEntProp(i, Prop_Send, "m_zombieClass");
                 
@@ -1977,7 +2004,7 @@ public DetermineSpawnClass(any:client, any:iClass)
                 PrintToChat(client, "\x01[\x05r\x01] sack block: weaker spawn given because %N kept their %s!", offendingClient, g_csSIClassName[bestSaved]);
                 PrintToChat(offendingClient, "\x01[\x05r\x01] %N got a weaker spawn because you didn't attack. (spawn and die together!)", client);
             }
-            PrintDebug("[rand si] sack protection: %N given class %i (as punishment for someone keeping class %i).", client, iClass, bestSaved);
+            PrintDebug("[rand si] sack protection: %N given class %i (punishment for %N keeping class %s).", client, iClass, offendingClient, g_csSIClassName[bestSaved]);
         }
     }
     
