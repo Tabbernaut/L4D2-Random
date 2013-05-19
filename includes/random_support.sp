@@ -20,8 +20,8 @@
 #define MODEL_V_KNIFE "models/v_models/v_knife_t.mdl"
 
 
-
-SUPPORT_RoundPreparation()
+// called as timer (to avoid some problems)
+public Action: SUPPORT_RoundPreparation(Handle:timer)
 {
     // called before randomization
     g_bIsFirstAttack = true;
@@ -104,6 +104,7 @@ SUPPORT_RoundPreparation()
     
 }
 
+// delayed call for every round start
 public Action: Timer_DelayedRoundPrep(Handle:timer)
 {
     // item replacement and blinding
@@ -113,6 +114,12 @@ public Action: Timer_DelayedRoundPrep(Handle:timer)
         RandomizeItems();
     } else {
         RestoreItems();
+    }
+    
+    // some special event stuff that can't be done earlier
+    if (_:g_iSpecialEvent == EVT_BOOBYTRAP)
+    {
+        EVENT_PickBoobyTraps();
     }
     
     // blind infected to items generated
@@ -129,6 +136,9 @@ SUPPORT_CleanArrays()
         
         g_fGotGhost[i] = 0.0;
         g_fDeathAfterGhost[i] = 0.0;
+        
+        // skeet tracking
+        ResetHunter(i);
     }
     
     // arrays for ZC / class changing code
@@ -143,17 +153,39 @@ EVENT_ResetOtherCvars()
 {
     // for defib event
     SetConVarInt(FindConVar("vs_defib_penalty"), g_iDefDefibPenalty);
+    PBONUS_SetDefibPenalty(g_iDefDefibPenalty);
+    
     SetConVarInt(FindConVar("defibrillator_use_duration"), g_iDefDefibDuration);
     SetConVarFloat(FindConVar("pain_pills_decay_rate"), g_fDefPillDecayRate);
     
+    SetConVarInt(FindConVar("z_smoker_limit"), g_iDefSmokerLimit);
+    SetConVarInt(FindConVar("z_boomer_limit"), g_iDefBoomerLimit);
+    SetConVarInt(FindConVar("z_hunter_limit"), g_iDefHunterLimit);
     SetConVarInt(FindConVar("z_spitter_limit"), g_iDefSpitterLimit);
     SetConVarInt(FindConVar("z_jockey_limit"), g_iDefJockeyLimit);
     SetConVarInt(FindConVar("z_charger_limit"), g_iDefChargerLimit);
+    
+    SetConVarInt(FindConVar("ammo_assaultrifle_max"), g_iDefAmmoRifle);
+    SetConVarInt(FindConVar("ammo_autoshotgun_max"), g_iDefAmmoAutoShotgun);
     
     SetConVarFloat(FindConVar("survivor_friendly_fire_factor_normal"), g_fDefFFFactor);
     SetConVarInt(FindConVar("z_tank_health"), g_iDefTankHealth);
     SetConVarInt(FindConVar("z_frustration_lifetime"), g_iDefTankFrustTime);
     SetConVarInt(FindConVar("vs_tank_damage"), g_iDefTankDamage);
+    
+    // hittable control
+    if (FindConVar("hc_car_standing_damage") != INVALID_HANDLE) {
+        SetConVarInt(FindConVar("hc_sflog_standing_damage"), g_iDefTankHittableDamage);
+        SetConVarInt(FindConVar("hc_bhlog_standing_damage"), g_iDefTankHittableDamage);
+        SetConVarInt(FindConVar("hc_car_standing_damage"), g_iDefTankHittableDamage);
+        SetConVarInt(FindConVar("hc_bumpercar_standing_damage"), g_iDefTankHittableDamage);
+        SetConVarInt(FindConVar("hc_forklift_standing_damage"), g_iDefTankHittableDamage);
+        SetConVarInt(FindConVar("hc_dumpster_standing_damage"), g_iDefTankHittableDamage);
+        SetConVarInt(FindConVar("hc_haybale_standing_damage"), g_iDefTankHittableDamage);
+        SetConVarInt(FindConVar("hc_baggage_standing_damage"), g_iDefTankHittableDamage);
+        SetConVarInt(FindConVar("hc_incap_standard_damage"), g_iDefTankHittableDamage);
+    }
+    
     
     SetConVarInt(FindConVar("sv_force_time_of_day"), -1);
 }
@@ -260,7 +292,6 @@ EVENT_RoundStartPreparation()
             // start out black and white
             for (new i=1; i <= MaxClients; i++) {
                 if (IsSurvivor(i)) {
-                    
                     SetEntProp(i, Prop_Send, "m_bIsOnThirdStrike", 1);
                     SetEntProp(i, Prop_Send, "m_isGoingToDie", 1);
                 }
@@ -273,10 +304,14 @@ EVENT_RoundStartPreparation()
                 it would make survivors bleed out even in readyup...
             */
         }
+        
+        case EVT_BOOBYTRAP: {
+            // traps are picked after items are randomized
+        }
     }
 }
 
-EVENT_SurvivorsLeftSaferoom()
+public Action: EVENT_SurvivorsLeftSaferoom(Handle:timer)
 {
     switch (_:g_iSpecialEvent)
     {
@@ -337,6 +372,7 @@ HUDRestoreClient(client)
 }
 
 
+// only for penalties
 EVENT_ReportPenalty(client=-1)
 {
     switch (_:g_iSpecialEvent)
@@ -365,6 +401,7 @@ EVENT_ReportPenalty(client=-1)
     }
 }
 
+// this is also for bonus report
 EVENT_DisplayRoundPenalty(client=-1)
 {
     switch (_:g_iSpecialEvent)
@@ -393,10 +430,63 @@ EVENT_DisplayRoundPenalty(client=-1)
                 PrintToChatAll("\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 m2%s cost \x04%i\x01 points.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_PENALTY_M2_SI * g_iBonusCount);
             }
         }
+        
+        case EVT_SKEET:
+        {
+            if (client != -1) {
+                PrintToChat(client, "\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 skeet%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_SKEET_BONUS * g_iBonusCount);
+            } else {
+                PrintToChatAll("\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 skeet%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_SKEET_BONUS * g_iBonusCount);
+            }
+        }
     }
 }
 
 
+
+EVENT_ReportBoobytrap(client=-1)
+{
+    // only on BOOBYTRAP event
+    if (client > 0) {
+        PrintToChatAll("\x01[\x05r\x01] %N triggered a booby trap!", client);
+    } else {
+        PrintToChatAll("\x01[\x05r\x01] a booby trap was triggered!");
+    }
+}
+
+
+EVENT_HandleSkeet(skeeter=-1, victim=-1)
+{
+    if (_:g_iSpecialEvent == EVT_SKEET)
+    {
+        g_iBonusCount++;
+        if (skeeter == -2) {
+            PBONUS_AddRoundBonus( EVENT_SKEET_BONUS_TEAM );
+        } else {
+            PBONUS_AddRoundBonus( EVENT_SKEET_BONUS );
+        }
+        
+        if (skeeter == -2) {    // team skeet sets to -2
+            if (IsClientAndInGame(victim)) {
+                PrintToChatAll("\x01[\x05r\x01] %N was team-skeeted for \x04%i\x01 points.", victim, EVENT_SKEET_BONUS_TEAM);
+            } else {
+                PrintToChatAll("\x01[\x05r\x01] A hunter was team-skeeted for \x04%i\x01 points.", EVENT_SKEET_BONUS_TEAM);
+            }
+        }
+        else if (IsClientAndInGame(skeeter) && IsClientAndInGame(victim)) {
+            PrintToChatAll("\x01[\x05r\x01] %N skeeted %N for \x04%i\x01 points.", skeeter, victim, EVENT_SKEET_BONUS);
+        }
+        else if (IsClientAndInGame(skeeter)) {
+            PrintToChatAll("\x01[\x05r\x01] %N skeeted a hunter for \x04%i\x01 points.", skeeter, EVENT_SKEET_BONUS);
+        }
+        else if (IsClientAndInGame(victim)) {
+            PrintToChatAll("\x01[\x05r\x01] %N was skeeted for \x04%i\x01 points.", victim, EVENT_SKEET_BONUS);
+        }
+        else {
+            PrintToChatAll("\x01[\x05r\x01] A hunter was skeeted for \x04%i\x01 points.", EVENT_SKEET_BONUS);
+        }
+    }
+}
 
 // magic guns wap
 EVENT_SwapSurvivorGun(client)
@@ -836,6 +926,9 @@ Float: SUPPORT_GetSpeedFactor(target)
             else if (itemHasPenalty == ITEM_PICKUP_PENALTY_MELEE) {
                 fWeight += EVENT_ENC_W_MELEE;
             }
+            else if (itemHasPenalty == ITEM_PICKUP_PENALTY_SAW) {
+                fWeight += EVENT_ENC_W_T3;
+            }
         }
     }
     
@@ -873,6 +966,78 @@ Float: SUPPORT_GetSpeedFactor(target)
 }
 
 
+
+// for EVT_BOOBYTRAP
+EVENT_PickBoobyTraps()
+{
+    // note: this must be called AFTER the item randomization
+    g_iBoobyTraps = 0;
+    
+    for (new i=0; i < g_iStoredEntities && i < MAX_BOOBYTRAPS; i++)
+    {
+        if (g_strArStorage[i][entInStartSaferoom]) { continue; }
+        if (    g_strArStorage[i][entPickedType] == _:PCK_NOITEM
+            ||  g_strArStorage[i][entPickedType] == _:PCK_JUNK
+            ||  g_strArStorage[i][entPickedType] == _:PCK_EXPLOSIVE_BARREL
+            ||  g_strArStorage[i][entPickedType] == _:PCK_SILLY_GIFT
+        ) { continue; }
+        
+        if (GetRandomFloat(0.001,1.0) <= EVENT_BOOBYTRAP_CHANCE)
+        {
+            g_iArBoobyTrap[g_iBoobyTraps] = g_strArStorage[i][entNumber];
+            g_iBoobyTraps++;
+        }
+    }
+    
+    PrintDebug("[rand] Rigged %i booby traps for special event.", g_iBoobyTraps);
+}
+
+// returns true if it was a booby trap (but handles everything itself)
+bool: EVENT_CheckBoobyTrap(entity, Float:location[3], client=-1)
+{
+    if (g_iBoobyTraps < 1) { return false; }
+    
+    // is it booby-trapped?
+    new index = -1;
+    
+    for (new i=0; i < g_iBoobyTraps; i++)
+    {
+        if (g_iArBoobyTrap[i] == entity) {
+            index = i;
+        }
+    }
+    
+    if (index == -1) { return false; }
+    
+    // it's booby-trapped!
+    EVENT_ArrayRemoveBoobyTrap(index);
+    EVENT_ReportBoobytrap(client);
+    
+    if (location[0] == 0.0 && location[1] == 0.0 && location[2] == 0.0) {
+        if (client != -1) {
+            GetClientAbsOrigin(client, location);
+        } else {
+            // lucky malfunction...
+            return false;
+        }
+    }
+    
+    CreateExplosion(location, (GetRandomInt(0, 4) == 0) ? EXPLOSION_POWER_HIGH : EXPLOSION_POWER_LOW);
+    
+    return true;
+}
+
+// manage booby trap array:
+EVENT_ArrayRemoveBoobyTrap(index)
+{
+    // condense array, overwriting index
+    for (new i=index; i < g_iBoobyTraps; i++)
+    {
+        g_iArBoobyTrap[i] = g_iArBoobyTrap[i+1];
+    }
+    g_iBoobyTraps--;
+}
+
 /*
     Support functions, general
     --------------------------
@@ -907,13 +1072,14 @@ CheatCommand(client, const String:command[], const String:arguments[])
 
 bool: SUPPORT_DropItem(client, bool:dropCurrent, count, bool:throwItem)
 {
+    new dropCount = 0;
+    
     if (dropCurrent)
     {
         new slot = SUPPORT_GetCurrentWeaponSlot(client);
-        if (slot >= 0)
-        {
-            if (_:g_iSpecialEvent == EVT_GUNSWAP && slot == 0) {
-                return SUPPORT_DropItemSlot(client, slot, throwItem); 
+        if (slot >= 0) {
+            if (_:g_iSpecialEvent != EVT_GUNSWAP || slot != 0) {
+                if ( SUPPORT_DropItemSlot(client, slot, throwItem) ) { dropCount++; } 
             }
         }
     }
@@ -937,16 +1103,16 @@ bool: SUPPORT_DropItem(client, bool:dropCurrent, count, bool:throwItem)
         for (new i=0; i < count && m > 0; i++)
         {
             new r = GetRandomInt(0, m-1);
-            if (_:g_iSpecialEvent == EVT_GUNSWAP && slot[r] == 0)
+            if (_:g_iSpecialEvent != EVT_GUNSWAP || slot[r] != 0)
             {
-                SUPPORT_DropItemSlot(client, slot[r], throwItem);
+                if ( SUPPORT_DropItemSlot(client, slot[r], throwItem) ) { dropCount++; }
             }
             slot[r] = slot[m-1];
             m--;
         }
     }
     
-    return true;
+    return bool:(dropCount > 0);
 }
 
 bool: SUPPORT_DropItemSlot(client, slot, bool:throwItem=false)
@@ -955,7 +1121,7 @@ bool: SUPPORT_DropItemSlot(client, slot, bool:throwItem=false)
         taken verbatim from l4d_drop.sp (by Pan Xiaohai & Frustian & kwski43)
         needs cleanup, but will have to do for now
     */
-    new oldweapon=GetPlayerWeaponSlot(client, slot);
+    new oldweapon = GetPlayerWeaponSlot(client, slot);
     new bool: success = false;
     
     if (oldweapon > 0)
@@ -1270,21 +1436,6 @@ bool: IsTank(any:client)
 
 bool:IsHangingFromLedge(client) { return bool:(GetEntProp(client, Prop_Send, "m_isHangingFromLedge") || GetEntProp(client, Prop_Send, "m_isFallingFromLedge")); }
 bool:IsIncapacitated(client) { return bool:GetEntProp(client, Prop_Send, "m_isIncapacitated"); }
-
-ForceRandomTankPlayer()
-{
-    for (new i = 1; i < MaxClients+1; i++) {
-        if (!IsClientConnected(i) || !IsClientInGame(i)) {
-            continue;
-        }
-
-        if (IsInfected(i)) {
-            // set the same tickets for everyone
-            L4D2Direct_SetTankTickets(i, GetRandomInt(0,10) );
-        }
-    }
-}
-
 
 /*
 GetTankClient()
@@ -1827,6 +1978,63 @@ public bool:_TraceFilter(entity, contentsMask, any:data)
 
 
 
+
+PickTankPlayer()
+{
+    // randomly pick one
+    
+    new pick = 0;
+    new pickCount = 0;
+    new pickArray[96];
+    
+    for (new i=1; i < MaxClients+1; i++)
+    {
+        if (IsInfected(i) && !IsFakeClient(i))
+        {
+            // if you didn't get one before, 5 entries
+            new tickets = 5;
+            
+            // -1 per tank you had. otherwise, scratch one, minimum of 1
+            if (g_iHadTanks[i] > 0) { tickets -= g_iHadTanks[i]; }
+            if (tickets < 1) { tickets = 1; }
+            
+            for (new j=0; j < tickets; j++)
+            {
+                pickArray[pickCount] = i;
+                pickCount++;
+            }
+        }
+    }
+    
+    pick = GetRandomInt(0, pickCount - 1);
+    pick = pickArray[pick];
+    
+    return pick;
+}
+
+ForceTankPlayer()
+{
+    // randomly pick a tank player
+    new tank = PickTankPlayer();
+    if (g_iHadTanks[tank] < 100) { g_iHadTanks[tank]++; }
+    
+    if (tank == 0) { return; }
+    
+    for (new i = 1; i < MaxClients+1; i++)
+    {
+        if (!IsClientConnected(i) || !IsClientInGame(i)) { continue; }
+        
+        if (IsInfected(i))
+        {
+            if (tank == i) {
+                L4D2Direct_SetTankTickets(i, 20000);
+            }
+            else {
+                L4D2Direct_SetTankTickets(i, 0);
+            }
+        }
+    }
+}
 /*
     Support, blind infected
     -------------------------- */

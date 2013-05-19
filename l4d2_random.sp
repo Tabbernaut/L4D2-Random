@@ -51,14 +51,12 @@
             - ?     - gift idea: key reversal effect, briefly. (negative effect)
             - ?     - gift idea: X second slowdown (like EVT_ENCUMBERED)
             - ?     - gift idea: ghost-effect for survivors for X seconds (no outlines for SI) (even if running)
-            
-            - ?     - scale mob size up with > 1 boom (say, 5-10 per extra survivor?)
+            - ?     - gift idea: see outlines on infected for X seconds ('telepathy')
             
             - MAYBE - mini-scavenge for specific rounds (decide per map)
                         do the research (how well possible? how much work? has anyone done it already?)
-            
-            - MAYBE - booby traps on doors, random chance -- and higher chance on doors event
             - MAYBE - when cars are done (a minimal amount of) damage, they have a chance to explode
+            - MAYBE - random car alarms & randomly going off when survivors are near?
             - MAYBE - play merry go round music for CLOWNS event
             - MAYBE - add 'rerandom' function, working on live round [ for testing / bad starts ]
             
@@ -66,78 +64,66 @@
                         [ not much point as this moment, apart as an appreciative gesture to stabs. ]
             
             - NO    - for random glows: decide /per survivor/ whether they have glows...
-            - NO    - make tank announcement randomly be incorrect (there is no announcement now, prolly not going to be added either)
-            - NO    - no quadcaps in first 20 seconds of the roundhalf
-            - NO    - make medkits give one less 'down'
+            - NO    - memorize horde timers, repeat same hordes for second roundhalf
             - NO    - random event speeds/times & random event horde size/duration
             
             
         event ideas:
             
-            - skeet shoot: bonus points for (really) skeeting hunters
-                higher chance of SI being hunters, only shotguns available
-            
-            in consideration over technical matters
-            ================
-            - VIP mode: one player gets no weapon (and can't pick any up, or not any more than single pistol)
-                (may hold gnome). They must make it to the end saferoom if the door is to be able to close?
-                - one idea: only VIPs distance counts (set distance to 0, use pbonus system to calculate distance
-                    based on flowdistance of the VIP)
-            - 'witch hunt': spawns many witches all over the place -- only way to score points = by killing them [pbonus]
-                    consider it a 'miniwitches': give them 50% health, 50 dmg claw?
-            - 'fallen survivor hunt': X-ty % of infected are fallen survivors with more health -- chase and kill them for points [pbonus]
-                    how to spawn many? and how fun is this?
-                
             in consideration
             ================
+            - 'witch hunt': spawns many witches all over the place -- only way to score points = by killing them [pbonus]
+                    consider it a 'miniwitches': give them 50% health, 50 dmg claw?
             - 'time penalty': every minute played gives a 25 point penalty on the round score
-                    gotta go fast :]
+            - 'pistol round': only pistols (magnums included). No locked doors and easier ci/si. [maybe]
             - gnome VIP: only one gnome spawns (start saferoom), it must be brought or the end saferoom won't close
                 or: gnome heaven, where the only way to score (many) points is to bring gnomes
                 - for example: given only 1 gnome: distance points are frozen unless gnome is held
             - weird SI: random SI abilities (CRox's code) -- just give every SI a random ability...
-            - 'pistol round': only pistols (magnums included). No locked doors and easier ci/si. [maybe]
-            - telepathic survivors
-                - or: holding gnome = telepathy: see infected outlines
-
             - axe effect / rockstar [stab]
                 everyone gets an axe/guitar, all common are female, no tank only spitters and boomettes
             - clockwork: clockwork timed spawns, deaths, rinse repeat (no tank?)
             - quad damage [stab]
                 one player gets special glow / sound => deals 4* damage
                 tag-game: SI and survivors get quad, it switches when one hits another
-                    
+            
+            rejected
+            ========
+            - 'fallen survivor hunt'
+            
             
         to-do:
-            - medium:   test sack detection.. probably best in game
-                        it seems like it misses detections now.. maybe because the check time is too long?
+            - high:     test new sack protection scheme.
+        
+            - bugfix:   map 1 (probably only then?) gets weird stuff spawning in saferooms sometimes
+                        - see mikkel's doors, or that elevator in dc1
+                        - one time it was a boat
+                        - christmas lights
+                        
+                        - try: detect first mapload, delay randomitem stuff a bit more then?
+                            - tried, needs testing
+                        - alternatively, could be itemsblindinfected..?
             
-            - medium:   remove chat spam for commands (hide if !<command>)
+            - bugfix:   adren event: gives wrong health (only 50)?
+                        - cannot reproduce locally? maybe try with confogl loaded...
             
-            - low:      consider: make minitanks + hittables less powerful. use hittable control?
-            
-            - medium:   do a rating change based on the items available in the start saferoom (# primaries,
-                        kits/defibs). If there are very few things, rectify?
-                            This is possible, because the items are randomized AFTER the difficulty
-                                rating is determined.
-            
-            
-            
-            - medium:   minitank model scale. fixed?
-                        [ see: http://code.google.com/p/my-left4dead-plugin/source/browse/branches/l4d_scale.sp ]
-                        [ test! ]
-            
-            - low:      for randumb: fix difficulty rating for second roundhalf - make it work with partial inequality
+            - medium:   bot si spawn determination?
+                        - or check if I can simply force the spawns just like human players (IsFakeClient() checks?)
+                        - consider allowing bots in matchmode too, because.. why not?
+                        
+            - low:      only do doors event on maps with plenty of doors
+            - low:      prevent multiple ammo piles in start saferoom?
+            - low:      stripper-dir switch randomly: so maps automatically have two versions
+                        - dec3 long way around vs. normal
+                        - par3 random maze versions
             - low:      randomize location for gascans in scavenge finales
                             that is, find all the locations, get the total amount of cans and redistribute them
                             *near* every spawn location with random variance (then remember for next round)
-            - low:      memorize horde timers, repeat same hordes for second roundhalf
             
-            - ?:        random car alarms & randomly going off when survivors are near>
             
-            - code:     try OnClientCommand() instead of ServerCommand to detect !spectate..
             - code:     "The SetEntProp functions have a parameter for the array index, use it instead of doing manually lookups and computing offsets."
             - code:     Clean up the explosion timer/particles code a bit.
+            - code:     Clean up the l4d_drop copied code some more.
             
 */
  /*
@@ -227,7 +213,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.12",
+    version = "1.0.13",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -271,6 +257,7 @@ public OnPluginStart()
     HookEvent("player_team",                Event_PlayerTeam,               EventHookMode_Post);
     HookEvent("player_left_start_area",     Event_PlayerLeftStartArea,      EventHookMode_PostNoCopy);
     
+    HookEvent("player_hurt",                Event_PlayerHurt,               EventHookMode_Pre);
     HookEvent("player_death",               Event_PlayerDeath,              EventHookMode_Pre);
     HookEvent("player_spawn",               Event_PlayerSpawn,              EventHookMode_Post);
     HookEvent("ghost_spawn_time",           Event_GhostSpawnTime,           EventHookMode_Post);
@@ -291,6 +278,9 @@ public OnPluginStart()
     HookEvent("heal_success",               Event_MedkitUsed,               EventHookMode_Post);
     HookEvent("pills_used",                 Event_PillsUsed,                EventHookMode_Post);
     HookEvent("adrenaline_used",            Event_PillsUsed,                EventHookMode_Post);
+    
+    HookEvent("ability_use",                Event_AbilityUse,               EventHookMode_Post);
+    HookEvent("lunge_pounce",               Event_LungePounce,              EventHookMode_Post);
     
     
     // default convars
@@ -333,6 +323,7 @@ public OnPluginStart()
     RegAdminCmd("rand_test_gnomes", TestGnomes_Cmd, ADMFLAG_CHEATS, "...");
     RegAdminCmd("rand_test_swap",   TestSwap_Cmd,   ADMFLAG_CHEATS, "...");
     RegAdminCmd("rand_test_ents",   TestEnts_Cmd,   ADMFLAG_CHEATS, "...");
+    RegAdminCmd("rand_test_event",  TestEvent_Cmd,  ADMFLAG_CHEATS, "...");
         
     /*
         Listen for ghost-exploit check
@@ -342,7 +333,7 @@ public OnPluginStart()
         but no clue whether players were ghosts before then...
         [test if this works on server with config_plugins.cfg order ...]
     */
-    RegConsoleCmd("sm_spectate",Spectate_Cmd,   "...");
+    RegConsoleCmd("spectate",   Spectate_Cmd,   "...");
     RegConsoleCmd("say",        Say_Cmd,        "...");
     RegConsoleCmd("say_team",   Say_Cmd,        "...");
     
@@ -477,13 +468,35 @@ public Action: TestEnts_Cmd(client, args)
 {
     DoItemsServerReport(true);
 }
+public Action: TestEvent_Cmd(client, args)
+{
+    // for a special event next round
+    decl String:sMessage[MAX_NAME_LENGTH];
+    GetCmdArg(1, sMessage, sizeof(sMessage));
 
-
+    new eventIndex = StringToInt(sMessage);
+    
+    if (eventIndex < 0 || eventIndex >= EVT_TOTAL)
+    {
+        if (g_iSpecialEventToForce != -1) {
+            PrintToChatAll("[rand_debug] Admin removed event-forcing for next round (previously set to %i).", g_iSpecialEventToForce);
+        }
+        g_iSpecialEventToForce = eventIndex;
+        
+        return Plugin_Handled;
+    }
+    
+    // else, force event next round
+    PrintToChatAll("[rand_debug] Admin forced event %i for next round (%s)...", eventIndex, g_csEventText[eventIndex]);
+    
+    g_iSpecialEventToForce = eventIndex;
+    
+    return Plugin_Handled;
+}
 
 /*
     Commands
     -------------------------- */
-
 public Action: RandomReport_Cmd(client, args)
 {
     DoReport(client);
@@ -530,16 +543,24 @@ public Action: Say_Cmd(client, args)
         if (g_bHasGhost[client]) { g_bSpectateDeath[client] = true; }
     }
     
-	if (IsChatTrigger())
-	{
-		decl String:sMessage[MAX_NAME_LENGTH];
-		GetCmdArg(1, sMessage, sizeof(sMessage));
+    if (IsChatTrigger())
+    {
+        decl String:sMessage[MAX_NAME_LENGTH];
+        GetCmdArg(1, sMessage, sizeof(sMessage));
 
-		if (StrEqual(sMessage, "!rand")) return Plugin_Handled;
-		else if (StrEqual (sMessage, "!drop")) return Plugin_Handled;
-		else if (StrEqual (sMessage, "!bonus")) return Plugin_Handled;
-		else if (StrEqual (sMessage, "!penalty")) return Plugin_Handled;
-	}
+        if (StrEqual(sMessage, "!rand")) return Plugin_Handled;
+        else if (StrEqual (sMessage, "!drop")) return Plugin_Handled;
+        else if (StrEqual (sMessage, "!bonus")) return Plugin_Handled;
+        else if (StrEqual (sMessage, "!penalty")) return Plugin_Handled;
+        
+        // catch 'ready' and 'r' and other chat-attempts at readyup?
+        if (StrEqual(sMessage, "ready") || StrEqual(sMessage, "r")) {
+            FakeClientCommand(client, "sm_ready");
+        }
+        else if (StrEqual(sMessage, "unready") || StrEqual(sMessage, "nr")) {
+            FakeClientCommand(client, "sm_unready");
+        }
+    }
     
     return Plugin_Continue;
 }
@@ -572,7 +593,14 @@ public OnMapStart()
     
     g_bSecondHalf = false;
     
-    SUPPORT_RoundPreparation();     // prepare stuff for this round
+    if (g_bVeryFirstMapLoad)
+    {
+        g_bVeryFirstMapLoad = false;
+        CreateTimer(DELAY_FIRSTMAPLOAD, SUPPORT_RoundPreparation, _, TIMER_FLAG_NO_MAPCHANGE);
+    } else {
+        CreateTimer(0.1, SUPPORT_RoundPreparation, _, TIMER_FLAG_NO_MAPCHANGE);
+        //SUPPORT_RoundPreparation();     // prepare stuff for this round
+    }
     
     // Start checking for humans loading in...
     //g_hTimerCheckFirstHuman = CreateTimer(TIMER_HUMANCHECK, Timer_CheckForHumans, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
@@ -603,7 +631,8 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
     {
         g_bInRound = true;
         
-        SUPPORT_RoundPreparation();     // prepare stuff for this round (only second round)
+        CreateTimer(0.1, SUPPORT_RoundPreparation, _, TIMER_FLAG_NO_MAPCHANGE);
+        //SUPPORT_RoundPreparation();     // prepare stuff for this round (only second round)
     }
 }
 
@@ -660,8 +689,14 @@ public Action:OnPlayerRunCmd(client, &buttons)
 // tank randomization
 public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
 {
-    if (GetConVarBool(g_hCvarRandomTank)) {
-        ForceRandomTankPlayer();
+    // if you don't do this.. double-passes
+    if (!IsFakeClient(tank_index)) {
+        return Plugin_Continue;
+    }
+    
+    if (GetConVarBool(g_hCvarRandomTank))
+    {
+        ForceTankPlayer();
     }
 
     return Plugin_Continue;
@@ -829,7 +864,7 @@ public Action: Event_PlayerLeftStartArea(Handle:event, const String:name[], bool
     if (!g_bPlayersLeftStart)
     {
         g_bPlayersLeftStart = true;
-        EVENT_SurvivorsLeftSaferoom();
+        CreateTimer(0.1, EVENT_SurvivorsLeftSaferoom, _, TIMER_FLAG_NO_MAPCHANGE);
     }
 }
 
@@ -860,15 +895,15 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
     {
         CreateTimer(0.1, Timer_CheckSpecialEventRole, g_bPlayersLeftStart);
     }
-    else if (_:g_iSpecialEvent == EVT_NOHUD && g_bPlayersLeftStart && !IsFakeClient(client))
+    // do some delayed checks/changes when people go survivor/infected
+    else if (_:g_iSpecialEvent == EVT_NOHUD || _:g_iSpecialEvent == EVT_DEFIB)
     {
         // oddity:  somehow timers swap the order of the infected => spec => survivor switch
         //          so just ignore specs for now
-        //PrintToChatAll("team swapsies: %N (from %i to %i)", client, oldTeam, newTeam);
         new Handle:pack = CreateDataPack();
         WritePackCell(pack, client);
         WritePackCell(pack, newTeam);
-        CreateTimer(DELAY_TEAMSWAP, Timer_TeamSwapHud, pack, TIMER_FLAG_NO_MAPCHANGE);
+        CreateTimer(DELAY_TEAMSWAP, Timer_TeamSwapDelayed, pack, TIMER_FLAG_NO_MAPCHANGE);
     }
     
     // ghost spawns:
@@ -906,7 +941,7 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
     return Plugin_Continue;
 }
 
-public Action:Timer_TeamSwapHud(Handle:hTimer, any:pack)
+public Action:Timer_TeamSwapDelayed(Handle:hTimer, any:pack)
 {
     ResetPack(pack);
     new client = ReadPackCell(pack);
@@ -915,10 +950,20 @@ public Action:Timer_TeamSwapHud(Handle:hTimer, any:pack)
     
     if (!IsClientAndInGame(client)) { return; }
     
-    if (newTeam == TEAM_INFECTED) {
-        HUDRestoreClient(client);
-    } else {
-        HUDRemoveClient(client);
+    // remove / add hud
+    if (_:g_iSpecialEvent == EVT_NOHUD && g_bPlayersLeftStart && !IsFakeClient(client))
+    {
+        if (newTeam == TEAM_INFECTED) {
+            HUDRestoreClient(client);
+        } else {
+            HUDRemoveClient(client);
+        }
+    }
+    // set thirdstrike
+    else if (_:g_iSpecialEvent == EVT_DEFIB && newTeam == TEAM_SURVIVOR)
+    {
+        SetEntProp(client, Prop_Send, "m_bIsOnThirdStrike", 1);
+        SetEntProp(client, Prop_Send, "m_isGoingToDie", 1);
     }
 }
 
@@ -1072,6 +1117,106 @@ stock ClearBoomerTracking()
 
 
 
+
+// tracking hunter skeets
+public Event_PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
+{    
+    if (_:g_iSpecialEvent != EVT_SKEET) { return; }
+    
+    new victim = GetClientOfUserId(GetEventInt(event, "userid"));
+    new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+    
+    if (!IsClientAndInGame(attacker) || GetClientTeam(attacker) != TEAM_SURVIVOR || !IsClientAndInGame(victim) || GetClientTeam(victim) != TEAM_INFECTED) { return; }
+    
+    new damage =        GetEventInt(event, "dmg_health");
+    new damagetype =    GetEventInt(event, "type");
+    
+    new zombieClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
+    
+    // track damage (per hit)
+    if (zombieClass != ZC_HUNTER) { return; }
+    
+    // handle old shotgun blast, if there was one
+    if (iHunterShotDmg[victim][attacker] > 0 && FloatSub(GetGameTime(), fHunterShotStart[victim][attacker]) > SHOTGUN_BLAST_TIME) {
+        fHunterShotStart[victim][attacker] = 0.0;
+    }
+        
+    // handle new hit (only shotgun), and only on pouncing hunters
+    if (bHunterPouncing[victim] && damagetype & DMG_BUCKSHOT) {
+        
+        // first pellet hit?
+        if (fHunterShotStart[victim][attacker] == 0.0)
+        {
+            // new shotgun blast
+            fHunterShotStart[victim][attacker] = GetGameTime();
+            iHunterShotDmg[victim][attacker] = damage;
+        } else {
+            // add to current shotgun blast
+            iHunterShotDmg[victim][attacker] += damage;
+        }
+        iHunterShotDmgTeam[victim] += damage;
+    }
+}
+
+public Event_LungePounce(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    if (_:g_iSpecialEvent != EVT_SKEET) { return; }
+    
+    new attacker = GetClientOfUserId(GetEventInt(event, "userid"));
+
+    // clear hunter-hit stats (not skeeted)
+    ResetHunter(attacker);
+}
+
+// hunters pouncing / tracking
+public Event_AbilityUse(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    if (_:g_iSpecialEvent != EVT_SKEET) { return; }
+    
+    // track hunters pouncing
+    new client = GetClientOfUserId(GetEventInt(event, "userid"));
+    
+    new String:abilityName[64];
+    GetEventString(event, "ability", abilityName, sizeof(abilityName));
+    
+    if (IsClientAndInGame(client) && strcmp(abilityName, "ability_lunge", false) == 0 && !bHunterPouncing[client])
+    {
+        // hunter started a pounce
+        
+        iHunterShotDmgTeam[client] = 0; // reset team damage for each pounce
+        
+        bHunterPouncing[client] = true;
+        CreateTimer(TIMER_POUNCE, Timer_GroundTouch, client, TIMER_REPEAT);
+    }
+}
+
+public Action: Timer_GroundTouch(Handle:timer, any:client)
+{
+    if (IsClientAndInGame(client) && (isGrounded(client) || !IsPlayerAlive(client)) )
+    {
+        // Reached the ground or died in mid-air
+        bHunterPouncing[client] = false;
+        KillTimer(timer);
+    }
+}
+
+public bool:isGrounded(client)
+{
+    return (GetEntProp(client,Prop_Data,"m_fFlags") & FL_ONGROUND) > 0;
+}
+
+
+public ResetHunter(client)
+{
+    bHunterPouncing[client] = false;
+    iHunterShotDmgTeam[client] = 0;
+    for (new i=1; i <= MaxClients; i++)
+    {
+        iHunterShotDmg[client][i] = 0;
+        fHunterShotStart[client][i] = 0.0;
+    }
+}
+
 /*  Player use & item pickup
     ------------------------ */
 public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadcast)
@@ -1088,6 +1233,15 @@ public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadc
     new bool: isDoor = StrEqual(classname, "prop_door_rotating");
     new bool: isProp = StrEqual(classname, "prop_physics");
     new bool: isCola = StrEqual(classname, "weapon_cola_bottles");
+    
+    // check for boobytraps...
+    if (_:g_iSpecialEvent == EVT_BOOBYTRAP)
+    {
+        new Float:targetPos[3];
+        GetEntPropVector(entity, Prop_Send, "m_vecOrigin", targetPos);
+        
+        EVENT_CheckBoobyTrap(entity, targetPos, client);
+    }
     
     if (!isDoor && !isProp && !isCola) { return Plugin_Continue; }
     
@@ -1158,7 +1312,7 @@ public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadc
                 new gnomeIndex = FindGnomeIndex(entity);
                 
                 // set value to max if not found in gnome array, then add to array (if the gnome's in the start saferoom somehow)
-                if ( gnomeIndex == -1 && (IsEntityInSaferoom(client, true) || IsEntityInSaferoom(entity) ) )
+                if ( gnomeIndex == -1 && (IsEntityInSaferoom(client, true, false) || IsEntityInSaferoom(entity, false, false) ) )
                 {
                     // fix up gnome and array(s) to match
                     UpdateAfterGnomeGiven(client, entity);
@@ -1256,10 +1410,12 @@ public Action:Timer_CheckItemPickup(Handle:hTimer, any:client)
 {
     if (g_bArJustBeenGiven[client]) { return Plugin_Continue; }
     
-    // penalty! (this is only called on special event EVT_PENITEM
-    g_iBonusCount++;
-    PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_ITEM );
-    EVENT_ReportPenalty(client);
+    if (_:g_iSpecialEvent == EVT_PEN_ITEM)
+    {
+        g_iBonusCount++;
+        PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_ITEM );
+        EVENT_ReportPenalty(client);
+    }
     
     return Plugin_Continue;
 }
@@ -1500,10 +1656,10 @@ public Action:Event_PlayerSpawn(Handle:hEvent, const String:name[], bool:dontBro
 }
 public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBroadcast)
 {
-    new client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
-    new iKiller = GetClientOfUserId(GetEventInt(hEvent, "attacker")); 
+    new victim = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+    new attacker = GetClientOfUserId(GetEventInt(hEvent, "attacker")); 
     
-    if (!client) {
+    if (!victim) {
         // common infected died
         new common = GetEventInt(hEvent, "entityid");
         
@@ -1525,26 +1681,26 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
         return Plugin_Continue;
     }
     
-    if (!IsClientAndInGame(client)) { return Plugin_Continue; }
+    if (!IsClientAndInGame(victim)) { return Plugin_Continue; }
 
     
     // survivor dies
     // -------------------
-    if (IsSurvivor(client))
+    if (IsSurvivor(victim))
     {
         // remove hud if we're in special event
-        if (_:g_iSpecialEvent == EVT_NOHUD && !IsFakeClient(client)) {
-            HUDRemoveClient(client);
+        if (_:g_iSpecialEvent == EVT_NOHUD && !IsFakeClient(victim)) {
+            HUDRemoveClient(victim);
         }
-        else if ( (_:g_iSpecialEvent == EVT_KEYMASTER || _:g_iSpecialEvent == EVT_PROTECT) && g_iSpecialEventRole == client) {
+        else if ( (_:g_iSpecialEvent == EVT_KEYMASTER || _:g_iSpecialEvent == EVT_PROTECT) && g_iSpecialEventRole == victim) {
             CreateTimer(0.1, Timer_CheckSpecialEventRole);
         }
         
         // check gnome status
-        new gnomeIndex = FindGnomeIndexByClient(client);
+        new gnomeIndex = FindGnomeIndexByClient(victim);
         
         if (gnomeIndex == -1) {
-            gnomeIndex = FindGnomeIndex( GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon") );
+            gnomeIndex = FindGnomeIndex( GetEntPropEnt(victim, Prop_Send, "m_hActiveWeapon") );
         }
         
         if (gnomeIndex != -1) {
@@ -1557,18 +1713,41 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
     }
     // -------------------
     
-    if (!IsClientAndInGame(iKiller) || GetClientTeam(client) != TEAM_INFECTED) { return Plugin_Continue; }
+    if (!IsClientAndInGame(attacker) || GetClientTeam(victim) != TEAM_INFECTED) { return Plugin_Continue; }
     
-    if (!IsFakeClient(client))
+    // track hunter skeets?
+    if (_:g_iSpecialEvent == EVT_SKEET && GetEntProp(victim, Prop_Send, "m_zombieClass") == ZC_HUNTER)
+    {
+        //PrintToChatAll("hunter died: %i dmg / %i team dmg", iHunterShotDmg[victim][attacker], iHunterShotDmgTeam[victim]);             
+        
+        if (iHunterShotDmg[victim][attacker] > 0) {
+            // skeet?
+            new iPounceInterrupt = GetConVarInt(FindConVar("z_pounce_damage_interrupt"));
+            if (iHunterShotDmg[victim][attacker] >= iPounceInterrupt) {
+                // single player's skeet
+                EVENT_HandleSkeet(attacker, victim);
+            }
+            else if (iHunterShotDmgTeam[victim] >= iPounceInterrupt) {
+                // team skeet
+                EVENT_HandleSkeet(-2, victim);
+            }
+        }
+        
+        iHunterShotDmgTeam[victim] = 0;
+        iHunterShotDmg[victim][attacker] = 0;
+        bHunterPouncing[victim] = false;
+    }
+    
+    if (!IsFakeClient(victim))
     {
         // sack protection, check if someone got a ghost and doesn't have a first death set yet
-        g_fGotGhost[client] = 0.0;
-        g_fDeathAfterGhost[client] = 0.0;
+        g_fGotGhost[victim] = 0.0;
+        g_fDeathAfterGhost[victim] = 0.0;
         
         if (!g_bIsFirstAttack)        // just a safeguard against false detections
         {
             for (new i=0; i <= MaxClients; i++) {
-                if (i == client) { continue; }
+                if (i == victim) { continue; }
                 
                 if (g_fGotGhost[i] != 0.0 && g_fDeathAfterGhost[i] == 0.0 && GetGameTime() - g_fGotGhost[i] > SACKPROT_MARGIN)
                 {
@@ -1577,28 +1756,28 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
             }
         }
         
-        
-        g_bHasMaterialised[client] = false;
-        g_bHasSpawned[client] = false;
+        g_bHasMaterialised[victim] = false;
+        g_bHasSpawned[victim] = false;
         
         /*
             this is also called when a player spectates
             so we have to distinguish between an actual death and a 'spectate death'
         */
-        if (!g_bSpectateDeath[client]) {
-            g_bHasGhost[client] = false;
+        if (!g_bSpectateDeath[victim]) {
+            g_bHasGhost[victim] = false;
         } else {
-            g_bSpectateDeath[client] = false;
+            g_bSpectateDeath[victim] = false;
         }
     }
     
     // tank stuff:
-    if (!g_bIsTankInPlay || client != g_iTankClient) { return Plugin_Continue; }
+    if (!g_bIsTankInPlay || victim != g_iTankClient) { return Plugin_Continue; }
     
     // remember place where tank died
-    GetEntPropVector(client, Prop_Send, "m_vecOrigin", g_fTankDeathLocation);
+    GetClientAbsOrigin(victim, g_fTankDeathLocation);
+    //GetEntPropVector(victim, Prop_Send, "m_vecOrigin", g_fTankDeathLocation); <- better or worse? test.
     
-    CreateTimer(0.1, Timer_CheckTankDeath, client); // Use a delayed timer due to bugs where the tank passes to another player
+    CreateTimer(0.1, Timer_CheckTankDeath, victim); // Use a delayed timer due to bugs where the tank passes to another player
     
     return Plugin_Continue;
 }
@@ -1900,153 +2079,6 @@ public Action:Timer_PipeCheck(Handle:timer, any:entity)
 /*
     SI Spawning
     -------------------------- */
-public DetermineSpawnClass(any:client, any:iClass)
-{
-    // pick a desired class, dependent on Cvar settings
-    if (iClass > ZC_CHARGER) { return; }
-    if (!IsClientAndInGame(client)) { return; }
-    if (IsTank(client)) { return; }
-    
-    // player is given a ghost class, keep track (for sack-exploitation check)
-    if (!IsFakeClient(client))
-    {
-        g_fGotGhost[client] = GetGameTime();
-        g_fDeathAfterGhost[client] = 0.0;
-    }
-    
-    new bool: checkSacking = false;
-    
-    //new valveClass = iClass;
-    //PrintDebug("[random spawns] valve ghost pick (%N = %i)", client, valveClass);
-    
-    if (g_bIsFirstAttack)
-    {
-        // build first attack
-        iClass = GetClassForFirstAttack(client);
-        //PrintDebug("[rand si] first attack spawn. (%N = %i)", client, iClass);
-    }
-    else if (g_iSpectateGhostCount)
-    {
-        // someone spectated as a ghost, use the SI they left
-        g_iSpectateGhostCount--;
-        iClass = g_iSpectateGhost[g_iSpectateGhostCount];
-        //PrintDebug("[rand si] ghost reset. (%N = %i)", client, iClass);
-    }
-    else if (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI))
-    {
-        // pick at random, only cappers
-        iClass = GetRandomInt(ZC_SMOKER, (_:g_iSpecialEvent == EVT_L4D1) ? ZC_HUNTER : ZC_SPITTER );
-        if (iClass == ZC_BOOMER)  { iClass = (GetRandomInt(0,1) == 0) ? ZC_SMOKER : ZC_HUNTER; }
-        else if (iClass == ZC_SPITTER) { iClass = (GetRandomInt(0,1) == 0) ? ZC_JOCKEY : ZC_CHARGER; }
-        //PrintDebug("[rand si] quad/no-support pick. (%N = %i)", client, iClass);
-        checkSacking = true;
-    }
-    else if (GetConVarBool(g_hCvarRandomSpawns))
-    {
-        // pick at random
-        iClass = GetRandomInt(ZC_SMOKER, (_:g_iSpecialEvent == EVT_L4D1) ? ZC_HUNTER : ZC_CHARGER );
-        //PrintDebug("[rand si] random pick. (%N = %i)", client, iClass);
-        checkSacking = true;
-    }
-    else
-    {
-        // nothing changed, return
-        //PrintDebug("[rand si] valve pick. (%N = %i)", client, iClass);
-        return;
-    }
-    
-    // sack protection
-    if (checkSacking && GetConVarBool(g_hCvarSackProtection))
-    {
-        // check if anyone is keeping a spawn
-        new Float: fSackTime = GetConVarFloat(FindConVar("z_ghost_delay_min")) - 0.1;
-        new classType = -1;
-        new bestSaved = -1;
-        new offendingClient = -1;
-        
-        for (new i=1; i <= MaxClients; i++) {
-            if (i == client || !IsClientInGame(i) ) { continue; }
-            
-            if (IsInfected(i) && g_fDeathAfterGhost[i] != 0.0 && GetGameTime() - g_fDeathAfterGhost[i] > fSackTime && IsPlayerAlive(i) && IsPlayerGhost(i) && !IsTank(i))
-            {
-                classType = GetEntProp(i, Prop_Send, "m_zombieClass");
-                
-                //  for two or more saves... worry about the worst (charger)
-                if (classType == ZC_CHARGER && bestSaved != ZC_CHARGER) { bestSaved = ZC_CHARGER; offendingClient = i; }
-                else if (classType == ZC_HUNTER && bestSaved != ZC_HUNTER && bestSaved != ZC_CHARGER) { bestSaved = ZC_HUNTER; offendingClient = i; }
-                else if (classType == ZC_SMOKER && bestSaved != ZC_SMOKER && bestSaved != ZC_HUNTER && bestSaved != ZC_CHARGER) { bestSaved = ZC_SMOKER; offendingClient = i; }
-            }
-        }
-        
-        // bestSaved = the best spawn held on to (-1 = no sacks)
-        // if there is a saved spawn, give something else and/or weaker
-        //  for now, just force support unless we're doing quads
-        if (bestSaved != -1)
-        {
-            if (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) {
-                if (_:g_iSpecialEvent == EVT_L4D1) {
-                    iClass = ZC_HUNTER;
-                } else {
-                    iClass = (GetRandomInt(0, 1) == 0) ? ZC_JOCKEY : ZC_HUNTER;
-                }
-            } else {
-                // force boomer if someone kept a charger
-                if (_:g_iSpecialEvent == EVT_L4D1) {
-                    iClass = ZC_BOOMER;
-                } else {
-                    iClass = (bestSaved == ZC_CHARGER || GetRandomInt(0, 1) == 0) ? ZC_BOOMER : ZC_SPITTER;
-                }
-            }
-            
-            // reporting?
-            if (GetConVarBool(g_hCvarReportSackProt))
-            {
-                PrintToChat(client, "\x01[\x05r\x01] sack block: weaker spawn given because %N kept their %s!", offendingClient, g_csSIClassName[bestSaved]);
-                PrintToChat(offendingClient, "\x01[\x05r\x01] %N got a weaker spawn because you didn't attack. (spawn and die together!)", client);
-            }
-            PrintDebug("[rand si] sack protection: %N given class %i (punishment for %N keeping class %s).", client, iClass, offendingClient, g_csSIClassName[bestSaved]);
-        }
-    }
-    
-    
-    // for l4d1 mode, avoid more than 1 boomer or smoker:
-    if (_:g_iSpecialEvent == EVT_L4D1) {
-        new smokers = CountInfectedClass(ZC_SMOKER, client);
-        new boomers = CountInfectedClass(ZC_BOOMER, client);
-        
-        if (iClass == ZC_SMOKER) {
-            if (GetConVarBool(g_hCvarNoSupportSI)) {
-                if (smokers) { iClass = ZC_HUNTER; }
-            } else {
-                if (smokers) { iClass = (boomers) ? ZC_HUNTER : ( (GetRandomInt(0,1)) ? ZC_BOOMER : ZC_HUNTER ); }
-            }
-        } else if (iClass == ZC_BOOMER) {
-            if (boomers) { iClass = (smokers) ? ZC_HUNTER : ( (GetRandomInt(0,1)) ? ZC_SMOKER : ZC_HUNTER ); }
-        }
-    }        
-    
-    // prepare ghost for change
-    if (IsPlayerGhost(client))
-    {
-        new WeaponIndex;
-        while ((WeaponIndex = GetPlayerWeaponSlot(client, 0)) != -1) {
-            RemovePlayerItem(client, WeaponIndex);
-            RemoveEdict(WeaponIndex);
-        }
-        
-        SDKCall(g_setClass, client, iClass);
-        AcceptEntityInput(MakeCompatEntRef(GetEntProp(client, Prop_Send, "m_customAbility")), "Kill");
-        SetEntProp(client, Prop_Send, "m_customAbility", GetEntData(SDKCall(g_createAbility, client), g_oAbility));
-    }
-    
-    // player now has a ghost
-    g_bHasGhost[client] = true;
-    g_bSpectateDeath[client] = false;
-    
-    return;
-}
-
-
 public GetClassForFirstAttack(ignoreClient)
 {
     // check the current spawns up and compare them to the stored spawns
@@ -2094,9 +2126,6 @@ public InitSpawnArrays()
         g_hSpawnGhostTimer[i] = INVALID_HANDLE;
     }
 }
-
-
-
 
 
 // special ammo types

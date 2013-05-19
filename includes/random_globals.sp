@@ -13,6 +13,7 @@ new     Handle:         g_hTriePropItems                                    = IN
 new                     g_iMeleeClassCount                                  = 0;                    // melee weapons available?
 new     String:         g_sMeleeClass           [MELEE_CLASS_COUNT][MELEE_CLASS_LENGTH];            // available melee class-strings
 
+new     bool:           g_bVeryFirstMapLoad                                 = true;                 // for preventing a first-map problem with item randomization
 new     bool:           g_bCampaignMode                                     = false;                // are we playing a coop game?
 new                     g_bSecondHalf                                       = false;                // is this the second round-half?
 new     bool:           g_bMapStartDone                                     = false;                // has OnMapStart been executed? (to avoid double roundprep calls)
@@ -22,10 +23,9 @@ new     bool:           g_bModelsPrecached                                  = fa
 new     bool:           g_bFirstReportDone                                  = false;                // true once the first team has had its report for the round (triggered)
 new     bool:           g_bPlayersLeftStart                                 = false;                // true once the first survivor has left the start saferoom
 new     bool:           g_bSoundHooked                                      = false;                // true when there's a soundhook in place
+new                     g_iSpecialEventToForce                              = -1;                   // if this is anything but -1, forces special event for one round(half) -- debug function
 
 // Report (timer)
-//new     Handle:         g_hTimerCheckFirstHuman                             = INVALID_HANDLE;       // timer for checking moment first human has loaded in
-//new     bool:           g_bTimerCheckFirstHuman                             = false;                // is it running?
 new     Handle:         g_hTimerReport                                      = INVALID_HANDLE;       // timer for delaying roundstart report
 new     bool:           g_bTimerReport                                      = false;                // is it running?
 
@@ -34,6 +34,7 @@ new     Float:          g_fGiftReportTimeout                                = 0.
 new     Float:          g_fGiftUseTimeout       [MAXPLAYERS+1]              = {0.0,...};            // stores time when player last used gift (to prevent use spam after opening)
 
 // Tanks
+new                     g_iHadTanks             [MAXPLAYERS+1]              = {0,...};              // how many tanks did the player get this game?
 new     bool:           g_bIsTankInPlay                                     = false;
 new     bool:           g_bFirstTankSpawned                                 = false;
 new                     g_iTankClient                                       = 0;
@@ -85,6 +86,12 @@ new                     g_iBoomsPerBoomer       [TEAM_SIZE]                 = {0
 new                     g_iBoomersInCombo       [TEAM_SIZE]                 = {0,...};              // the clients that are part of the current boomer combo
 new     Float:          g_fBoomTime             [TEAM_SIZE]                 = {0.0,...};            // when the boomer got its most recent boom
 
+// Hunter and skeet tracking
+new     bool:           bHunterPouncing         [MAXPLAYERS + 1]            = {false,...};          // whether the hunter is currently pouncing
+new                     iHunterShotDmgTeam      [MAXPLAYERS + 1];                                   // counting shotgun blast damage for hunter, counting entire survivor team's damage
+new                     iHunterShotDmg          [MAXPLAYERS + 1][MAXPLAYERS + 1];                   // counting shotgun blast damage for hunter / skeeter combo
+new     Float:          fHunterShotStart        [MAXPLAYERS + 1][MAXPLAYERS + 1];                   // when the last shotgun blast on hunter started (if at any time) by an attacker
+
 // Blind infected
 new                     g_iArCreatedEntities    [ENTITY_COUNT];                                     // Stored entity ids for this roundhalf
 new                     g_iCreatedEntities                                  = 0;                    // size of CreatedEntities list
@@ -95,6 +102,7 @@ new                     g_iArWeightedChoices    [STORED_MAX_COUNT];             
 new                     g_iWeightedChoicesTotal;                                                    // total of WeightedChoices 'hat' filled
 new                     g_iWeightedChoicesStartUseful;                                              // where the useful choices start (skipping no-item)
 new                     g_iWeightedChoicesEndUseful;                                                // where the useful choices end (before junk)
+new                     g_iWeightedChoicesStartNonWeapons;                                          // where the non-weapon items begin (canister)
 new                     g_iArSurvWeightedChoices[STORED_SURV_MAX_COUNT];                            // all the choices (every category * its weight) for survivor start
 new                     g_iSurvWeightedChoicesStartSecondary;                                       // where the useful secondary choices start
 new                     g_iSurvWeightedChoicesEndSecondary;                                         // where the useful secondary choices end (before magnum)
@@ -162,7 +170,8 @@ new                     g_iBonusCount                                       = 0;
 // special event stuff
 new                     g_iArGunAmmoCount       [MAXPLAYERS]                = 0;                    // for gun swap event: how many bullets does the survivor have left?
 new     bool:           g_bNoWeaponsNoAmmo                                  = false;                // whether to allow weapons or ammo to spawn at all
-//new                     g_iKeyMaster                                        = 0;                    // which player is currently the key-master
+new                     g_iBoobyTraps                                       = 0;                    // how many boobytrap entries in the aray
+new                     g_iArBoobyTrap          [MAX_BOOBYTRAPS]            = {-1,...};             // entities that are boobytrapped (this round)
 
 // ConVars
 new     Handle:         g_hArCvarWeight         [INDEX_TOTAL];                                      // cvar, per randomize-type, that sets an integer weight 
@@ -170,11 +179,10 @@ new     Handle:         g_hArCvarSurvWeight     [INDEX_SURV_TOTAL];             
 new     Handle:         g_hArCvarEvtWeight      [EVT_TOTAL];                                        // cvar, per randomize-type, that sets an integer weight -- for picking events
 
 new     Handle:         g_hCvarEqual                                        = INVALID_HANDLE;       // cvar flags what to equalize between teams
-//new     Handle:         g_hCvarDelay                                        = INVALID_HANDLE;       // cvar by how many seconds to delay the randomization (m_ModelName must be checkable)
 new     Handle:         g_hCvarDoReport                                     = INVALID_HANDLE;       // cvar whether to report anything at all
 new     Handle:         g_hCvarReportDelay                                  = INVALID_HANDLE;       // cvar by how many seconds to delay the report for special events
 new     Handle:         g_hCvarReportSackProt                               = INVALID_HANDLE;       // cvar whether to report sack protection measures
-new     Handle:         g_hCvarForcePhysics                                 = INVALID_HANDLE;       // cvar whether to force enabling physics on (relevant) spawned items
+new     Handle:         g_hCvarDifficultyBalance                            = INVALID_HANDLE;       // cvar whether to balance round settings based on estimated difficulty
 new     Handle:         g_hCvarM60Ammo                                      = INVALID_HANDLE;       // cvar for setting m60 ammo
 new     Handle:         g_hCvarClipFactorInc                                = INVALID_HANDLE;       // cvar for factor of incendiary ammo clip
 new     Handle:         g_hCvarClipFactorExp                                = INVALID_HANDLE;       // cvar for factor of explosive ammo clip
@@ -250,12 +258,19 @@ new                     g_iDefDefibPenalty                                  = 25
 new                     g_iDefDefibDuration                                 = 3;
 new     Float:          g_fDefPillDecayRate                                 = 0.27;
 
+new                     g_iDefSmokerLimit                                   = 1;
+new                     g_iDefBoomerLimit                                   = 1;
+new                     g_iDefHunterLimit                                   = 1;
 new                     g_iDefSpitterLimit                                  = 1;
 new                     g_iDefJockeyLimit                                   = 1;
 new                     g_iDefChargerLimit                                  = 1;
 
+new                     g_iDefAmmoRifle                                     = 360;
+new                     g_iDefAmmoAutoShotgun                               = 90;
+
 new     Float:          g_fDefFFFactor                                      = 0.1;
 
-new                     g_iDefTankHealth                                    = 4000; // 2/3rds of versus value
+new                     g_iDefTankHealth                                    = 4000;     // 2/3rds of versus value
 new                     g_iDefTankFrustTime                                 = 20;
 new                     g_iDefTankDamage                                    = 24;
+new                     g_iDefTankHittableDamage                            = 100;      // for hittable control

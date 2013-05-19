@@ -315,23 +315,33 @@ RANDOM_DetermineRandomStuff()
         new Float: fSpecialEventChance = GetConVarFloat(g_hCvarSpecialEventChance);
         if (g_bSecondHalf && g_iSpecialEvent != -1) { fSpecialEventChance = 1.0; }
         
-        if (GetRandomFloat(0.001,1.0) <= fSpecialEventChance)
+        
+        if (GetRandomFloat(0.001,1.0) <= fSpecialEventChance || g_iSpecialEventToForce != -1)
         {
             // pick random from the available weighted choice hat
-            
-            new randomIndex = GetRandomInt(0, (g_iEventWeightedChoicesTotal-1));
-            g_iSpecialEvent = g_iArEventWeightedChoices[randomIndex];
 
-            // avoid random_storm requiring plugins on intro maps (or non-storm maps)
-            if (mapnameType == MAPS_INTRO || mapnameType == MAPS_NOSTORM)
+            // forced, for debug (overrides everything else)
+            if (g_iSpecialEventToForce != -1)
             {
-                new count = 0;  // just a safeguard to prevent eternal loops
-                while ((g_iSpecialEvent == EVT_WEATHER || g_iSpecialEvent == EVT_FOG) && count < 1000) {
-                    count++;
-                    randomIndex = GetRandomInt(0, (g_iEventWeightedChoicesTotal-1));
-                    g_iSpecialEvent = g_iArEventWeightedChoices[randomIndex];
+                g_iSpecialEvent = g_iSpecialEventToForce;
+                g_iSpecialEventToForce = -1;
+            }
+            else
+            {
+                new randomIndex = GetRandomInt(0, (g_iEventWeightedChoicesTotal-1));
+                g_iSpecialEvent = g_iArEventWeightedChoices[randomIndex];
+
+                // avoid random_storm requiring plugins on intro maps (or non-storm maps)
+                if (mapnameType == MAPS_INTRO || mapnameType == MAPS_NOSTORM)
+                {
+                    new count = 0;  // just a safeguard to prevent eternal loops
+                    while ((g_iSpecialEvent == EVT_WEATHER || g_iSpecialEvent == EVT_FOG) && count < 1000) {
+                        count++;
+                        randomIndex = GetRandomInt(0, (g_iEventWeightedChoicesTotal-1));
+                        g_iSpecialEvent = g_iArEventWeightedChoices[randomIndex];
+                    }
+                    if (count == 1000) { g_iSpecialEvent = -1; }
                 }
-                if (count == 1000) { g_iSpecialEvent = -1; }
             }
             
             switch(_:g_iSpecialEvent)
@@ -374,6 +384,9 @@ RANDOM_DetermineRandomStuff()
                 case EVT_QUADS: {
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_EASY);
                     g_iDifficultyRating += 2;
+                    
+                    SetConVarInt(FindConVar("z_boomer_limit"), 0);
+                    SetConVarInt(FindConVar("z_spitter_limit"), 0);
                 }
                 case EVT_SNIPER: {
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
@@ -393,6 +406,7 @@ RANDOM_DetermineRandomStuff()
                 case EVT_DEFIB: {
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_EASY);
                     SetConVarInt(FindConVar("vs_defib_penalty"), 5);
+                    PBONUS_SetDefibPenalty(5);
                     SetConVarInt(FindConVar("defibrillator_use_duration"), 2);
                     bDoItemRePrep = true;
                     g_iDifficultyRating += 2;
@@ -438,16 +452,31 @@ RANDOM_DetermineRandomStuff()
                 case EVT_PEN_M2: {
                     g_bUsingPBonus = true;
                 }
+                case EVT_SKEET: {
+                    g_bUsingPBonus = true;
+                }
                 case EVT_GUNSWAP: {
                     // don't allow normal weapon spawns
                     g_bNoWeaponsNoAmmo = true;
                 }
                 case EVT_MINITANKS: {
-                    
                     // set health (lower)
                     SetConVarInt(FindConVar("z_tank_health"), MINITANKS_HEALTH);
                     SetConVarInt(FindConVar("z_frustration_lifetime"), MINITANK_FRUST_TIME);
                     SetConVarInt(FindConVar("vs_tank_damage"), MINITANKS_DAMAGE);
+                    
+                    // hittable control: soften the blow
+                    if (FindConVar("hc_car_standing_damage") != INVALID_HANDLE) {
+                        SetConVarInt(FindConVar("hc_sflog_standing_damage"), MINITANKS_HITTABLE_DMG);
+                        SetConVarInt(FindConVar("hc_bhlog_standing_damage"), MINITANKS_HITTABLE_DMG);
+                        SetConVarInt(FindConVar("hc_car_standing_damage"), MINITANKS_HITTABLE_DMG);
+                        SetConVarInt(FindConVar("hc_bumpercar_standing_damage"), MINITANKS_HITTABLE_DMG);
+                        SetConVarInt(FindConVar("hc_forklift_standing_damage"), MINITANKS_HITTABLE_DMG);
+                        SetConVarInt(FindConVar("hc_dumpster_standing_damage"), MINITANKS_HITTABLE_DMG);
+                        SetConVarInt(FindConVar("hc_haybale_standing_damage"), MINITANKS_HITTABLE_DMG);
+                        SetConVarInt(FindConVar("hc_baggage_standing_damage"), MINITANKS_HITTABLE_DMG);
+                        SetConVarInt(FindConVar("hc_incap_standard_damage"), MINITANKS_HITTABLE_DMG);
+                    }
                     
                     L4D2Direct_SetVSWitchToSpawnThisRound(0, false);
                     L4D2Direct_SetVSWitchToSpawnThisRound(1, false);
@@ -471,6 +500,14 @@ RANDOM_DetermineRandomStuff()
                 }
                 case EVT_ENCUMBERED: {
                     g_iDifficultyRating++;
+                }
+                case EVT_FIREPOWER: {
+                    EVENT_SetDifficulty(DIFFICULTY_HARD, DIFFICULTY_HARD);
+                    g_iDifficultyRating -= 2;
+                    
+                    SetConVarInt(FindConVar("ammo_assaultrifle_max"), RoundFloat( GetConVarFloat(FindConVar("ammo_assaultrifle_max")) * EVENT_FIREPOWER_AMMO) );
+                    SetConVarInt(FindConVar("ammo_autoshotgun_max"), RoundFloat( GetConVarFloat(FindConVar("ammo_autoshotgun_max")) * EVENT_FIREPOWER_AMMO) );
+                    
                 }
             }
             PrintDebug("[rand] Picked Special Event: %i (%s) [extra, %i, sub: %i, str: %s]", g_iSpecialEvent, g_csEventText[g_iSpecialEvent], g_iSpecialEventExtra, g_iSpecialEventExtraSub, g_sSpecialEventExtra);
@@ -607,7 +644,7 @@ RANDOM_DetermineRandomStuff()
             {
                 // remove outlines
                 // if round is already too difficult, stack the odds in favor against
-                if (g_iDifficultyRating > DIFF_RATING_GLOW_THRESH && GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarOutlineChance)) {
+                if ( GetConVarBool(g_hCvarDifficultyBalance) && g_iDifficultyRating > DIFF_RATING_GLOW_THRESH && GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarOutlineChance)) {
                     SetConVarInt(FindConVar("sv_disable_glow_survivors"), 0);
                     g_bGlows = true;
                     
@@ -639,7 +676,7 @@ RANDOM_DetermineRandomStuff()
             // if difficulty is too great, re-pick with default as minimum
             if (g_iIncaps == INCAP_MINIMUM)
             {
-                if (g_iDifficultyRating > DIFF_RATING_INCAP_THRESH) {
+                if ( GetConVarBool(g_hCvarDifficultyBalance) && g_iDifficultyRating > DIFF_RATING_INCAP_THRESH) {
                     g_iIncaps = GetRandomInt(2, INCAP_MAXIMUM);
                     PrintDebug("[rand] Survivor incaps increased because of difficulty rating (%i > %i).", g_iDifficultyRating, DIFF_RATING_INCAP_THRESH);
                 } else {
@@ -816,6 +853,16 @@ RandomizeItems()
                     case INDEX_T1SHOTGUN: { randomPick = INDEX_SNIPER; }
                     case INDEX_T2RIFLE: { randomPick = INDEX_SNIPER; }
                     case INDEX_T2SHOTGUN: { randomPick = INDEX_SNIPER; }
+                    case INDEX_T3: { randomPick = INDEX_SNIPER; }
+                }
+            }
+            // skeeting, only shotguns
+            else if (_:g_iSpecialEvent == EVT_SKEET) {
+                switch (randomPick) {
+                    case INDEX_T1SMG: { randomPick = INDEX_T1SHOTGUN; }
+                    case INDEX_SNIPER: { randomPick = INDEX_T1SHOTGUN; }
+                    case INDEX_T2RIFLE: { randomPick = INDEX_T2SHOTGUN; }
+                    case INDEX_T3: { randomPick = INDEX_T2SHOTGUN; }
                 }
             }
             else if (_:g_iSpecialEvent == EVT_BADCOMBO && g_strArStorage[curEnt][entInStartSaferoom]) {
@@ -830,6 +877,13 @@ RandomizeItems()
                     case INDEX_SNIPER: { randomPick = INDEX_NOITEM; }
                     case INDEX_T3: { randomPick = INDEX_NOITEM; }
                     
+                }
+            }
+            // no t1s
+            else if (_:g_iSpecialEvent == EVT_FIREPOWER) {
+                switch (randomPick) {
+                    case INDEX_T1SMG: { randomPick = INDEX_T2RIFLE; }
+                    case INDEX_T1SHOTGUN: { randomPick = INDEX_T2SHOTGUN; }
                 }
             }
             
@@ -1245,7 +1299,7 @@ RestoreItems()
     CreateTimer(TESTENTITY_TIMER, Timer_TestEntityLocation);
 }
 
-PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false)
+PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapons = false)
 {
     // just pick any random item.
     //  weighted? not for this, not for now.
@@ -1254,10 +1308,14 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false)
     new randomPick = PCK_NOITEM;
     new randomIndex;
     
+    // if we're doing weapons, we're still not doing NOITEM, so start at pistol (1)
+    // otherwise, start at first non-weapon item
+    // then limit to either total or last useful
+    
     if (onlyUseful) {
-        randomIndex = GetRandomInt(INDEX_PISTOL, INDEX_LAST_USEFUL);
+        randomIndex = GetRandomInt( (noWeapons) ? g_iWeightedChoicesStartNonWeapons : INDEX_PISTOL, INDEX_LAST_USEFUL);
     } else {
-        randomIndex = GetRandomInt(INDEX_PISTOL, INDEX_TOTAL - 1);      // we're not doing NOITEM, so start at pistol (1)
+        randomIndex = GetRandomInt( (noWeapons) ? g_iWeightedChoicesStartNonWeapons : INDEX_PISTOL, INDEX_TOTAL - 1);
     }
     
     new Float: fAmmoVarMore = 1.0 + GetConVarFloat(g_hCvarAmmoVarianceMore);
@@ -1277,10 +1335,24 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false)
             case INDEX_T1SHOTGUN: { randomIndex = INDEX_SNIPER; }
             case INDEX_T2RIFLE: { randomIndex = INDEX_SNIPER; }
             case INDEX_T2SHOTGUN: { randomIndex = INDEX_SNIPER; }
+            case INDEX_T3: { randomIndex = INDEX_SNIPER; }
         }
     }
-    
-    if (_:g_iSpecialEvent == EVT_L4D1) {
+    else if (_:g_iSpecialEvent == EVT_SKEET) {
+        switch (randomIndex) {
+            case INDEX_T1SMG: { randomIndex = INDEX_T1SHOTGUN; }
+            case INDEX_SNIPER: { randomIndex = INDEX_T1SHOTGUN; }
+            case INDEX_T2RIFLE: { randomIndex = INDEX_T2SHOTGUN; }
+            case INDEX_T3: { randomIndex = INDEX_T2SHOTGUN; }
+        }
+    }
+    else if (_:g_iSpecialEvent == EVT_FIREPOWER) {
+        switch (randomIndex) {
+            case INDEX_T1SMG: { randomIndex = INDEX_T2RIFLE; }
+            case INDEX_T1SHOTGUN: { randomIndex = INDEX_T2SHOTGUN; }
+        }
+    }
+    else if (_:g_iSpecialEvent == EVT_L4D1) {
         if (randomIndex == INDEX_MELEE || randomIndex == INDEX_T3) { randomIndex = INDEX_PISTOL; }
     }
     else if (_:g_iSpecialEvent == EVT_GUNSWAP) {
@@ -1445,15 +1517,17 @@ RandomizeSurvivorItems()
     // minimum supplies for higher difficulty rounds
     if (GetConVarBool(g_hCvarStartBalanceSurv))
     {
-        if (g_iDifficultyRating >= DIFF_RATING_4PRIM_THRESH) {
-            iMinPrimary = 4;
-            iMinSecondary = 4;
-        } else if (g_iDifficultyRating >= DIFF_RATING_3PRIM_THRESH)  {
-            iMinPrimary = 3;
-            iMinSecondary = 2;
-        } else if (g_iDifficultyRating >= DIFF_RATING_2PRIM_THRESH)  {
-            iMinPrimary = 2;
-            iMinSecondary = 1;
+        if (GetConVarBool(g_hCvarDifficultyBalance)) {
+            if (g_iDifficultyRating >= DIFF_RATING_4PRIM_THRESH) {
+                iMinPrimary = 4;
+                iMinSecondary = 4;
+            } else if (g_iDifficultyRating >= DIFF_RATING_3PRIM_THRESH)  {
+                iMinPrimary = 3;
+                iMinSecondary = 2;
+            } else if (g_iDifficultyRating >= DIFF_RATING_2PRIM_THRESH)  {
+                iMinPrimary = 2;
+                iMinSecondary = 1;
+            }
         }
     } else {
         iMinPrimary = 0;
@@ -1485,6 +1559,10 @@ RandomizeSurvivorItems()
         if ( _:g_iSpecialEvent == EVT_L4D1) {
             if (randomPick == INDEX_SURV_MELEE || randomPick == INDEX_SURV_MAGNUM) { randomPick = INDEX_SURV_DUALS; }
             if (secondaryPick == INDEX_SURV_MELEE || secondaryPick == INDEX_SURV_MAGNUM) { secondaryPick = INDEX_SURV_DUALS; }
+        }
+        // adjust for skeet event
+        else if (_:g_iSpecialEvent == EVT_SKEET) {
+            if (randomPick == INDEX_SURV_T1SMG) { randomPick = INDEX_SURV_T1SHOT; }
         }
         
         switch (randomPick)
@@ -1581,7 +1659,7 @@ RandomizeSurvivorItems()
             g_iArStorageSurvPills[i] = PCK_PAIN_PILLS;
             iCountPills++;
         }
-        else if ( GetRandomFloat(0.001, 1.0) <= fPillsChance || (GetConVarBool(g_hCvarStartBalanceSurv) && g_iDifficultyRating > DIFF_RATING_PILL_THRESH) ) {
+        else if ( GetRandomFloat(0.001, 1.0) <= fPillsChance || (GetConVarBool(g_hCvarStartBalanceSurv) && GetConVarBool(g_hCvarDifficultyBalance) && g_iDifficultyRating > DIFF_RATING_PILL_THRESH) ) {
             // randomly picked.. or difficulty forced
             randomPick = GetRandomInt(0, RATE_ADREN);
             
@@ -1712,69 +1790,6 @@ CheckSurvivorSetup()
 }
 
 
-RandomizeFirstSpawns()
-{
-    // determine the first four spawns
-    //  avoids hassle with making the first attacks the same
-    //  and makes it possible to control quad cap on first attack
-
-    new tmpPick = 0;
-    new tmpSupCount = 0;
-    
-    new bool: bFirstQuad = bool:(GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarFirstQuadChance));
-    
-    // if we got the quad event, first attack is a quad too
-    if (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) { bFirstQuad = true; }
-    
-    for (new i=0; i < TEAM_SIZE; i++)
-    {
-        if (bFirstQuad)
-        {
-            // pick any random capper
-            tmpPick = GetRandomInt(ZC_SMOKER, (_:g_iSpecialEvent == EVT_L4D1) ? ZC_HUNTER : ZC_SPITTER);
-            if      (tmpPick == ZC_BOOMER)  { tmpPick = (GetRandomInt(0,1) == 0) ? ZC_SMOKER : ZC_HUNTER; }
-            else if (tmpPick == ZC_SPITTER) { tmpPick = (GetRandomInt(0,1) == 0) ? ZC_JOCKEY : ZC_CHARGER; }
-            g_iArStorageSpawns[i] = tmpPick;
-        }
-        else if (_:g_iSpecialEvent == EVT_L4D1)
-        {
-            tmpPick = GetRandomInt(ZC_SMOKER, ZC_HUNTER);
-            // check if there already is a boomer/smoker, if so, replace it
-            if (tmpPick == ZC_SMOKER) {
-                for (new j=0; j < i; j++) {
-                    if (g_iArStorageSpawns[j] == ZC_SMOKER) { tmpPick = ZC_HUNTER; }
-                }
-            } else if (tmpPick == ZC_BOOMER) {
-                for (new j=0; j < i; j++) {
-                    if (g_iArStorageSpawns[j] == ZC_BOOMER) { tmpPick = ZC_HUNTER; }
-                }
-            }
-            g_iArStorageSpawns[i] = tmpPick;
-            if (tmpPick == ZC_BOOMER) { tmpSupCount++; }
-        }
-        else
-        {
-            // pick any random SI (we'll check for quad later)
-            tmpPick = GetRandomInt(ZC_SMOKER, ZC_CHARGER);
-            g_iArStorageSpawns[i] = tmpPick;
-            if (tmpPick == ZC_BOOMER || tmpPick == ZC_SPITTER) { tmpSupCount++; }
-        }
-    }
-    
-    // check for quad if none supposed (only for 4v4)
-    if ( !bFirstQuad && !tmpSupCount && g_iTeamSize > 3 )
-    {
-        // no support, replace one
-        tmpPick = GetRandomInt(ZC_SMOKER, ZC_BOOMER);
-        if ( tmpPick == ZC_SMOKER) {
-            if (_:g_iSpecialEvent == EVT_L4D1) { tmpPick = ZC_BOOMER; } else { tmpPick = ZC_SPITTER; }
-        }
-        g_iArStorageSpawns[0] = tmpPick;
-    }
-
-    
-    PrintDebug("[rand] Picked four classes for first attack (%i, %i, %i, %i)(quad: %i).", g_iArStorageSpawns[0], g_iArStorageSpawns[1], g_iArStorageSpawns[2], g_iArStorageSpawns[3], bFirstQuad);
-}
 
 // Creating entities based on the randomized-entity-list
 // ------------------------------------------------------
@@ -2020,7 +2035,7 @@ CreateEntity(index, bool:inArray = true)
     
     //  are we setting it neatly, or teleporting to 'shake things loose'?
     //      if physics enabled on everything, it must happen AFTER dispatch...
-    if (!GetConVarBool(g_hCvarForcePhysics) && !specialCase) {
+    if ( /* !GetConVarBool(g_hCvarForcePhysics) && */ !specialCase) {
         DispatchKeyValueVector(ent, "origin", origin);
         DispatchKeyValueVector(ent, "angles", angles);
     }
@@ -2052,9 +2067,9 @@ CreateEntity(index, bool:inArray = true)
     // physics enabled?
     if (!inArray) {
         TeleportEntity(ent, origin, NULL_VECTOR, g_fTempItemSingleVelocity);
-    } else if (GetConVarBool(g_hCvarForcePhysics)) {
+    } /* else if (GetConVarBool(g_hCvarForcePhysics)) {
         TeleportEntity(ent, origin, NULL_VECTOR, NULL_VECTOR);
-    }
+    } */
     
     // if a weapon, do this to prevent it having only 1 clip:
     if (itemAmmoMax) {
@@ -2234,6 +2249,18 @@ ChangeSurvivorSetup(index, client)
         // do first swap / swap start
         EVENT_SwapSurvivorGun(client);
     }
+    // special event: no t1s
+    else if (_:g_iSpecialEvent == EVT_FIREPOWER)
+    {
+        switch (_:type)
+        {
+            case PCK_SMG_MP5: {         weaponname = "weapon_rifle_ak47";   ammo = g_iArStorageSurvAmmo[index]; ammoOffset = ASSAULT_RIFLE_OFFSET_IAMMO; }
+            case PCK_SMG: {             weaponname = "weapon_rifle";        ammo = g_iArStorageSurvAmmo[index]; ammoOffset = ASSAULT_RIFLE_OFFSET_IAMMO; }
+            case PCK_SMG_SILENCED: {    weaponname = "weapon_rifle_desert"; ammo = g_iArStorageSurvAmmo[index]; ammoOffset = ASSAULT_RIFLE_OFFSET_IAMMO; }
+            case PCK_PUMPSHOTGUN: {     weaponname = "weapon_autoshotgun";  ammo = g_iArStorageSurvAmmo[index]; ammoOffset = AUTO_SHOTGUN_OFFSET_IAMMO; }
+            case PCK_SHOTGUN_CHROME: {  weaponname = "weapon_shotgun_spas"; ammo = g_iArStorageSurvAmmo[index]; ammoOffset = AUTO_SHOTGUN_OFFSET_IAMMO; }
+        }
+    }
     
     if (strlen(weaponname))
     {
@@ -2326,14 +2353,9 @@ bool: RANDOM_PlayerGiftUse(client)
         // gift is being used
         //PrintDebug("[rand] Gift used: %i", entity);
         
-        
-        
-        // kill the gift
-        AcceptEntityInput(entity, "Kill");
-        
         // take random action (use targetpos location)
         new randomPick = 0;
-        new bool: inSaferoom = IsEntityInSaferoom(client, true);
+        new bool: inSaferoom = (IsEntityInSaferoom(entity, false, false) || IsEntityInSaferoom(client, true, false));
         
         if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarGiftPositiveChance))
         {
@@ -2346,17 +2368,15 @@ bool: RANDOM_PlayerGiftUse(client)
             
             // fix for chance redistribution
             if (randomPick == 3 || randomPick == 4 || randomPick == 5) { randomPick = 2; }  // items - 4x
-            if (randomPick == 7) { randomPick = 8; }                                        // ammo - 2x
-
+            else if (randomPick == 7) { randomPick = 8; }                                   // ammo - 2x
             
             // don't give solid health when in adren mode:
             if (_:g_iSpecialEvent == EVT_ADREN && randomPick == 0) { randomPick = 1; }
             // don't give ammo during gunswap event
             else if (_:g_iSpecialEvent == EVT_GUNSWAP && randomPick == 8) { randomPick = (GetRandomInt(0,1)) ? 2 : 6; }
             
-            
             // don't give positive effects that are useless in (closed) saferoom
-            if (inSaferoom && randomPick == 8) { randomPick == (GetRandomInt(0,1)) ? 6 : 9; }
+            if (inSaferoom && (randomPick == 0 || randomPick == 1 || randomPick == 8) ) { randomPick == (GetRandomInt(0,1)) ? 6 : ((g_bInsightSurvDone) ? 2 : 9); }
             
             switch (randomPick)
             {
@@ -2401,25 +2421,30 @@ bool: RANDOM_PlayerGiftUse(client)
                     g_strTempItemSingle[entOrigin_c] = targetPos[2];
                     
                     new itemCount = GetRandomInt(GIFT_MIN_ITEMS, GIFT_MAX_ITEMS);
+                    new bool: noWeapons = false;
+                    
+                    if (_:g_iSpecialEvent == EVT_GUNSWAP && inSaferoom) { noWeapons = true; }   // no weapons if we're starting with GLs/CSs and it's in saferoom
                     
                     if (GetRandomInt(0, 4) == 0) {
                         // same item X times
-                        PickRandomItem(true, true);
+                        PickRandomItem(true, true, noWeapons); // only useful, no lasersight, no weapons set above
                         
                         for (new x = 0; x < itemCount; x++) {
                             g_fTempItemSingleVelocity[0] = GetRandomFloat(-160.0, 160.0);
                             g_fTempItemSingleVelocity[1] = GetRandomFloat(-160.0, 160.0);
                             g_fTempItemSingleVelocity[2] = GetRandomFloat(40.0, 160.0);
+                            
                             CreateEntity(-1, false);    // create entity, not from array!
                         }
                     } else {
                         // all different
-                        
                         for (new x = 0; x < itemCount; x++) {
                             g_fTempItemSingleVelocity[0] = GetRandomFloat(-160.0, 160.0);
                             g_fTempItemSingleVelocity[1] = GetRandomFloat(-160.0, 160.0);
                             g_fTempItemSingleVelocity[2] = GetRandomFloat(40.0, 160.0);
-                            PickRandomItem(true, true);
+                            
+                            PickRandomItem(true, true, noWeapons); // only useful, no lasersight, no weapons set above
+                            
                             CreateEntity(-1, false);    // create entity, not from array!
                         }
                     }
@@ -2474,11 +2499,7 @@ bool: RANDOM_PlayerGiftUse(client)
             switch (randomPick) {
                 case 1: {   // explosion (small and big)
                     PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04explosive surprise\x01!", client);
-                    if (GetRandomInt(0, 1) == 0) {
-                        CreateExplosion(targetPos, EXPLOSION_POWER_LOW);
-                    } else {
-                        CreateExplosion(targetPos, EXPLOSION_POWER_HIGH);
-                    }
+                    CreateExplosion(targetPos, (GetRandomInt(0, 1)) ? EXPLOSION_POWER_LOW : EXPLOSION_POWER_HIGH);
                 }
                 case 3: {   // panic event (sound siren of some sort)
                     PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04panic surprise\x01!", client);
@@ -2508,6 +2529,9 @@ bool: RANDOM_PlayerGiftUse(client)
             }
         }
         
+        // kill the gift
+        AcceptEntityInput(entity, "Kill");
+        
         // block player use function for a short while to avoid spam
         g_fGiftUseTimeout[client] = GetEngineTime();
         
@@ -2519,8 +2543,276 @@ bool: RANDOM_PlayerGiftUse(client)
 }
 
 
+
+// SI Spawns
+// --------------------------
+RandomizeFirstSpawns()
+{
+    // determine the first four spawns
+    //  avoids hassle with making the first attacks the same
+    //  and makes it possible to control quad cap on first attack
+
+    new tmpPick = 0;
+    new tmpSupCount = 0;
+    
+    new bool: bFirstQuad = bool:(GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarFirstQuadChance));
+    
+    // if we got the quad event, first attack is a quad too
+    if (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) { bFirstQuad = true; }
+    
+    for (new i=0; i < TEAM_SIZE; i++)
+    {
+        if (bFirstQuad)
+        {
+            // pick any random capper
+            tmpPick = GetRandomInt(ZC_SMOKER, (_:g_iSpecialEvent == EVT_L4D1) ? ZC_HUNTER : ZC_SPITTER);
+            if      (tmpPick == ZC_BOOMER)  { tmpPick = (GetRandomInt(0,1) == 0) ? ZC_SMOKER : ZC_HUNTER; }
+            else if (tmpPick == ZC_SPITTER) { tmpPick = (GetRandomInt(0,1) == 0) ? ZC_JOCKEY : ZC_CHARGER; }
+            g_iArStorageSpawns[i] = tmpPick;
+        }
+        else if (_:g_iSpecialEvent == EVT_L4D1)
+        {
+            tmpPick = GetRandomInt(ZC_SMOKER, ZC_HUNTER);
+            // check if there already is a boomer/smoker, if so, replace it
+            if (tmpPick == ZC_SMOKER) {
+                for (new j=0; j < i; j++) {
+                    if (g_iArStorageSpawns[j] == ZC_SMOKER) { tmpPick = ZC_HUNTER; }
+                }
+            } else if (tmpPick == ZC_BOOMER) {
+                for (new j=0; j < i; j++) {
+                    if (g_iArStorageSpawns[j] == ZC_BOOMER) { tmpPick = ZC_HUNTER; }
+                }
+            }
+            g_iArStorageSpawns[i] = tmpPick;
+            if (tmpPick == ZC_BOOMER) { tmpSupCount++; }
+        }
+        else
+        {
+            // pick any random SI (we'll check for quad later)
+            tmpPick = GetRandomInt(ZC_SMOKER, ZC_CHARGER);
+            g_iArStorageSpawns[i] = tmpPick;
+            if (tmpPick == ZC_BOOMER || tmpPick == ZC_SPITTER) { tmpSupCount++; }
+        }
+        
+        // hunters for the skeet event:
+        if (_:g_iSpecialEvent == EVT_SKEET)
+        {
+            if (g_iArStorageSpawns[i] != ZC_BOOMER && g_iArStorageSpawns[i] != ZC_SPITTER) {
+                if (GetRandomFloat(0.001,1.0) <= EVENT_SKEET_HUNTERS) {
+                    g_iArStorageSpawns[i] = ZC_HUNTER;
+                }
+            }
+        }
+    }
+    
+    // check for quad if none supposed (only for 4v4)
+    if ( !bFirstQuad && !tmpSupCount && g_iTeamSize > 3 )
+    {
+        // no support, replace one
+        tmpPick = GetRandomInt(ZC_SMOKER, ZC_BOOMER);
+        if ( tmpPick == ZC_SMOKER) {
+            if (_:g_iSpecialEvent == EVT_L4D1) { tmpPick = ZC_BOOMER; } else { tmpPick = ZC_SPITTER; }
+        }
+        g_iArStorageSpawns[0] = tmpPick;
+    }
+
+    
+    PrintDebug("[rand] Picked four classes for first attack (%s, %s, %s, %s)(quad: %i).",
+            g_csSIClassName[g_iArStorageSpawns[0]],
+            g_csSIClassName[g_iArStorageSpawns[1]],
+            g_csSIClassName[g_iArStorageSpawns[2]],
+            g_csSIClassName[g_iArStorageSpawns[3]],
+            bFirstQuad);
+}
+
+public DetermineSpawnClass(any:client, any:iClass)
+{
+    // pick a desired class, dependent on Cvar settings
+    if (iClass > ZC_CHARGER || !IsClientAndInGame(client) || IsTank(client)) { return; }
+    
+    // player is given a ghost class, keep track (for sack-exploitation check)
+    if (!IsFakeClient(client))
+    {
+        g_fGotGhost[client] = GetGameTime();
+        g_fDeathAfterGhost[client] = 0.0;
+    }
+    
+    new bool: checkSacking = false;
+    
+    //new valveClass = iClass;
+    //PrintDebug("[random spawns] valve ghost pick (%N = %i)", client, valveClass);
+    
+    if (g_bIsFirstAttack)
+    {
+        // build first attack
+        iClass = GetClassForFirstAttack(client);
+        //PrintDebug("[rand si] first attack spawn. (%N = %i)", client, iClass);
+    }
+    else if (g_iSpectateGhostCount)
+    {
+        // someone spectated as a ghost, use the SI they left
+        g_iSpectateGhostCount--;
+        iClass = g_iSpectateGhost[g_iSpectateGhostCount];
+        //PrintDebug("[rand si] ghost reset. (%N = %i)", client, iClass);
+    }
+    else if (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI))
+    {
+        // pick at random, only cappers
+        iClass = GetRandomInt(ZC_SMOKER, (_:g_iSpecialEvent == EVT_L4D1) ? ZC_HUNTER : ZC_SPITTER );
+        
+        if (iClass == ZC_BOOMER)  { iClass = (GetRandomInt(0,1) == 0) ? ZC_SMOKER : ZC_HUNTER; }
+        else if (iClass == ZC_SPITTER) { iClass = (GetRandomInt(0,1) == 0) ? ZC_JOCKEY : ZC_CHARGER; }
+        //PrintDebug("[rand si] quad/no-support pick. (%N = %i)", client, iClass);
+        checkSacking = true;
+    }
+    else if (g_iSpecialEvent == _:EVT_SKEET)
+    {
+        // pick at random, but high chance of switching cappers to hunter
+        iClass = GetRandomInt(ZC_SMOKER, ZC_CHARGER);
+        
+        if (iClass != ZC_BOOMER && iClass != ZC_SPITTER) {
+            if (GetRandomFloat(0.001,1.0) <= EVENT_SKEET_HUNTERS) {
+                iClass = ZC_HUNTER;
+            }
+        }
+        //checkSacking = true;    // can still get chargers etc, leave for now
+    }
+    else if (GetConVarBool(g_hCvarRandomSpawns))
+    {
+        // pick at random
+        iClass = GetRandomInt(ZC_SMOKER, (_:g_iSpecialEvent == EVT_L4D1) ? ZC_HUNTER : ZC_CHARGER );
+        //PrintDebug("[rand si] random pick. (%N = %i)", client, iClass);
+        checkSacking = true;
+    }
+    else
+    {
+        // nothing changed, return
+        //PrintDebug("[rand si] valve pick. (%N = %i)", client, iClass);
+        return;
+    }
+    
+    // sack protection
+    if (checkSacking && GetConVarBool(g_hCvarSackProtection))
+    {
+        // check if anyone is keeping a spawn
+        new Float: fSackTime = GetConVarFloat(FindConVar("z_ghost_delay_min")) - 0.1;
+        new classType = -1;
+        new bestSaved = -1;
+        new offendingClient = -1;
+        
+        for (new i=1; i <= MaxClients; i++) {
+            if (i == client || !IsClientInGame(i) ) { continue; }
+            
+            if (IsInfected(i) && g_fDeathAfterGhost[i] != 0.0 && GetGameTime() - g_fDeathAfterGhost[i] > fSackTime && IsPlayerAlive(i) && IsPlayerGhost(i) && !IsTank(i))
+            {
+                classType = GetEntProp(i, Prop_Send, "m_zombieClass");
+                
+                //  for two or more saves... worry about the worst (charger)
+                if (classType == ZC_CHARGER && bestSaved != ZC_CHARGER) { bestSaved = ZC_CHARGER; offendingClient = i; }
+                else if (classType == ZC_HUNTER && bestSaved != ZC_HUNTER && bestSaved != ZC_CHARGER) { bestSaved = ZC_HUNTER; offendingClient = i; }
+                else if (classType == ZC_SMOKER && bestSaved != ZC_SMOKER && bestSaved != ZC_HUNTER && bestSaved != ZC_CHARGER) { bestSaved = ZC_SMOKER; offendingClient = i; }
+            }
+        }
+        
+        // bestSaved = the best spawn held on to (-1 = no sacks)
+        // if there is a saved spawn: prevent charger stacking, prevent smoker stacking and prevent quads
+        if (bestSaved != -1)
+        {
+            /*
+            old approach: too strict
+            if (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) {
+                if (_:g_iSpecialEvent == EVT_L4D1) {
+                    iClass = ZC_HUNTER;
+                } else {
+                    iClass = (GetRandomInt(0, 1) == 0) ? ZC_JOCKEY : ZC_HUNTER;
+                }
+            } else {
+                // force boomer if someone kept a charger
+                if (_:g_iSpecialEvent == EVT_L4D1) {
+                    iClass = ZC_BOOMER;
+                } else {
+                    iClass = (bestSaved == ZC_CHARGER || GetRandomInt(0, 1) == 0) ? ZC_BOOMER : ZC_SPITTER;
+                }
+            }
+            */
+            
+            new preChangeClass = iClass;
+            
+            // just prevent chargers, if player got a charger
+            // and prevent > 2 smokers
+            new chargers = CountInfectedClass(ZC_CHARGER, client);
+            new smokers = CountInfectedClass(ZC_SMOKER, client);
+            new support = CountInfectedClass(ZC_BOOMER, client) + CountInfectedClass(ZC_SPITTER, client);
+            
+            // a. force max 1 charger
+            if (iClass == ZC_CHARGER && chargers > 0) {
+                iClass = GetRandomInt(ZC_SMOKER, ZC_JOCKEY);
+            }
+            
+            // b. force max 2 smokers
+            else if (iClass == ZC_SMOKER) {
+                if (smokers > 1) {
+                    iClass = GetRandomInt(ZC_BOOMER, (_:g_iSpecialEvent == EVT_L4D1) ? ZC_HUNTER : ZC_JOCKEY );
+                }
+            }
+            
+            // c. force non-quad (can override previous after-sackdetect-pick)
+            if (support == 0 && g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) {
+                iClass = (_:g_iSpecialEvent == EVT_L4D1 || GetRandomInt(0, 1)) ? ZC_BOOMER : ZC_SPITTER;
+            }
+            
+            // reporting?
+            if (GetConVarBool(g_hCvarReportSackProt))
+            {
+                if (preChangeClass != iClass) {
+                    PrintToChat(client, "\x01[\x05r\x01] sack block: you got a %s (instead of %s) because %N kept their spawn.", g_csSIClassName[iClass], g_csSIClassName[preChangeClass], offendingClient);
+                }
+                PrintToChat(offendingClient, "\x01[\x05r\x01] Keeping your spawn prevents your team from getting chargers and quad-caps. (try to attack together!)", client, g_csSIClassName[bestSaved]);
+            }
+            PrintDebug("[rand si] sack protection: %N given class %i (punishment for %N keeping class %s).", client, iClass, offendingClient, g_csSIClassName[bestSaved]);
+        }
+    }
+    
+    
+    // for l4d1 mode, avoid more than 1 boomer or smoker:
+    if (_:g_iSpecialEvent == EVT_L4D1) {
+        new smokers = CountInfectedClass(ZC_SMOKER, client);
+        new boomers = CountInfectedClass(ZC_BOOMER, client);
+        
+        if (iClass == ZC_SMOKER) {
+            if (GetConVarBool(g_hCvarNoSupportSI)) {
+                if (smokers) { iClass = ZC_HUNTER; }
+            } else {
+                if (smokers) { iClass = (boomers) ? ZC_HUNTER : ( (GetRandomInt(0,1)) ? ZC_BOOMER : ZC_HUNTER ); }
+            }
+        } else if (iClass == ZC_BOOMER) {
+            if (boomers) { iClass = (smokers) ? ZC_HUNTER : ( (GetRandomInt(0,1)) ? ZC_SMOKER : ZC_HUNTER ); }
+        }
+    }        
+    
+    // prepare ghost for change
+    if (IsPlayerGhost(client))
+    {
+        new WeaponIndex;
+        while ((WeaponIndex = GetPlayerWeaponSlot(client, 0)) != -1) {
+            RemovePlayerItem(client, WeaponIndex);
+            RemoveEdict(WeaponIndex);
+        }
+        
+        SDKCall(g_setClass, client, iClass);
+        AcceptEntityInput(MakeCompatEntRef(GetEntProp(client, Prop_Send, "m_customAbility")), "Kill");
+        SetEntProp(client, Prop_Send, "m_customAbility", GetEntData(SDKCall(g_createAbility, client), g_oAbility));
+    }
+    
+    // player now has a ghost
+    g_bHasGhost[client] = true;
+    g_bSpectateDeath[client] = false;
+    
+    return;
+}
+
 // Item drops (from common/SI/Tank)
-// ------------------------------
+// --------------------------------
 
 RANDOM_TankDropItems()
 {
@@ -3025,7 +3317,7 @@ RANDOM_PrepareChoicesEvents()
         //      all scoring events, because no score
         if (    g_bCampaignMode
             &&  (   _:g_iSpecialEvent == EVT_QUADS || _:g_iSpecialEvent == EVT_L4D1 || _:g_iSpecialEvent == EVT_FF || _:g_iSpecialEvent == EVT_MINITANKS
-                ||  _:g_iSpecialEvent == EVT_PEN_ITEM || _:g_iSpecialEvent == EVT_PEN_HEALTH || _:g_iSpecialEvent == EVT_PEN_M2 )
+                ||  _:g_iSpecialEvent == EVT_PEN_ITEM || _:g_iSpecialEvent == EVT_PEN_HEALTH || _:g_iSpecialEvent == EVT_PEN_M2 || _:g_iSpecialEvent == EVT_SKEET )
         ) {
             continue;
         }
@@ -3086,15 +3378,19 @@ RANDOM_PrepareChoices()
                 fNoitemVariance = 1.0 + GetRandomFloat((-1 * fNoitemVariance), fNoitemVariance);
                 
                 new Float: fVarianceTmp = 0.0;
-                // adjust for difficulty setting (weighs in 2-to-1)
-                if (g_iDifficultyRating <= DIFF_RATING_NOITEM_DIF_LOW) {
-                    fVarianceTmp = DIFF_RATING_NOITEM_HIGH;
-                } else if (g_iDifficultyRating >= DIFF_RATING_NOITEM_DIF_HIGH) {
-                    fVarianceTmp = DIFF_RATING_NOITEM_LOW;
-                } else {
-                    // scale tmp noitem variance according to difficulty within range (reverse because higher difficulty => lower noitem variance)
-                    fVarianceTmp = DIFF_RATING_NOITEM_LOW + ( (DIFF_RATING_NOITEM_HIGH - DIFF_RATING_NOITEM_LOW) * ( 1.0 - ( (float(g_iDifficultyRating) - DIFF_RATING_NOITEM_DIF_LOW) / DIFF_RATING_NOITEM_DIF_HIGH ) ) );
-                    //PrintDebug("[rand] Var calc: LOW: %.2f - HIGH-LOW: %.2f - scale: %.2f ", DIFF_RATING_NOITEM_LOW, DIFF_RATING_NOITEM_HIGH - DIFF_RATING_NOITEM_LOW, 1.0 - ( (float(g_iDifficultyRating) - DIFF_RATING_NOITEM_DIF_LOW) / DIFF_RATING_NOITEM_DIF_HIGH ));
+                
+                if (GetConVarBool(g_hCvarDifficultyBalance))
+                {
+                    // adjust for difficulty setting (weighs in 2-to-1)
+                    if (g_iDifficultyRating <= DIFF_RATING_NOITEM_DIF_LOW) {
+                        fVarianceTmp = DIFF_RATING_NOITEM_HIGH;
+                    } else if (g_iDifficultyRating >= DIFF_RATING_NOITEM_DIF_HIGH) {
+                        fVarianceTmp = DIFF_RATING_NOITEM_LOW;
+                    } else {
+                        // scale tmp noitem variance according to difficulty within range (reverse because higher difficulty => lower noitem variance)
+                        fVarianceTmp = DIFF_RATING_NOITEM_LOW + ( (DIFF_RATING_NOITEM_HIGH - DIFF_RATING_NOITEM_LOW) * ( 1.0 - ( (float(g_iDifficultyRating) - DIFF_RATING_NOITEM_DIF_LOW) / DIFF_RATING_NOITEM_DIF_HIGH ) ) );
+                        //PrintDebug("[rand] Var calc: LOW: %.2f - HIGH-LOW: %.2f - scale: %.2f ", DIFF_RATING_NOITEM_LOW, DIFF_RATING_NOITEM_HIGH - DIFF_RATING_NOITEM_LOW, 1.0 - ( (float(g_iDifficultyRating) - DIFF_RATING_NOITEM_DIF_LOW) / DIFF_RATING_NOITEM_DIF_HIGH ));
+                    }
                 }
                 
                 if (fVarianceTmp != 0.0) {
@@ -3171,7 +3467,7 @@ RANDOM_PrepareChoices()
                 // no l4d2-only items
                 if (i == INDEX_UPGRADE || i == INDEX_MELEE || i == INDEX_T3) { count = 0; }
             }
-                
+            
             if (g_bDoubleTank && i == INDEX_PILL) {
                 // increase chances of finding pills/adren for 2-tank maps
                 count = RoundFloat(GetConVarInt(g_hArCvarWeight[i]) * MULTITANK_HEALTHITEMS); 
@@ -3187,7 +3483,8 @@ RANDOM_PrepareChoices()
         
         // set start/end of useful
         if (i == INDEX_NOITEM) { g_iWeightedChoicesStartUseful = total; }
-        if (i == INDEX_JUNK) { g_iWeightedChoicesEndUseful = total - count; }
+        else if (i == INDEX_CANISTER) { g_iWeightedChoicesStartNonWeapons = total - count; }
+        else if (i == INDEX_JUNK) { g_iWeightedChoicesEndUseful = total - count; }
         
         //PrintDebug("[rand] choices weighted for: %i = %i", i, count);
     }

@@ -20,7 +20,8 @@ INIT_DefineCVars()
     g_hCvarReportSackProt = CreateConVar(                   "rand_report_sackprotection",    "1",       "Whether sack-protection measures are reported to the relevant players.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
     g_hCvarRandomSpawns = CreateConVar(                     "rand_random_si",                "1",       "Whether SI spawns are fully random (or Valve-ordered).", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
     g_hCvarSackProtection = CreateConVar(                   "rand_si_sackprotection",        "1",       "Whether SI spawn sacking is punished (keeping a charger hoping to get a multi-charger attack, for instance).", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
-    g_hCvarForcePhysics = CreateConVar(                     "rand_force_physics",            "0",       "Force physics enabled on (some) items.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
+    //g_hCvarForcePhysics = CreateConVar(                     "rand_force_physics",            "0",       "Force physics enabled on (some) items.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
+    g_hCvarDifficultyBalance = CreateConVar(                "rand_difficulty_balance",       "1",       "Whether round settings should be balanced according to estimated difficulty).", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
     g_hCvarM60Ammo = CreateConVar(                          "rand_m60_ammo",                "50",       "How much ammo an M60 spawns with.", FCVAR_PLUGIN, true, 0.0, false );
     g_hCvarClipFactorInc = CreateConVar(                    "rand_incendiary_ammo_factor",   "0.5",     "Incendiary ammo gives you a clip's normal size times this.", FCVAR_PLUGIN, true, 0.0, true, 2.0);
     g_hCvarClipFactorExp = CreateConVar(                    "rand_explosive_ammo_factor",    "0.25",    "Explosive ammo gives you a clip's normal size times this.", FCVAR_PLUGIN, true, 0.0, true, 2.0 );
@@ -129,6 +130,9 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_BADCOMBO] = CreateConVar(        "rand_weight_evt_badcombo",      "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_PROTECT] = CreateConVar(         "rand_weight_evt_protect",       "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_ENCUMBERED] = CreateConVar(      "rand_weight_evt_encumbered",    "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_BOOBYTRAP] = CreateConVar(       "rand_weight_evt_boobytrap",     "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_SKEET] = CreateConVar(           "rand_weight_evt_skeet",         "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_FIREPOWER] = CreateConVar(       "rand_weight_evt_firepower",     "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     // built in cvars (for tracking)
     g_hCvarReadyUp = FindConVar("l4d_ready_enabled");
@@ -153,15 +157,25 @@ INIT_CVarsGetDefault()
     
     g_iTeamSize =               GetConVarInt(FindConVar("survivor_limit"));
     
+    g_iDefSmokerLimit =         GetConVarInt(FindConVar("z_smoker_limit"));
+    g_iDefBoomerLimit =         GetConVarInt(FindConVar("z_boomer_limit"));
+    g_iDefHunterLimit =         GetConVarInt(FindConVar("z_hunter_limit"));
     g_iDefSpitterLimit =        GetConVarInt(FindConVar("z_spitter_limit"));
     g_iDefJockeyLimit =         GetConVarInt(FindConVar("z_jockey_limit"));
     g_iDefChargerLimit =        GetConVarInt(FindConVar("z_charger_limit"));
+    
+    g_iDefAmmoRifle =           GetConVarInt(FindConVar("ammo_assaultrifle_max"));
+    g_iDefAmmoAutoShotgun =     GetConVarInt(FindConVar("ammo_autoshotgun_max"));
     
     g_fDefFFFactor =            GetConVarFloat(FindConVar("survivor_friendly_fire_factor_normal"));
     
     g_iDefTankHealth =          GetConVarInt(FindConVar("z_tank_health"));
     g_iDefTankFrustTime =       GetConVarInt(FindConVar("z_frustration_lifetime"));
     g_iDefTankDamage =          GetConVarInt(FindConVar("vs_tank_damage"));
+    
+    if (FindConVar("hc_car_standing_damage") != INVALID_HANDLE) {
+        g_iDefTankHittableDamage =  GetConVarInt(FindConVar("hc_car_standing_damage"));
+    }
 }
 
 INIT_CVarsReset()
@@ -269,7 +283,7 @@ INIT_FillTries()
     
     g_hTrieBlindable = CreateTrie();
     SetTrieValue(g_hTrieBlindable, "predicted_viewmodel",       ENTITY_NOT_BLINDABLE);
-    SetTrieValue(g_hTrieBlindable, "instance_scripted_scene",   ENTITY_NOT_BLINDABLE);
+    SetTrieValue(g_hTrieBlindable, "instanced_scripted_scene",  ENTITY_NOT_BLINDABLE);
     SetTrieValue(g_hTrieBlindable, "func_occluder",             ENTITY_NOT_BLINDABLE);
     
     
@@ -289,6 +303,7 @@ INIT_FillTries()
     SetTrieValue(g_hTriePenaltyItems, "weapon_melee",               ITEM_PICKUP_PENALTY_MELEE);
     SetTrieValue(g_hTriePenaltyItems, "weapon_pistol",              ITEM_PICKUP_PENALTY_PISTOL);
     SetTrieValue(g_hTriePenaltyItems, "weapon_pistol_magnum",       ITEM_PICKUP_PENALTY_MAGNUM);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_chainsaw",            ITEM_PICKUP_PENALTY_SAW);
     SetTrieValue(g_hTriePenaltyItems, "weapon_smg",                 ITEM_PICKUP_PENALTY_PRIMARY_T1);
     SetTrieValue(g_hTriePenaltyItems, "weapon_smg_silenced",        ITEM_PICKUP_PENALTY_PRIMARY_T1);
     SetTrieValue(g_hTriePenaltyItems, "weapon_pumpshotgun",         ITEM_PICKUP_PENALTY_PRIMARY_T1);

@@ -57,6 +57,7 @@ const           REPLINELENGTH           = 256;          // maximum length of a '
 const Float:    TIMER_HUMANCHECK        = 2.0;          // interval for checking for humans after map load
 const Float:    MAX_RAYDIF              = 100.0;        // maximum z-difference for finding floors
 const           MAX_DOORS               = 128;          // amount of doors to track
+const           MAX_BOOBYTRAPS          = 128;          // amount of boobytraps to add maximally
 
 const Float:    BLND_ENT_CHECK_INTERVAL = 1.0;          // for 'blind infected' adaptation
 const Float:    BLND_TRACE_TOLERANCE    = 75.0;
@@ -68,7 +69,8 @@ const           STR_MAX_ITEMGIVEN       = 22;
 const           STR_MAX_MODELNAME       = 48;
 const           STR_MAX_MAPNAME         = 24;
 
-const Float:    DELAY_ROUNDPREP         = 1.0;
+const Float:    DELAY_FIRSTMAPLOAD      = 5.0;          // how long to wait before doing round prep on the very first map loading
+const Float:    DELAY_ROUNDPREP         = 1.0;          // how long between actual round prep and item handling etc
 const Float:    DELAY_SECONDHALF        = 1.0;          // how long to wait on secondroundhalf before restoring items
 const Float:    DELAY_SECONDHALF_REP    = 1.25;         // how long to wait on secondroundhalf before doing the report
 const Float:    DELAY_SURVSETUP         = 0.25;         // how long to wait after team switch/join to set survivor startup (for GetPlayerSlot check)
@@ -134,10 +136,13 @@ const           EVT_KEYMASTER           = 23;
 const           EVT_BADCOMBO            = 24;
 const           EVT_PROTECT             = 25;
 const           EVT_ENCUMBERED          = 26;
+const           EVT_BOOBYTRAP           = 27;
+const           EVT_SKEET               = 28;
+const           EVT_FIREPOWER           = 29;
 //const           EVT_PEN_TIME            = ;
 //const           EVT_WITCHHUNT           = ;
 
-const           EVT_TOTAL               = 27;
+const           EVT_TOTAL               = 30;
     
 const           EQ_ITEMS                = 1;            // flags for rand_equal cvar
 const           EQ_DOORS                = 2;
@@ -176,6 +181,7 @@ const Float:    MINITANKS_SCALE         = 0.67;         // scale the model by wh
 const Float:    MINITANK_MELEE_DMG      = 200.0;        // damage minitanks take from melee weapons
 const           MINITANK_FRUST_TIME     = 10;           // half normal frustration time
 const           MINITANKS_DAMAGE        = 20;           // minitanks punch does a bit less damage
+const           MINITANKS_HITTABLE_DMG  = 50;           // how much damage hittables do for minitanks
 
 const Float:    ITEM_FACTOR_2V2         = 0.5;          // how many of the items available in #v# game
 const Float:    ITEM_FACTOR_3V3         = 0.75;
@@ -226,12 +232,17 @@ const           EVENT_PENALTY_HEALTH    = 15;           // EVT_PEN_HEALTH   how 
 const bool:     EVENT_PENALTY_CI        = false;        // EVT_PEN_M2       whether there are penalties for common-shoves
 const           EVENT_PENALTY_M2_CI     = 2;            // EVT_PEN_M2       how many points to deduct for shoving
 const           EVENT_PENALTY_M2_SI     = 15;           // EVT_PEN_M2       how many points to deduct for shoving
+const           EVENT_SKEET_BONUS       = 15;           // EVT_SKEET        how many points to add per (real) skeet
+const           EVENT_SKEET_BONUS_TEAM  = 15;           // EVT_SKEET        for a team-skeet (the same for now?)
 const Float:    EVENT_FF_FACTOR         = 0.3;          // EVT_NOHUD        bitmask for what to hide
 const Float:    EVENT_LOCKEDCHANCE      = 0.7;          // EVT_DOORS        most doors closed -- melees will be given on start
 const           EVENT_DOORS_MINMELEE    = 2;            // EVT_DOORS        how many melees at least for locked doors event?
 const           EVENT_BADCOMBO_AMMO     = 25;           // EVT_BADCOMBO     how many grenades ammo?
 const Float:    EVENT_PROTECT_WEAK      = 2.0;          // EVT_PROTECT      factor the damage changes for the weak player
 const Float:    EVENT_PROTECT_STRONG    = 0.75;         // EVT_PROTECT      factor the damage changes for the stronger players
+const Float:    EVENT_BOOBYTRAP_CHANCE  = 0.1;          // EVT_BOOBYTRAP    odds that an item or door is boobytrapped
+const Float:    EVENT_SKEET_HUNTERS     = 0.8;          // EVT_SKEET        odds that a capping SI is a hunter
+const Float:    EVENT_FIREPOWER_AMMO    = 1.25;         // EVT_FIREPOWER    factor that ammo for T2 weapons is multiplied
 
 const Float:    EVENT_ENC_W_T1          = 1.5;          // EVT_ENCUMBERED   for determining total player weight
 const Float:    EVENT_ENC_W_T2          = 2.5;
@@ -296,10 +307,12 @@ const Float:    TIMER_PICKUPCHECK       = 0.05;         // super brief delay to 
 
 const           WITCHES_NIGHT           = 0;            // sv_force_time_of_day value
 const           WITCHES_DAY             = 3;
-/*
-const           WITCH_SEQUENCE_STANDING     = 2;        // m_nSequence
-const           WITCH_SEQUENCE_SITTING      = 4;
-*/
+
+/* const           WITCH_SEQUENCE_STANDING     = 2;        // m_nSequence
+const           WITCH_SEQUENCE_SITTING      = 4; */
+
+const Float:    SHOTGUN_BLAST_TIME          = 0.1;      // shotgun blast max time for tracking pellets (anything but 0, while super small, really)
+const Float:    TIMER_POUNCE                = 0.1;      // repeat timer to check when hunter has landed (for skeet tracking)
 
 const           DIFF_RATING_GLOW_THRESH     = 3;        // how high the round difficulty rating must be before we're more likely to keep glows on
 const           DIFF_RATING_INCAP_THRESH    = 4;        // how high before we keep minimum default incaps
@@ -329,6 +342,7 @@ enum itemPickupPenalty          // for use with tries to check if an item should
     ITEM_PICKUP_PENALTY_MELEE,
     ITEM_PICKUP_PENALTY_PISTOL,
     ITEM_PICKUP_PENALTY_MAGNUM,
+    ITEM_PICKUP_PENALTY_SAW,
     ITEM_PICKUP_PENALTY_PRIMARY_T1,
     ITEM_PICKUP_PENALTY_PRIMARY_T2,
     ITEM_PICKUP_PENALTY_PRIMARY_T3
@@ -482,7 +496,7 @@ new const String: g_csEventText[][] =
     "\x04Adrenaline Rush\x01",
     "\x04No Heads-Up\x01 - Survivors are HUD-less.",
     "\x04Old School\x01 - Back to L4D1...",
-    "\x04Friendly Fire\x01 - Hey! Watch where you shoot.",
+    "\x04Friendly Fire\x01 - Be careful where you shoot...",
     "\x04Hush\x01 - silent ",
     "\x04Pickup Penalty\x01 - Any item pickup costs \x045\x01 points.",
     "\x04Health Penalty\x01 - Using any health item costs \x0415\x01 points.",
@@ -491,8 +505,11 @@ new const String: g_csEventText[][] =
     "\x04Mini-Tanks\x01 - Many small tanks will spawn.",
     "\x04Keymaster\x01 - Only one player can use doors.",
     "\x04Bad Combo\x01 - Start with GL and Chainsaw.",
-    "\x04Babysitting\x01 - The baby takes double damage from SI (the others 3/4th).",
-    "\x04Encumbered\x01 - Carrying more stuff makes you slower. (try '!drop')"
+    "\x04Babysitting\x01 - The 'baby' takes double damage from SI (the others 3/4th).",
+    "\x04Encumbered\x01 - Carrying more stuff makes you slower. (try '!drop')",
+    "\x04Booby Traps\x01 - Doors and items may be wired with explosives.",
+    "\x04Skeet Shoot\x01 - Skeet hunters for \x0415\x01 bonus points.",
+    "\x04Firepower\x01 - Tier 2 weapons everywhere."
 };
 
 new const String: g_csJunkModels[][] =
