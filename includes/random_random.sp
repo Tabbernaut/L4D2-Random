@@ -310,14 +310,21 @@ RANDOM_DetermineRandomStuff()
         g_sSpecialEventExtra = "";
         g_iSpecialEventExtra = 0;
         g_iSpecialEventExtraSub = 0;
+        g_iNoSpecialEventStreak++;
         
         // force special event if second round and first round got one...
         new Float: fSpecialEventChance = GetConVarFloat(g_hCvarSpecialEventChance);
         if (g_bSecondHalf && g_iSpecialEvent != -1) { fSpecialEventChance = 1.0; }
         
+        // force a special event if we haven't had one in a while
+        if (fSpecialEventChance > 0.5 && g_iNoSpecialEventStreak > 2) {
+            fSpecialEventChance = 1.0;
+        }
         
         if (GetRandomFloat(0.001,1.0) <= fSpecialEventChance || g_iSpecialEventToForce != -1)
         {
+            g_iNoSpecialEventStreak = 0;    // reset streak, since we got an event
+            
             // pick random from the available weighted choice hat
 
             // forced, for debug (overrides everything else)
@@ -615,9 +622,14 @@ RANDOM_DetermineRandomStuff()
         RestoreDoors();
     }
     
+    // prepare random choices for SI spawns (if required)
+    if (!g_bSecondHalf) {
+        RANDOM_PrepareChoicesSpawns();  // build events weighted choices array
+    }
+    
+    // first attack spawns
     if (!g_bCampaignMode)
     {
-        // first attack spawns
         if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_FIRST_ATTACK)) {
             RandomizeFirstSpawns();
         }
@@ -2562,17 +2574,14 @@ RandomizeFirstSpawns()
     
     for (new i=0; i < TEAM_SIZE; i++)
     {
-        if (bFirstQuad)
+
+        // pick any random SI (or only capper)
+        tmpPick = GetRandomInt( (bFirstQuad) ? g_iSpawnWeightedChoicesStartCappers : 0 , g_iSpawnWeightedChoicesTotal - 1 );
+        tmpPick = g_iArSpawnWeightedChoices[tmpPick];
+        g_iArStorageSpawns[i] = tmpPick;
+        
+        if (_:g_iSpecialEvent == EVT_L4D1)
         {
-            // pick any random capper
-            tmpPick = GetRandomInt(ZC_SMOKER, (_:g_iSpecialEvent == EVT_L4D1) ? ZC_HUNTER : ZC_SPITTER);
-            if      (tmpPick == ZC_BOOMER)  { tmpPick = (GetRandomInt(0,1) == 0) ? ZC_SMOKER : ZC_HUNTER; }
-            else if (tmpPick == ZC_SPITTER) { tmpPick = (GetRandomInt(0,1) == 0) ? ZC_JOCKEY : ZC_CHARGER; }
-            g_iArStorageSpawns[i] = tmpPick;
-        }
-        else if (_:g_iSpecialEvent == EVT_L4D1)
-        {
-            tmpPick = GetRandomInt(ZC_SMOKER, ZC_HUNTER);
             // check if there already is a boomer/smoker, if so, replace it
             if (tmpPick == ZC_SMOKER) {
                 for (new j=0; j < i; j++) {
@@ -2584,32 +2593,18 @@ RandomizeFirstSpawns()
                 }
             }
             g_iArStorageSpawns[i] = tmpPick;
-            if (tmpPick == ZC_BOOMER) { tmpSupCount++; }
-        }
-        else
-        {
-            // pick any random SI (we'll check for quad later)
-            tmpPick = GetRandomInt(ZC_SMOKER, ZC_CHARGER);
-            g_iArStorageSpawns[i] = tmpPick;
-            if (tmpPick == ZC_BOOMER || tmpPick == ZC_SPITTER) { tmpSupCount++; }
         }
         
-        // hunters for the skeet event:
-        if (_:g_iSpecialEvent == EVT_SKEET)
-        {
-            if (g_iArStorageSpawns[i] != ZC_BOOMER && g_iArStorageSpawns[i] != ZC_SPITTER) {
-                if (GetRandomFloat(0.001,1.0) <= EVENT_SKEET_HUNTERS) {
-                    g_iArStorageSpawns[i] = ZC_HUNTER;
-                }
-            }
-        }
+        if (tmpPick == ZC_BOOMER || tmpPick == ZC_SPITTER) { tmpSupCount++; }
     }
     
     // check for quad if none supposed (only for 4v4)
     if ( !bFirstQuad && !tmpSupCount && g_iTeamSize > 3 )
     {
         // no support, replace one
-        tmpPick = GetRandomInt(ZC_SMOKER, ZC_BOOMER);
+        tmpPick = GetRandomInt( 0, g_iSpawnWeightedChoicesStartCappers - 1 );
+        tmpPick = g_iArSpawnWeightedChoices[tmpPick];
+        
         if ( tmpPick == ZC_SMOKER) {
             if (_:g_iSpecialEvent == EVT_L4D1) { tmpPick = ZC_BOOMER; } else { tmpPick = ZC_SPITTER; }
         }
@@ -2617,12 +2612,12 @@ RandomizeFirstSpawns()
     }
 
     
-    PrintDebug("[rand] Picked four classes for first attack (%s, %s, %s, %s)(quad: %i).",
+    PrintDebug("[rand] Picked four classes for first attack (%s, %s, %s, %s).",
             g_csSIClassName[g_iArStorageSpawns[0]],
             g_csSIClassName[g_iArStorageSpawns[1]],
             g_csSIClassName[g_iArStorageSpawns[2]],
-            g_csSIClassName[g_iArStorageSpawns[3]],
-            bFirstQuad);
+            g_csSIClassName[g_iArStorageSpawns[3]]
+        );
 }
 
 public DetermineSpawnClass(any:client, any:iClass)
@@ -2655,32 +2650,12 @@ public DetermineSpawnClass(any:client, any:iClass)
         iClass = g_iSpectateGhost[g_iSpectateGhostCount];
         //PrintDebug("[rand si] ghost reset. (%N = %i)", client, iClass);
     }
-    else if (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI))
-    {
-        // pick at random, only cappers
-        iClass = GetRandomInt(ZC_SMOKER, (_:g_iSpecialEvent == EVT_L4D1) ? ZC_HUNTER : ZC_SPITTER );
-        
-        if (iClass == ZC_BOOMER)  { iClass = (GetRandomInt(0,1) == 0) ? ZC_SMOKER : ZC_HUNTER; }
-        else if (iClass == ZC_SPITTER) { iClass = (GetRandomInt(0,1) == 0) ? ZC_JOCKEY : ZC_CHARGER; }
-        //PrintDebug("[rand si] quad/no-support pick. (%N = %i)", client, iClass);
-        checkSacking = true;
-    }
-    else if (g_iSpecialEvent == _:EVT_SKEET)
-    {
-        // pick at random, but high chance of switching cappers to hunter
-        iClass = GetRandomInt(ZC_SMOKER, ZC_CHARGER);
-        
-        if (iClass != ZC_BOOMER && iClass != ZC_SPITTER) {
-            if (GetRandomFloat(0.001,1.0) <= EVENT_SKEET_HUNTERS) {
-                iClass = ZC_HUNTER;
-            }
-        }
-        //checkSacking = true;    // can still get chargers etc, leave for now
-    }
     else if (GetConVarBool(g_hCvarRandomSpawns))
     {
         // pick at random
-        iClass = GetRandomInt(ZC_SMOKER, (_:g_iSpecialEvent == EVT_L4D1) ? ZC_HUNTER : ZC_CHARGER );
+        new randomIndex = GetRandomInt( (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) ? g_iSpawnWeightedChoicesStartCappers : 0, g_iSpawnWeightedChoicesTotal - 1);
+        iClass = g_iArSpawnWeightedChoices[randomIndex];
+        
         //PrintDebug("[rand si] random pick. (%N = %i)", client, iClass);
         checkSacking = true;
     }
@@ -2718,24 +2693,6 @@ public DetermineSpawnClass(any:client, any:iClass)
         // if there is a saved spawn: prevent charger stacking, prevent smoker stacking and prevent quads
         if (bestSaved != -1)
         {
-            /*
-            old approach: too strict
-            if (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) {
-                if (_:g_iSpecialEvent == EVT_L4D1) {
-                    iClass = ZC_HUNTER;
-                } else {
-                    iClass = (GetRandomInt(0, 1) == 0) ? ZC_JOCKEY : ZC_HUNTER;
-                }
-            } else {
-                // force boomer if someone kept a charger
-                if (_:g_iSpecialEvent == EVT_L4D1) {
-                    iClass = ZC_BOOMER;
-                } else {
-                    iClass = (bestSaved == ZC_CHARGER || GetRandomInt(0, 1) == 0) ? ZC_BOOMER : ZC_SPITTER;
-                }
-            }
-            */
-            
             new preChangeClass = iClass;
             
             // just prevent chargers, if player got a charger
@@ -2758,7 +2715,12 @@ public DetermineSpawnClass(any:client, any:iClass)
             
             // c. force non-quad (can override previous after-sackdetect-pick)
             if (support == 0 && g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) {
-                iClass = (_:g_iSpecialEvent == EVT_L4D1 || GetRandomInt(0, 1)) ? ZC_BOOMER : ZC_SPITTER;
+                if (_:g_iSpecialEvent == EVT_L4D1) {
+                    iClass = ZC_BOOMER;
+                } else {
+                    new randomIndex = GetRandomInt(0, g_iSpawnWeightedChoicesStartCappers - 1);
+                    iClass = g_iArSpawnWeightedChoices[randomIndex];
+                }
             }
             
             // reporting?
@@ -2767,9 +2729,9 @@ public DetermineSpawnClass(any:client, any:iClass)
                 if (preChangeClass != iClass) {
                     PrintToChat(client, "\x01[\x05r\x01] sack block: you got a %s (instead of %s) because %N kept their spawn.", g_csSIClassName[iClass], g_csSIClassName[preChangeClass], offendingClient);
                 }
-                PrintToChat(offendingClient, "\x01[\x05r\x01] Keeping your spawn prevents your team from getting chargers and quad-caps. (try to attack together!)", client, g_csSIClassName[bestSaved]);
+                PrintToChat(offendingClient, "\x01[\x05r\x01] Holding onto spawns makes your team get less chargers and no quad-caps. (try to attack together)");
             }
-            PrintDebug("[rand si] sack protection: %N given class %i (punishment for %N keeping class %s).", client, iClass, offendingClient, g_csSIClassName[bestSaved]);
+            PrintDebug("[rand si] sack protection: %N given class %s (punishment for %N keeping class %s).", client, g_csSIClassName[iClass], offendingClient, g_csSIClassName[bestSaved]);
         }
     }
     
@@ -3291,6 +3253,13 @@ RANDOM_PrepareChoicesEvents()
     new total = 0;
     new count = 0;
     
+    // check map type
+    new String: mapname[64];
+    new mapsType: mapnameType;
+    GetCurrentMap(mapname, sizeof(mapname));
+    GetTrieValue(g_hTrieMapsDoors, mapname, mapnameType);
+    
+    
     // special event choices
     // ---------------------
     
@@ -3304,7 +3273,7 @@ RANDOM_PrepareChoicesEvents()
         //      EVT_DOORS: because there are few doors on finales anyway
         
         if (    L4D_IsMissionFinalMap()
-            &&  ( _:g_iSpecialEvent == EVT_ADREN || _:g_iSpecialEvent == EVT_MINITANKS || _:g_iSpecialEvent == EVT_DOORS )
+            &&  ( _:g_iSpecialEvent == EVT_ADREN || _:g_iSpecialEvent == EVT_MINITANKS )
         ) {
             continue;
         }
@@ -3322,6 +3291,16 @@ RANDOM_PrepareChoicesEvents()
             continue;
         }
         
+        // many or no doors? change event availability
+        if ( _:g_iSpecialEvent == EVT_DOORS || _:g_iSpecialEvent == EVT_KEYMASTER )
+        {
+            if (mapnameType == MAPS_NODOORS) {
+                continue;
+            } else if (mapnameType == MAPS_MANYDOORS) {
+                count *= MANY_DOORS_EVENTFACTOR;
+            }
+        }
+        
         for (new j=0; j < count; j++)
         {
             g_iArEventWeightedChoices[total+j] = i;
@@ -3331,6 +3310,56 @@ RANDOM_PrepareChoicesEvents()
     g_iEventWeightedChoicesTotal = total;
     
     PrintDebug("[rand] Prepared special event weight array: %i total weight over %i events.", total, EVT_TOTAL);
+}
+
+
+// preparation of choice-hat (SI spawns)
+RANDOM_PrepareChoicesSpawns()
+{
+    new total = 0;
+    new count = 0;
+    new i = 0;
+    
+    for (new x = 1; x <= 6; x++)
+    {
+        // change order, so we can use a 'start cappers' offset
+        //  i = class type, x = just for looping
+        if (x == ZC_SMOKER) { i = ZC_SPITTER; }
+        else if (x == ZC_SPITTER) { i = ZC_SMOKER; }
+        else { i = x; }
+        
+        count = g_ciSpawnClassWeight[i];
+        
+        // different weight for special events
+        if (_:g_iSpecialEvent == EVT_SKEET)
+        {
+            // big chance of hunters, small chance for remaining cappers
+            if (i == ZC_HUNTER) {
+                count = 21;  // 8/10 for sum of 7,7,7,6 = 27
+            } else if (i != ZC_BOOMER && i != ZC_SPITTER) {
+                count = 2;
+            }
+        }
+        else if (_:g_iSpecialEvent == EVT_L4D1)
+        {
+            // no tickets for non-L4D1 classes
+            if (i > ZC_HUNTER) { continue; }
+        }
+        
+        for (new j=0; j < count; j++)
+        {
+            g_iArSpawnWeightedChoices[total+j] = i;
+        }
+        total += count;
+        
+        // set start/end of secondary choices
+        if (i == ZC_BOOMER) { g_iSpawnWeightedChoicesStartCappers = total; }
+        
+        //PrintDebug("[rand] choices weighted for: %i = %i", i, count);
+    }
+    g_iSpawnWeightedChoicesTotal = total;
+
+    //PrintDebug("[rand] Prepared spawn classes weight array: %i total weight over %i categories.", total, ZC_CHARGER);
 }
 
 // preparation of choice-hat (items etc)
@@ -3536,4 +3565,6 @@ RANDOM_PrepareChoices()
     
     PrintDebug("[rand] Prepared survivor item weight array: %i total weight over %i categories.", total, INDEX_SURV_TOTAL);
     
+    
+
 }

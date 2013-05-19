@@ -286,6 +286,8 @@ EVENT_RoundStartPreparation()
 {
     // apply some settings for special events at round start
     
+    g_bSpecialRoleAboutToChange = false;
+    
     switch (_:g_iSpecialEvent)
     {
         case EVT_DEFIB: {
@@ -648,6 +650,8 @@ EVENT_CheckSurvivorGun(client)
 // special roles for special events
 public Action: Timer_CheckSpecialEventRole(Handle:timer, any:leftStart)
 {
+    g_bSpecialRoleAboutToChange = false;
+    
     if (!g_iSpecialEventRole || !IsClientAndInGame(g_iSpecialEventRole) || !IsSurvivor(g_iSpecialEventRole) || !IsPlayerAlive(g_iSpecialEventRole) || IsFakeClient(g_iSpecialEventRole))
     {
         if (!leftStart) {

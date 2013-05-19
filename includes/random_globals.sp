@@ -7,6 +7,7 @@ new     Handle:         g_hTrieRandomizablePropPhysicsModel                 = IN
 new     Handle:         g_hTrieEntityCreated                                = INVALID_HANDLE;       // trie for recognizing classnames of entities to handle
 new     Handle:         g_hTrieMeleeType                                    = INVALID_HANDLE;       // trie for recognizing which melees are 'normal'
 new     Handle:         g_hTrieMaps                                         = INVALID_HANDLE;       // trie for recognizing intro maps
+new     Handle:         g_hTrieMapsDoors                                    = INVALID_HANDLE;       // trie for recognizing whether a map has little or many doors
 new     Handle:         g_hTrieBlindable                                    = INVALID_HANDLE;       // trie for recognizing some problematic entities
 new     Handle:         g_hTriePenaltyItems                                 = INVALID_HANDLE;       // trie for recognizing items that carry a penalty on EVT_PEN_ITME
 new     Handle:         g_hTriePropItems                                    = INVALID_HANDLE;       // trie for recognizing prop items that can be carried (for EVT_ENCUMBERED)
@@ -45,15 +46,15 @@ new     Float:          g_fTankFlowLate                                     = 0.
 new     Float:          g_fTankDeathLocation[3]                             = {0.0,...};            // last tank death location, for item drops
 new                     g_iMiniTankIndex;				                                            // current minitank in map
 new                     g_iMiniTankNum;				                                                // the number of minitanks to be spawned on the current map
-new     Float:          g_fArMiniTankFlows          [MULTITANK_MAX];                                // stores flow distances for the current round
+new     Float:          g_fArMiniTankFlows      [MULTITANK_MAX];                                     // stores flow distances for the current round
 
 // Witches (Stabby)
 new     bool:           g_bWitchWillSpawn                                   = false;
 new     bool:           g_bMultiWitch                                       = false;                // whether we'll have multiple witches this round(half)
 new                     g_iWitchNum;				                                                // the number of witches to be spawned on the current map
 new                     g_iWitchIndex;                                                              // the index of the current witch (in the witch flows array)
-new     Float:          g_fArWitchFlows             [MULTIWITCH_MAX];                               // stores flow distances for the current round
-new     bool:           g_bArWitchSitting           [MULTIWITCH_MAX]        = {true,...};           // stores whether each witch is sitting or walking
+new     Float:          g_fArWitchFlows         [MULTIWITCH_MAX];                                   // stores flow distances for the current round
+new     bool:           g_bArWitchSitting       [MULTIWITCH_MAX]            = {true,...};           // stores whether each witch is sitting or walking
 
 
 // SI Spawning / ghosts
@@ -98,18 +99,21 @@ new                     g_iCreatedEntities                                  = 0;
 new     Handle:         g_hBlockedEntities;
 
 // Available choices / Weighting
-new                     g_iArWeightedChoices    [STORED_MAX_COUNT];                                 // all the choices (every category * its weight)
+new                     g_iArWeightedChoices        [STORED_MAX_COUNT];                             // all the choices (every category * its weight)
 new                     g_iWeightedChoicesTotal;                                                    // total of WeightedChoices 'hat' filled
 new                     g_iWeightedChoicesStartUseful;                                              // where the useful choices start (skipping no-item)
 new                     g_iWeightedChoicesEndUseful;                                                // where the useful choices end (before junk)
 new                     g_iWeightedChoicesStartNonWeapons;                                          // where the non-weapon items begin (canister)
-new                     g_iArSurvWeightedChoices[STORED_SURV_MAX_COUNT];                            // all the choices (every category * its weight) for survivor start
+new                     g_iArSurvWeightedChoices    [STORED_SURV_MAX_COUNT];                        // all the choices (every category * its weight) for survivor start
 new                     g_iSurvWeightedChoicesStartSecondary;                                       // where the useful secondary choices start
 new                     g_iSurvWeightedChoicesEndSecondary;                                         // where the useful secondary choices end (before magnum)
 new                     g_iSurvWeightedChoicesStartPrimary;                                         // where the useful primary choices start
 new                     g_iSurvWeightedChoicesTotal;                                                // total of WeightedChoices 'hat' filled for survivor start
-new                     g_iArEventWeightedChoices[STORED_MAX_COUNT];                                // all the choices (every category * its weight) for events
+new                     g_iArEventWeightedChoices   [STORED_MAX_COUNT];                             // all the choices (every category * its weight) for events
 new                     g_iEventWeightedChoicesTotal;                                               // total of WeightedChoices 'hat' filled for events
+new                     g_iArSpawnWeightedChoices   [STORED_SI_MAX_COUNT];                          // all the choices for SI spawns (every category * its weight)
+new                     g_iSpawnWeightedChoicesTotal;                                               // total of WeightedChoices 'hat' filled for spawns
+new                     g_iSpawnWeightedChoicesStartCappers;                                        // where the capper spawn choices start (first spit, boom, then the rest)
 
 // Actual choices storage
 new                     g_strArStorage          [ENTITY_COUNT][strEntityData];                      // Stored entities, type is INDEX_
@@ -146,7 +150,7 @@ new                     g_iDefaultDistance                                  = 0;
 new                     g_iDamageBonus                                      = 0;                    // how much bonus for this round (half) can be got (maximally)
 new     bool:           g_bNoColaItem                                       = false;                // disallow the cola item to spawn (anywhere but in the DeC2 store)
 
-// insight
+// Insight
 new     bool:           g_bInsightSurvDone                                  = false;                // already 'had insight'?
 new     bool:           g_bInsightInfDone                                   = false;
 new                     g_iCountItemGnomes                                  = 0;                    // present on this round
@@ -168,6 +172,8 @@ new     bool:           g_bArBlockPickupCall    [MAXPLAYERS]                = {f
 new                     g_iBonusCount                                       = 0;                    // how many special event bonuses/penalties this roundhalf
 
 // special event stuff
+new                     g_iNoSpecialEventStreak                             = 0;                    // how many times in a row there wasn't a special event
+new     bool:           g_bSpecialRoleAboutToChange                         = false;                // whether we're already waiting for a timer countdown to do a report (spam prevent)
 new                     g_iArGunAmmoCount       [MAXPLAYERS]                = 0;                    // for gun swap event: how many bullets does the survivor have left?
 new     bool:           g_bNoWeaponsNoAmmo                                  = false;                // whether to allow weapons or ammo to spawn at all
 new                     g_iBoobyTraps                                       = 0;                    // how many boobytrap entries in the aray

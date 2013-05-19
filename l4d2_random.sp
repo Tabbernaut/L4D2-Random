@@ -53,6 +53,9 @@
             - ?     - gift idea: ghost-effect for survivors for X seconds (no outlines for SI) (even if running)
             - ?     - gift idea: see outlines on infected for X seconds ('telepathy')
             
+            - ?     - investigate c1m1 elevator.. see if you can move it up instead and/or make an alternative
+                      pathing using that (or the second elevator).
+            
             - MAYBE - mini-scavenge for specific rounds (decide per map)
                         do the research (how well possible? how much work? has anyone done it already?)
             - MAYBE - when cars are done (a minimal amount of) damage, they have a chance to explode
@@ -92,13 +95,9 @@
             - 'fallen survivor hunt'
             
             
-        to-do:
-            - high:     test new sack protection scheme.
-        
-            - bugfix:   map 1 (probably only then?) gets weird stuff spawning in saferooms sometimes
-                        - see mikkel's doors, or that elevator in dc1
-                        - one time it was a boat
-                        - christmas lights
+        to-do:          
+            - bugfix:   intro maps (and quite likely, only then?) get weird stuff spawning in saferooms sometimes
+                        - see mikkel's doors, or that elevator in dc1, the boat
                         
                         - try: detect first mapload, delay randomitem stuff a bit more then?
                             - tried, needs testing
@@ -110,9 +109,7 @@
             - medium:   bot si spawn determination?
                         - or check if I can simply force the spawns just like human players (IsFakeClient() checks?)
                         - consider allowing bots in matchmode too, because.. why not?
-                        
-            - low:      only do doors event on maps with plenty of doors
-            - low:      prevent multiple ammo piles in start saferoom?
+            
             - low:      stripper-dir switch randomly: so maps automatically have two versions
                         - dec3 long way around vs. normal
                         - par3 random maze versions
@@ -213,7 +210,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.13",
+    version = "1.0.14",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -760,10 +757,41 @@ public Action: Event_SoundPlayed(clients[64], &numClients, String:sample[PLATFOR
     return Plugin_Continue;
 }  
 
-public Action:OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype)
+public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype)
 {
     if (_:g_iSpecialEvent != EVT_MINITANKS && _:g_iSpecialEvent != EVT_PROTECT) { return Plugin_Continue; }
-    if ( !IsClientAndInGame(victim) || !IsClientAndInGame(attacker) || damage == 0.0 ) { return Plugin_Continue; }
+    if ( !IsClientAndInGame(victim) || damage == 0.0 ) { return Plugin_Continue; }
+    
+    // protect, baby player takes more damage (the others less)
+    if (_:g_iSpecialEvent == EVT_PROTECT)
+    {
+        if ( GetClientTeam(victim) != TEAM_SURVIVOR ) { return Plugin_Continue; }
+        
+        new String: classname[32];
+        GetEdictClassname(inflictor, classname, sizeof(classname));
+        
+        if (StrEqual(classname, "infected", false))
+        {
+            // CI-to-survivor
+            if (victim == g_iSpecialEventRole) {
+                damage *= EVENT_PROTECT_CIWEAK;
+            } else {
+                damage *= EVENT_PROTECT_CISTRONG;
+            }
+            return Plugin_Changed;
+        }
+        else if ( IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_INFECTED ) {
+            // SI-to-survivor
+            if (victim == g_iSpecialEventRole) {
+                damage = damage * EVENT_PROTECT_WEAK;
+            } else {
+                damage = damage * EVENT_PROTECT_STRONG;
+            }
+            return Plugin_Changed;
+        }
+    }
+    
+    if ( !IsClientAndInGame(attacker) ) { return Plugin_Continue; }
     
     // set a fixed damage amount for melee weaps on tank
     if (_:g_iSpecialEvent == EVT_MINITANKS)
@@ -778,18 +806,6 @@ public Action:OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damage
             damage = MINITANK_MELEE_DMG;
             return Plugin_Changed;
         }
-    }
-    // protect, baby player takes more damage (the others less)
-    else if (_:g_iSpecialEvent == EVT_PROTECT)
-    {
-        if ( GetClientTeam(victim) != TEAM_SURVIVOR || GetClientTeam(attacker) != TEAM_INFECTED) { return Plugin_Continue; }
-        
-        if (victim == g_iSpecialEventRole) {
-            damage = damage * EVENT_PROTECT_WEAK;
-        } else {
-            damage = damage * EVENT_PROTECT_STRONG;
-        }
-        return Plugin_Changed;
     }
     
     return Plugin_Continue;
@@ -893,7 +909,11 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
     }
     else if (_:g_iSpecialEvent == EVT_KEYMASTER || _:g_iSpecialEvent == EVT_PROTECT)
     {
-        CreateTimer(0.1, Timer_CheckSpecialEventRole, g_bPlayersLeftStart);
+        if (!g_bSpecialRoleAboutToChange)
+        {
+            g_bSpecialRoleAboutToChange = true;
+            CreateTimer(DELAY_TEAMSWAP, Timer_CheckSpecialEventRole, g_bPlayersLeftStart, TIMER_FLAG_NO_MAPCHANGE);
+        }
     }
     // do some delayed checks/changes when people go survivor/infected
     else if (_:g_iSpecialEvent == EVT_NOHUD || _:g_iSpecialEvent == EVT_DEFIB)
@@ -1693,7 +1713,7 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
             HUDRemoveClient(victim);
         }
         else if ( (_:g_iSpecialEvent == EVT_KEYMASTER || _:g_iSpecialEvent == EVT_PROTECT) && g_iSpecialEventRole == victim) {
-            CreateTimer(0.1, Timer_CheckSpecialEventRole);
+            CreateTimer(0.1, Timer_CheckSpecialEventRole, true, TIMER_FLAG_NO_MAPCHANGE);
         }
         
         // check gnome status

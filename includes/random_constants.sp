@@ -51,6 +51,7 @@ const           MELEE_CLASS_COUNT       = 32;
 const           MELEE_CLASS_LENGTH      = 32;
 const           STORED_MAX_COUNT        = 1024;         // just arbitrary, users shouldn't exceed this total
 const           STORED_SURV_MAX_COUNT   = 256;          // just arbitrary, users shouldn't exceed this total
+const           STORED_SI_MAX_COUNT     = 60;           // internal, so not even risky (max 10 per class)
 const           GNOME_MAX_COUNT         = 128;          // just arbitrary, users shouldn't exceed this total (because why make gnome heaven?)
 const           MAX_REPORTLINES         = 15;
 const           REPLINELENGTH           = 256;          // maximum length of a 'report line'
@@ -108,7 +109,6 @@ const           INDEX_SURV_T1SHOT       = 6;
 
 const           INDEX_SURV_TOTAL        = 7;
 
-
 const           EVT_ITEM                = 0;
 const           EVT_HORDE_HUGE          = 1;
 const           EVT_HORDE_NONE          = 2;
@@ -139,6 +139,7 @@ const           EVT_ENCUMBERED          = 26;
 const           EVT_BOOBYTRAP           = 27;
 const           EVT_SKEET               = 28;
 const           EVT_FIREPOWER           = 29;
+
 //const           EVT_PEN_TIME            = ;
 //const           EVT_WITCHHUNT           = ;
 
@@ -240,6 +241,8 @@ const           EVENT_DOORS_MINMELEE    = 2;            // EVT_DOORS        how 
 const           EVENT_BADCOMBO_AMMO     = 25;           // EVT_BADCOMBO     how many grenades ammo?
 const Float:    EVENT_PROTECT_WEAK      = 2.0;          // EVT_PROTECT      factor the damage changes for the weak player
 const Float:    EVENT_PROTECT_STRONG    = 0.75;         // EVT_PROTECT      factor the damage changes for the stronger players
+const Float:    EVENT_PROTECT_CIWEAK    = 1.5;
+const Float:    EVENT_PROTECT_CISTRONG  = 0.5;
 const Float:    EVENT_BOOBYTRAP_CHANCE  = 0.1;          // EVT_BOOBYTRAP    odds that an item or door is boobytrapped
 const Float:    EVENT_SKEET_HUNTERS     = 0.8;          // EVT_SKEET        odds that a capping SI is a hunter
 const Float:    EVENT_FIREPOWER_AMMO    = 1.25;         // EVT_FIREPOWER    factor that ammo for T2 weapons is multiplied
@@ -250,7 +253,7 @@ const Float:    EVENT_ENC_W_T3          = 3.5;
 const Float:    EVENT_ENC_W_PISTOL      = 0.5;          // magnum weighs 2 pistols
 const Float:    EVENT_ENC_W_MELEE       = 1.5;
 const Float:    EVENT_ENC_W_THROWABLE   = 1.0;
-const Float:    EVENT_ENC_W_KIT         = 1.5;
+const Float:    EVENT_ENC_W_KIT         = 2.0;
 const Float:    EVENT_ENC_W_PILL        = 0.5;
 const Float:    EVENT_ENC_W_PROP        = 2.5;          // propane tanks, gnome, cola, etc
 const Float:    EVENT_ENC_W_THRESH      = 4.1;          // EVT_ENCUMBERED   weight threshold for slowing down
@@ -260,6 +263,7 @@ const Float:    EVENT_ENC_FAST_MAX      = 0.5;          //                  max 
 const Float:    EVENT_ENC_SLOW_MAX      = 0.8;          //                  max slowdown (1.0 - this value = speed factor)
 
 const           EARLY_DOORS_MINMELEE    = 1;            // how many melees at least for early locked doors
+const           MANY_DOORS_EVENTFACTOR  = 3;            // how many times event weight for the doors events on many-doors-maps?
 
 const           TANK_DROP_ITEMS_MIN     = 2;            // how many items a tank can drop minimally
 const           TANK_DROP_ITEMS_MAX     = 5;
@@ -361,7 +365,9 @@ enum mapsType                   // for use with tries to check map type (intro o
     MAPS_INTRO,
     MAPS_FINALE,
     MAPS_NOCOLA,                // DC2, no cola spawns
-    MAPS_NOSTORM                // HR3/4, no storm events
+    MAPS_NOSTORM,               // HR3/4, no storm events
+    MAPS_MANYDOORS,
+    MAPS_NODOORS
 }
 
 enum CreatedEntityType          // for use with tries to determine whether to handle onEntityCreated
@@ -427,6 +433,17 @@ enum strGnomeData
     Float:  gnomefFirstPickup,      // where (in fractional distance) the gnome was first picked up
             gnomeEntity             // if not held, what phys prop entity is the gnome?
 }
+
+new const g_ciSpawnClassWeight[] =
+{
+    0,
+    7,  // smoker
+    6,  // boomer
+    7,  // hunter
+    6,  // spitter
+    7,  // jockey
+    6   // charger
+};
 
 enum MeleeNormalOrWeird
 {
