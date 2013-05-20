@@ -32,6 +32,11 @@ const           ZC_TANK                 = 8;
 const           ZC_NOTINFECTED          = 9;
 const           ZC_TOTAL                = 7;
 
+const           SC_NICK_BILL            = 0;            // m_survivorCharacter
+const           SC_ROCHELLE_ZOEY        = 1;
+const           SC_COACH_LOUIS          = 2;
+const           SC_ELLIS_FRANCIS        = 3;
+
 const Float:    ZC_TIMEROFFSET          = 0.5;
 const Float:    ZC_TIMERDEATHCHECK      = 0.05;
 const Float:    ZC_TIMERAFTERTANK       = 0.01;
@@ -56,6 +61,7 @@ const           GNOME_MAX_COUNT         = 128;          // just arbitrary, users
 const           MAX_REPORTLINES         = 15;
 const           REPLINELENGTH           = 256;          // maximum length of a 'report line'
 const Float:    TIMER_HUMANCHECK        = 2.0;          // interval for checking for humans after map load
+const Float:    TIMER_STARTCHECK        = 0.25;         // interval for checking whether survivors have left saferoom (used if PlayersLeftStartArea while in readyup)
 const Float:    MAX_RAYDIF              = 100.0;        // maximum z-difference for finding floors
 const           MAX_DOORS               = 128;          // amount of doors to track
 const           MAX_BOOBYTRAPS          = 128;          // amount of boobytraps to add maximally
@@ -64,9 +70,10 @@ const Float:    BLND_ENT_CHECK_INTERVAL = 1.0;          // for 'blind infected' 
 const Float:    BLND_TRACE_TOLERANCE    = 75.0;
 
 const Float:    ITEM_PICKUP_DISTANCE    = 64.0;         // how far can a survivor 'reach' for a gift box?
+const Float:    ITEM_USE_DISTANCE       = 16.0;         // how far a survivor can move before aborting a use-progress-bar type action
 
 const           STR_MAX_WPCLASSNAME     = 48;
-const           STR_MAX_ITEMGIVEN       = 22;
+const           STR_MAX_ITEMGIVEN       = 48;
 const           STR_MAX_MODELNAME       = 48;
 const           STR_MAX_MAPNAME         = 24;
 
@@ -139,11 +146,12 @@ const           EVT_ENCUMBERED          = 26;
 const           EVT_BOOBYTRAP           = 27;
 const           EVT_SKEET               = 28;
 const           EVT_FIREPOWER           = 29;
+const           EVT_AMMO                = 30;
 
 //const           EVT_PEN_TIME            = ;
 //const           EVT_WITCHHUNT           = ;
 
-const           EVT_TOTAL               = 30;
+const           EVT_TOTAL               = 31;
     
 const           EQ_ITEMS                = 1;            // flags for rand_equal cvar
 const           EQ_DOORS                = 2;
@@ -246,6 +254,8 @@ const Float:    EVENT_PROTECT_CISTRONG  = 0.5;
 const Float:    EVENT_BOOBYTRAP_CHANCE  = 0.1;          // EVT_BOOBYTRAP    odds that an item or door is boobytrapped
 const Float:    EVENT_SKEET_HUNTERS     = 0.8;          // EVT_SKEET        odds that a capping SI is a hunter
 const Float:    EVENT_FIREPOWER_AMMO    = 1.25;         // EVT_FIREPOWER    factor that ammo for T2 weapons is multiplied
+const Float:    EVENT_AMMO_PACKTIME     = 3.0;          // EVT_AMMO         time it takes to repack ammo
+const Float:    EVENT_AMMO_FACTOR       = 0.12;         // EVT_AMMO         how much ammo there is in weapons lying around
 
 const Float:    EVENT_ENC_W_T1          = 1.5;          // EVT_ENCUMBERED   for determining total player weight
 const Float:    EVENT_ENC_W_T2          = 2.5;
@@ -359,6 +369,14 @@ enum itemPropType               // for use with tries to check if an item is a c
     ITEM_PROP_CANISTER
 }
 
+enum itemUseType               // for use with tries to check if an item is something we check for using
+{
+    ITEM_USE_DOOR,
+    ITEM_USE_COLA,
+    ITEM_USE_PROP,
+    ITEM_USE_AMMO
+}
+
 enum mapsType                   // for use with tries to check map type (intro or not)
 {
     MAPS_NORMAL,
@@ -374,7 +392,8 @@ enum CreatedEntityType          // for use with tries to determine whether to ha
 {
     CREATED_INFECTED,
     CREATED_PIPEBOMB,
-    CREATED_PROP_PHYSICS
+    CREATED_PROP_PHYSICS,
+    CREATED_AMMO_DEPLOYED       // explosive/incendiary
 }
 
 enum RandomizableOrNot          // for use with tries to determine ent's random-replaceableness
@@ -526,7 +545,8 @@ new const String: g_csEventText[][] =
     "\x04Encumbered\x01 - Carrying more stuff makes you slower. (try '!drop')",
     "\x04Booby Traps\x01 - Doors and items may be wired with explosives.",
     "\x04Skeet Shoot\x01 - Skeet hunters for \x0415\x01 bonus points.",
-    "\x04Firepower\x01 - Tier 2 weapons everywhere."
+    "\x04Firepower\x01 - Tier 2 weapons everywhere.",
+    "\x04Ammo Shortage\x01 - Deploy and repack your team's ammo."
 };
 
 new const String: g_csJunkModels[][] =

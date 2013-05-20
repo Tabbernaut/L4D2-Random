@@ -131,6 +131,7 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_BOOBYTRAP] = CreateConVar(       "rand_weight_evt_boobytrap",     "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_SKEET] = CreateConVar(           "rand_weight_evt_skeet",         "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_FIREPOWER] = CreateConVar(       "rand_weight_evt_firepower",     "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_AMMO] = CreateConVar(            "rand_weight_evt_ammo",          "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     // built in cvars (for tracking)
     g_hCvarReadyUp = FindConVar("l4d_ready_enabled");
@@ -194,6 +195,8 @@ INIT_FillTries()
     SetTrieValue(g_hTrieEntityCreated, "infected",                                  CREATED_INFECTED);
     SetTrieValue(g_hTrieEntityCreated, "pipe_bomb_projectile",                      CREATED_PIPEBOMB);
     SetTrieValue(g_hTrieEntityCreated, "physics_prop",                              CREATED_PROP_PHYSICS);
+    SetTrieValue(g_hTrieEntityCreated, "upgrade_ammo_explosive",                    CREATED_AMMO_DEPLOYED);
+    SetTrieValue(g_hTrieEntityCreated, "upgrade_ammo_incendiary",                   CREATED_AMMO_DEPLOYED);
     
     g_hTrieRandomizableEntity = CreateTrie();                                                                                       // classname trie for finding randomizable items
     SetTrieValue(g_hTrieRandomizableEntity, "weapon_spawn",                         RANDOMIZABLE_ITEM);
@@ -230,8 +233,10 @@ INIT_FillTries()
     SetTrieValue(g_hTrieRandomizableEntity, "weapon_upgradepack_incendiary_spawn",  RANDOMIZABLE_ITEM);
     SetTrieValue(g_hTrieRandomizableEntity, "upgrade_ammo_incendiary",              RANDOMIZABLE_ITEM);                             // probably never appears
     SetTrieValue(g_hTrieRandomizableEntity, "upgrade_ammo_explosive",               RANDOMIZABLE_ITEM);                             // probably never appears
+    SetTrieValue(g_hTrieRandomizableEntity, "prop_fuel_barrel",                     RANDOMIZABLE_ITEM);
     
     SetTrieValue(g_hTrieRandomizableEntity, "prop_physics",                         RANDOMIZABLE_PHYSICS);
+    
     g_hTrieRandomizablePropPhysicsModel = CreateTrie();                                                                             // cant go around turning EVERY prop_physics into crazy things
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/gascan001a.mdl",               RANDOMIZABLE_PHYSICS);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/propanecanister001a.mdl",      RANDOMIZABLE_PHYSICS);
@@ -371,6 +376,12 @@ INIT_FillTries()
     SetTrieValue(g_hTriePropItems, "weapon_fireworkcrate",          ITEM_PROP_CANISTER);
     SetTrieValue(g_hTriePropItems, "weapon_propanetank",            ITEM_PROP_CANISTER);
     SetTrieValue(g_hTriePropItems, "weapon_oxygentank",             ITEM_PROP_CANISTER);
+    
+    g_hTrieUseItems = CreateTrie();
+    SetTrieValue(g_hTrieUseItems, "prop_door_rotating",             ITEM_USE_DOOR);
+    SetTrieValue(g_hTrieUseItems, "weapon_cola_bottles",            ITEM_USE_COLA);
+    SetTrieValue(g_hTrieUseItems, "prop_physics",                   ITEM_USE_PROP);
+    SetTrieValue(g_hTrieUseItems, "weapon_ammo_spawn",              ITEM_USE_AMMO);
 }
 
 // SDK Calls

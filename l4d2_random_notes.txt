@@ -1,0 +1,150 @@
+
+L4D2_Random
+===========
+
+    event ideas:
+    ------------
+            
+            in consideration
+            ----------------
+            - 'witch hunt': spawns many witches all over the place -- only way to score points = by killing them [pbonus]
+                    consider it a 'miniwitches': give them 50% health, 50 dmg claw?
+            - 'time penalty': every minute played gives a 25 point penalty on the round score
+            - 'pistol round': only pistols (magnums included). No locked doors and easier ci/si. [maybe]
+            - gnome VIP: only one gnome spawns (start saferoom), it must be brought or the end saferoom won't close
+                or: gnome heaven, where the only way to score (many) points is to bring gnomes
+                - for example: given only 1 gnome: distance points are frozen unless gnome is held
+            - weird SI: random SI abilities (CRox's code) -- just give every SI a random ability...
+            - axe effect / rockstar [stab]
+                everyone gets an axe/guitar, all common are female, no tank only spitters and boomettes
+            - clockwork: clockwork timed spawns, deaths, rinse repeat (no tank?)
+            - quad damage [stab]
+                one player gets special glow / sound => deals 4* damage
+                tag-game: SI and survivors get quad, it switches when one hits another
+            
+            rejected
+            --------
+            - 'fallen survivor hunt'
+            
+            
+    to-do:
+    ------
+            - high:     finally fix gifts giving wrong shit in start saferoom...
+            
+            - test:     'ammo shortage': check if it's consistently dropped when somebody dies... should be, but would be nasty if it got lost..
+            - bugfix:   intro maps (and quite likely, only then?) get weird stuff spawning in saferooms sometimes
+                        see mikkel's doors, or that elevator in dc1, the boat
+                        - could be itemsblindinfected..?
+            
+            - medium:   bot si spawn determination?
+                        - or check if I can simply force the spawns just like human players (IsFakeClient() checks?)
+                        - consider allowing bots in matchmode too, because.. why not?
+            
+            - low:      stripper-dir switch randomly: so maps automatically have two versions
+                        - dec3 long way around vs. normal
+                        - par3 random maze versions
+                        
+            - low:      randomize location for gascans in scavenge finales
+                            that is, find all the locations, get the total amount of cans and redistribute them
+                            *near* every spawn location with random variance (then remember for next round)
+            
+            - code:     "The SetEntProp functions have a parameter for the array index, use it instead of doing manually lookups and computing offsets."
+            - code:     Clean up the explosion timer/particles code a bit.
+            - code:     Clean up the l4d_drop copied code some more.
+            
+            
+    ideas:
+    ------
+        
+            - ?     - gift idea: key reversal effect, briefly. (negative effect)
+            - ?     - gift idea: X second slowdown (like EVT_ENCUMBERED)
+            - ?     - gift idea: ghost-effect for survivors for X seconds (no outlines for SI) (even if running)
+            - ?     - gift idea: see outlines on infected for X seconds ('telepathy')
+            
+            - ?     - investigate c1m1 elevator.. see if you can move it up instead and/or make an alternative
+                      pathing using that (or the second elevator).
+            
+            - MAYBE - mini-scavenge for specific rounds (decide per map)
+                        do the research (how well possible? how much work? has anyone done it already?)
+            - MAYBE - when cars are done (a minimal amount of) damage, they have a chance to explode
+            - MAYBE - random car alarms & randomly going off when survivors are near?
+            - MAYBE - play merry go round music for CLOWNS event
+            - MAYBE - add 'rerandom' function, working on live round [ for testing / bad starts ]
+            
+            - STAB  - related cvars -- lower spawn timers = more useful items, or something like that
+                        [ not much point as this moment, apart as an appreciative gesture to stabs. ]
+            
+            - NO    - for random glows: decide /per survivor/ whether they have glows...
+            - NO    - memorize horde timers, repeat same hordes for second roundhalf
+            - NO    - random event speeds/times & random event horde size/duration
+            
+            
+            
+            
+Some stuff to keep in mind:
+===========================
+
+        prop_physics    spawnflags
+        --------------------------
+            1 :         "Start Asleep" : 0
+            2 :         "Don't take physics damage" : 0
+            4 :         "Debris - Don't collide with the player or other debris" : 0
+            8 :         "Motion Disabled" : 0
+            128 :       "Not affected by rotor wash" : 0
+            256 :       "Generate output on +USE " : 1
+            512 :       "Prevent pickup" : 0
+            1024:       "Prevent motion enable on player bump" : 0
+            4096:       "Debris with trigger interaction" : 0
+            8192:       "Force server-side (Multiplayer only)" : 0
+            32768:      "Enable +use glow effect" : 0
+            
+        cvars to consider:
+        ------------------
+            z_common_limit
+            z_background_limit
+            z_cull_near
+            
+            z_hear_gunfire_range 1000
+            z_hear_runner_far_range 900
+            z_vision_range 1000
+            z_vision_range_alert 2000
+            z_vision_range_obscured 750
+            z_vision_range_obscured_alert 1250
+            z_acquire_near_range 500
+            z_close_target_notice_distance 100
+            z_notice_near_range 300
+            
+            
+        What's this:
+        ------------
+            -Member: m_nHitboxSet (offset 1104) (type integer) (bits 2)
+            -Member: m_flModelScale (offset 1108) (type float) (bits 0)
+            -Member: m_iGlowType (offset 4) (type integer) (bits 32)
+            -Member: m_nGlowRange (offset 8) (type integer) (bits 32)
+            -Member: m_glowColorOverride (offset 12) (type integer) (bits 32)
+            -Member: m_bFlashing (offset 16) (type integer) (bits 1)
+            -Member: m_nRenderFX (offset 276) (type integer) (bits 8)
+            -Member: m_nRenderMode (offset 277) (type integer) (bits 8)
+            -Member: m_fEffects (offset 204) (type integer) (bits 10)
+            -Member: m_clrRender (offset 280) (type integer) (bits 32)
+            
+        wait.. are these start/end saferoom checks? that'd be funny
+            -Member: m_isInMissionStartArea (offset 11484) (type integer) (bits 1)
+            -Member: m_bInBombZone (offset 10332) (type integer) (bits 1)
+            -Member: m_bInBuyZone (offset 10333) (type integer) (bits 1)
+            
+        infected netprops:
+            -Member: m_iGlowType (offset 4) (type integer) (bits 32)
+            -Member: m_nGlowRange (offset 8) (type integer) (bits 32)
+            -Member: m_glowColorOverride (offset 12) (type integer) (bits 32)
+            -Member: m_bFlashing (offset 16) (type integer) (bits 1)
+            -Member: m_nRenderFX (offset 276) (type integer) (bits 8)
+            -Member: m_nRenderMode (offset 277) (type integer) (bits 8)
+            -Member: m_fEffects (offset 204) (type integer) (bits 10)
+            -Member: m_clrRender (offset 280) (type integer) (bits 32)
+        may be used to change/force outlines...
+        
+        play with this..
+            // experiment - test
+            SetEntityGravity(entity, 400.0);
+ 

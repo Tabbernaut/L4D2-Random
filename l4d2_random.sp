@@ -45,85 +45,8 @@
             - random item drops by common infected
             - gift boxes and opening results
             - pipebombs (are sometimes duds)
-            
         
-        ideas:
-            - ?     - gift idea: key reversal effect, briefly. (negative effect)
-            - ?     - gift idea: X second slowdown (like EVT_ENCUMBERED)
-            - ?     - gift idea: ghost-effect for survivors for X seconds (no outlines for SI) (even if running)
-            - ?     - gift idea: see outlines on infected for X seconds ('telepathy')
-            
-            - ?     - investigate c1m1 elevator.. see if you can move it up instead and/or make an alternative
-                      pathing using that (or the second elevator).
-            
-            - MAYBE - mini-scavenge for specific rounds (decide per map)
-                        do the research (how well possible? how much work? has anyone done it already?)
-            - MAYBE - when cars are done (a minimal amount of) damage, they have a chance to explode
-            - MAYBE - random car alarms & randomly going off when survivors are near?
-            - MAYBE - play merry go round music for CLOWNS event
-            - MAYBE - add 'rerandom' function, working on live round [ for testing / bad starts ]
-            
-            - STAB  - related cvars -- lower spawn timers = more useful items, or something like that
-                        [ not much point as this moment, apart as an appreciative gesture to stabs. ]
-            
-            - NO    - for random glows: decide /per survivor/ whether they have glows...
-            - NO    - memorize horde timers, repeat same hordes for second roundhalf
-            - NO    - random event speeds/times & random event horde size/duration
-            
-            
-        event ideas:
-            
-            in consideration
-            ================
-            - 'witch hunt': spawns many witches all over the place -- only way to score points = by killing them [pbonus]
-                    consider it a 'miniwitches': give them 50% health, 50 dmg claw?
-            - 'time penalty': every minute played gives a 25 point penalty on the round score
-            - 'pistol round': only pistols (magnums included). No locked doors and easier ci/si. [maybe]
-            - gnome VIP: only one gnome spawns (start saferoom), it must be brought or the end saferoom won't close
-                or: gnome heaven, where the only way to score (many) points is to bring gnomes
-                - for example: given only 1 gnome: distance points are frozen unless gnome is held
-            - weird SI: random SI abilities (CRox's code) -- just give every SI a random ability...
-            - axe effect / rockstar [stab]
-                everyone gets an axe/guitar, all common are female, no tank only spitters and boomettes
-            - clockwork: clockwork timed spawns, deaths, rinse repeat (no tank?)
-            - quad damage [stab]
-                one player gets special glow / sound => deals 4* damage
-                tag-game: SI and survivors get quad, it switches when one hits another
-            
-            rejected
-            ========
-            - 'fallen survivor hunt'
-            
-            
-        to-do:          
-            - bugfix:   intro maps (and quite likely, only then?) get weird stuff spawning in saferooms sometimes
-                        - see mikkel's doors, or that elevator in dc1, the boat
-                        
-                        - try: detect first mapload, delay randomitem stuff a bit more then?
-                            - tried, needs testing
-                        - alternatively, could be itemsblindinfected..?
-            
-            - bugfix:   adren event: gives wrong health (only 50)?
-                        - cannot reproduce locally? maybe try with confogl loaded...
-            
-            - medium:   bot si spawn determination?
-                        - or check if I can simply force the spawns just like human players (IsFakeClient() checks?)
-                        - consider allowing bots in matchmode too, because.. why not?
-            
-            - low:      stripper-dir switch randomly: so maps automatically have two versions
-                        - dec3 long way around vs. normal
-                        - par3 random maze versions
-            - low:      randomize location for gascans in scavenge finales
-                            that is, find all the locations, get the total amount of cans and redistribute them
-                            *near* every spawn location with random variance (then remember for next round)
-            
-            
-            - code:     "The SetEntProp functions have a parameter for the array index, use it instead of doing manually lookups and computing offsets."
-            - code:     Clean up the explosion timer/particles code a bit.
-            - code:     Clean up the l4d_drop copied code some more.
-            
-*/
- /*
+        
         equal flags:
         ------------
             1       items (startup & map)
@@ -138,70 +61,7 @@
             512     tanks
            1024     points / scoring
  
-        prop_physics    spawnflags
-        --------------------------
-            1 :         "Start Asleep" : 0
-            2 :         "Don't take physics damage" : 0
-            4 :         "Debris - Don't collide with the player or other debris" : 0
-            8 :         "Motion Disabled" : 0
-            128 :       "Not affected by rotor wash" : 0
-            256 :       "Generate output on +USE " : 1
-            512 :       "Prevent pickup" : 0
-            1024:       "Prevent motion enable on player bump" : 0
-            4096:       "Debris with trigger interaction" : 0
-            8192:       "Force server-side (Multiplayer only)" : 0
-            32768:      "Enable +use glow effect" : 0
-            
-        cvars to consider:
-        ------------------
-            z_common_limit
-            z_background_limit
-            z_cull_near
-            
-            z_hear_gunfire_range 1000
-            z_hear_runner_far_range 900
-            z_vision_range 1000
-            z_vision_range_alert 2000
-            z_vision_range_obscured 750
-            z_vision_range_obscured_alert 1250
-            z_acquire_near_range 500
-            z_close_target_notice_distance 100
-            z_notice_near_range 300
-            
-            
-        What's this:
-        ------------
-            -Member: m_nHitboxSet (offset 1104) (type integer) (bits 2)
-            -Member: m_flModelScale (offset 1108) (type float) (bits 0)
-            -Member: m_iGlowType (offset 4) (type integer) (bits 32)
-            -Member: m_nGlowRange (offset 8) (type integer) (bits 32)
-            -Member: m_glowColorOverride (offset 12) (type integer) (bits 32)
-            -Member: m_bFlashing (offset 16) (type integer) (bits 1)
-            -Member: m_nRenderFX (offset 276) (type integer) (bits 8)
-            -Member: m_nRenderMode (offset 277) (type integer) (bits 8)
-            -Member: m_fEffects (offset 204) (type integer) (bits 10)
-            -Member: m_clrRender (offset 280) (type integer) (bits 32)
-            
-        wait.. are these start/end saferoom checks? that'd be funny
-            -Member: m_isInMissionStartArea (offset 11484) (type integer) (bits 1)
-            -Member: m_bInBombZone (offset 10332) (type integer) (bits 1)
-            -Member: m_bInBuyZone (offset 10333) (type integer) (bits 1)
-            
-        infected netprops:
-            -Member: m_iGlowType (offset 4) (type integer) (bits 32)
-            -Member: m_nGlowRange (offset 8) (type integer) (bits 32)
-            -Member: m_glowColorOverride (offset 12) (type integer) (bits 32)
-            -Member: m_bFlashing (offset 16) (type integer) (bits 1)
-            -Member: m_nRenderFX (offset 276) (type integer) (bits 8)
-            -Member: m_nRenderMode (offset 277) (type integer) (bits 8)
-            -Member: m_fEffects (offset 204) (type integer) (bits 10)
-            -Member: m_clrRender (offset 280) (type integer) (bits 32)
-        may be used to change/force outlines...
-        
-        play with this..
-            // experiment - test
-            SetEntityGravity(entity, 400.0);
- */
+*/
  
  
 
@@ -210,7 +70,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.14",
+    version = "1.0.15",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -328,7 +188,6 @@ public OnPluginStart()
         catching these because there is no way to directly
         detect players going spectator... there's a team switch,
         but no clue whether players were ghosts before then...
-        [test if this works on server with config_plugins.cfg order ...]
     */
     RegConsoleCmd("spectate",   Spectate_Cmd,   "...");
     RegConsoleCmd("say",        Say_Cmd,        "...");
@@ -359,8 +218,12 @@ public OnPluginEnd()
 
 public OnClientDisconnect_Post(client)
 {
-    if (_:g_iSpecialEvent == EVT_KEYMASTER && g_iSpecialEventRole == client) {
-        CreateTimer(0.1, Timer_CheckSpecialEventRole, g_bPlayersLeftStart);
+    if (g_bSpecialEventPlayerCheck)
+    {
+        new Handle:pack = CreateDataPack();
+        WritePackCell(pack, g_bPlayersLeftStart);
+        WritePackCell(pack, client);
+        CreateTimer(0.1, Timer_CheckSpecialEventRole, pack, TIMER_FLAG_NO_MAPCHANGE);
         return;
     }
     
@@ -433,6 +296,19 @@ public Action: TestGnomes_Cmd(client, args)
     PrintToChatAll( "\x01Are we in saferoom? Start: \x03%s\x01 - End: \x03%s\x01", (inStart) ? "yes":"no", (inEnd) ? "yes":"no" );
     PrintToChatAll("gnomebonus: %i", GetGnomeBonus() );
     
+    // netproptest
+    /*
+    PrintToChatAll( "\x01Netprops: something: \x03%f\x01",
+            GetEntPropFloat(client, Prop_Send, "m_flLaggedMovementValue")
+        );
+    
+    //SetEntPropFloat(client, Prop_Send, "m_flLaggedMovementValue", 1.25);
+    
+    PrintToChatAll( "\x01Netprops: something: \x03%i\x01",
+            GetEntProp(client, Prop_Send, "m_holdingObject")
+        );
+    */
+    
     // show a little list of all the known gnomes and their status
     for (new i=0; i < g_iGnomes; i++)
     {
@@ -447,8 +323,8 @@ public Action: TestGnomes_Cmd(client, args)
     }
 
     // test:
-    SetEntityHealth(1, 1);
-    SetEntPropFloat(1, Prop_Send, "m_healthBuffer", 100.0);
+    //SetEntityHealth(1, 1);
+    //SetEntPropFloat(1, Prop_Send, "m_healthBuffer", 100.0);
     
     //CheckGnomes();
     
@@ -465,6 +341,7 @@ public Action: TestEnts_Cmd(client, args)
 {
     DoItemsServerReport(true);
 }
+
 public Action: TestEvent_Cmd(client, args)
 {
     // for a special event next round
@@ -551,10 +428,11 @@ public Action: Say_Cmd(client, args)
         else if (StrEqual (sMessage, "!penalty")) return Plugin_Handled;
         
         // catch 'ready' and 'r' and other chat-attempts at readyup?
-        if (StrEqual(sMessage, "ready") || StrEqual(sMessage, "r")) {
+        if (StrEqual(sMessage, "ready", false) || StrEqual(sMessage, "r", false)) {
             FakeClientCommand(client, "sm_ready");
+            PrintToChatAll("test!");
         }
-        else if (StrEqual(sMessage, "unready") || StrEqual(sMessage, "nr")) {
+        else if (StrEqual(sMessage, "unready", false) || StrEqual(sMessage, "nr", false)) {
             FakeClientCommand(client, "sm_unready");
         }
     }
@@ -742,17 +620,33 @@ public Action:L4D_OnGetCrouchTopSpeed(target, &Float:retVal)
 // sound catching for silence special event
 public Action: Event_SoundPlayed(clients[64], &numClients, String:sample[PLATFORM_MAX_PATH], &entity, &channel, &Float:volume, &level, &pitch, &flags)
 {
-    if (IsClientAndInGame(entity))
+    if (_:g_iSpecialEvent == EVT_SILENCE)
     {
-        if (g_iSpecialEventExtra == SILENCED_SURV && IsSurvivor(entity))
+        // hush
+        if (IsClientAndInGame(entity))
         {
-            return Plugin_Handled;
-        }
-        else if (g_iSpecialEventExtra == SILENCED_SI && IsInfected(entity))
-        {
-            return Plugin_Handled;
+            if (g_iSpecialEventExtra == SILENCED_SURV && IsSurvivor(entity))
+            {
+                return Plugin_Handled;
+            }
+            else if (g_iSpecialEventExtra == SILENCED_SI && IsInfected(entity))
+            {
+                return Plugin_Handled;
+            }
         }
     }
+    else if (_:g_iSpecialEvent == EVT_AMMO)
+    {
+        // stop all the bs about 'incendiary' ammo, when it's normal :)
+        if (IsSurvivor(entity))
+        {
+            if (StrContains(sample, "incendammo", false) != -1 || StrContains(sample, "explosiveammo", false) != -1)
+            {
+                return Plugin_Handled;
+            }
+        }
+    }
+    
     
     return Plugin_Continue;
 }  
@@ -859,6 +753,47 @@ public Action: Timer_PlayerJoinedSurvivor(Handle:timer, any:pack)
 
 public Action: Event_PlayerLeftStartArea(Handle:event, const String:name[], bool:dontBroadcast)
 {
+    SurvivorsReallyLeftSaferoom();
+    
+    /*
+        the following is not really necessary.
+        does it help in vanilla? meh.
+    
+    // only do it if we're no longer in readyup
+    if (!SUPPORT_IsInReady())
+    {
+        SurvivorsReallyLeftSaferoom();
+    }
+    else
+    {
+        CreateTimer(TIMER_STARTCHECK, Timer_CheckForRealSaferoomExit, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+    }
+    */
+}
+
+/*
+public Action: Timer_CheckForRealSaferoomExit(Handle:timer)
+{
+    // check if survivors have actually really left saferoom or still in readyup
+    //PrintToChatAll("inready? %i", SUPPORT_IsInReady());
+    
+    if (SUPPORT_IsInReady()) { return Plugin_Continue; }
+    
+    for (new i=1; i <= MaxClients; i++)
+    {
+        if (IsSurvivor(i) && !IsEntityInSaferoom(i, true, false))
+        {
+            SurvivorsReallyLeftSaferoom();
+            return Plugin_Stop;
+        }
+    }
+    
+    return Plugin_Continue;
+}
+*/
+// this is called iff the round has actually really started
+SurvivorsReallyLeftSaferoom()
+{
     g_bIsFirstAttack = false;
     
     // if report hasn't been shown by now, show it!
@@ -887,6 +822,8 @@ public Action: Event_PlayerLeftStartArea(Handle:event, const String:name[], bool
 
 
 
+
+
 public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroadcast)
 {
     new client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
@@ -907,12 +844,16 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
     {
         CreateTimer(0.1, Timer_CheckSurvivorGun, client, TIMER_FLAG_NO_MAPCHANGE);
     }
-    else if (_:g_iSpecialEvent == EVT_KEYMASTER || _:g_iSpecialEvent == EVT_PROTECT)
+    else if (g_bSpecialEventPlayerCheck)
     {
         if (!g_bSpecialRoleAboutToChange)
         {
             g_bSpecialRoleAboutToChange = true;
-            CreateTimer(DELAY_TEAMSWAP, Timer_CheckSpecialEventRole, g_bPlayersLeftStart, TIMER_FLAG_NO_MAPCHANGE);
+            
+            new Handle:pack = CreateDataPack();
+            WritePackCell(pack, g_bPlayersLeftStart);
+            WritePackCell(pack, client);
+            CreateTimer(DELAY_TEAMSWAP, Timer_CheckSpecialEventRole, pack, TIMER_FLAG_NO_MAPCHANGE);
         }
     }
     // do some delayed checks/changes when people go survivor/infected
@@ -1249,10 +1190,10 @@ public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadc
     new String:classname[128];
     GetEdictClassname(entity, classname, sizeof(classname));
     
-    // only if it's a door or a gnome
-    new bool: isDoor = StrEqual(classname, "prop_door_rotating");
-    new bool: isProp = StrEqual(classname, "prop_physics");
-    new bool: isCola = StrEqual(classname, "weapon_cola_bottles");
+    //PrintToChatAll("%s", classname);
+    
+    new itemUseType: classnameUsed;
+    if (!GetTrieValue(g_hTrieUseItems, classname, classnameUsed)) { return Plugin_Continue; }
     
     // check for boobytraps...
     if (_:g_iSpecialEvent == EVT_BOOBYTRAP)
@@ -1263,14 +1204,12 @@ public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadc
         EVENT_CheckBoobyTrap(entity, targetPos, client);
     }
     
-    if (!isDoor && !isProp && !isCola) { return Plugin_Continue; }
-    
     /*
         new tmpHamId = GetEntProp(door, Prop_Data, "m_iHammerID");
         new tmpData = GetEntPropEnt(door, Prop_Data, "m_hOwnerEntity");
     */
     
-    if (isDoor)
+    if (classnameUsed == ITEM_USE_DOOR)
     {
         // door:
         
@@ -1310,7 +1249,7 @@ public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadc
             }
         }
     }
-    else if (isProp || isCola)
+    else if (classnameUsed == ITEM_USE_PROP || classnameUsed == ITEM_USE_COLA)
     {
         // gnome/cola:
         if (GetConVarFloat(g_hCvarGnomeBonus) == 0.0) { return Plugin_Continue; }
@@ -1319,10 +1258,13 @@ public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadc
         GetEntPropString(entity, Prop_Data, "m_ModelName", modelname, STR_MAX_MODELNAME);
         
         new bool: isGnome = false;
-        if (!isCola)
+        new bool: isCola = false;
+        if (classnameUsed != ITEM_USE_COLA)
         {
             isGnome = StrEqual(modelname, "models/props_junk/gnome.mdl", false);
             isCola = StrEqual(modelname, "models/w_models/weapons/w_cola.mdl", false);
+        } else {
+            isCola = true;
         }
         
         if (isGnome || isCola)
@@ -1377,6 +1319,57 @@ public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadc
         }
         
     }
+    else if (_:g_iSpecialEvent == EVT_AMMO && classnameUsed == ITEM_USE_AMMO)
+    {
+        // pack in ammo again
+        new Float:startPos[3];
+        GetClientAbsOrigin(client, startPos);
+        
+        g_bShowedProgressHint = false;
+        g_iDeployingAmmo = client; 
+        SetupProgressBar(client, EVENT_AMMO_PACKTIME, startPos);
+        
+        CreateTimer(0.05, Timer_CheckPlayerUsing, client, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+    }
+    return Plugin_Continue;
+}
+
+// track player holding use button (for special events)
+public Action:Timer_CheckPlayerUsing(Handle:timer, any:client)
+{
+    if (!IsClientAndInGame(client)) { return Plugin_Stop; }
+    
+    new buttons = GetClientButtons(client);
+    
+    // if a player is close enough and still using... keep checking
+    
+    new Float:playerPos[3];
+    GetClientAbsOrigin(client, playerPos);
+    new Float: fDistance = GetVectorDistance(playerPos, g_fProgressLocation[client]);
+    
+    if (!(buttons & IN_USE) || fDistance > ITEM_USE_DISTANCE || client != g_iDeployingAmmo)
+    {
+        KillProgressBar(client);
+        g_bShowedProgressHint = false;
+        g_iDeployingAmmo = 0;
+        return Plugin_Stop;
+    }
+    
+    // show hint text once
+    if (!g_bShowedProgressHint && GetGameTime() - g_fProgressTime[client] > 0.5)
+    {
+        g_bShowedProgressHint = true;
+        PrintHintText(client, "Repacking ammo pile...");
+    }
+    
+    // timer expired and buttons still held, then success
+    if (GetGameTime() - g_fProgressTime[client] > EVENT_AMMO_PACKTIME)
+    {
+        EVENT_RepackAmmo(client, g_iDeployedAmmo);
+        g_bShowedProgressHint = false;
+        return Plugin_Stop;
+    }
+    
     return Plugin_Continue;
 }
 
@@ -1709,11 +1702,16 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
     if (IsSurvivor(victim))
     {
         // remove hud if we're in special event
-        if (_:g_iSpecialEvent == EVT_NOHUD && !IsFakeClient(victim)) {
+        if (_:g_iSpecialEvent == EVT_NOHUD && !IsFakeClient(victim))
+        {
             HUDRemoveClient(victim);
         }
-        else if ( (_:g_iSpecialEvent == EVT_KEYMASTER || _:g_iSpecialEvent == EVT_PROTECT) && g_iSpecialEventRole == victim) {
-            CreateTimer(0.1, Timer_CheckSpecialEventRole, true, TIMER_FLAG_NO_MAPCHANGE);
+        else if (g_bSpecialEventPlayerCheck)
+        {
+            new Handle:pack = CreateDataPack();
+            WritePackCell(pack, true);
+            WritePackCell(pack, victim);
+            CreateTimer(0.1, Timer_CheckSpecialEventRole, pack, TIMER_FLAG_NO_MAPCHANGE);
         }
         
         // check gnome status
@@ -2013,7 +2011,12 @@ public OnEntityCreated(entity, const String:classname[])
         // is really the gnome?
         if (GetConVarFloat(g_hCvarGnomeBonus) == 0.0) { return; }
         
-        CreateTimer(0.05, Timer_CreatedPropPhysics, entity);
+        CreateTimer(0.05, Timer_CreatedPropPhysics, entity, TIMER_FLAG_NO_MAPCHANGE);
+    }
+    else if (_:g_iSpecialEvent == EVT_AMMO && classnameOEC == CREATED_AMMO_DEPLOYED)
+    {
+        // create an ammo pile instead
+        CreateTimer(0.05, EVENT_DeployAmmo, entity, TIMER_FLAG_NO_MAPCHANGE);
     }
 }
 

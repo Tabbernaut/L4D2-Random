@@ -11,6 +11,7 @@ new     Handle:         g_hTrieMapsDoors                                    = IN
 new     Handle:         g_hTrieBlindable                                    = INVALID_HANDLE;       // trie for recognizing some problematic entities
 new     Handle:         g_hTriePenaltyItems                                 = INVALID_HANDLE;       // trie for recognizing items that carry a penalty on EVT_PEN_ITME
 new     Handle:         g_hTriePropItems                                    = INVALID_HANDLE;       // trie for recognizing prop items that can be carried (for EVT_ENCUMBERED)
+new     Handle:         g_hTrieUseItems                                     = INVALID_HANDLE;       // trie for recognizing usable items
 new                     g_iMeleeClassCount                                  = 0;                    // melee weapons available?
 new     String:         g_sMeleeClass           [MELEE_CLASS_COUNT][MELEE_CLASS_LENGTH];            // available melee class-strings
 
@@ -167,17 +168,25 @@ new                     g_iGnomesHeld                                       = 0;
 new                     g_iArGnomesHeld         [TEAM_SIZE];                                        // which gnomes are held (check for these entities to be destroyed on drop)
 
 new     bool:           g_bUsingPBonus                                      = false;                // whether we're using penaltybonus this round
-new     bool:           g_bArJustBeenGiven      [MAXPLAYERS]                = {false,...};          // whether the client has just been given something (for tracking pickups/pill passing)
-new     bool:           g_bArBlockPickupCall    [MAXPLAYERS]                = {false,...};          // whether we should ignore weapon equip/pickup calls for the player now
+new     bool:           g_bArJustBeenGiven      [MAXPLAYERS+1]              = {false,...};          // whether the client has just been given something (for tracking pickups/pill passing)
+new     bool:           g_bArBlockPickupCall    [MAXPLAYERS+1]              = {false,...};          // whether we should ignore weapon equip/pickup calls for the player now
 new                     g_iBonusCount                                       = 0;                    // how many special event bonuses/penalties this roundhalf
 
 // special event stuff
 new                     g_iNoSpecialEventStreak                             = 0;                    // how many times in a row there wasn't a special event
+new     bool:           g_bSpecialEventPlayerCheck                          = false;                // whether the special event requires player checks on teamswaps, deaths, etc
 new     bool:           g_bSpecialRoleAboutToChange                         = false;                // whether we're already waiting for a timer countdown to do a report (spam prevent)
 new                     g_iArGunAmmoCount       [MAXPLAYERS]                = 0;                    // for gun swap event: how many bullets does the survivor have left?
-new     bool:           g_bNoWeaponsNoAmmo                                  = false;                // whether to allow weapons or ammo to spawn at all
+new     bool:           g_bNoWeapons                                        = false;                // whether to allow weapons to spawn at all
+new     bool:           g_bNoAmmo                                           = false;                // whether to ammo to spawn at all
 new                     g_iBoobyTraps                                       = 0;                    // how many boobytrap entries in the aray
 new                     g_iArBoobyTrap          [MAX_BOOBYTRAPS]            = {-1,...};             // entities that are boobytrapped (this round)
+new     Float:          g_fProgressTime         [MAXPLAYERS+1]              = 0.0;                  // for keeping track of progress bar
+new     Float:          g_fProgressLocation     [MAXPLAYERS+1][3];                                  // for keeping track of progress bar location
+new                     g_iDeployedAmmo                                     = 0;                    // what is the deployed ammo pile?
+new                     g_iDeployingAmmo                                    = 0;                    // the client that's deploying ammo
+new     bool:           g_bShowedProgressHint                               = false;                // so we only show the text once
+
 
 // ConVars
 new     Handle:         g_hArCvarWeight         [INDEX_TOTAL];                                      // cvar, per randomize-type, that sets an integer weight 

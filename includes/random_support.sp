@@ -38,7 +38,9 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     g_bInsightSurvDone = false;     // so we only get the insight effect from a gift once per roundhalf
     g_bInsightInfDone = false;
     
-    g_bNoWeaponsNoAmmo = false;
+    g_bSpecialEventPlayerCheck = false;
+    g_bNoWeapons = false;
+    g_bNoAmmo = false;
     
     // basic cleanup
     SUPPORT_CleanArrays();              // clear general arrays
@@ -81,7 +83,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     
     
     // fix sound hook
-    if (_:g_iSpecialEvent == EVT_SILENCE) {
+    if (_:g_iSpecialEvent == EVT_SILENCE || _:g_iSpecialEvent == EVT_AMMO) {
         if (!g_bSoundHooked) {
             AddNormalSoundHook(Event_SoundPlayed);
             g_bSoundHooked = true;
@@ -322,6 +324,7 @@ public Action: EVENT_SurvivorsLeftSaferoom(Handle:timer)
             for (new i=1; i <= MaxClients; i++) {
                 if (IsSurvivor(i)) {
                     SetEntityHealth(i, 1);
+                    SetEntPropFloat(i, Prop_Send, "m_healthBufferTime", GetGameTime());
                     SetEntPropFloat(i, Prop_Send, "m_healthBuffer", 99.0);
                 }
             }
@@ -648,16 +651,58 @@ EVENT_CheckSurvivorGun(client)
 
 
 // special roles for special events
-public Action: Timer_CheckSpecialEventRole(Handle:timer, any:leftStart)
+public Action: Timer_CheckSpecialEventRole(Handle:timer, any:pack)
 {
     g_bSpecialRoleAboutToChange = false;
     
-    if (!g_iSpecialEventRole || !IsClientAndInGame(g_iSpecialEventRole) || !IsSurvivor(g_iSpecialEventRole) || !IsPlayerAlive(g_iSpecialEventRole) || IsFakeClient(g_iSpecialEventRole))
+    // read datapack: survivorsLeftSaferoom; client
+    ResetPack(pack);
+    new bool: leftStart = bool: ReadPackCell(pack);
+    //new client = ReadPackCell(pack);
+    CloseHandle(pack);
+    
+    // special roles
+    //  must change if the role is nonexistant, not a survivor, dead or a bot
+    if (_:g_iSpecialEvent == EVT_KEYMASTER || _:g_iSpecialEvent == EVT_PROTECT)
     {
-        if (!leftStart) {
-            EVENT_PickSpecialEventRole(-1, true);
-        } else {
-            EVENT_PickSpecialEventRole();
+        if ( !IsSurvivor(g_iSpecialEventRole) || !IsPlayerAlive(g_iSpecialEventRole) || IsFakeClient(g_iSpecialEventRole) ) {
+            g_iSpecialEventRole = 0;
+        }
+        
+        if (!g_iSpecialEventRole)
+        {
+            EVENT_PickSpecialEventRole( -1, (leftStart) ? false : true);
+        }
+    }
+    // check here for other events (whether bots have stuff they shouldn't have)
+    else if (_:g_iSpecialEvent == EVT_AMMO)
+    {
+        // upgrade kit should not be in possession of bot
+        for (new i=1; i <= MaxClients; i++)
+        {
+            if (IsSurvivor(i) && IsFakeClient(i))
+            {
+                new slotKit = GetPlayerWeaponSlot(i, PLAYER_SLOT_KIT);
+                if (IsValidEntity(slotKit))
+                {
+                    new String: classname[64];
+                    GetEdictClassname(slotKit, classname, sizeof(classname));
+                    
+                    if (StrEqual(classname, "weapon_upgradepack_incendiary", false) || StrEqual(classname, "weapon_upgradepack_explosive", false))
+                    {
+                        if (SUPPORT_DropItemSlot(i, PLAYER_SLOT_KIT)) {
+                            // send the report
+                            for (new j=1; j <= MaxClients; j++)
+                            {
+                                if (IsSurvivor(j) && !IsFakeClient(j))
+                                {
+                                    PrintToChat(j, "\x01[\x05r\x01] Ammo pack dropped!");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -701,6 +746,7 @@ EVENT_PickSpecialEventRole(notClient=-1, bool:notLeftStart=false)
         ReportSpecialEventRole();
     }
 }
+
 
 // Stabby's multi-witch stuff
 // ===========================================================================
@@ -1042,6 +1088,47 @@ EVENT_ArrayRemoveBoobyTrap(index)
     g_iBoobyTraps--;
 }
 
+
+public Action: EVENT_DeployAmmo(Handle:timer, any:entity)
+{
+    // deploys ammo pile in spot of indicated entity
+    if (!IsValidEntity(entity)) { return; }
+    
+    new Float:targetPos[3];
+    GetEntPropVector(entity, Prop_Send, "m_vecOrigin", targetPos);
+    
+    g_strTempItemSingle[entOrigin_a] = targetPos[0];
+    g_strTempItemSingle[entOrigin_b] = targetPos[1];
+    g_strTempItemSingle[entOrigin_c] = targetPos[2];
+    
+    g_fTempItemSingleVelocity[0] = 0.0;
+    g_fTempItemSingleVelocity[1] = 0.0;
+    g_fTempItemSingleVelocity[2] = 0.0;
+    
+    g_strTempItemSingle[entPickedType] = PCK_AMMO;
+    g_strTempItemSingle[entSpawnPhysics] = false;
+    g_strTempItemSingle[entAmmoMax] = 0;
+    g_strTempItemSingle[entCheckOrigin] = false;
+    g_sTempItemSingleMelee = "";
+    
+    g_iDeployedAmmo = CreateEntity(-1, false, true);    // create entity, not from array, and override type blocks
+    
+    // kill original ammo deploy thing
+    AcceptEntityInput(entity, "Kill");
+}
+
+EVENT_RepackAmmo(client, ammo)
+{
+    if (!IsClientAndInGame(client) || !IsValidEntity(ammo)) { return; }
+
+    // give client an upgrade pack
+    GiveItem(client, "weapon_upgradepack_incendiary", 0, 0);
+    
+    // kill ammo pile
+    AcceptEntityInput(ammo, "Kill");
+}
+
+
 /*
     Support functions, general
     --------------------------
@@ -1334,6 +1421,22 @@ SUPPORT_GetCurrentWeaponSlot(client)
         } 
     }
     return slot;
+}
+
+
+// progress bar handling
+SetupProgressBar(client, Float:time, Float:location[3])
+{
+    g_fProgressTime[client] = GetGameTime();
+    g_fProgressLocation[client] = location;
+    
+    SetEntPropFloat(client, Prop_Send, "m_flProgressBarStartTime", g_fProgressTime[client]);
+    SetEntPropFloat(client, Prop_Send, "m_flProgressBarDuration", time);
+}
+KillProgressBar(client)
+{
+    SetEntPropFloat(client, Prop_Send, "m_flProgressBarStartTime", GetGameTime());
+    SetEntPropFloat(client, Prop_Send, "m_flProgressBarDuration", 0.0);
 }
 
 bool: SUPPORT_IsWeaponPrimary(weapId)
