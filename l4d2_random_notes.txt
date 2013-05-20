@@ -29,9 +29,6 @@ L4D2_Random
             
     to-do:
     ------
-            - high:     finally fix gifts giving wrong shit in start saferoom...
-            
-            - test:     'ammo shortage': check if it's consistently dropped when somebody dies... should be, but would be nasty if it got lost..
             - bugfix:   intro maps (and quite likely, only then?) get weird stuff spawning in saferooms sometimes
                         see mikkel's doors, or that elevator in dc1, the boat
                         - could be itemsblindinfected..?
@@ -39,7 +36,10 @@ L4D2_Random
             - medium:   bot si spawn determination?
                         - or check if I can simply force the spawns just like human players (IsFakeClient() checks?)
                         - consider allowing bots in matchmode too, because.. why not?
-            
+          
+            - low:      ammo event: when someone dies, shortly after: check if there exists an upgrade pack anywhere
+                            either in possession of players or on the map -- if not, generate one near the corpse.
+
             - low:      stripper-dir switch randomly: so maps automatically have two versions
                         - dec3 long way around vs. normal
                         - par3 random maze versions

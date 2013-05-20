@@ -39,6 +39,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     g_bInsightInfDone = false;
     
     g_bSpecialEventPlayerCheck = false;
+    g_iDeployingAmmo = 0;
     g_bNoWeapons = false;
     g_bNoAmmo = false;
     
@@ -1128,6 +1129,12 @@ EVENT_RepackAmmo(client, ammo)
     AcceptEntityInput(ammo, "Kill");
 }
 
+
+public Action: Timer_AmmoVocalize (Handle:timer, any:client)
+{
+    // doesn't work.. why?
+    FakeClientCommand(client, "vocalize %s", "PlayerSpotAmmo");
+}
 
 /*
     Support functions, general

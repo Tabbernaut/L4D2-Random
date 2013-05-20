@@ -102,8 +102,10 @@ DoInsightReport(team=-1)
         } else {
             Format(sReport[iLine], REPLINELENGTH, "There is tank this round, at \x05%d%%\x01.", RoundFloat(100.0 * L4D2Direct_GetVSTankFlowPercent( (g_bSecondHalf) ? 1 : 0 ) ) );
         }
-        iLine++;
+    } else {
+        Format(sReport[iLine], REPLINELENGTH, "No tank this round.");
     }
+    iLine++;
     
     if (g_bWitchWillSpawn)
     {
@@ -112,8 +114,10 @@ DoInsightReport(team=-1)
         } else {
             Format(sReport[iLine], REPLINELENGTH, "There is a witch this round, at \x03%d%%\x01.", RoundFloat(100.0 * L4D2Direct_GetVSWitchFlowPercent( (g_bSecondHalf) ? 1 : 0 ) ) );
         }
-        iLine++;
+    } else {
+        Format(sReport[iLine], REPLINELENGTH, "No witch this round.");
     }
+    iLine++;
     
     if (!g_bCampaignMode)
     {
@@ -2398,7 +2402,6 @@ bool: RANDOM_PlayerGiftUse(client)
         // take random action (use targetpos location)
         new randomPick = 0;
         new bool: inSaferoom = (IsEntityInSaferoom(entity, false, false) || IsEntityInSaferoom(client, true, false));
-        PrintToChatAll("in saferoom? %i", inSaferoom);
         
         if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarGiftPositiveChance))
         {
@@ -2419,7 +2422,7 @@ bool: RANDOM_PlayerGiftUse(client)
             else if (_:g_iSpecialEvent == EVT_GUNSWAP && randomPick == 8) { randomPick = (GetRandomInt(0,1)) ? 2 : 6; }
             
             // don't give positive effects that are useless in (closed) saferoom
-            if (inSaferoom && (randomPick == 0 || randomPick == 1 || randomPick == 8) ) { randomPick == (GetRandomInt(0,1)) ? 6 : ((g_bInsightSurvDone) ? 2 : 9); }
+            if (inSaferoom && (randomPick == 0 || randomPick == 1 || randomPick == 8) ) { randomPick = (GetRandomInt(0,1)) ? 6 : ((g_bInsightSurvDone) ? 2 : 9); }
             
             switch (randomPick)
             {
@@ -2537,7 +2540,7 @@ bool: RANDOM_PlayerGiftUse(client)
             if (randomPick == 0 || randomPick == 2 || randomPick == 4 || randomPick == 6) { randomPick++; } // only insight has lower odds
             
             // don't give negative effects that are harmless in (closed) saferoom
-            if (inSaferoom && (randomPick == 3 || randomPick == 5) ) { randomPick == (GetRandomInt(0,1)) ? 7 : 8; }
+            if (inSaferoom && (randomPick == 3 || randomPick == 5) ) { randomPick = (GetRandomInt(0,1)) ? 7 : 8; }
             
             switch (randomPick) {
                 case 1: {   // explosion (small and big)

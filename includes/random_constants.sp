@@ -71,6 +71,7 @@ const Float:    BLND_TRACE_TOLERANCE    = 75.0;
 
 const Float:    ITEM_PICKUP_DISTANCE    = 64.0;         // how far can a survivor 'reach' for a gift box?
 const Float:    ITEM_USE_DISTANCE       = 16.0;         // how far a survivor can move before aborting a use-progress-bar type action
+const Float:    ITEM_USE_FREEZE_TIME    = 0.5;          // after how long of starting a progress-bar use type action you're frozen (while you hold USE)
 
 const           STR_MAX_WPCLASSNAME     = 48;
 const           STR_MAX_ITEMGIVEN       = 48;

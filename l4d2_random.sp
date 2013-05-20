@@ -201,11 +201,6 @@ public OnPluginStart()
 
 public OnPluginEnd()
 {
-    // soundhook
-    if (g_bSoundHooked) {
-        RemoveNormalSoundHook(Event_SoundPlayed);
-    }
-    
     // timers
     //if (g_bTimerCheckFirstHuman) { KillTimer(g_hTimerCheckFirstHuman); }
     
@@ -580,11 +575,20 @@ public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
 // for encumbered mode
 public Action:L4D_OnGetRunTopSpeed(target, &Float:retVal)
 {
-    if (_:g_iSpecialEvent != EVT_ENCUMBERED || !IsClientAndInGame(target) || GetClientTeam(target) != TEAM_SURVIVOR) { return Plugin_Continue; }
+    if (!IsClientAndInGame(target) || GetClientTeam(target) != TEAM_SURVIVOR) { return Plugin_Continue; }
     
-    new Float: fSpeedFactor = SUPPORT_GetSpeedFactor(target);
-    if (fSpeedFactor != 1.0) {
-        retVal = retVal * fSpeedFactor;
+    if (_:g_iSpecialEvent == EVT_ENCUMBERED)
+    {
+        new Float: fSpeedFactor = SUPPORT_GetSpeedFactor(target);
+        if (fSpeedFactor != 1.0) {
+            retVal = retVal * fSpeedFactor;
+            return Plugin_Handled;
+        }
+    }
+    // freeze player while using something
+    else if (target == g_iDeployingAmmo && GetGameTime() - g_fProgressTime[target] >= ITEM_USE_FREEZE_TIME)
+    {
+        retVal = 0.0001;
         return Plugin_Handled;
     }
     return Plugin_Continue;
@@ -592,22 +596,40 @@ public Action:L4D_OnGetRunTopSpeed(target, &Float:retVal)
 
 public Action: L4D_OnGetWalkTopSpeed(target, &Float:retVal)
 {
-    if (_:g_iSpecialEvent != EVT_ENCUMBERED || !IsClientAndInGame(target) || GetClientTeam(target) != TEAM_SURVIVOR) { return Plugin_Continue; }
+    if (!IsClientAndInGame(target) || GetClientTeam(target) != TEAM_SURVIVOR) { return Plugin_Continue; }
     
-    new Float: fSpeedFactor = SUPPORT_GetSpeedFactor(target);
-    if (fSpeedFactor != 1.0) {
-        retVal = retVal * fSpeedFactor;
+    if (_:g_iSpecialEvent == EVT_ENCUMBERED)
+    {
+        new Float: fSpeedFactor = SUPPORT_GetSpeedFactor(target);
+        if (fSpeedFactor != 1.0) {
+            retVal = retVal * fSpeedFactor;
+            return Plugin_Handled;
+        }
+    }
+    // freeze player while using something
+    else if (target == g_iDeployingAmmo && GetGameTime() - g_fProgressTime[target] >= ITEM_USE_FREEZE_TIME)
+    {
+        retVal = 0.0001;
         return Plugin_Handled;
     }
     return Plugin_Continue;
 }
 public Action:L4D_OnGetCrouchTopSpeed(target, &Float:retVal)
 {
-    if (_:g_iSpecialEvent != EVT_ENCUMBERED || !IsClientAndInGame(target) || GetClientTeam(target) != TEAM_SURVIVOR) { return Plugin_Continue; }
+    if (!IsClientAndInGame(target) || GetClientTeam(target) != TEAM_SURVIVOR) { return Plugin_Continue; }
     
-    new Float: fSpeedFactor = SUPPORT_GetSpeedFactor(target);
-    if (fSpeedFactor != 1.0) {
-        retVal = retVal * fSpeedFactor;
+    if (_:g_iSpecialEvent == EVT_ENCUMBERED)
+    {
+        new Float: fSpeedFactor = SUPPORT_GetSpeedFactor(target);
+        if (fSpeedFactor != 1.0) {
+            retVal = retVal * fSpeedFactor;
+            return Plugin_Handled;
+        }
+    }
+    // freeze player while using something
+    else if (target == g_iDeployingAmmo && GetGameTime() - g_fProgressTime[target] >= ITEM_USE_FREEZE_TIME)
+    {
+        retVal = 0.0001;
         return Plugin_Handled;
     }
     return Plugin_Continue;
@@ -642,12 +664,13 @@ public Action: Event_SoundPlayed(clients[64], &numClients, String:sample[PLATFOR
         {
             if (StrContains(sample, "incendammo", false) != -1 || StrContains(sample, "explosiveammo", false) != -1)
             {
+                // do a vocalize from the player
+                //  why does this not work?
+                CreateTimer(0.1, Timer_AmmoVocalize, entity, TIMER_FLAG_NO_MAPCHANGE);
                 return Plugin_Handled;
             }
         }
     }
-    
-    
     return Plugin_Continue;
 }  
 
@@ -1367,6 +1390,7 @@ public Action:Timer_CheckPlayerUsing(Handle:timer, any:client)
     {
         EVENT_RepackAmmo(client, g_iDeployedAmmo);
         g_bShowedProgressHint = false;
+        g_iDeployingAmmo = 0;
         return Plugin_Stop;
     }
     
