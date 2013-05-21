@@ -1,0 +1,161 @@
+Random 1.0
+==========
+by Tabun ( http://www.tabun.nl/ -- http://steamcommunity.com/id/tabbernaut/ )
+
+
+Table of Contents
+-----------------
+
+1. Installation
+2. Concept
+3. Match modes
+4. Difficulty
+5. Commands
+6. Special events
+7. Gnome bonus
+8. Sack protection
+9. Boomer combo's
+10. Defibrillators
+11. Locked doors
+12. Random gifts
+13. Campaign mode
+
+
+
+Installation
+------------
+Random requires metamod, sourcemod, confogl 2.2.2 and Promod 3+.
+
+If you don't have confogl on your server:
+1. Get and install confogl:		http://www.l4d2pro.com/files/confogl_complete_022213.zip
+   You can follow this easy installation guide: http://www.l4dnation.com/wiki/ProMod_Installation
+2. Get and install Promod 3.2 base:	http://www.l4d2pro.com/files/ver/ProMod3.2.zip
+3. Get and install Promod 3.3 update:	http://zka.so/ajax/data/public/0a403526d049c15c6dab418f8b53fe09.php?dl=true
+
+If you got all of that up and running, install the Random 1.0 package:
+It's available at: 			http://www.tabun.nl/l4d2_random/random.zip
+
+
+Note: 	If you want a more varied selection of melee weapons available in every map,
+	you can install the "melee_weapon_unlock.vpk" (it goes in your server's /addons/ directory).
+	Be warned that this will affect every config on your server though!
+
+
+
+Concept
+-------
+Random is a config that purposedly randomizes many aspects of the game. This includes, but is not limited to: items lying around, special infected spawn timers and what they spawn as, horde size.
+
+The main idea behind Random is to make things fun without going overboard. Random is supposed to walk the fine line between a ridiculous bunch of nonsense that noone can make sense of, while still throwing in as many odd and fun things as possible.
+Item spawns are random, for instance, which means that what would normally be an ammo pile might, in one round, be a bar stool, a hunting rifle, adrenaline, et cetera. However, this is prevented from destroying the game by being done with a system of checks and balances and based on a weighted item distribution table -- this means that items will naturally (randomly) be placed throughout a map will, most of the time, make it very playable, without being predictable.
+
+A general set of rules of thumb to understand what Random does and does not change:
+- Random does not mess with low-level or deeply intuited game mechanics. The damage your weapons do is still normal and consistent. If you go for a hunter skeet or a charger level, you will still get it consistently if you do it right. Tanks and special infected will have normal and you can rely on your normally developed sense of when they should die, et cetera (barring some one-time exceptions for special events).
+- Random is designed to stay moderately balanced in its map-to-map playing experience. There are quite a few checks and balances to assure that map difficulty, available items and special events do not mean that one map is a cakewalk and the next is barely playable at all. There is still, to a fair degree, a solid correspondence to points earned and the effort/performance of the survivors per round.
+- Random keeps basic things equal for both teams (item spawns, tanks and witches, scoring).
+- However, Random does feature, by design, some 'unfairness'. This means that it very well might allow the better team to lose, especially in close games.
+
+
+Match modes
+-----------
+Random is designed to be used in its default match mode (simply named 'random'), but other variations are available:
+
+'rand2v2' / 'rand3v3' 	are for playing with 4 or 6 people.
+'randeasy'		makes things a lot easier (more like vanilla) for survivors.
+'randumb'		makes things insane random... anything goes in this mode and nothing is balanced
+
+There's also a 'campaign mode' for Random, which is discussed separately below.
+
+
+
+Difficulty
+----------
+Random is designed for experienced players. It is (probably) easier for survivors than Promod, since there are more items around, but the random spawns and special events can still make rounds a challenge. The scoring system is distance + damage bonus (0 damage = 1 * full distance bonus), which means that better teams stand a good chance of making a fair bonus by making saferoom. (The damage bonus works like the Promod 3.3 beta / Throwback version, but it's scaled to 1 * map distance.)
+I'd say it's playable for non-confogl players (I've done a lot of testing with a group of experienced vanilla players, who struggled with it but still managed to enjoy it). However, for the average vanilla versus player, I'd recommend playing RandEasy instead. This version has more items, T2 weapons and ammo and is less likely to give the survivors a serious challenge.
+
+
+
+Commands
+--------
+"!rand"
+	Can by typed in chat at any time to see information about the current round. It will tell you when survivor glows are disabled, incaps before dying are non-default, whether there is a special event, et cetera.
+
+"!damage" (or "!health")
+	Shows you the current damage bonus and gnome bonus for this round.
+
+"!bonus"
+	Shows you the current special event bonus or penalty on rounds that have special events that change scoring.
+
+"!drop"
+	For survivors: drops the weapon or item you currently hold. Useful for the 'encumbered' event!
+
+
+Special Events
+--------------
+One of the main driving forces behind the gameplay variation is the Special Events: each round there's a fair chance of a special event that changes the way the game works.
+This varies from a simple scoring penalty (points deducted for using shoves/m2 on special infected, for instance), to restrictions to available weapons, to a seriously changed meta-game (such as an encumbrance system which makes survivors slower if they have more stuff, or a designated 'baby' that takes more damage and needs to be protected by the other survivors, et cetera).
+
+The idea behind Special Events is that some things are best enjoyed in small doses. Each event is bound to be enjoyable and introduce sweet variation, but playing an entire game with the event's changes or mechanics would get boring or annoying. Not every round has one and the large amount of different events should guarantee that you will not be overplaying a single type of game-changer.
+
+A full list of these special events is available in the documentation. If you have a great idea for a special event that is not in Random yet, feel free to contact me about it; future versions of Random are likely to feature new special events...
+
+
+
+Gnome bonus
+-----------
+In addition to the damage bonus, survivors can score extra points by bringing gnomes or cola packs (which may be found anywhere in the map) to the end saferoom. The further a gnome needs to be brought, the more points it will be worth. A gnome brought all the way from the start saferoom will be worth 25% of the map's distance points.
+
+
+
+Sack protection
+-----------------
+There is no 'sack/death order' for special infected. The spawns the infected team receives after infected die are handed out entirely at random. This means there is a small chance of getting 4 chargers -- a very powerful attack -- or 4 boomers -- a near-useless one -- naturally. Since spawn timers are fairly low, there is a built in detection of sacks: if you try to get rid of weak spawns in order to 'collect' 4 chargers, this won't work. If you keep your spawn after other special infected spawn up and die, they'll receive weaker spawns. The best way to play Random, thus, is to embrace the randomness and attack with the entire team each time.
+Note that you can still save chargers and smokers for insta-death attacks -- you just do so at the cost of excluding the possibility of getting more chargers and smokers for the attack. You won't get a quadcap either.
+
+
+
+Boomer combo's
+--------------
+A boomer combo is when more boomers vomit on survivors within a small timeframe. To get N-combo's, N+ different survivors must each be boomed by N different boomers.
+So if boomer A booms Nick, and Boomer B booms Ellis and Coach, this is a 2-combo. If each of the survivors gets boomed separately by a different boomer -- so you need 4 boomers for this, and they must all boom exactly 1 survivor -- you get a 4-combo.
+
+Combo's have the following effects:
+2-boom combo:	spawns extra uncommons (clowns, construction workers and mudmen)
+3-boom combo:	spawns extra uncommons (riot cops)
+4-boom combo: 	starts double panic event!
+
+Note: double-booming a single survivor does nothing and does not count towards a combo (it's a technical thing: the game does not register this happening).
+
+
+
+Defibrillators
+--------------
+Defibrillators are present and work in Random, but they bring back survivors in black and white mode (incaps are not reset). The normal defib scoring penalty applies.
+
+
+
+Locked doors
+------------
+Some doors may be randomly locked each map. These will be the same for both teams. There are no keys, so locked doors will have to be broken somehow.
+You can break doors with melee weapons, explosions or by letting infected break them for you.
+
+
+
+Random gifts
+------------
+There may be green and yellow presents placed around the map. Survivors can open these by using them. There's a good chance it will have a positive effect, such as spawning a bunch of useful items, health or ammo refills, or giving the survivors inside information about the round. However, the effects may also be harmful: explosions and fire or starting a panic event. Each gift's effect is generated at random and there's no guarantee it will be the same for both teams; where presents spawn is equal for both teams, however.
+
+
+
+
+Campaign mode
+--------------------
+You can play Random in campaign mode, if you want. I've included two config files in the installation package that should enable you to easily do this.
+
+Take these steps to play Random Coop:
+1. Start up the campaign you want to play as normal. Select whichever difficulty level you prefer.
+2. Use RCON or type in the server console: 'exec cfg/random_coop.cfg'
+3. Do a map restart.
+
+When you're done playing and want an easy reset of the server to its normal configuration:
+1. Use RCON or type in the server console: 'exec cfg/random_coop_reset.cfg'

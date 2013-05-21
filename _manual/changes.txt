@@ -1,0 +1,57 @@
+1.0
+- Now has damage bonus scoring instead of health bonus (equal to map distance, with some random variation). Beautified bonus reporting.
+- Now has Gnome Bonus (tm) scoring. Bringing gnomes and packs of cola packs to the end saferoom will give you bonus points (scaled to the distance they had to be taken).
+- Distance points and damage bonus points vary randomly (but stay close to default values). Randumb has entirely random distance/bonus values.
+- Medkits now heal solid as normal again. In RandEasy they give the normal 80% heal, in any other mode only 50%. Defibs still bring you back in black and white mode.
+- Adrenaline gives normal health now (was 20, now back to 25). Pills still give only 40 health.
+- Added 'sack-detection' and punishment: it is now almost always better to attack as a team. Keeping chargers or other powerful infected while sacking the rest will only give you weaker classes on the next attack.
+- Tanks are now handed to players at random (though your odds of getting a tank decrease the more you already had).
+- Increased chances of getting tanks on normal maps (50% -> 60%) and slightly decreased chance on intro/finale maps.
+- Increased chances of getting special events.
+- Added a whole bunch of freaky special events. There are now 31 in total (not counting variations on themes).
+- Added new special event category: bonus/penalty rounds. This may mean that on some rounds, using health items or m2s cost you points.
+- Special event selection now avoids repicking the same special event in one game.
+- Prevented game-breaking selection of events for finale maps.
+- Starting saferooms are now guaranteed to have a lot more items and a lot less of those will be junk.
+- End saferooms no longer have any items.
+- Increased amount of useful items spawning on finales. Normal ammo pile spawns on finales are not randomized.
+- Reduced chances of survivor getting just 1 incap before death (only 1 in 4 times; only 1 in 6 times for randeasy).
+- Reduced chances of glows being disabled (15% now). On difficult rounds (tanks, special events), there's a much smaller chance of not having glows.
+- Used internal difficulty estimation for rounds to reduce the odds for particularly harsh combinations (1 incap, no glows, tough event, etc).
+- Difficulty estimation of round controls (to some extent) the amount of items that can be found on the map.
+- Multi-boomer combos spawn more and special uncommons (ie. multiple survivors each boomed by a different boomer). A quad-combo (4 boomers on 4 different survivors) spawns a megamob.
+- Pipebombs can randomly dud (33% chance to fail to explode).
+- 'Fog of War' event now forces outlines-off (realism mode) for survivors (weather itself is still broken sometimes).
+- Fixed weather events (storm and fog) not working right on second round. Blocked weather events on Hard Rain 3 & 4.
+- Fixed the 'marksmen' event, survivors no longer start with incorrect weapons.
+- Dead Center map 2 no longer has cola spawning anywhere but in the supermarket.
+- Increased the odds that gifts have a positive effect; added a few more gift effects.
+- Gifts may no longer be opened before the round is live.
+- Fixed spammy PlayerUse effect when opening gifts (caused you to insta-grab gift items).
+- Fixed items falling through floors or out of the map.
+- Tweaked item balance (yet again).
+- Added AI damagefix (AI hunters/chargers take damage as if they were human-controlled).
+- Added pounce protect plugin (damage doesn't cancel hunters walljumping).
+- Fixed some compatibility problems with custom campaigns (on guarantees though; bug reports welcome).
+- Made plugin compatible with campaign mode (just in case anyone wants to play random coop). Separate coop config included.
+
+
+0.9
+- Tweaked item balance: better chances of starting with some health items (esp. on randeasy).
+- Reduced chances of glows being disabled (25%, instead of 50%).
+- Blocked weather changes on intro maps, since it breaks on them more often than not.
+- Random gift box unwrapping result now broadcast to all players.
+- New event added: "it's christmas."
+- Re-added some tank spawn blocks for really unplayable tanks.
+- Updated exploit blocks and mapinfo.txt.
+
+
+0.8
+- tweaked item balance: less chance of finding t2's, less pills, slightly more kits
+- removed chances of getting double tank on first map.
+- removed chances of getting weather events on first map, since they don't seem to work on first load.
+- added 'randeasy' config, which always has survivor outlines and more items and t2's -- play this if random is too hard for your enjoyment.
+- fixed occasional glitches that caused error log spam.
+- fixed the m60 ammo (don't count on using it long).
+- used promod 3.1's temp health medkits. (be sure to delete l4d2_thm.txt from your /addons/sourcemod/gamedata/ directory!)
+- added several promod fixes that -- for no good reason -- weren't included in random yet.

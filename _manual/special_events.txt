@@ -1,0 +1,166 @@
+Random -- Special Events
+========================
+
+Each round has a fair chance of featuring a Special Event. If this happens, it will be announced along with the normal round information (that you can request with !rand).
+
+Here's a list of the special events:
+
+
+Item Redundancy
+---------------
+	One type of item, randomly picked, will be very common this round.
+
+Rush Hour
+---------
+	There are a lot more common around and hordes are very large.
+	There will be slower SI spawns to compensate.
+
+Common Holiday
+--------------
+	There are very few common around and hordes are very small.
+	There will be faster SI spawns to compensate.
+
+Freakshow
+---------
+	There are a lot of uncommon infected around.
+	There will be slighly fewer common/uncommon infected around to compensate.
+
+Circus
+------
+	Clowns. Are. Everywhere. I hope you like clowns.
+	There will be slighly less common/uncommon infected around to compensate.
+
+Sorry, we're closed
+-------------------
+	Many of the doors on this map are locked. A locked door can only be opened
+	by destroying it, which can be done with melee weapons or explosives. You can
+	also let infected break open the doors for you.
+
+Quadtastic
+----------
+	There will be no spitters or boomers this round. Every attack is a potential
+	quadcap.
+	There will be slightly fewer common and slightly slower SI spawns to compensate.
+
+Bad Weather Day
+---------------
+	There's a spot of stormy weather this round, like in Hard Rain.
+	[ note: this is buggy and doesn't work on every map, alas. ]
+
+Fog of War
+----------
+	There's heavy fog. To make it worse, survivors don't have outlines this round.
+	[ note: this is buggy and doesn't work on every map, alas. ]
+
+Land of Plenty
+--------------
+	There are a lot of items lying around this map.
+	There will be slightly more common and faster SI spawns to compensate.
+
+Marksmen
+--------
+	The only primary weapons available this round are CSS snipers: Scout and AWP. Survivors
+	start with Scouts.
+
+It's Christmas
+--------------
+	There are many random gifts around.
+
+Sudden Death
+------------
+	Survivors start black and white and will die immediately if they are incapacitated. There are no medkits.
+	There are, however, a lot of defibs around...
+	The defib penalty is lowered to 5 points this round.
+
+Adrenaline Rush
+---------------
+	Survivors start bleeding out as soon as they leave the saferoom. They bleed out a bit faster than normally
+	and there are no medkits to stop the bleeding. There aren't even pills - all the health items available are
+	adrenaline shots (and the rare defib).
+	The defib penalty is lowered to 5 points for this round.
+
+No Heads-Up
+-----------
+	Survivors have no heads-up display (mainly the health bars on the bottom of the screen).
+	Health and items can still be seen by opening the scores.
+
+Old School
+----------
+	L4D1-mode this round! Only L4D1 inventory items appear and only L4D1 special infected spawn.
+
+Friendly Fire
+-------------
+	Survivor friendly fire does triple the damage it normally does in versus games. (This is close to the Hard
+	campaign level of FF.)
+	There will be slightly fewer common and slightly slower SI spawns to compensate.
+
+Hush
+----
+	This event has two versions:
+	1. All survivors become mute. They never utter or otherwise make any sound.
+	2. All special infected become silent. Survivors had better keep their eyes open...
+	   There will be slightly slower SI spawns to compensate.
+
+Pickup Penalty
+--------------
+	Every time a survivor picks up any useful inventory item (pills, weapons, throwables, etc), their team
+	loses 5 points.
+	Type "!bonus" to see the current total penalty.
+
+Health Penalty
+--------------
+	Every time a survivor uses a health item (pills, adrenaline, medkits and defibs), their team loses
+	15 points.
+	Type "!bonus" to see the current total penalty.
+
+Shove Penalty
+-------------
+	Every time a survivor shoves (m2's) a special infected, their team loses 15 points.
+	Type "!bonus" to see the current total penalty.
+
+Magic Gun Swap
+--------------
+	There are no guns or ammo piles this round. Instead, each survivor is randomly handed a weapon
+	with one clip's worth of ammo. When they empty their weapon, they get handed a new weapon, etc.
+
+Mini-Tanks
+----------
+	Many tanks will spawn this map. Luckily for the survivors, they're small and have low health (1350).
+
+Keymaster
+---------
+	A randomly assigned survivor is the 'keymaster', only they can use doors normally. Doors can still
+	be broken with the usual tools.
+
+Bad Combo
+---------
+	All survivors start with a grenade launcher and a chainsaw. If they want any other weapon, they will
+	have to find it somewhere further on in the map.
+
+Babysitting
+-----------
+	One randomly assigned survivor is the 'baby', twice as vulnerable to special infected attacks.
+	The other survivors are more resilient, but will have to protect the baby.
+
+Encumbered
+----------
+	The more stuff survivors carry, the slower they are. Best to travel light!
+
+Booby Traps
+-----------
+	Randomly selected items and doors are booby trapped and may explode when touched. (Not necessarily equal between teams.)
+
+Skeet Shoot
+-----------
+	There's a lot of hunters around. Survivors get 15 bonus points for skeeting them. Only full skeets (150+ damage in a
+	single leap) counts, but team skeets give bonus too.
+
+Firepower
+---------
+	There are no tier-1 weapons, only tier-2 and stronger. 
+	There will be more common infected and faster SI spawns to compensate.
+
+Ammo Shortage
+-------------
+	There's no ammo piles and weapons have very little ammo in them on pickup. Luckily, your team has a special ammo pack
+	that can be deployed as an ammo pile. Hold the USE key to repack the pile as a carryable pack again.
