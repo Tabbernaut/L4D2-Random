@@ -16,6 +16,7 @@ new                     g_iMeleeClassCount                                  = 0;
 new     String:         g_sMeleeClass           [MELEE_CLASS_COUNT][MELEE_CLASS_LENGTH];            // available melee class-strings
 
 new     bool:           g_bVeryFirstMapLoad                                 = true;                 // for preventing a first-map problem with item randomization
+new     bool:           g_bRestartedOnce                                    = false;                // true once the first real map load is going
 new     bool:           g_bCampaignMode                                     = false;                // are we playing a coop game?
 new                     g_bSecondHalf                                       = false;                // is this the second round-half?
 new     bool:           g_bMapStartDone                                     = false;                // has OnMapStart been executed? (to avoid double roundprep calls)
@@ -173,6 +174,7 @@ new     bool:           g_bArBlockPickupCall    [MAXPLAYERS+1]              = {f
 new                     g_iBonusCount                                       = 0;                    // how many special event bonuses/penalties this roundhalf
 
 // special event stuff
+new                     g_iArEventTimeout       [EVT_TOTAL]                 = {0,...};              // per event, how many rounds it will sit in timeout
 new                     g_iNoSpecialEventStreak                             = 0;                    // how many times in a row there wasn't a special event
 new     bool:           g_bSpecialEventPlayerCheck                          = false;                // whether the special event requires player checks on teamswaps, deaths, etc
 new     bool:           g_bSpecialRoleAboutToChange                         = false;                // whether we're already waiting for a timer countdown to do a report (spam prevent)
@@ -188,10 +190,13 @@ new                     g_iDeployingAmmo                                    = 0;
 new     bool:           g_bShowedProgressHint                               = false;                // so we only show the text once
 
 
+
 // ConVars
 new     Handle:         g_hArCvarWeight         [INDEX_TOTAL];                                      // cvar, per randomize-type, that sets an integer weight 
 new     Handle:         g_hArCvarSurvWeight     [INDEX_SURV_TOTAL];                                 // cvar, per randomize-type, that sets an integer weight -- for handing out starting weapon
 new     Handle:         g_hArCvarEvtWeight      [EVT_TOTAL];                                        // cvar, per randomize-type, that sets an integer weight -- for picking events
+
+new     Handle:         g_hCvarConfogl                                      = INVALID_HANDLE;       // cvar whether to wait one map-restart before reading default cvar values
 
 new     Handle:         g_hCvarEqual                                        = INVALID_HANDLE;       // cvar flags what to equalize between teams
 new     Handle:         g_hCvarDoReport                                     = INVALID_HANDLE;       // cvar whether to report anything at all
@@ -211,6 +216,7 @@ new     Handle:         g_hCvarBoomedTime                                   = IN
 new     Handle:         g_hCvarGnomeBonus                                   = INVALID_HANDLE;       // cvar how many points for a full gnome start->end delivery
 new     Handle:         g_hCvarGnomeFinaleFactor                            = INVALID_HANDLE;       // cvar scaling gnome bonus for finale maps
 new     Handle:         g_hCvarGnomeAllowRandom                             = INVALID_HANDLE;       // cvar whether gnomes can drop at random
+new     Handle:         g_hCvarSpecialEventTimeout                          = INVALID_HANDLE;       // cvar how many maps it takes for a special event to be pickable again
 
 new     Handle:         g_hCvarFinaleItemUseful                             = INVALID_HANDLE;       // cvar the factor by which non-useful items are reduced for finale maps
 new     Handle:         g_hCvarStartItemNoJunk                              = INVALID_HANDLE;       // cvar the odds that junk gets changed to something useful in start saferoom

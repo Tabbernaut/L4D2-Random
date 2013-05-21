@@ -13,6 +13,9 @@
 INIT_DefineCVars()
 {
     // ConVars
+    
+    g_hCvarConfogl = CreateConVar(                          "rand_confogl",                  "1",       "Whether random is loaded as a confogl matchmode (changes the way cvar defaults are read).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    
     g_hCvarEqual = CreateConVar(                            "rand_equal",                  "2047",      "[Flags] What to keep equal between each team's survivor round (1: items; 2: doors; 4: glows; 8: event; 16: incaps; 32: horde; 64: item weighting; 128: starting health; 256: first attack; 512: tanks; 1024: scoring).", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarDoReport = CreateConVar(                         "rand_report",                   "1",       "Whether to do automatic reports at the start of a round.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
     g_hCvarReportDelay = CreateConVar(                      "rand_report_delay",            "15",       "How many seconds after first survivor joins map to wait before reporting special event.", FCVAR_PLUGIN, true, 1.0, true, 120.0 );
@@ -30,6 +33,7 @@ INIT_DefineCVars()
     g_hCvarGnomeBonus = CreateConVar(                       "rand_gnome_bonus",              "0.25",    "The bonus given for bringing a gnome from start to end saferoom. (lower than 10 = amount of times distance, greater = static bonus)", FCVAR_PLUGIN, true, 0.0);
     g_hCvarGnomeFinaleFactor = CreateConVar(                "rand_gnome_finale_factor",      "0.5",     "The gnome bonus is worth this factor on finales.", FCVAR_PLUGIN, true, 0.0);
     g_hCvarGnomeAllowRandom = CreateConVar(                 "rand_gnome_random",             "0",       "Whether gnomes can drop at random (from gifts, common drops etc)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarSpecialEventTimeout = CreateConVar(              "rand_event_timeout",            "5",       "How many maps must be played before the same special event may be picked again.", FCVAR_PLUGIN, true, 0.0, false);
     
     g_hCvarNoitemVariance = CreateConVar(                   "rand_noitem_variance",          "0.25",    "Variance of weight for 'no item' in item randomizer.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarSpecialEventChance = CreateConVar(               "rand_event_chance",             "0.65",    "Chances of any map going in 'special event' mode.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -139,6 +143,8 @@ INIT_DefineCVars()
 
 INIT_CVarsGetDefault()
 {
+    LogMessage("CVARS DEFAULTS LOADED (ex. ammo autoshotgun: %i)", GetConVarInt(FindConVar("ammo_autoshotgun_max")) );
+    
     // Store some default cvar values
     g_iDefSpawnTimeMin =        GetConVarInt(FindConVar("z_ghost_delay_min"));
     g_iDefSpawnTimeMax =        GetConVarInt(FindConVar("z_ghost_delay_max"));
@@ -186,6 +192,17 @@ INIT_CVarsReset()
     // reset cvars for which we stored starting values (difficulty si/ci)
     EVENT_ResetDifficulty();
     EVENT_ResetOtherCvars();
+}
+
+INIT_EventCycleTimeout()
+{
+    for (new i=0; i < EVT_TOTAL; i++)
+    {
+        if (g_iArEventTimeout[i] > 0)
+        {
+            g_iArEventTimeout[i]--;
+        }
+    }
 }
 
 INIT_FillTries()

@@ -110,9 +110,9 @@ DoInsightReport(team=-1)
     if (g_bWitchWillSpawn)
     {
         if (g_bMultiWitch && g_iWitchNum > 1) {
-            Format(sReport[iLine], REPLINELENGTH, "There are \x05%d\x01 witches this round. The first is at \x03%d%%\x01, the last at \x03%d%%\x01.", RoundFloat(100.0 * g_fArWitchFlows[0]), RoundFloat(100.0 * g_fArWitchFlows[ g_iWitchNum - 1 ] ) );
+            Format(sReport[iLine], REPLINELENGTH, "There are \x05%d\x01 witches this round. The first is at \x05%d%%\x01, the last at \x05%d%%\x01.", RoundFloat(100.0 * g_fArWitchFlows[0]), RoundFloat(100.0 * g_fArWitchFlows[ g_iWitchNum - 1 ] ) );
         } else {
-            Format(sReport[iLine], REPLINELENGTH, "There is a witch this round, at \x03%d%%\x01.", RoundFloat(100.0 * L4D2Direct_GetVSWitchFlowPercent( (g_bSecondHalf) ? 1 : 0 ) ) );
+            Format(sReport[iLine], REPLINELENGTH, "There is a witch this round, at \x05%d%%\x01.", RoundFloat(100.0 * L4D2Direct_GetVSWitchFlowPercent( (g_bSecondHalf) ? 1 : 0 ) ) );
         }
     } else {
         Format(sReport[iLine], REPLINELENGTH, "No witch this round.");
@@ -122,12 +122,12 @@ DoInsightReport(team=-1)
     if (!g_bCampaignMode)
     {
         // gnomes / cola
-        Format(sReport[iLine], REPLINELENGTH, "Bonus items: this map has \x05%d\x01 gnome%s and \x05%d\x01 cola pack%s.", g_iCountItemGnomes, (g_iCountItemGnomes == 1) ? "" : "s", g_iCountItemCola, (g_iCountItemCola == 1) ? "" : "s" );
+        Format(sReport[iLine], REPLINELENGTH, "Bonus items: \x05%d\x01 gnome%s and \x05%d\x01 cola pack%s.", g_iCountItemGnomes, (g_iCountItemGnomes == 1) ? "" : "s", g_iCountItemCola, (g_iCountItemCola == 1) ? "" : "s" );
         iLine++;
     }
     
     // medkits / defibs
-    Format(sReport[iLine], REPLINELENGTH, "Health items: this map has \x05%d\x01 first aid kit%s and \x05%d\x01 defib%s.", g_iCountItemMedkits, (g_iCountItemMedkits == 1) ? "" : "s", g_iCountItemDefibs, (g_iCountItemDefibs == 1) ? "" : "s" );
+    Format(sReport[iLine], REPLINELENGTH, "Health items: \x05%d\x01 first aid kit%s and \x05%d\x01 defib%s.", g_iCountItemMedkits, (g_iCountItemMedkits == 1) ? "" : "s", g_iCountItemDefibs, (g_iCountItemDefibs == 1) ? "" : "s" );
     iLine++;
     
     
@@ -362,6 +362,9 @@ RANDOM_DetermineRandomStuff()
                 }
             }
             
+            // select, put in timeout
+            g_iArEventTimeout[g_iSpecialEvent] = GetConVarInt(g_hCvarSpecialEventTimeout);
+            
             switch(_:g_iSpecialEvent)
             {
                 case EVT_ITEM: {
@@ -472,6 +475,11 @@ RANDOM_DetermineRandomStuff()
                 }
                 case EVT_SKEET: {
                     g_bUsingPBonus = true;
+                    SetConVarInt(FindConVar("z_smoker_limit"), 1);
+                    SetConVarInt(FindConVar("z_boomer_limit"), 1);
+                    SetConVarInt(FindConVar("z_spitter_limit"), 1);
+                    SetConVarInt(FindConVar("z_jockey_limit"), 1);
+                    SetConVarInt(FindConVar("z_charger_limit"), 1);
                 }
                 case EVT_GUNSWAP: {
                     // don't allow normal weapon spawns
@@ -3300,6 +3308,9 @@ RANDOM_PrepareChoicesEvents()
     for (new i=0; i < EVT_TOTAL; i++)
     {
         count = GetConVarInt(g_hArCvarEvtWeight[i]);
+        
+        // if event is sitting in timeout, ignore it
+        if (g_iArEventTimeout[i] > 0) { continue; }
         
         // remove if event is banned for this map
         //      EVT_ADREN: because most finales are campfests, which doesn't rush well

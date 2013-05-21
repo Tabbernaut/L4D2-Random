@@ -35,7 +35,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     
     g_iBonusCount = 0;
     
-    g_bInsightSurvDone = false;     // so we only get the insight effect from a gift once per roundhalf
+    g_bInsightSurvDone = false;         // so we only get the insight effect from a gift once per roundhalf
     g_bInsightInfDone = false;
     
     g_bSpecialEventPlayerCheck = false;
@@ -188,7 +188,6 @@ EVENT_ResetOtherCvars()
         SetConVarInt(FindConVar("hc_baggage_standing_damage"), g_iDefTankHittableDamage);
         SetConVarInt(FindConVar("hc_incap_standard_damage"), g_iDefTankHittableDamage);
     }
-    
     
     SetConVarInt(FindConVar("sv_force_time_of_day"), -1);
 }

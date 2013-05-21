@@ -147,7 +147,6 @@ public OnPluginStart()
     INIT_PrepareAllSDKCalls();
     INIT_DefineCVars();
     INIT_FillTries();
-    INIT_CVarsGetDefault();
     INIT_PrecacheModels(true);
     
     // Unset home-grown storm cvar, to be sure
@@ -459,12 +458,23 @@ public OnMapStart()
     INIT_PrecacheParticles();
     INIT_GetMeleeClasses();
     
+    
+    // only do special random activation when we've seen at least one map restart
+    if (GetConVarBool(g_hCvarConfogl) && !g_bRestartedOnce)
+    {
+        g_bRestartedOnce = true;
+        return;
+    }
+    
+    INIT_EventCycleTimeout();           // cycle event timeout, so we know what we can pick
     SUPPORT_StormReset();               // safety to catch plugin acting on its own
     
     g_bSecondHalf = false;
     
     if (g_bVeryFirstMapLoad)
     {
+        INIT_CVarsGetDefault();         // do this here so the variables are config set
+        
         g_bVeryFirstMapLoad = false;
         CreateTimer(DELAY_FIRSTMAPLOAD, SUPPORT_RoundPreparation, _, TIMER_FLAG_NO_MAPCHANGE);
     } else {
