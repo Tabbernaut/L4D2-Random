@@ -28,6 +28,12 @@ new     bool:           g_bPlayersLeftStart                                 = fa
 new     bool:           g_bSoundHooked                                      = false;                // true when there's a soundhook in place
 new                     g_iSpecialEventToForce                              = -1;                   // if this is anything but -1, forces special event for one round(half) -- debug function
 
+// Stripper
+new     bool:           g_bStripperPresent                                  = false;                // whether a cvar-configurable Stripper:Source is present
+new     String:         g_sStripperDir          [128];                                              // the directory that the stripper cfg files are in
+new                     g_iStripperCurrentAlt                               = 0;                    // which stripper alternative is currently loaded (0 = default dir)
+new     bool:           g_bStripperAltDetected                              = false;                // whether a stripper set hard path is detected (prop_dynamic with targetname "random_alt_detect")
+
 // Report (timer)
 new     Handle:         g_hTimerReport                                      = INVALID_HANDLE;       // timer for delaying roundstart report
 new     bool:           g_bTimerReport                                      = false;                // is it running?
@@ -197,6 +203,8 @@ new     Handle:         g_hArCvarSurvWeight     [INDEX_SURV_TOTAL];             
 new     Handle:         g_hArCvarEvtWeight      [EVT_TOTAL];                                        // cvar, per randomize-type, that sets an integer weight -- for picking events
 
 new     Handle:         g_hCvarConfogl                                      = INVALID_HANDLE;       // cvar whether to wait one map-restart before reading default cvar values
+new     Handle:         g_hCvarStripperMode                                 = INVALID_HANDLE;       // cvar what way to use stripper
+new     Handle:         g_hCvarStripperPath                                 = INVALID_HANDLE;       // cvar stripper cfg path (base)
 
 new     Handle:         g_hCvarEqual                                        = INVALID_HANDLE;       // cvar flags what to equalize between teams
 new     Handle:         g_hCvarDoReport                                     = INVALID_HANDLE;       // cvar whether to report anything at all

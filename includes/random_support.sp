@@ -27,6 +27,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     g_bIsFirstAttack = true;
     g_bPlayersLeftStart = false;
     g_bFirstReportDone = false;
+    g_bStripperAltDetected = false;
     g_iSpectateGhostCount = 0;
     
     g_bFirstTankSpawned = false;
@@ -294,12 +295,16 @@ EVENT_RoundStartPreparation()
     {
         case EVT_DEFIB: {
             // start out black and white
+            /*
+                removed this, caused HUD-uglies
+                besides, now there's a reward to keeping first life...
             for (new i=1; i <= MaxClients; i++) {
                 if (IsSurvivor(i)) {
                     SetEntProp(i, Prop_Send, "m_bIsOnThirdStrike", 1);
                     SetEntProp(i, Prop_Send, "m_isGoingToDie", 1);
                 }
             }
+            */
         }
         
         case EVT_ADREN: {
@@ -1133,6 +1138,41 @@ public Action: Timer_AmmoVocalize (Handle:timer, any:client)
 {
     // doesn't work.. why?
     FakeClientCommand(client, "vocalize %s", "PlayerSpotAmmo");
+}
+
+// find out whether a hard path is loaded
+bool: SUPPORT_StripperDetectAlt()
+{
+    if (!g_bStripperPresent) { return false; }
+    
+    // the marker is a prop_dynamic(_override) with 999999 hammerid and targetname "random_detect_alt"
+    
+    new entityCount = GetEntityCount();
+    new String: classname[64] = "";
+    
+    for (new i=0; i < entityCount; i++)
+    {
+        if (IsValidEntity(i)) {
+            GetEdictClassname(i, classname, sizeof(classname));
+            
+            if (StrEqual(classname, "prop_dynamic", false))
+            {
+                if (GetEntProp(i, Prop_Data, "m_iHammerID") == 999999)
+                {
+                    new String:name[20] = "";
+                    GetEntPropString(i, Prop_Data, "m_iName", name, sizeof(name));
+                    
+                    //PrintDebug("[rand] prop_dynamic: ent: %i; hamid: %i; name: %s", i, GetEntProp(i, Prop_Data, "m_iHammerID"), name);
+                    
+                    if (StrEqual(name, "random_detect_alt", false)) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    
+    return false;
 }
 
 /*

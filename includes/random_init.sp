@@ -15,6 +15,8 @@ INIT_DefineCVars()
     // ConVars
     
     g_hCvarConfogl = CreateConVar(                          "rand_confogl",                  "1",       "Whether random is loaded as a confogl matchmode (changes the way cvar defaults are read).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarStripperMode = CreateConVar(                     "rand_stripper_mode",            "2",       "When using Stripper:Source: mode 0 = don't change dir; 1 = toggle standard and _alt (50%); 2 = standard + _alt (33%); 3 = same, but (25%).", FCVAR_PLUGIN, true, 0.0, true, 2.0);
+    g_hCvarStripperPath = CreateConVar(                     "rand_stripper_path",            "addons/stripper", "The Stripper:Source directory random uses as its base.", FCVAR_PLUGIN);
     
     g_hCvarEqual = CreateConVar(                            "rand_equal",                  "2047",      "[Flags] What to keep equal between each team's survivor round (1: items; 2: doors; 4: glows; 8: event; 16: incaps; 32: horde; 64: item weighting; 128: starting health; 256: first attack; 512: tanks; 1024: scoring).", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarDoReport = CreateConVar(                         "rand_report",                   "1",       "Whether to do automatic reports at the start of a round.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
@@ -143,7 +145,10 @@ INIT_DefineCVars()
 
 INIT_CVarsGetDefault()
 {
-    LogMessage("CVARS DEFAULTS LOADED (ex. ammo autoshotgun: %i)", GetConVarInt(FindConVar("ammo_autoshotgun_max")) );
+    if (g_bStripperPresent)
+    {
+        GetConVarString(FindConVar("stripper_cfg_path"), g_sStripperDir, sizeof(g_sStripperDir));
+    }
     
     // Store some default cvar values
     g_iDefSpawnTimeMin =        GetConVarInt(FindConVar("z_ghost_delay_min"));
@@ -192,6 +197,8 @@ INIT_CVarsReset()
     // reset cvars for which we stored starting values (difficulty si/ci)
     EVENT_ResetDifficulty();
     EVENT_ResetOtherCvars();
+    
+    SetConVarString(FindConVar("stripper_cfg_path"), g_sStripperDir);
 }
 
 INIT_EventCycleTimeout()
@@ -204,6 +211,30 @@ INIT_EventCycleTimeout()
         }
     }
 }
+
+INIT_StripperSwitch()
+{
+    // if we're randomly picking stripper directories
+    //  called by onmapend every time
+    new iStripperMode = GetConVarInt(g_hCvarStripperMode);
+    
+    if (!g_bStripperPresent || g_bCampaignMode || iStripperMode == 0) { return; }
+    
+    new String: sStripperDir[128] = "";
+    GetConVarString(g_hCvarStripperPath, sStripperDir, sizeof(sStripperDir));
+    
+    switch (iStripperMode)
+    {
+        case 1: {   g_iStripperCurrentAlt = (GetRandomInt(0,1)) ? 0 : 1; }
+        case 2: {   g_iStripperCurrentAlt = (GetRandomInt(0,2)) ? 0 : 1; }
+        case 3: {   g_iStripperCurrentAlt = (GetRandomInt(0,3)) ? 0 : 1; }
+    }
+    
+    Format(sStripperDir, sizeof(sStripperDir), "%s_alt", sStripperDir, (g_iStripperCurrentAlt == 1) ? "_alt" : "");
+    
+    SetConVarString(FindConVar("stripper_cfg_path"), sStripperDir);
+}
+
 
 INIT_FillTries()
 {

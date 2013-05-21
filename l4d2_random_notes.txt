@@ -29,35 +29,58 @@ L4D2_Random
             
     to-do:
     ------
-            - bugfix:   intro maps (and quite likely, only then?) get weird stuff spawning in saferooms sometimes
-                        [ testing ]
-                        
-            - bugfix:   changes to sv_time_of_day (or whatever) are reported (being tracked by confogl. test with multiwitches
-                        [ testing ]
-                        
-            - bugfix:   hud looks weird on defib event (health bars are empty, but health is normal and full)
+            - test:     intro maps (and quite likely, only then?) get weird stuff spawning in saferooms sometimes
+            - test:     changes to sv_time_of_day (or whatever) are reported (being tracked by confogl. test with multiwitches
 
             - medium:   bot si spawn determination?
                         - or check if I can simply force the spawns just like human players (IsFakeClient() checks?)
-                        - consider allowing bots in matchmode too, because.. why not?
           
-            - low:      ammo event: when someone dies, shortly after: check if there exists an upgrade pack anywhere
-                            either in possession of players or on the map -- if not, generate one near the corpse.
+            - medium:   make separate 'randmap' config: with stabby's random map stuff.
+          
+            - medium:   fix campaign mode random:
+                        - remove items that the survivors bring and use all items in the map? fix for events
 
-            - low:      stripper-dir switch randomly: so maps automatically have two versions
-                        - dec3 long way around vs. normal
-                        - par3 random maze versions
-                        
+            - low:      use progress bar approach to opening presents. (2sec?)
+            
             - low:      randomize location for gascans in scavenge finales
                             that is, find all the locations, get the total amount of cans and redistribute them
                             *near* every spawn location with random variance (then remember for next round)
             
-            - low:      fix campaign mode random:
-                        - remove items that the survivors bring and use all items in the map? fix for events
+            - low:      ammo event: when someone dies, shortly after: check if there exists an upgrade pack anywhere
+                            either in possession of players or on the map -- if not, generate one near the corpse.
             
-            - code:     "The SetEntProp functions have a parameter for the array index, use it instead of doing manually lookups and computing offsets."
-            - code:     Clean up the explosion timer/particles code a bit.
             - code:     Clean up the l4d_drop copied code some more.
+            - code:     "The SetEntProp functions have a parameter for the array index, use it instead of doing manually lookups and computing offsets."
+            
+    harder paths
+    ------------
+    
+        minor changes
+        -------------
+            c1m2        just some spawn cover changes (no harder map pathing, nor is it detected)
+            
+        path changes
+        ------------
+            c1m3        lower route + change to final area
+            c2m4        blocked a few paths at start and before barns
+            c3m3        some most-direct paths blocked
+            c3m4        through house at start, roadblock in village
+            c4m1        blocked path near garage sale, filled up road a bit
+            c4m4        stabby's event
+            c5m1        path forced halfway
+            c5m4        forced pathing near end of map
+            c8m1        forced long way around the map
+            c8m4        harder pathing near reception
+            c10m2       blocked routes near start and after event
+            c10m4       added a bunch of obstructions in first parts of map
+            c11m4       a number of small detours and spawn cover
+            c12m2       forced routes, long way through building
+            c12m4       my map changes / route change
+            c12m5       cornfield changes
+            
+        still to do
+        -----------
+            c5m3        maze versions...
             
             
     ideas:
@@ -85,7 +108,16 @@ L4D2_Random
             - NO    - memorize horde timers, repeat same hordes for second roundhalf
             - NO    - random event speeds/times & random event horde size/duration
             
-            
+            - CS:
+                16:19 - ?²: how about, you plant a gnome on the ground
+                16:19 - ?²: anywhere
+                16:19 - ?²: takes about 15seconds
+                16:19 - ?²: or 10 or something
+                16:19 - ?²: when it's done it fizzles with a sparkle sprite or something
+                16:19 - ?²: then launches into the sky with smoke
+                16:20 - ?²: explodes into 10 pipebombs in every direction
+                16:20 - ?²: "hold on guys let me gnome this area"
+                16:20 - ?²: "too many zombies
             
             
 Some stuff to keep in mind:

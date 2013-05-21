@@ -21,6 +21,7 @@
 - Difficulty estimation of round controls (to some extent) the amount of items that can be found on the map.
 - Multi-boomer combos spawn more and special uncommons (ie. multiple survivors each boomed by a different boomer). A quad-combo (4 boomers on 4 different survivors) spawns a megamob.
 - Pipebombs can randomly dud (33% chance to fail to explode).
+- A fair selection of maps have alternative pathing, which is randomly enabled (33% chance). A full list is available in the manual.
 - 'Fog of War' event now forces outlines-off (realism mode) for survivors (weather itself is still broken sometimes).
 - Fixed weather events (storm and fog) not working right on second round. Blocked weather events on Hard Rain 3 & 4.
 - Fixed the 'marksmen' event, survivors no longer start with incorrect weapons.

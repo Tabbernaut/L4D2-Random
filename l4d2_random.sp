@@ -70,7 +70,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.15",
+    version = "1.0.16",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -142,6 +142,7 @@ public OnPluginStart()
     
     // default convars
     g_hCvarTeamSize = FindConVar("survivor_limit");
+    g_bStripperPresent = (FindConVar("stripper_cfg_path") != INVALID_HANDLE);
 
     // do general init
     INIT_PrepareAllSDKCalls();
@@ -458,11 +459,11 @@ public OnMapStart()
     INIT_PrecacheParticles();
     INIT_GetMeleeClasses();
     
-    
     // only do special random activation when we've seen at least one map restart
     if (GetConVarBool(g_hCvarConfogl) && !g_bRestartedOnce)
     {
         g_bRestartedOnce = true;
+        PrintDebug("[rand] First OnMapStart, starting randomization on the next.");
         return;
     }
     
@@ -476,15 +477,18 @@ public OnMapStart()
         INIT_CVarsGetDefault();         // do this here so the variables are config set
         
         g_bVeryFirstMapLoad = false;
-        CreateTimer(DELAY_FIRSTMAPLOAD, SUPPORT_RoundPreparation, _, TIMER_FLAG_NO_MAPCHANGE);
+        
+        //CreateTimer(DELAY_FIRSTMAPLOAD, SUPPORT_RoundPreparation, _, TIMER_FLAG_NO_MAPCHANGE);
     } else {
-        CreateTimer(0.1, SUPPORT_RoundPreparation, _, TIMER_FLAG_NO_MAPCHANGE);
-        //SUPPORT_RoundPreparation();     // prepare stuff for this round
+        // removed from here
+        // see below
     }
     
+    // try this now (the problem might have been the double_execution on timer)
+    //  if it doesn't work right, just replace to above and use DELAY_FIRSTMAPLOAD again
+    CreateTimer(0.1, SUPPORT_RoundPreparation, _, TIMER_FLAG_NO_MAPCHANGE);
+    
     // Start checking for humans loading in...
-    //g_hTimerCheckFirstHuman = CreateTimer(TIMER_HUMANCHECK, Timer_CheckForHumans, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-    //g_bTimerCheckFirstHuman = true;
     CreateTimer(TIMER_HUMANCHECK, Timer_CheckForHumans, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
     
     g_bMapStartDone = true;
@@ -493,14 +497,14 @@ public OnMapStart()
 
 public OnMapEnd()
 {
+    // switch stripper file for next map
+    INIT_StripperSwitch();
+    
     g_bSecondHalf = false;
     g_bInRound = false;
     g_bMapStartDone = false;
     g_bIsFirstAttack = true;
     g_bModelsPrecached = false;
-    
-    // this causes error spam sometimes... but do we even need it?
-    //if (g_bTimerCheckFirstHuman) { KillTimer(g_hTimerCheckFirstHuman); }
 }
 
 public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
@@ -512,7 +516,6 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
         g_bInRound = true;
         
         CreateTimer(0.1, SUPPORT_RoundPreparation, _, TIMER_FLAG_NO_MAPCHANGE);
-        //SUPPORT_RoundPreparation();     // prepare stuff for this round (only second round)
     }
 }
 

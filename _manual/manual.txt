@@ -18,7 +18,8 @@ Table of Contents
 10. Defibrillators
 11. Locked doors
 12. Random gifts
-13. Campaign mode
+13. Alternative pathing
+14. Campaign mode
 
 
 
@@ -147,9 +148,32 @@ There may be green and yellow presents placed around the map. Survivors can open
 
 
 
+Alternative pathing
+-------------------
+Some maps have alternative paths or other changes, that may be randomly enabled (same for both teams). The following maps are affected:
 
-Campaign mode
---------------------
+     c1m3        forced through lower route (like in campaign mode), harder final area
+     c2m4        blocked a few paths at start and before barns area
+     c3m3        a few of the fastest paths blocked
+     c3m4        forced through house at start, roadblock in village
+     c4m1        blocked path near garage sale, filled up road with vehicles
+     c4m4        Stabby's car alarm event near the end
+     c5m1        path forced halfway, with added point of no return
+     c5m3        different cemetery maze versions
+     c5m4        forced pathing near end of map through side rooms
+     c8m1        forced long way around the map
+     c8m4        harder pathing near reception area
+     c10m2       blocked routes near start and after event
+     c10m4       added a bunch of obstructions in first parts of map
+     c11m4       a number of small detours and spawn cover
+     c12m2       forced some longer routes, added spawn cover
+     c12m4       route change around railtrack warehouse
+     c12m5       many cornfield changes
+
+
+
+Campaign mode (Random Coop)
+-------------
 You can play Random in campaign mode, if you want. I've included two config files in the installation package that should enable you to easily do this.
 
 Take these steps to play Random Coop:

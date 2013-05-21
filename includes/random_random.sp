@@ -53,6 +53,13 @@ DoReport(client=0)
         iLine++;
     }
     
+    // harder map path?
+    if (g_bStripperAltDetected)
+    {
+        Format(sReport[iLine], REPLINELENGTH, "This round has \x04harder map pathing\x01!");
+        iLine++;
+    }
+    
     // report special event, if any
     if (g_iSpecialEvent != -1) {
         if (g_iSpecialEvent == _:EVT_ITEM) {
@@ -202,6 +209,25 @@ RANDOM_DetermineRandomStuff()
             g_iDifficultyRating += 2;
         } else if (mapnameType == MAPS_INTRO) {
             g_iDifficultyRating--;
+        }
+    }
+    
+    // what stripper alt is loaded?
+    if (g_bStripperPresent && !g_bSecondHalf)
+    {
+        g_bStripperAltDetected = SUPPORT_StripperDetectAlt();
+        
+        PrintDebug("[rand] Stripper Alternative for this round: %i (harder path: %s).", g_iStripperCurrentAlt, (g_bStripperAltDetected) ? "yes" : "no");
+        
+        if (g_bStripperAltDetected)
+        {
+            // _alt stripper paths are harder; if we ever include them, _alt_b are even harder
+            if (g_iStripperCurrentAlt == 1) {
+                g_iDifficultyRating += 2;
+            }
+            else if (g_iStripperCurrentAlt == 2) {
+                g_iDifficultyRating += 3;
+            }
         }
     }
     
