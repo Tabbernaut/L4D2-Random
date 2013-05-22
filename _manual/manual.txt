@@ -119,6 +119,7 @@ Boomer combo's
 --------------
 A boomer combo is when more boomers vomit on survivors within a small timeframe. To get N-combo's, N+ different survivors must each be boomed by N different boomers.
 So if boomer A booms Nick, and Boomer B booms Ellis and Coach, this is a 2-combo. If each of the survivors gets boomed separately by a different boomer -- so you need 4 boomers for this, and they must all boom exactly 1 survivor -- you get a 4-combo.
+Booms must happen within 10 seconds of eachother in order to count as part of a combo.
 
 Combo's have the following effects:
 2-boom combo:	spawns extra uncommons (clowns, construction workers and mudmen)
@@ -159,7 +160,7 @@ Some maps have alternative paths or other changes, that may be randomly enabled 
      c4m1        blocked path near garage sale, filled up road with vehicles
      c4m4        Stabby's car alarm event near the end
      c5m1        path forced halfway, with added point of no return
-     c5m3        different cemetery maze versions
+     c5m3        different cemetery maze versions, made house with hole in floor is one-way drop
      c5m4        forced pathing near end of map through side rooms
      c8m1        forced long way around the map
      c8m4        harder pathing near reception area
