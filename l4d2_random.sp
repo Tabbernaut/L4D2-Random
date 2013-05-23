@@ -70,7 +70,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.17",
+    version = "1.0.18",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -470,7 +470,7 @@ public Action: TestGnomes_Cmd(client, args)
     // animation test
     //StartSurvivorAnim_Healing(client);
     
-    /*
+    
     decl String:sMessage[MAX_NAME_LENGTH];
     GetCmdArg(1, sMessage, sizeof(sMessage));
     new setclient = StringToInt(sMessage);
@@ -478,10 +478,12 @@ public Action: TestGnomes_Cmd(client, args)
     GetCmdArg(2, sMessage, sizeof(sMessage));
     new event = StringToInt(sMessage);
     
-    L4D2Direct_DoAnimationEvent(setclient, event);
+    if (args)
+    {
+        L4D2Direct_DoAnimationEvent(setclient, event);
+        return Plugin_Handled;
+    }
     
-    return Plugin_Handled;
-    */
     
     // test: are we in saferoom?
     new bool: inStart = IsEntityInSaferoom(client, true, false);
@@ -529,6 +531,7 @@ public Action: TestGnomes_Cmd(client, args)
     PrintToChatAll("test: set defibs used for roundhalf %i [team: %i] to: %i", g_bSecondHalf, GameRules_GetProp("m_bAreTeamsFlipped", 4, 0), tmpInt);
     GameRules_SetProp("m_iVersusDefibsUsed", tmpInt, 4, GameRules_GetProp("m_bAreTeamsFlipped", 4, 0) );
     */
+    return Plugin_Handled;
 }
 
 public Action: TestEnts_Cmd(client, args)
@@ -1287,6 +1290,9 @@ public BoomerCheckCombo(victim)
 // give boomers a reward for getting the combo
 public DoBoomerComboReward(combo, victim)
 {
+    // do pipedud reward
+    g_fDudTimeExpire = GetGameTime() + BOOMCOMBO_DUDTIME;
+    
     // make sure we have a spawning client
     if (!IsClientAndInGame(victim) && !IsFakeClient(victim)) {
         victim = GetSpawningClient();
@@ -1579,6 +1585,9 @@ public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadc
         WritePackCell(pack, USING_TYPE_AMMO);
         
         CreateTimer(0.05, Timer_CheckPlayerUsing, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+        
+        // do animation
+        L4D2Direct_DoAnimationEvent(client, ANIM_EVENT_PLACE_THING);
     }
     return Plugin_Continue;
 }
@@ -1607,6 +1616,8 @@ public Action:Timer_CheckPlayerUsing(Handle:timer, any:pack)
         g_bShowedProgressHint = false;
         g_iClientUsing[client] = 0;
         CloseHandle(pack);
+        EndSurvivorAnim(client);
+        //ShowWeapon(client);
         return Plugin_Stop;
     }
     
@@ -1632,6 +1643,8 @@ public Action:Timer_CheckPlayerUsing(Handle:timer, any:pack)
                 g_bShowedProgressHint = false;
                 g_iClientUsing[client] = 0;
                 CloseHandle(pack);
+                EndSurvivorAnim(client);
+                //ShowWeapon(client);
                 return Plugin_Stop;
             }
         }
@@ -1643,6 +1656,8 @@ public Action:Timer_CheckPlayerUsing(Handle:timer, any:pack)
                 g_bShowedProgressHint = false;
                 g_iClientUsing[client] = 0;
                 CloseHandle(pack);
+                EndSurvivorAnim(client);
+                //ShowWeapon(client);
                 return Plugin_Stop;
             }
         }
@@ -2376,7 +2391,11 @@ public Action:Timer_PipeCheck(Handle:timer, any:entity)
     if (!StrEqual(classname, "pipe_bomb_projectile", false)) { return; }
     
     // dud chance...
-    if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarPipeDudChance)) {
+    //  affected by boomer combo
+    new Float: fDudChance = GetConVarFloat(g_hCvarPipeDudChance);
+    if (fDudChance > 0.0 && GetGameTime() < g_fDudTimeExpire) { fDudChance = BOOMCOMBO_DUDCHANCE; }
+    
+    if (GetRandomFloat(0.001,1.0) <= fDudChance) {
         CreateTimer( PIPEDUD_MINTIME + GetRandomFloat(0.0, PIPEDUD_ADDTIME) , Timer_PipeDud, entity);
     }    
 }

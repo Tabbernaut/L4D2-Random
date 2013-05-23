@@ -43,6 +43,8 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     g_bNoWeapons = false;
     g_bNoAmmo = false;
     
+    g_fDudTimeExpire = 0.0;
+    
     // basic cleanup
     SUPPORT_CleanArrays();              // clear general arrays
     ClearArray(g_hBlockedEntities);     // clear blind infected entities
@@ -1187,8 +1189,11 @@ bool: SUPPORT_StripperDetectAlt()
 // stop animations we triggered
 EndSurvivorAnim(client)
 {
-    new PropOff_flCycle = FindSendPropInfo("CTerrorPlayer", "m_flCycle");
-    SetEntDataFloat(client, PropOff_flCycle, 2.0, true);
+    // doesn't work right, simply do animation change instead
+    //new PropOff_flCycle = FindSendPropInfo("CTerrorPlayer", "m_flCycle");
+    //SetEntDataFloat(client, PropOff_flCycle, 2.0, true);
+    
+    L4D2Direct_DoAnimationEvent(client, ANIM_EVENT_BACK_TO_IDLE);
 }
 
 /*
@@ -1485,6 +1490,35 @@ SUPPORT_GetCurrentWeaponSlot(client)
     return slot;
 }
 
+
+
+// hide/show survivor weapon
+/*
+HideWeapon(client)
+{
+    // cannot be done
+    //  apparently, this only works for weapons on the ground etc, weapons
+    //  on the model will never disappear, unless you hide the entire player model
+    new weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+    
+    new String: classname[64];
+    GetEdictClassname(weapon, classname, sizeof(classname));
+    
+    if (IsValidEntity(weapon)) {
+        SetEntityRenderMode(weapon, RENDER_TRANSCOLOR);
+        SetEntityRenderColor(weapon, 255, 255, 255, 0);
+    }
+}
+ShowWeapon(client)
+{
+    new weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+    
+    if (IsValidEntity(weapon)) {
+        SetEntityRenderMode(weapon, RENDER_TRANSCOLOR);
+        SetEntityRenderColor(weapon, 255, 255, 255, 255);
+    }
+}
+*/
 
 // progress bar handling
 SetupProgressBar(client, Float:time, Float:location[3])

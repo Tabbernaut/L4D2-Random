@@ -89,6 +89,7 @@ new                     g_iSpectateGhostCount                               = 0;
 // Sack-exploitation checks
 new     Float:          g_fGotGhost             [MAXPLAYERS+1]              = {0.0,...};            // when player got their SI ghost most recently
 new     Float:          g_fDeathAfterGhost      [MAXPLAYERS+1]              = {0.0,...};            // the first SI death of another teammember after player got their ghost
+new                     g_iOffences             [MAXPLAYERS+1]              = {0,...};              // the amount of times a player has done this (since plugin was loaded) - warn at 3 strikes?
 
 // Boomer tracking
 new                     g_iCommonBoomQueue                                  = 0;                    // how many common infected that will spawn are boomer(effect) created
@@ -97,6 +98,7 @@ new                     g_iBoomedSurvivors      [MAXPLAYERS+1]              = {0
 new                     g_iBoomsPerBoomer       [TEAM_SIZE]                 = {0,...};              // per iBoomersInCombo index: how many survivors did they get?
 new                     g_iBoomersInCombo       [TEAM_SIZE]                 = {0,...};              // the clients that are part of the current boomer combo
 new     Float:          g_fBoomTime             [TEAM_SIZE]                 = {0.0,...};            // when the boomer got its most recent boom
+new     Float:          g_fDudTimeExpire                                    = 0.0;                  // time when pipeboms will work again after a 2+ boom combo
 
 // Hunter and skeet tracking
 new     bool:           bHunterPouncing         [MAXPLAYERS + 1]            = {false,...};          // whether the hunter is currently pouncing

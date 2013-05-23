@@ -598,7 +598,6 @@ RANDOM_DetermineRandomStuff()
     }
     
     if (g_bTankWillSpawn) { g_iDifficultyRating += 2; }
-    if (g_bWitchWillSpawn) { g_iDifficultyRating++; }
     
     PrintDebug("[rand] Boss spawns: Tank: %i (%.2f) / Witch: %i (%.2f)", g_bTankWillSpawn, L4D2Direct_GetVSTankFlowPercent( (g_bSecondHalf) ? 1 : 0 ), g_bWitchWillSpawn, L4D2Direct_GetVSWitchFlowPercent( (g_bSecondHalf) ? 1 : 0 ));
     
@@ -631,7 +630,10 @@ RANDOM_DetermineRandomStuff()
                 
                 g_iDifficultyRating += 2;  // on top of the 2 for tank already
                 
-            } else {
+                // no witches for doubletank round
+                g_bWitchWillSpawn = false;
+            }
+            else {
                 g_bDoubleTank = false;
             }
         }
@@ -642,18 +644,28 @@ RANDOM_DetermineRandomStuff()
             L4D2Direct_SetVSTankToSpawnThisRound(1, true);
             L4D2Direct_SetVSTankFlowPercent(0, g_fTankFlowEarly);
             L4D2Direct_SetVSTankFlowPercent(1, g_fTankFlowEarly);
+            // no witches for doubletank round
+            g_bWitchWillSpawn = false;
         }
     } else {
         // no double tanks in any case
         g_bDoubleTank = false;
     }
     
+    if (g_bWitchWillSpawn) {
+        g_iDifficultyRating++;
+    }
+    else {
+        L4D2Direct_SetVSWitchToSpawnThisRound(0, false);
+        L4D2Direct_SetVSWitchToSpawnThisRound(1, false);
+    }
+    
     // multi-witches?
-    if (g_bWitchWillSpawn && !g_bDoubleTank && !L4D_IsMissionFinalMap() && (MULTIWITCH_ALLOW_TANK || !g_bTankWillSpawn) && _:g_iSpecialEvent != EVT_MINITANKS )
+    if (g_bWitchWillSpawn && !L4D_IsMissionFinalMap() && (MULTIWITCH_ALLOW_TANK || !g_bTankWillSpawn) && _:g_iSpecialEvent != EVT_MINITANKS )
     {
         if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
         {
-            if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarMultiWitchChance)) {
+            if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarMultiWitchChance) && !g_bTankWillSpawn) {
                 g_bMultiWitch = true;
                 SUPPORT_MultiWitchRandomization();
                 g_iDifficultyRating += 2;
@@ -805,6 +817,7 @@ RandomizeItems()
     
     new iCountNoitem = 0;                   // just some score-keeping for debugging 
     new iCountFinaleAmmo = 0;               // how many forced finale ammo piles (also decreased on re-rolls)
+    new iCountStartAmmo = 0;                // how many starting ammo piles?
     
     new String:classname[128];
     new curEnt;                             // the entity we're currently storing data for
@@ -857,7 +870,8 @@ RandomizeItems()
             // store whether it is in a saferoom
             if (SAFEDETECT_IsEntityInStartSaferoom(i)) {
                 g_strArStorage[curEnt][entInStartSaferoom] = true;
-            } else if (SAFEDETECT_IsEntityInEndSaferoom(i)) {
+            }
+            else if (SAFEDETECT_IsEntityInEndSaferoom(i)) {
                 g_strArStorage[curEnt][entInEndSaferoom] = true;
             }
             
@@ -894,10 +908,24 @@ RandomizeItems()
                     randomIndex = GetRandomInt(g_iWeightedChoicesStartUseful, g_iWeightedChoicesEndUseful);
                     randomPick = g_iArWeightedChoices[randomIndex];
                 }
+                
+                // only 1 ammo pile in saferoom -- reduce the odds of more
+                if (randomPick == INDEX_AMMO)
+                {
+                    iCountStartAmmo++;
+                    
+                    // repick if we already have it
+                    if (iCountStartAmmo > 1) {
+                        randomIndex = GetRandomInt(0, (g_iWeightedChoicesTotal-1));
+                        randomPick = g_iArWeightedChoices[randomIndex];
+                        
+                        if (randomPick != INDEX_AMMO) { iCountStartAmmo--; }
+                    }
+                }
             }
             else if (g_strArStorage[curEnt][entInEndSaferoom])
             {
-                if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarEndSafeItem)) {
+                if (GetConVarFloat(g_hCvarEndSafeItem) > 0.0 && GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarEndSafeItem)) {
                     if (randomPick == INDEX_NOITEM) {
                         while (randomPick == INDEX_NOITEM) {
                             randomIndex = GetRandomInt(randomIndex + 1, (g_iWeightedChoicesTotal-1));
@@ -951,6 +979,8 @@ RandomizeItems()
                 }
             }
             
+            
+            // randomly pick one:
             switch (randomPick)
             {
                 case INDEX_PISTOL:
@@ -1236,7 +1266,7 @@ RandomizeItems()
     
     for (new i=0; i < g_iStoredEntities; i++)
     {
-        if (g_strArStorage[i][entInStartSaferoom])
+        if (g_strArStorage[i][entInStartSaferoom] == true)
         {
             arStartItems[countStartItems] = i;
             countStartItems++;
@@ -1246,10 +1276,23 @@ RandomizeItems()
         }
     }
     
+    // chance/force gnome to be in start saferoom
+    if (!countStartGnome && GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarStartItemGnome))
+    {
+        new changeIndex = GetRandomInt(0, countStartItems - 1);
+        changeIndex = arStartItems[changeIndex];
+        
+        g_strArStorage[changeIndex][entPickedType] = PCK_SILLY_GNOME;
+        g_strArStorage[changeIndex][entCheckOrigin] = false;
+        g_strArStorage[changeIndex][entSpawnPhysics] = false;
+        g_strArStorage[changeIndex][entAmmoMax] = 0;
+    }
+    
     // chance/force ammo to be in start saferoom
     if (!countStartAmmo && GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarStartItemAmmo))
     {
         new changeIndex = GetRandomInt(0, countStartItems - 1);
+        changeIndex = arStartItems[changeIndex];
         
         g_strArStorage[changeIndex][entPickedType] = PCK_AMMO;
         g_strArStorage[changeIndex][entCheckOrigin] = true;
@@ -1260,16 +1303,6 @@ RandomizeItems()
         g_strArStorage[changeIndex][entAngles_c] = 0.0;
     }
     
-    // chance/force gnome to be in start saferoom
-    if (!countStartGnome && GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarStartItemGnome))
-    {
-        new changeIndex = GetRandomInt(0, countStartItems - 1);
-        
-        g_strArStorage[changeIndex][entPickedType] = PCK_SILLY_GNOME;
-        g_strArStorage[changeIndex][entCheckOrigin] = false;
-        g_strArStorage[changeIndex][entSpawnPhysics] = false;
-        g_strArStorage[changeIndex][entAmmoMax] = 0;
-    }    
     
     // now add the entities (afterwards, so we don't remove intentionally added stuff)
     for (new i=0; i < g_iStoredEntities; i++)
@@ -2450,7 +2483,14 @@ bool: RANDOM_CheckPlayerGiftUse(client)
     EmitSoundToAll(GIFTUNWRAP_SOUND, entity);
     
     // do animation
-    L4D2Direct_DoAnimationEvent(client, ANIM_EVENT_HEAL_OTHER);
+    //  if gift is high use other animation (40.0 = about waist height)
+    //HideWeapon(client);
+    if (targetPos[2] - playerPos[2] > 30.0) {
+        L4D2Direct_DoAnimationEvent(client, ANIM_EVENT_HEAL_OTHER);
+    } else {
+        L4D2Direct_DoAnimationEvent(client, ANIM_EVENT_INCAP_PICKUP);
+    }
+    
     
     // do vocalize effect for opening a prezzie
     //  80% chance of vocalizing
@@ -2580,7 +2620,7 @@ RANDOM_DoGiftEffect(client, entity)
                 if (curHealth < 100) {
                     if (curHealth + someHealth < 100) { curHealth += someHealth; } else { someHealth = 100 - curHealth; curHealth = 100; }
                     SetEntityHealth(client, curHealth);
-                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: healed %i solid health.", client, someHealth);
+                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x05healed %i solid health\x01.", client, someHealth);
                     // get rid of temp health buffer?
                     if (oldTotal > curHealth) {
                         SetEntPropFloat(client, Prop_Send, "m_healthBuffer", float(oldTotal - curHealth));
@@ -2605,7 +2645,7 @@ RANDOM_DoGiftEffect(client, entity)
                 if (curHealth < 100) {
                     SetEntPropFloat(client, Prop_Send, "m_healthBuffer", float(100 - curHealth));
                     SetEntPropFloat(client, Prop_Send, "m_healthBufferTime", fGameTime);
-                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: temporary health given.", client);
+                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x05temporary health given\x01.", client);
                     
                     Vocalize_Random(client, "PainRelieftPills");
                 }
@@ -2616,7 +2656,7 @@ RANDOM_DoGiftEffect(client, entity)
                 }
             }
             case GIFT_POS_ITEMS: {   // item spawn
-                PrintToChatAll("\x01[\x05r\x01] %N opened gift: item(s).", client);
+                PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x05items\x01.", client);
                 
                 g_strTempItemSingle[entOrigin_a] = targetPos[0];
                 g_strTempItemSingle[entOrigin_b] = targetPos[1];
@@ -2674,7 +2714,7 @@ RANDOM_DoGiftEffect(client, entity)
             case GIFT_POS_LASER: {   // give laser sight
                 if (GetRandomInt(0, 2) == 0) {
                     // for all
-                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: team laser sight.", client);
+                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x05team laser sight\x01.", client);
                     for (new i=1; i < MaxClients; i++) {
                         if (IsClientInGame(i) && IsSurvivor(i) && IsPlayerAlive(i)) {
                             CheatCommand(i, "upgrade_add", "LASER_SIGHT");
@@ -2682,7 +2722,7 @@ RANDOM_DoGiftEffect(client, entity)
                     }
                 } else {
                     // for the opener
-                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: laser sight.", client);
+                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x05laser sight\x01.", client);
                     CheatCommand(client, "upgrade_add", "LASER_SIGHT");
                 }
                 Vocalize_Random(client, "lasersights");
@@ -2690,7 +2730,7 @@ RANDOM_DoGiftEffect(client, entity)
             case GIFT_POS_AMMO: {   // give ammo
                 if (GetRandomInt(0, 2) == 0) {
                     // for all
-                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: team ammo refill.", client);
+                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x05team ammo refill\x01.", client);
                     for (new i=1; i < MaxClients; i++) {
                         if (IsClientInGame(i) && IsSurvivor(i) && IsPlayerAlive(i)) {
                             CheatCommand(i, "give", "ammo");
@@ -2698,13 +2738,13 @@ RANDOM_DoGiftEffect(client, entity)
                     }
                 } else {
                     // for the opener
-                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: ammo refill.", client);
+                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x05ammo refill\x01.", client);
                     CheatCommand(client, "give", "ammo");
                 }
                 Vocalize_Random(client, "spotammo");
             }
             case GIFT_POS_INSIGHT: {   // give insight
-                PrintToChatAll("\x01[\x05r\x01] %N opened gift: survivor insight...", client);
+                PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x05survivor insight\x01...", client);
                 DoInsightReport(TEAM_SURVIVOR);
                 g_bInsightSurvDone = true;
                 Vocalize_Random(client, "lookhere");
@@ -2721,7 +2761,7 @@ RANDOM_DoGiftEffect(client, entity)
         
         // don't give negative effects that are harmless in (closed) saferoom
         if (inSaferoom && (randomPick == GIFT_NEG_PANIC || randomPick == GIFT_NEG_VOMIT) ) {
-            randomPick = (GetRandomInt(0,1) && !g_bInsightInfDone) ? GIFT_NEG_FIRE : GIFT_NEG_INSIGHT;
+            randomPick = (GetRandomInt(0,1) || g_bInsightInfDone) ? GIFT_NEG_FIRE : GIFT_NEG_INSIGHT;
         }
         
         //PrintToChatAll("client: %i, Entity: %i: neg pick: %i", client, entity, randomPick);
@@ -2772,7 +2812,7 @@ RANDOM_DoGiftEffect(client, entity)
                 }
             }
             case GIFT_NEG_INSIGHT: {   // give insight
-                PrintToChatAll("\x01[\x05r\x01] %N opened gift: infected insight...", client);
+                PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04infected insight\x01...", client);
                 DoInsightReport(TEAM_INFECTED);
                 g_bInsightInfDone = true;
                 
@@ -2862,7 +2902,7 @@ RandomizeFirstSpawns()
         );
 }
 
-public DetermineSpawnClass(any:client, any:iClass)
+DetermineSpawnClass(any:client, any:iClass)
 {
     // pick a desired class, dependent on Cvar settings
     if (iClass < ZC_SMOKER || iClass > ZC_CHARGER || !IsClientAndInGame(client) || IsTank(client)) { return; }
@@ -2974,14 +3014,24 @@ public DetermineSpawnClass(any:client, any:iClass)
             }
             
             // reporting?
-            if (GetConVarBool(g_hCvarReportSackProt))
+            g_iOffences[offendingClient]++;
+            new reportMode = GetConVarInt(g_hCvarReportSackProt);
+            if (reportMode > 0)
             {
-                if (preChangeClass != iClass) {
-                    PrintToChat(client, "\x01[\x05r\x01] sack block: you got a %s (instead of %s) because %N kept their spawn.", g_csSIClassName[iClass], g_csSIClassName[preChangeClass], offendingClient);
+                // report to slighted party
+                if (reportMode == 1)
+                {
+                    if (preChangeClass != iClass) {
+                        PrintToChat(client, "\x01[\x05r\x01] sack block: you got a %s (instead of %s) because %N kept their spawn.", g_csSIClassName[iClass], g_csSIClassName[preChangeClass], offendingClient);
+                    }
                 }
-                PrintToChat(offendingClient, "\x01[\x05r\x01] Holding onto spawns makes your team get less chargers and no quad-caps. (try to attack together)");
+                // report to offending (3 strike type deal too)
+                if (reportMode == 1 || g_iOffences[offendingClient] == 3)
+                {
+                    PrintToChat(offendingClient, "\x01[\x05r\x01] Holding onto spawns makes your team get less chargers and no quad-caps. (try to attack together)");
+                }
             }
-            PrintDebug("[rand si] sack protection: %N given class %s (punishment for %N keeping class %s).", client, g_csSIClassName[iClass], offendingClient, g_csSIClassName[bestSaved]);
+            PrintDebug("[rand si] sack protection: %N given class %s (punishment for %N keeping class %s). [offenses: %i]", client, g_csSIClassName[iClass], offendingClient, g_csSIClassName[bestSaved], g_iOffences[offendingClient]);
         }
     }
     

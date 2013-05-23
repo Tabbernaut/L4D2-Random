@@ -49,7 +49,7 @@ const Float:    ITEM_USE_DISTANCE       = 16.0;         // how far a survivor ca
 const Float:    ITEM_USE_FREEZE_TIME    = 0.5;          // after how long of starting a progress-bar use type action you're frozen (while you hold USE)
 
 const Float:    USING_TIME_DEFAULT      = 3.0;
-const Float:    USING_TIME_GIFT         = 4.0;
+const Float:    USING_TIME_GIFT         = 3.5;
 
 const           GIFT_MIN_ITEMS          = 2;            // amount of items to minimally spawn out of a gift box
 const           GIFT_MAX_ITEMS          = 6;            
@@ -168,6 +168,8 @@ const           TANK_DROP_ITEMS_MIN     = 2;            // how many items a tank
 const           TANK_DROP_ITEMS_MAX     = 5;
 
 const           BOOMCOMBO_REWARD        = 6;            // amount of common to spawn extra for 2/3 boom combo's
+const Float:    BOOMCOMBO_DUDTIME       = 10.0;         // how long after a boomer combo started will pipebombs have higher dud-chacne
+const Float:    BOOMCOMBO_DUDCHANCE     = 0.75;
 
 const Float:    PIPEDUD_MINTIME         = 2.4;          // how much time minimally before dudding pipe
 const Float:    PIPEDUD_ADDTIME         = 2.5;          // how much time to add maximally to mintime
@@ -362,8 +364,13 @@ const           SNIPER_OFFSET_IAMMO             = 36;
 const           MILITARY_SNIPER_OFFSET_IAMMO    = 40;
 const           GRENADE_LAUNCHER_OFFSET_IAMMO   = 68;
 
-const           ANIM_EVENT_HEAL_OTHER   = 43;               // for l4d2_direct's doanimationevent
+const           ANIM_EVENT_BACK_TO_IDLE = 20;               // for l4d2_direct's doanimationevent
+const           ANIM_EVENT_HEAL_OTHER   = 43;
+const           ANIM_EVENT_INCAP_PICKUP = 44;
+const           ANIM_EVENT_PLACE_THING  = 50;
+const           ANIM_EVENT_DEPLOY_FLOOR = 52;
 const           ANIM_EVENT_COLA_DELIVER = 55;
+
 
 /*
 const           ANIM_NICK_HEAL_OTHER    = 569;              // healing animation when using medkit on someone else
@@ -397,7 +404,6 @@ const           WEPID_ADREN             = 23;
 
 const           WITCHES_NIGHT           = 0;            // sv_force_time_of_day value
 const           WITCHES_DAY             = 3;
-
 
 
 // structs, enums

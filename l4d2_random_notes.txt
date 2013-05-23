@@ -9,57 +9,49 @@ L4D2_Random
             ----------------
             - 'witch hunt': spawns many witches all over the place -- only way to score points = by killing them [pbonus]
                     consider it a 'miniwitches': give them 50% health, 50 dmg claw?
-            - 'time penalty': every minute played gives a 25 point penalty on the round score
-            - 'pistol round': only pistols (magnums included). No locked doors and easier ci/si. [maybe]
+                    - how though, technically?
+                    - no tanks during this
+            
             - gnome VIP: only one gnome spawns (start saferoom), it must be brought or the end saferoom won't close
                 or: gnome heaven, where the only way to score (many) points is to bring gnomes
                 - for example: given only 1 gnome: distance points are frozen unless gnome is held
-            - weird SI: random SI abilities (CRox's code) -- just give every SI a random ability...
+            
             - axe effect / rockstar [stab]
                 everyone gets an axe/guitar, all common are female, no tank only spitters and boomettes
+            
+            in doubt
+            --------
+            - 'time penalty': every minute played gives a 25 point penalty on the round score
+            
+            rejected
+            --------
+            - 'pistol round': only pistols (magnums included). No locked doors and easier ci/si. [maybe]
+            - weird SI: random SI abilities (CRox's code) -- just give every SI a random ability...
             - clockwork: clockwork timed spawns, deaths, rinse repeat (no tank?)
+            - 'fallen survivor hunt'
             - quad damage [stab]
                 one player gets special glow / sound => deals 4* damage
                 tag-game: SI and survivors get quad, it switches when one hits another
             
-            rejected
-            --------
-            - 'fallen survivor hunt'
-            
             
     to-do:
     ------
-            - bugfix:   make sack protection work after first attack too.. only seems to kick in on attack 3.
+            - high:     remove sm_voc / sm_voc_this commands for final version
+            
             - bugfix:   multiwitch: message doesn't show for second team, only one witch spawned, though.
-            - bugfix:   still gnome in end saferoom on c5m1... (2/3 points)
-            
-            - test:     changes to sv_time_of_day (or whatever) are reported (being tracked by confogl. test with multiwitches
-            - test:     EndSurvivorAnim(client)     when you interrupt a gift-opening action.. need 2 players to and see third person effect
-            
-            - low:      sack protection: - make a reporting setting that only warns the offending player after he does it 3 times in a game
-            
-            - medium:   do a per-map difficulty assessment for g_iDifficultyRating (just make it another trie)
-                        - not sure about this yet...
-                        - could be used to change odds of tank/witch etc...
-          
-            - medium:   make 2+ boomer combo force pipe-duds! (higher chance of)
+                        - cannot reproduce locally.
             
             - medium:   make separate 'randmap' config: with stabby's random map stuff.
             
             - medium:   fix campaign mode random:
                         - remove items that the survivors bring and use all items in the map? fix for events
+                        
             
-            - low:      only 1 ammo pile in saferoom
-            
-            - low:      negative gift effect: steal item
-            - low:      negative gift effect: steal ammo
-            
-            - low:      c5m3: hard path boards in broken house are breakable by common... shouldn't be.
-            - low:      fix up point_template stuff on c5m3 to make more stuff spawn in cemetery (spawnflag 3 thing)
-            
+    minor cleanup / details
+    -----------------------
             - low:      ammo event: when someone dies, shortly after: check if there exists an upgrade pack anywhere
                             either in possession of players or on the map -- if not, generate one near the corpse.
-            
+                            
             - code:     Clean up the l4d_drop copied code some more.
             - code:     "The SetEntProp functions have a parameter for the array index, use it instead of doing manually lookups and computing offsets."
             
@@ -94,14 +86,20 @@ L4D2_Random
     ideas:
     ------
         
-            - ?     - gift idea: key reversal effect, briefly. (negative effect)
             - ?     - gift idea: X second slowdown (like EVT_ENCUMBERED)
             - ?     - gift idea: ghost-effect for survivors for X seconds (no outlines for SI) (even if running)
             - ?     - gift idea: see outlines on infected for X seconds ('telepathy')
+            - ?:    - gift idea: negative gift effect: steal item
+                        - tricky: make sure they don't happen with gunswap event, badcombo event (in saferoom)
+            - ?:    - gift idea: negative gift effect: steal ammo
+                        - tricky: make sure they don't happen with gunswap event, badcombo event (in saferoom)
             
             - ?     - investigate c1m1 elevator.. see if you can move it up instead and/or make an alternative
                       pathing using that (or the second elevator).
             
+            - MAYBE:- do a per-map difficulty assessment for g_iDifficultyRating (just make it another trie)
+                        - not sure about this yet...
+                        - could be used to change odds of tank/witch etc...
             - MAYBE - mini-scavenge for specific rounds (decide per map)
                         do the research (how well possible? how much work? has anyone done it already?)
             - MAYBE - when cars are done (a minimal amount of) damage, they have a chance to explode
@@ -247,7 +245,7 @@ L4D2_DoAnimationEvent() event list
 45  medkit on other 2
 
 50  upgrade pack deploy
-52  upgarde pack deploy 2
+52  upgrade pack deploy 2
 
 53  can pour
 55  cola in slot (maybe useful downward shove)
