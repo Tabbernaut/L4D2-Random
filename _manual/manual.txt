@@ -125,6 +125,7 @@ Combo's have the following effects:
 2-boom combo:	spawns extra uncommons (clowns, construction workers and mudmen)
 3-boom combo:	spawns extra uncommons (riot cops)
 4-boom combo: 	starts double panic event!
+In addition, any 2+ boomer combo results in 75% of pipebombs being duds for 10 seconds.
 
 Note: double-booming a single survivor does nothing and does not count towards a combo (it's a technical thing: the game does not register this happening).
 
