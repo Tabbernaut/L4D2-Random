@@ -41,6 +41,9 @@ new     bool:           g_bTimerReport                                      = fa
 // Gift management
 new     Float:          g_fGiftReportTimeout                                = 0.0;                  // stores time when 'can't open gift' message last showed (to prevent multiple messages)
 new     Float:          g_fGiftUseTimeout       [MAXPLAYERS+1]              = {0.0,...};            // stores time when player last used gift (to prevent use spam after opening)
+new                     g_iClientUsing          [MAXPLAYERS+1]              = {0,...};              // entity that a client is doing a progress-bar type use action on, if any
+new     bool:           g_bClientHoldingUse     [MAXPLAYERS+1]              = {false,...};          // for some use fixes: whether player is holding use key (while still blocking it)
+
 
 // Tanks
 new                     g_iHadTanks             [MAXPLAYERS+1]              = {0,...};              // how many tanks did the player get this game?
@@ -192,7 +195,7 @@ new                     g_iArBoobyTrap          [MAX_BOOBYTRAPS]            = {-
 new     Float:          g_fProgressTime         [MAXPLAYERS+1]              = 0.0;                  // for keeping track of progress bar
 new     Float:          g_fProgressLocation     [MAXPLAYERS+1][3];                                  // for keeping track of progress bar location
 new                     g_iDeployedAmmo                                     = 0;                    // what is the deployed ammo pile?
-new                     g_iDeployingAmmo                                    = 0;                    // the client that's deploying ammo
+//new                     g_iDeployingAmmo                                    = 0;                    // the client that's deploying ammo
 new     bool:           g_bShowedProgressHint                               = false;                // so we only show the text once
 
 

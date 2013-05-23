@@ -126,7 +126,7 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_FF] = CreateConVar(              "rand_weight_evt_ff",            "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_SILENCE] = CreateConVar(         "rand_weight_evt_sound",        "10",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_PEN_ITEM] = CreateConVar(        "rand_weight_evt_penitem",       "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_PEN_HEALTH] = CreateConVar(      "rand_weight_evt_penhealth",     "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_PEN_HEALTH] = CreateConVar(      "rand_weight_evt_penhealth",     "4",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_PEN_M2] = CreateConVar(          "rand_weight_evt_penm2",         "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_GUNSWAP] = CreateConVar(         "rand_weight_evt_gunswap",      "10",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_MINITANKS] = CreateConVar(       "rand_weight_evt_minitanks",     "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -218,19 +218,20 @@ INIT_StripperSwitch()
     //  called by onmapend every time
     new iStripperMode = GetConVarInt(g_hCvarStripperMode);
     
-    if (!g_bStripperPresent || g_bCampaignMode || iStripperMode == 0) { return; }
+    if (!g_bStripperPresent || g_bCampaignMode) { return; }
     
     new String: sStripperDir[128] = "";
     GetConVarString(g_hCvarStripperPath, sStripperDir, sizeof(sStripperDir));
     
     switch (iStripperMode)
     {
+        case 0: {   g_iStripperCurrentAlt = 0; }
         case 1: {   g_iStripperCurrentAlt = (GetRandomInt(0,1)) ? 0 : 1; }
         case 2: {   g_iStripperCurrentAlt = (GetRandomInt(0,2)) ? 0 : 1; }
         case 3: {   g_iStripperCurrentAlt = (GetRandomInt(0,3)) ? 0 : 1; }
     }
     
-    Format(sStripperDir, sizeof(sStripperDir), "%s_alt", sStripperDir, (g_iStripperCurrentAlt == 1) ? "_alt" : "");
+    Format(sStripperDir, sizeof(sStripperDir), "%s%s", sStripperDir, (g_iStripperCurrentAlt == 1) ? "_alt" : "");
     
     SetConVarString(FindConVar("stripper_cfg_path"), sStripperDir);
 }
@@ -586,21 +587,11 @@ INIT_PrecacheModels(bool: noMapStarted = false)
     }
     
     // Sound
-    PrefetchSound(DOOR_SOUND);
-    PrecacheSound(DOOR_SOUND, true);
-    PrefetchSound(EXPLOSION_SOUND);
-    PrecacheSound(EXPLOSION_SOUND, true);
-    PrefetchSound(EXPLOSION_SOUND2);
-    PrecacheSound(EXPLOSION_SOUND2, true);
-    PrefetchSound(EXPLOSION_SOUND3);
-    PrecacheSound(EXPLOSION_SOUND3, true);
-    PrefetchSound(EXPLOSION_DEBRIS);
-    PrecacheSound(EXPLOSION_DEBRIS, true);
-    PrefetchSound(BOOMGIFT_SOUND);
-    PrecacheSound(BOOMGIFT_SOUND, true);
-    PrefetchSound(PANICGIFT_SOUND);
-    PrecacheSound(PANICGIFT_SOUND, true);
-    
+    for (new i=0; i < sizeof(g_csPrefetchSounds); i++)
+    {
+        PrefetchSound(g_csPrefetchSounds[i]);
+        PrecacheSound(g_csPrefetchSounds[i], true);
+    }
     
     g_bModelsPrecached = true;
 }

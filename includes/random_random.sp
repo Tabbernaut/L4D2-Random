@@ -2389,9 +2389,9 @@ ChangeSurvivorSetup(index, client)
 /*
         note:   we don't know for sure that it's a gift if this is called!
                 we do know that client is a real client
-        return: true for normal USE continuation, false for Plugin_Handled there
+        return: 1 for normal USE continuation, 0 for Plugin_Handled there, 2 for blocking, but setting flag for usingitemcheck
 */
-bool: RANDOM_PlayerGiftUse(client)
+bool: RANDOM_CheckPlayerGiftUse(client)
 {
     // avoid use spam (block use function for some time after gift opening):
     if (g_fGiftUseTimeout[client] != 0.0 && FloatSub(GetEngineTime(), g_fGiftUseTimeout[client]) < GIFTUSE_TIMEOUT) {
@@ -2400,226 +2400,400 @@ bool: RANDOM_PlayerGiftUse(client)
         g_fGiftUseTimeout[client] = 0.0;    // clean up
     }
     
-    // gift detection
+    // check what we're aiming at
     new entity = GetClientAimTarget(client, false);
+    if (entity == -1) { return true; }
     
-    if (entity != -1)
+    // check if it's a gift
+    new String:targetname[32];
+    GetEntPropString(entity, Prop_Data, "m_iName", targetname, sizeof(targetname));
+    if (!StrEqual(targetname, "random_gift")) { return true; }
+    
+    // check if it's in reach
+    new Float:playerPos[3];
+    new Float:targetPos[3];
+    GetClientAbsOrigin(client, playerPos);
+    GetEntPropVector(entity, Prop_Send, "m_vecOrigin", targetPos);
+    new Float:distance = GetVectorDistance(playerPos, targetPos);
+    if (distance > ITEM_PICKUP_DISTANCE) { return true; }
+    
+    // if we are the one using it, make sure USE goes through as normal
+    if (g_iClientUsing[client] == entity) { return true; }
+    
+    // check if anyone else is already using it, or we are using something else
+    if (SUPPORT_GetClientUsingEntity(entity) != 0 || g_iClientUsing[client] != 0) { return false; }
+    
+    // if readyup is enabled, don't allow opening until we're ready
+    if (SUPPORT_IsInReady())
     {
-        new String:targetname[32];
-        GetEntPropString(entity, Prop_Data, "m_iName", targetname, sizeof(targetname));
-        if (!StrEqual(targetname, "random_gift")) { return true; }
+        // show message if we didn't for a while
+        if (g_fGiftReportTimeout != 0.0 && FloatSub(GetEngineTime(), g_fGiftReportTimeout) <= GIFTREPORT_TIMEOUT) { return true; }
         
-        new Float:playerPos[3];
-        new Float:targetPos[3];
-        GetEntPropVector(client, Prop_Send, "m_vecOrigin", playerPos);
-        GetEntPropVector(entity, Prop_Send, "m_vecOrigin", targetPos);
-        new Float:distance = GetVectorDistance(playerPos, targetPos);
-        
-        if (distance > ITEM_PICKUP_DISTANCE) { return true; }
-        
-        
-        // if readyup is enabled, don't allow opening until we're ready
-        if (SUPPORT_IsInReady())
-        {
-            // show message if we didn't for a while
-            if (g_fGiftReportTimeout != 0.0 && FloatSub(GetEngineTime(), g_fGiftReportTimeout) <= GIFTREPORT_TIMEOUT) { return true; }
-            
-            PrintToChat(client, "\x01[\x05r\x01] You must ready up before you can open a gift...");
-            g_fGiftReportTimeout = GetEngineTime();
-            return true;
-        }
-        
-        
-        // gift is being used
-        //PrintDebug("[rand] Gift used: %i", entity);
-        
-        // take random action (use targetpos location)
-        new randomPick = 0;
-        new bool: inSaferoom = (IsEntityInSaferoom(entity, false, false) || IsEntityInSaferoom(client, true, false));
-        
-        if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarGiftPositiveChance))
-        {
-            // positive effect
-            
-            randomPick = GetRandomInt(0, (g_bInsightSurvDone) ? 8 : 9 );
-            
-            // special event, no ammo
-            if (g_bNoAmmo && (randomPick == 7 || randomPick == 8)) { randomPick = GetRandomInt(0, 6); }
-            
-            // fix for chance redistribution
-            if (randomPick == 3 || randomPick == 4 || randomPick == 5) { randomPick = 2; }  // items - 4x
-            else if (randomPick == 7) { randomPick = 8; }                                   // ammo - 2x
-            
-            // don't give solid health when in adren mode:
-            if (_:g_iSpecialEvent == EVT_ADREN && randomPick == 0) { randomPick = 1; }
-            // don't give ammo during gunswap event
-            else if (_:g_iSpecialEvent == EVT_GUNSWAP && randomPick == 8) { randomPick = (GetRandomInt(0,1)) ? 2 : 6; }
-            
-            // don't give positive effects that are useless in (closed) saferoom
-            if (inSaferoom && (randomPick == 0 || randomPick == 1 || randomPick == 8) ) { randomPick = (GetRandomInt(0,1)) ? 6 : ((g_bInsightSurvDone) ? 2 : 9); }
-            
-            switch (randomPick)
-            {
-                case 0: {   // give some solid health
-                    new someHealth = GetRandomInt(10,40);
-                    new curHealth = GetClientHealth(client);
-                    new Float:tmpHealth = GetEntPropFloat(client, Prop_Send, "m_healthBuffer");
-                    new oldTotal = curHealth + RoundFloat(tmpHealth);
-                    
-                    if (curHealth < 100) {
-                        if (curHealth + someHealth < 100) { curHealth += someHealth; } else { someHealth = 100 - curHealth; curHealth = 100; }
-                        SetEntityHealth(client, curHealth);
-                        PrintToChatAll("\x01[\x05r\x01] %N opened gift: healed %i solid health.", client, someHealth);
-                        // get rid of temp health buffer?
-                        if (oldTotal > curHealth) {
-                            SetEntPropFloat(client, Prop_Send, "m_healthBuffer", float(oldTotal - curHealth));
-                        } else {
-                            SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 0.0);
-                        }
-                    } else {
-                        PrintToChatAll("\x01[\x05r\x01] %N opened gift: useless healing.", client);
-                    }
-                }
-                case 1: {   // give all temp health (in addition to whatever you had)
-                    
-                    new Float:fGameTime = GetGameTime();
-                    new curHealth = GetEntProp(client, Prop_Send, "m_iHealth");
-                    //new Float:tmpHealth = GetEntPropFloat(client, Prop_Send, "m_healthBuffer");
-                    if (curHealth < 100) {
-                        SetEntPropFloat(client, Prop_Send, "m_healthBuffer", float(100 - curHealth));
-                        SetEntPropFloat(client, Prop_Send, "m_healthBufferTime", fGameTime);
-                        PrintToChatAll("\x01[\x05r\x01] %N opened gift: temporary health given.", client);
-                    } else {
-                        PrintToChatAll("\x01[\x05r\x01] %N opened gift: useless healing.", client);
-                    }
-                }
-                case 2: {   // item spawn
-                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: item(s).", client);
-                    
-                    g_strTempItemSingle[entOrigin_a] = targetPos[0];
-                    g_strTempItemSingle[entOrigin_b] = targetPos[1];
-                    g_strTempItemSingle[entOrigin_c] = targetPos[2];
-                    
-                    new itemCount = GetRandomInt(GIFT_MIN_ITEMS, GIFT_MAX_ITEMS);
-                    new bool: noWeapons = false;
-                    
-                    if (_:g_iSpecialEvent == EVT_GUNSWAP && inSaferoom) { noWeapons = true; }   // no weapons if we're starting with GLs/CSs and it's in saferoom
-                    
-                    if (GetRandomInt(0, 4) == 0) {
-                        // same item X times
-                        PickRandomItem(true, true, noWeapons); // only useful, no lasersight, no weapons set above
-                        
-                        for (new x = 0; x < itemCount; x++) {
-                            g_fTempItemSingleVelocity[0] = GetRandomFloat(-160.0, 160.0);
-                            g_fTempItemSingleVelocity[1] = GetRandomFloat(-160.0, 160.0);
-                            g_fTempItemSingleVelocity[2] = GetRandomFloat(40.0, 160.0);
-                            
-                            CreateEntity(-1, false);    // create entity, not from array!
-                        }
-                    } else {
-                        // all different
-                        for (new x = 0; x < itemCount; x++) {
-                            g_fTempItemSingleVelocity[0] = GetRandomFloat(-160.0, 160.0);
-                            g_fTempItemSingleVelocity[1] = GetRandomFloat(-160.0, 160.0);
-                            g_fTempItemSingleVelocity[2] = GetRandomFloat(40.0, 160.0);
-                            
-                            PickRandomItem(true, true, noWeapons); // only useful, no lasersight, no weapons set above
-                            
-                            CreateEntity(-1, false);    // create entity, not from array!
-                        }
-                    }
-                }
-                case 6: {   // give laser sight
-                    if (GetRandomInt(0, 2) == 0) {
-                        // for all
-                        PrintToChatAll("\x01[\x05r\x01] %N opened gift: team laser sight.", client);
-                        for (new i=1; i < MaxClients; i++) {
-                            if (IsClientInGame(i) && IsSurvivor(i) && IsPlayerAlive(i)) {
-                                CheatCommand(i, "upgrade_add", "LASER_SIGHT");
-                            }
-                        }
-                    } else {
-                        // for the opener
-                        PrintToChatAll("\x01[\x05r\x01] %N opened gift: laser sight.", client);
-                        CheatCommand(client, "upgrade_add", "LASER_SIGHT");
-                    }
-                }
-                case 8: {   // give ammo
-                    if (GetRandomInt(0, 2) == 0) {
-                        // for all
-                        PrintToChatAll("\x01[\x05r\x01] %N opened gift: team ammo refill.", client);
-                        for (new i=1; i < MaxClients; i++) {
-                            if (IsClientInGame(i) && IsSurvivor(i) && IsPlayerAlive(i)) {
-                                CheatCommand(i, "give", "ammo");
-                            }
-                        }
-                    } else {
-                        // for the opener
-                        PrintToChatAll("\x01[\x05r\x01] %N opened gift: ammo refill.", client);
-                        CheatCommand(client, "give", "ammo");
-                    }
-                }
-                case 9: {   // give insight
-                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: survivor insight...", client);
-                    DoInsightReport(TEAM_SURVIVOR);
-                    g_bInsightSurvDone = true;
-                }
-            }
-        }
-        else
-        {
-            // negative effect
-           
-            randomPick = GetRandomInt(0, (g_bInsightInfDone || g_bCampaignMode) ? 7 : 8 );
-            if (randomPick == 0 || randomPick == 2 || randomPick == 4 || randomPick == 6) { randomPick++; } // only insight has lower odds
-            
-            // don't give negative effects that are harmless in (closed) saferoom
-            if (inSaferoom && (randomPick == 3 || randomPick == 5) ) { randomPick = (GetRandomInt(0,1)) ? 7 : 8; }
-            
-            switch (randomPick) {
-                case 1: {   // explosion (small and big)
-                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04explosive surprise\x01!", client);
-                    CreateExplosion(targetPos, (GetRandomInt(0, 1)) ? EXPLOSION_POWER_LOW : EXPLOSION_POWER_HIGH);
-                }
-                case 3: {   // panic event (sound siren of some sort)
-                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04panic surprise\x01!", client);
-                    EmitAmbientSound(PANICGIFT_SOUND, targetPos, client, SNDLEVEL_AIRCRAFT, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL);  
-                    // spawn a mob (or two)..
-                    SpawnPanicHorde(client, GetRandomInt(1,2));     // small or larger one..
-                }
-                case 5: {   // boom box-opener
-                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04vomit surprise\x01!", client);
-                    SDKCall(g_CallBileJarPlayer, client, client);
-                    EmitSoundToAll(BOOMGIFT_SOUND, client);
-                }
-                case 7: {   // fire(works)-trap
-                    if (GetRandomInt(0, 1) == 0) {
-                        PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04fire surprise\x01!", client);
-                        CreateFire(targetPos, false);   // fire
-                    } else {
-                        PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04fireworks\x01!", client);
-                        CreateFire(targetPos, true);    // fireworks
-                    }
-                }
-                case 8: {   // give insight
-                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: infected insight...", client);
-                    DoInsightReport(TEAM_INFECTED);
-                    g_bInsightInfDone = true;
-                }
-            }
-        }
-        
-        // kill the gift
-        AcceptEntityInput(entity, "Kill");
-        
-        // block player use function for a short while to avoid spam
-        g_fGiftUseTimeout[client] = GetEngineTime();
-        
-        // block normal function if we opened gift..
-        return false;
+        PrintToChat(client, "\x01[\x05r\x01] You must ready up before you can open a gift...");
+        g_fGiftReportTimeout = GetEngineTime();
+        return true;
     }
     
-    return true;
+    // start use progress bar
+    g_bShowedProgressHint = false;
+    g_iClientUsing[client] = entity;
+    SetupProgressBar(client, USING_TIME_GIFT, playerPos);
+    
+    new Handle:pack = CreateDataPack();
+    WritePackCell(pack, client);
+    WritePackCell(pack, entity);
+    WritePackCell(pack, USING_TYPE_GIFT);
+    
+    CreateTimer(0.05, Timer_CheckPlayerUsing, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+    
+    // play unwrap sound
+    EmitSoundToAll(GIFTUNWRAP_SOUND, entity);
+    
+    // do animation
+    L4D2Direct_DoAnimationEvent(client, ANIM_EVENT_HEAL_OTHER);
+    
+    // do vocalize effect for opening a prezzie
+    //  80% chance of vocalizing
+    //  50% chance of special vocalize for survivor
+    decl String:model[256];
+    GetEntPropString(client, Prop_Data, "m_ModelName", model, sizeof(model));
+    
+    if (GetRandomInt(0,4))
+    {
+        if (StrContains(model, "mechanic", false) != -1 && GetRandomInt(0,1) == 0)
+        {
+            switch (GetRandomInt(0,3))
+            {
+                case 0: { Vocalize_Specific(client, "WorldC2m3b13"); }
+                case 1: { Vocalize_Specific(client, "WorldC2m3b14"); }
+                case 2: { Vocalize_Specific(client, "WorldC2m3b15"); }   // THE line
+                case 3: { Vocalize_Specific(client, "WorldC2m3b16"); }   // another good one
+            }
+            return false;
+        }
+        else if (StrContains(model, "coach", false) != -1 && GetRandomInt(0,2) == 0)
+        {
+            switch (GetRandomInt(0,3))
+            {
+                case 0: { Vocalize_Specific(client, "Defibrillator05"); }
+                case 1: { Vocalize_Specific(client, "TakeGrenadeLauncher01"); }
+                case 2: { Vocalize_Specific(client, "takemelee01"); }
+                case 3: { Vocalize_Specific(client, "takepipebomb02"); }
+            }
+            return false;
+        }
+        else if (StrContains(model, "gambler", false) != -1 && GetRandomInt(0,1) == 0)
+        {
+            switch (GetRandomInt(0,7))
+            {
+                case 0: { Vocalize_Specific(client, "Defibrillator06"); }
+                case 1: { Vocalize_Specific(client, "Defibrillator08"); }
+                case 2: { Vocalize_Specific(client, "generic01"); }
+                case 3: { Vocalize_Specific(client, "lookthere04"); }
+                case 4: { Vocalize_Specific(client, "takebat01"); }
+                case 5: { Vocalize_Specific(client, "takemelee02"); }
+                case 6: { Vocalize_Specific(client, "takemelee03"); }
+                case 7: { Vocalize_Specific(client, "worldc1m1b34"); }
+            }
+            return false;
+        }
+        else if (StrContains(model, "producer", false) != -1 && GetRandomInt(0,3) == 0)
+        {
+            switch (GetRandomInt(0,2))
+            {
+                case 0: { Vocalize_Specific(client, "Defibrillator07"); }
+                case 1: { Vocalize_Specific(client, "Defibrillator09"); }
+                case 2: { Vocalize_Specific(client, "takemelee04"); }
+            }
+            return false;
+        }
+        // note: it doesn't work at all with l4d1 survivors, so don't bother.
+        
+        // vocs for all (special options done above)
+        switch (GetRandomInt(0,4))
+        {
+            case 0: { Vocalize_Random(client, "askready"); }
+            case 1: { Vocalize_Random(client, "waithere"); }
+            case 2: { Vocalize_Random(client, "warncareful"); }
+            case 3: { Vocalize_Random(client, "backupquiet"); }
+            case 4: { Vocalize_Random(client, "lookhere"); }
+        }
+    }
+    
+    
+    // block normal function if we opened gift..
+    return false;
+}
+
+RANDOM_DoGiftEffect(client, entity)
+{
+    if (!IsSurvivor(client) || !IsValidEntity(entity)) { return; }
+    
+    new Float:playerPos[3];
+    new Float:targetPos[3];
+    GetClientAbsOrigin(client, playerPos);
+    GetEntPropVector(entity, Prop_Send, "m_vecOrigin", targetPos);
+    
+    
+    // gift is being used
+    //PrintDebug("[rand] Gift used: %i", entity);
+    
+    // take random action (use targetpos location)
+    new randomPick = 0;
+    new bool: inSaferoom = (IsEntityInSaferoom(entity, false, false) || IsEntityInSaferoom(client, true, false));
+    
+    if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarGiftPositiveChance))
+    {
+        // positive effect
+        
+        randomPick = GetRandomInt(0, (g_bInsightSurvDone) ? 8 : 9 );
+        
+        // special event, no ammo
+        if (g_bNoAmmo && (randomPick == 7 || randomPick == 8)) { randomPick = GetRandomInt(0, 6); }
+        
+        // fix for chance redistribution
+        if (randomPick > GIFT_POS_ITEMS && randomPick <= GIFT_POS_ITEMS + 3) { randomPick = GIFT_POS_ITEMS; }   // items - 4x
+        else if (randomPick == GIFT_POS_AMMO - 1) { randomPick = GIFT_POS_AMMO; }                               // ammo - 2x
+        
+        // don't give solid health when in adren mode:
+        if (_:g_iSpecialEvent == EVT_ADREN && randomPick == 0) { randomPick = GIFT_POS_HEALTH_T; }
+        // don't give ammo during gunswap event
+        else if (_:g_iSpecialEvent == EVT_GUNSWAP && randomPick == GIFT_POS_AMMO) {
+            randomPick = (GetRandomInt(0,1)) ? GIFT_POS_ITEMS : GIFT_POS_LASER;
+        }
+        
+        // don't give positive effects that are useless in (closed) saferoom
+        if (inSaferoom && (randomPick == GIFT_POS_HEALTH || randomPick == GIFT_POS_HEALTH_T || randomPick == GIFT_POS_AMMO) ) {
+            randomPick = (GetRandomInt(0,1)) ? GIFT_POS_LASER : ((g_bInsightSurvDone) ? GIFT_POS_ITEMS : GIFT_POS_INSIGHT);
+        }
+        
+        //PrintToChatAll("client: %i, Entity: %i: pos pick: %i", client, entity, randomPick);
+        
+        switch (randomPick)
+        {
+            case GIFT_POS_HEALTH: {   // give some solid health
+                new someHealth = GetRandomInt(10,40);
+                new curHealth = GetClientHealth(client);
+                new Float:tmpHealth = GetEntPropFloat(client, Prop_Send, "m_healthBuffer");
+                new oldTotal = curHealth + RoundFloat(tmpHealth);
+                
+                if (curHealth < 100) {
+                    if (curHealth + someHealth < 100) { curHealth += someHealth; } else { someHealth = 100 - curHealth; curHealth = 100; }
+                    SetEntityHealth(client, curHealth);
+                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: healed %i solid health.", client, someHealth);
+                    // get rid of temp health buffer?
+                    if (oldTotal > curHealth) {
+                        SetEntPropFloat(client, Prop_Send, "m_healthBuffer", float(oldTotal - curHealth));
+                    } else {
+                        SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 0.0);
+                    }
+                    
+                    Vocalize_Random(client, "PainRelieftFirstAid");
+                }
+                else {
+                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: useless healing.", client);
+                    
+                    Vocalize_Random(client, "ReactionNegative");
+                }
+                
+            }
+            case GIFT_POS_HEALTH_T: {   // give all temp health (in addition to whatever you had)
+                
+                new Float:fGameTime = GetGameTime();
+                new curHealth = GetEntProp(client, Prop_Send, "m_iHealth");
+                //new Float:tmpHealth = GetEntPropFloat(client, Prop_Send, "m_healthBuffer");
+                if (curHealth < 100) {
+                    SetEntPropFloat(client, Prop_Send, "m_healthBuffer", float(100 - curHealth));
+                    SetEntPropFloat(client, Prop_Send, "m_healthBufferTime", fGameTime);
+                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: temporary health given.", client);
+                    
+                    Vocalize_Random(client, "PainRelieftPills");
+                }
+                else {
+                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: useless healing.", client);
+                    
+                    Vocalize_Random(client, "ReactionNegative");
+                }
+            }
+            case GIFT_POS_ITEMS: {   // item spawn
+                PrintToChatAll("\x01[\x05r\x01] %N opened gift: item(s).", client);
+                
+                g_strTempItemSingle[entOrigin_a] = targetPos[0];
+                g_strTempItemSingle[entOrigin_b] = targetPos[1];
+                g_strTempItemSingle[entOrigin_c] = targetPos[2];
+                
+                new itemCount = GetRandomInt(GIFT_MIN_ITEMS, GIFT_MAX_ITEMS);
+                new bool: noWeapons = false;
+                
+                if (_:g_iSpecialEvent == EVT_GUNSWAP && inSaferoom) { noWeapons = true; }   // no weapons if we're starting with GLs/CSs and it's in saferoom
+                
+                if (GetRandomInt(0, 4) == 0) {
+                    // same item X times
+                    PickRandomItem(true, true, noWeapons); // only useful, no lasersight, no weapons set above
+                    
+                    for (new x = 0; x < itemCount; x++) {
+                        g_fTempItemSingleVelocity[0] = GetRandomFloat(-160.0, 160.0);
+                        g_fTempItemSingleVelocity[1] = GetRandomFloat(-160.0, 160.0);
+                        g_fTempItemSingleVelocity[2] = GetRandomFloat(40.0, 160.0);
+                        
+                        CreateEntity(-1, false);    // create entity, not from array!
+                    }
+                }
+                else {
+                    // all different
+                    for (new x = 0; x < itemCount; x++) {
+                        g_fTempItemSingleVelocity[0] = GetRandomFloat(-160.0, 160.0);
+                        g_fTempItemSingleVelocity[1] = GetRandomFloat(-160.0, 160.0);
+                        g_fTempItemSingleVelocity[2] = GetRandomFloat(40.0, 160.0);
+                        
+                        PickRandomItem(true, true, noWeapons); // only useful, no lasersight, no weapons set above
+                        
+                        CreateEntity(-1, false);    // create entity, not from array!
+                    }
+                }
+                
+                // check for ellis (so we can do his fancy merry xmas lines)
+                decl String:model[32];
+                GetEntPropString(client, Prop_Data, "m_ModelName", model, sizeof(model));
+                if (StrContains(model, "mechanic", false) != -1) {
+                    // it's ellis
+                    switch (GetRandomInt(0,4)) {
+                        case 0: { Vocalize_Specific(client, "worldc2m3b13"); }
+                        case 1: { Vocalize_Specific(client, "worldc2m3b14"); }
+                        case 2: { Vocalize_Specific(client, "worldc2m3b15"); }   // THE line
+                        case 3: { Vocalize_Specific(client, "worldc2m3b16"); }   // another good one
+                        case 4: { Vocalize_Random(client, "positivenoise"); }
+                    }
+                } else {
+                    switch (GetRandomInt(0,1)) {
+                        case 0: { Vocalize_Random(client, "hurrah"); }
+                        case 1: { Vocalize_Random(client, "positivenoise"); }
+                    }
+                }
+            }
+            case GIFT_POS_LASER: {   // give laser sight
+                if (GetRandomInt(0, 2) == 0) {
+                    // for all
+                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: team laser sight.", client);
+                    for (new i=1; i < MaxClients; i++) {
+                        if (IsClientInGame(i) && IsSurvivor(i) && IsPlayerAlive(i)) {
+                            CheatCommand(i, "upgrade_add", "LASER_SIGHT");
+                        }
+                    }
+                } else {
+                    // for the opener
+                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: laser sight.", client);
+                    CheatCommand(client, "upgrade_add", "LASER_SIGHT");
+                }
+                Vocalize_Random(client, "lasersights");
+            }
+            case GIFT_POS_AMMO: {   // give ammo
+                if (GetRandomInt(0, 2) == 0) {
+                    // for all
+                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: team ammo refill.", client);
+                    for (new i=1; i < MaxClients; i++) {
+                        if (IsClientInGame(i) && IsSurvivor(i) && IsPlayerAlive(i)) {
+                            CheatCommand(i, "give", "ammo");
+                        }
+                    }
+                } else {
+                    // for the opener
+                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: ammo refill.", client);
+                    CheatCommand(client, "give", "ammo");
+                }
+                Vocalize_Random(client, "spotammo");
+            }
+            case GIFT_POS_INSIGHT: {   // give insight
+                PrintToChatAll("\x01[\x05r\x01] %N opened gift: survivor insight...", client);
+                DoInsightReport(TEAM_SURVIVOR);
+                g_bInsightSurvDone = true;
+                Vocalize_Random(client, "lookhere");
+            }
+        }
+    }
+    else
+    {
+        // negative effect
+       
+        randomPick = GetRandomInt(0, (g_bInsightInfDone || g_bCampaignMode) ? 7 : 8 );
+        
+        if (randomPick == 0 || randomPick == 2 || randomPick == 4 || randomPick == 6) { randomPick++; } // only insight has lower odds
+        
+        // don't give negative effects that are harmless in (closed) saferoom
+        if (inSaferoom && (randomPick == GIFT_NEG_PANIC || randomPick == GIFT_NEG_VOMIT) ) {
+            randomPick = (GetRandomInt(0,1) && !g_bInsightInfDone) ? GIFT_NEG_FIRE : GIFT_NEG_INSIGHT;
+        }
+        
+        //PrintToChatAll("client: %i, Entity: %i: neg pick: %i", client, entity, randomPick);
+        
+        switch (randomPick) {
+            case GIFT_NEG_EXPLODE: {   // explosion (small and big)
+                PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04explosive surprise\x01!", client);
+                CreateExplosion(targetPos, (GetRandomInt(0, 1)) ? EXPLOSION_POWER_LOW : EXPLOSION_POWER_HIGH);
+            }
+            case GIFT_NEG_PANIC: {   // panic event (sound siren of some sort)
+                PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04panic surprise\x01!", client);
+                EmitAmbientSound(PANICGIFT_SOUND, targetPos, client, SNDLEVEL_AIRCRAFT, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL);  
+                // spawn a mob (or two)..
+                SpawnPanicHorde(client, GetRandomInt(1,2));     // small or larger one..
+                
+                new Handle:pack = CreateDataPack();
+                WritePackCell(pack, client);
+                WritePackString(pack, "incoming");
+                CreateTimer(0.5, Timer_Vocalize_Random, pack, TIMER_FLAG_NO_MAPCHANGE);
+            }
+            case GIFT_NEG_VOMIT: {   // boom box-opener
+                PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04vomit surprise\x01!", client);
+                SDKCall(g_CallBileJarPlayer, client, client);
+                EmitSoundToAll(BOOMGIFT_SOUND, client);
+                
+                new Handle:pack = CreateDataPack();
+                WritePackCell(pack, client);
+                WritePackString(pack, "boomerreaction");
+                CreateTimer(0.5, Timer_Vocalize_Random, pack, TIMER_FLAG_NO_MAPCHANGE);
+            }
+            case GIFT_NEG_FIRE: {   // fire(works)-trap
+                if (GetRandomInt(0, 1) == 0) {
+                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04fire surprise\x01!", client);
+                    CreateFire(targetPos, false);   // fire
+                } else {
+                    PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04fireworks\x01!", client);
+                    CreateFire(targetPos, true);    // fireworks
+                }
+                
+                new Handle:pack = CreateDataPack();
+                WritePackCell(pack, client);
+                if (GetRandomInt(0,1)) {
+                    WritePackString(pack, "ReactionNegative");
+                    CreateTimer(1.0, Timer_Vocalize_Random, pack, TIMER_FLAG_NO_MAPCHANGE);
+                } else {
+                    WritePackString(pack, "Sorry");
+                    CreateTimer(1.5, Timer_Vocalize_Random, pack, TIMER_FLAG_NO_MAPCHANGE);
+                }
+            }
+            case GIFT_NEG_INSIGHT: {   // give insight
+                PrintToChatAll("\x01[\x05r\x01] %N opened gift: infected insight...", client);
+                DoInsightReport(TEAM_INFECTED);
+                g_bInsightInfDone = true;
+                
+                new Handle:pack = CreateDataPack();
+                WritePackCell(pack, client);
+                if (GetRandomInt(0,1)) {
+                    WritePackString(pack, "ReactionNegative");
+                } else {
+                    WritePackString(pack, "no");
+                }
+
+                CreateTimer(0.5, Timer_Vocalize_Random, pack, TIMER_FLAG_NO_MAPCHANGE);
+            }
+        }
+    }
+    
+    // kill the gift
+    AcceptEntityInput(entity, "Kill");
+    
+    // block player use function for a short while to avoid spam
+    g_fGiftUseTimeout[client] = GetEngineTime();
 }
 
 
@@ -2691,7 +2865,7 @@ RandomizeFirstSpawns()
 public DetermineSpawnClass(any:client, any:iClass)
 {
     // pick a desired class, dependent on Cvar settings
-    if (iClass > ZC_CHARGER || !IsClientAndInGame(client) || IsTank(client)) { return; }
+    if (iClass < ZC_SMOKER || iClass > ZC_CHARGER || !IsClientAndInGame(client) || IsTank(client)) { return; }
     
     // player is given a ghost class, keep track (for sack-exploitation check)
     if (!IsFakeClient(client))
@@ -2752,8 +2926,8 @@ public DetermineSpawnClass(any:client, any:iClass)
                 
                 //  for two or more saves... worry about the worst (charger)
                 if (classType == ZC_CHARGER && bestSaved != ZC_CHARGER) { bestSaved = ZC_CHARGER; offendingClient = i; }
-                else if (classType == ZC_HUNTER && bestSaved != ZC_HUNTER && bestSaved != ZC_CHARGER) { bestSaved = ZC_HUNTER; offendingClient = i; }
-                else if (classType == ZC_SMOKER && bestSaved != ZC_SMOKER && bestSaved != ZC_HUNTER && bestSaved != ZC_CHARGER) { bestSaved = ZC_SMOKER; offendingClient = i; }
+                else if (classType == ZC_HUNTER && bestSaved != ZC_CHARGER) { bestSaved = ZC_HUNTER; offendingClient = i; }
+                else if (classType == ZC_SMOKER && bestSaved != ZC_HUNTER && bestSaved != ZC_CHARGER) { bestSaved = ZC_SMOKER; offendingClient = i; }
             }
         }
         
@@ -2767,6 +2941,7 @@ public DetermineSpawnClass(any:client, any:iClass)
             // and prevent > 2 smokers
             new chargers = CountInfectedClass(ZC_CHARGER, client);
             new smokers = CountInfectedClass(ZC_SMOKER, client);
+            new hunters = CountInfectedClass(ZC_HUNTER, client);
             new support = CountInfectedClass(ZC_BOOMER, client) + CountInfectedClass(ZC_SPITTER, client);
             
             // a. force max 1 charger
@@ -2774,10 +2949,17 @@ public DetermineSpawnClass(any:client, any:iClass)
                 iClass = GetRandomInt(ZC_SMOKER, ZC_JOCKEY);
             }
             
-            // b. force max 2 smokers
+            // b. force max 2 smokers and 2 hunters
             else if (iClass == ZC_SMOKER) {
                 if (smokers > 1) {
                     iClass = GetRandomInt(ZC_BOOMER, (_:g_iSpecialEvent == EVT_L4D1) ? ZC_HUNTER : ZC_JOCKEY );
+                }
+            }
+            else if (iClass == ZC_HUNTER && _:g_iSpecialEvent != EVT_L4D1) {
+                if (hunters > 1) {
+                    // give anything but a hunter (or more than 1 smoker)
+                    iClass = GetRandomInt( (smokers > 0) ? ZC_BOOMER : ZC_SMOKER, ZC_SPITTER );
+                    if (iClass == ZC_HUNTER) { iClass = ZC_JOCKEY; }
                 }
             }
             
@@ -2821,7 +3003,7 @@ public DetermineSpawnClass(any:client, any:iClass)
     }        
     
     // prepare ghost for change
-    if (IsPlayerGhost(client))
+    if (IsPlayerGhost(client) && iClass >= ZC_SMOKER)
     {
         new WeaponIndex;
         while ((WeaponIndex = GetPlayerWeaponSlot(client, 0)) != -1) {
@@ -2830,6 +3012,7 @@ public DetermineSpawnClass(any:client, any:iClass)
         }
         
         SDKCall(g_setClass, client, iClass);
+        
         AcceptEntityInput(MakeCompatEntRef(GetEntProp(client, Prop_Send, "m_customAbility")), "Kill");
         SetEntProp(client, Prop_Send, "m_customAbility", GetEntData(SDKCall(g_createAbility, client), g_oAbility));
     }
@@ -2931,8 +3114,6 @@ SpawnCommonItem(Float:loc[3], Float:vel[3])
     {
         PrintDebug("[rand] Common drop resulted in invalid entity! (pick: %i)", randomPick);
         return;
-    } else {
-        PrintDebug("[rand] Common dropped item. (pick: %i)", randomPick);
     }
     
     // spawn item
@@ -3324,6 +3505,7 @@ RANDOM_PrepareChoicesEvents()
     // check map type
     new String: mapname[64];
     new mapsType: mapnameType;
+    
     GetCurrentMap(mapname, sizeof(mapname));
     GetTrieValue(g_hTrieMapsDoors, mapname, mapnameType);
     
@@ -3343,7 +3525,7 @@ RANDOM_PrepareChoicesEvents()
         //      EVT_MINITANKS: because distance works differently
         //      EVT_AMMO: because of fancy way ammo is handled in finales anyway
         if (    L4D_IsMissionFinalMap()
-            &&  ( _:g_iSpecialEvent == EVT_ADREN || _:g_iSpecialEvent == EVT_MINITANKS || _:g_iSpecialEvent == EVT_AMMO )
+            &&  ( i == EVT_ADREN || i == EVT_MINITANKS || i == EVT_AMMO )
         ) {
             continue;
         }
@@ -3355,14 +3537,14 @@ RANDOM_PrepareChoicesEvents()
         //      EVT_MINITANKS: because of health values etc
         //      all scoring events, because no score
         if (    g_bCampaignMode
-            &&  (   _:g_iSpecialEvent == EVT_QUADS || _:g_iSpecialEvent == EVT_L4D1 || _:g_iSpecialEvent == EVT_FF || _:g_iSpecialEvent == EVT_MINITANKS
-                ||  _:g_iSpecialEvent == EVT_PEN_ITEM || _:g_iSpecialEvent == EVT_PEN_HEALTH || _:g_iSpecialEvent == EVT_PEN_M2 || _:g_iSpecialEvent == EVT_SKEET )
+            &&  (   i == EVT_QUADS || i == EVT_L4D1 || i == EVT_FF || i == EVT_MINITANKS
+                ||  i == EVT_PEN_ITEM || i == EVT_PEN_HEALTH || i == EVT_PEN_M2 || i == EVT_SKEET )
         ) {
             continue;
         }
         
         // many or no doors? change event availability
-        if ( _:g_iSpecialEvent == EVT_DOORS || _:g_iSpecialEvent == EVT_KEYMASTER )
+        if ( i == EVT_DOORS || i == EVT_KEYMASTER )
         {
             if (mapnameType == MAPS_NODOORS) {
                 continue;

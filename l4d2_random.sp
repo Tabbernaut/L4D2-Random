@@ -70,7 +70,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.16",
+    version = "1.0.17",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -177,6 +177,7 @@ public OnPluginStart()
     RegConsoleCmd("sm_drop",    RandomDrop_Cmd,     "Drop your currently selected weapon or item.");
     
     // Admin and test commands
+    //RegAdminCmd("rand_forcerandom", TestForceRandom_Cmd,  ADMFLAG_CHEATS, "...");
     RegAdminCmd("rand_test_gnomes", TestGnomes_Cmd, ADMFLAG_CHEATS, "...");
     RegAdminCmd("rand_test_swap",   TestSwap_Cmd,   ADMFLAG_CHEATS, "...");
     RegAdminCmd("rand_test_ents",   TestEnts_Cmd,   ADMFLAG_CHEATS, "...");
@@ -197,7 +198,189 @@ public OnPluginStart()
     // Blind infected
     g_hBlockedEntities = CreateArray(_:EntInfo);
     CreateTimer(BLND_ENT_CHECK_INTERVAL, Timer_EntCheck, _, TIMER_REPEAT);
+    
+    
+    // vocalize test
+    RegConsoleCmd("sm_voc", Cmd_Vocalize_Random);
+    RegConsoleCmd("sm_voc_this", Cmd_Vocalize_Specified);
+    
+    
+    // Do first randomization to prevent errors
+    RANDOM_PrepareChoicesSpawns();
 }
+
+/*
+    START TEST
+
+    Testing vocalize stuff AtomicStryker
+*/
+
+public Action:Cmd_Vocalize_Random(client, args)
+{
+    if (!client || !args || !IsClientInGame(client))
+    {
+        ReplyToCommand(client, "Must be Ingame for command to work, and dont forget the argument");
+        return Plugin_Handled;
+    }
+    
+    decl String:arg[256];
+    GetCmdArg(1, arg, sizeof(arg));
+    
+    PrintToChatAll("SM Vocalize caught by %N, command: %s", client, arg);
+    
+    // STEP 1: FIGURE OUT WHICH SURVIVOR WERE DEALING WITH
+    
+    decl String:model[256];
+    GetEntPropString(client, Prop_Data, "m_ModelName", model, sizeof(model));
+    
+    if (StrContains(model, "gambler") != -1) { FormatEx(model, sizeof(model), "gambler"); }
+    else if (StrContains(model, "coach") != -1) { FormatEx(model, sizeof(model), "coach"); }
+    else if (StrContains(model, "mechanic") != -1) { FormatEx(model, sizeof(model), "mechanic"); }
+    else if (StrContains(model, "producer") != -1) { FormatEx(model, sizeof(model), "producer"); }
+    else if (StrContains(model, "namvet") != -1) { FormatEx(model, sizeof(model), "namvet"); }
+    else if (StrContains(model, "teengirl") != -1) { FormatEx(model, sizeof(model), "teengirl"); }
+    else if (StrContains(model, "biker") != -1) { FormatEx(model, sizeof(model), "biker"); }
+    else if (StrContains(model, "manager") != -1) { FormatEx(model, sizeof(model), "manager"); }
+    
+    // STEP 2: SCAN SCENES FOLDER WITH VOCALIZE ARGUMENT AND NUMBERS FOR FILES
+    
+    decl String:scenefile[256], String:checknumber[3];
+    new foundfilescounter;
+    decl validfiles[71];
+    
+    for (new i = 1; i <= 70; i++)
+    {
+        if (i < 10)
+        {
+            FormatEx(checknumber, sizeof(checknumber), "0%i", i);
+        }
+        else
+        {
+            FormatEx(checknumber, sizeof(checknumber), "%i", i);
+        }
+        
+        new bool: exists = false;
+        for (new j=0; j < 4; j++)
+        {
+            switch (j)
+            {
+                case 0: { FormatEx(scenefile, sizeof(scenefile), "scenes/%s/%s%s.vcd", model, arg, checknumber); }
+                case 1: { FormatEx(scenefile, sizeof(scenefile), "left4dead2_dlc1/scenes/%s/%s%s.vcd", model, arg, checknumber); }
+                case 2: { FormatEx(scenefile, sizeof(scenefile), "left4dead2_dlc2/scenes/%s/%s%s.vcd", model, arg, checknumber); } 
+                case 3: { FormatEx(scenefile, sizeof(scenefile), "left4dead2_dlc3/scenes/%s/%s%s.vcd", model, arg, checknumber); }
+            }
+            if (FileExists(scenefile)) { exists = true; break; }
+        }
+        
+        if (!exists) continue;
+        
+        foundfilescounter++;
+        validfiles[foundfilescounter] = i;
+        
+        PrintToChatAll("Found valid file at %s, index:%i", scenefile, foundfilescounter);
+    }
+    
+    if (!foundfilescounter)
+    {
+        PrintToChatAll("No valid files found for arg %s", arg);
+        return Plugin_Handled;
+    }
+    
+    // STEP 3: SELECT ONE OF THE FOUND SCENE FILES
+    
+    new randomint = GetRandomInt(1, foundfilescounter);
+    PrintToChatAll("Valid Files Count: %i, randomly chosen index: %i", foundfilescounter, randomint);
+    
+    if (validfiles[randomint] < 10)
+    {
+        FormatEx(checknumber, sizeof(checknumber), "0%i", validfiles[randomint]);
+    }
+    else
+    {
+        FormatEx(checknumber, sizeof(checknumber), "%i", validfiles[randomint]);
+    }
+    FormatEx(scenefile, sizeof(scenefile), "scenes/%s/%s%s.vcd", model, arg, checknumber);
+    
+    PrintToChatAll("Chose Scenefile: %s, attempting to vocalize now", scenefile);
+    
+    // STEP 4: CALL SCENE AND THUS VOCALIZE
+    
+    new tempent = CreateEntityByName("instanced_scripted_scene");
+    DispatchKeyValue(tempent, "SceneFile", scenefile);
+    DispatchSpawn(tempent);
+    SetEntPropEnt(tempent, Prop_Data, "m_hOwner", client);
+    ActivateEntity(tempent);
+    AcceptEntityInput(tempent, "Start", client, client);
+    HookSingleEntityOutput(tempent, "OnCompletion", EntityOutput:OnSceneCompletion, true);
+
+    return Plugin_Handled;
+}
+
+public Action:Cmd_Vocalize_Specified(client, args)
+{
+    if (!client || !args || !IsClientInGame(client))
+    {
+        ReplyToCommand(client, "Must be Ingame for command to work, and dont forget the argument");
+        return Plugin_Handled;
+    }
+    
+    decl String:arg[256];
+    GetCmdArg(1, arg, sizeof(arg));
+    
+    PrintToChatAll("SM Vocalize caught by %N, command: %s", client, arg);
+    
+    // STEP 1: FIGURE OUT WHICH SURVIVOR WERE DEALING WITH
+    
+    decl String:model[256];
+    GetEntPropString(client, Prop_Data, "m_ModelName", model, sizeof(model));
+    
+    if (StrContains(model, "gambler") != -1) { FormatEx(model, sizeof(model), "gambler"); }
+    else if (StrContains(model, "coach") != -1) { FormatEx(model, sizeof(model), "coach"); }
+    else if (StrContains(model, "mechanic") != -1) { FormatEx(model, sizeof(model), "mechanic"); }
+    else if (StrContains(model, "producer") != -1) { FormatEx(model, sizeof(model), "producer"); }
+    else if (StrContains(model, "namvet") != -1) { FormatEx(model, sizeof(model), "namvet"); }
+    else if (StrContains(model, "teengirl") != -1) { FormatEx(model, sizeof(model), "teengirl"); }
+    else if (StrContains(model, "biker") != -1) { FormatEx(model, sizeof(model), "biker"); }
+    else if (StrContains(model, "manager") != -1) { FormatEx(model, sizeof(model), "manager"); }
+    
+    // STEP 2: INPUT CHOSEN SCENE IN MASK
+    
+    decl String:scenefile[256];
+    
+    new bool: exists = false;
+    for (new j=0; j < 4; j++)
+    {
+        switch (j)
+        {
+            case 0: { FormatEx(scenefile, sizeof(scenefile), "scenes/%s/%s.vcd", model, arg); }
+            case 1: { FormatEx(scenefile, sizeof(scenefile), "left4dead2_dlc1/scenes/%s/%s.vcd", model, arg); }
+            case 2: { FormatEx(scenefile, sizeof(scenefile), "left4dead2_dlc2/scenes/%s/%s.vcd", model, arg); }
+            case 3: { FormatEx(scenefile, sizeof(scenefile), "left4dead2_dlc3/scenes/%s/%s.vcd", model, arg); }
+        }
+        if (FileExists(scenefile)) { exists = true; break; }
+    }
+    if (!exists) {
+        PrintToChatAll("Specified Scenefile: %s does not exist, aborting", scenefile);
+        return Plugin_Handled;
+    }
+    
+    PrintToChatAll("Specified Scenefile: %s, attempting to vocalize now", scenefile);
+    
+    // STEP 3: CALL SCENE AND THUS VOCALIZE
+    
+    new tempent = CreateEntityByName("instanced_scripted_scene");
+    DispatchKeyValue(tempent, "SceneFile", scenefile);
+    DispatchSpawn(tempent);
+    SetEntPropEnt(tempent, Prop_Data, "m_hOwner", client);
+    ActivateEntity(tempent);
+    AcceptEntityInput(tempent, "Start", client, client);
+    HookSingleEntityOutput(tempent, "OnCompletion", EntityOutput:OnSceneCompletion, true);
+
+    return Plugin_Handled;
+}
+/*
+    END TEST
+*/
 
 public OnPluginEnd()
 {
@@ -284,6 +467,22 @@ public Action: TestSwap_Cmd(client, args)
 
 public Action: TestGnomes_Cmd(client, args)
 {
+    // animation test
+    //StartSurvivorAnim_Healing(client);
+    
+    /*
+    decl String:sMessage[MAX_NAME_LENGTH];
+    GetCmdArg(1, sMessage, sizeof(sMessage));
+    new setclient = StringToInt(sMessage);
+    
+    GetCmdArg(2, sMessage, sizeof(sMessage));
+    new event = StringToInt(sMessage);
+    
+    L4D2Direct_DoAnimationEvent(setclient, event);
+    
+    return Plugin_Handled;
+    */
+    
     // test: are we in saferoom?
     new bool: inStart = IsEntityInSaferoom(client, true, false);
     new bool: inEnd = IsEntityInSaferoom(client, true, true);
@@ -362,6 +561,14 @@ public Action: TestEvent_Cmd(client, args)
     
     return Plugin_Handled;
 }
+/*
+public Action: TestForceRandom_Cmd(client, args)
+{
+    // forces randomization for next map restart
+    g_bRestartedOnce = true;
+    return Plugin_Handled;
+}
+*/
 
 /*
     Commands
@@ -564,7 +771,9 @@ public Action:OnPlayerRunCmd(client, &buttons)
 
     if ((buttons & IN_USE))
     {
-        if (!RANDOM_PlayerGiftUse(client)) { return Plugin_Handled; }
+        new check = RANDOM_CheckPlayerGiftUse(client);
+        g_bClientHoldingUse[client] = (check == 2);
+        if (check != 1) { return Plugin_Handled; }
     }
     return Plugin_Continue;
 }
@@ -599,7 +808,7 @@ public Action:L4D_OnGetRunTopSpeed(target, &Float:retVal)
         }
     }
     // freeze player while using something
-    else if (target == g_iDeployingAmmo && GetGameTime() - g_fProgressTime[target] >= ITEM_USE_FREEZE_TIME)
+    else if (g_iClientUsing[target] > 0 && GetGameTime() - g_fProgressTime[target] >= ITEM_USE_FREEZE_TIME)
     {
         retVal = 0.0001;
         return Plugin_Handled;
@@ -620,7 +829,7 @@ public Action: L4D_OnGetWalkTopSpeed(target, &Float:retVal)
         }
     }
     // freeze player while using something
-    else if (target == g_iDeployingAmmo && GetGameTime() - g_fProgressTime[target] >= ITEM_USE_FREEZE_TIME)
+    else if (g_iClientUsing[target] > 0 && GetGameTime() - g_fProgressTime[target] >= ITEM_USE_FREEZE_TIME)
     {
         retVal = 0.0001;
         return Plugin_Handled;
@@ -640,7 +849,7 @@ public Action:L4D_OnGetCrouchTopSpeed(target, &Float:retVal)
         }
     }
     // freeze player while using something
-    else if (target == g_iDeployingAmmo && GetGameTime() - g_fProgressTime[target] >= ITEM_USE_FREEZE_TIME)
+    else if (g_iClientUsing[target] > 0 && GetGameTime() - g_fProgressTime[target] >= ITEM_USE_FREEZE_TIME)
     {
         retVal = 0.0001;
         return Plugin_Handled;
@@ -678,8 +887,7 @@ public Action: Event_SoundPlayed(clients[64], &numClients, String:sample[PLATFOR
             if (StrContains(sample, "incendammo", false) != -1 || StrContains(sample, "explosiveammo", false) != -1)
             {
                 // do a vocalize from the player
-                //  why does this not work?
-                CreateTimer(0.1, Timer_AmmoVocalize, entity, TIMER_FLAG_NO_MAPCHANGE);
+                Vocalize_Random(entity, "spotammo");
                 return Plugin_Handled;
             }
         }
@@ -1362,32 +1570,43 @@ public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadc
         GetClientAbsOrigin(client, startPos);
         
         g_bShowedProgressHint = false;
-        g_iDeployingAmmo = client; 
+        g_iClientUsing[client] = entity;
         SetupProgressBar(client, EVENT_AMMO_PACKTIME, startPos);
         
-        CreateTimer(0.05, Timer_CheckPlayerUsing, client, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+        new Handle:pack = CreateDataPack();
+        WritePackCell(pack, client);
+        WritePackCell(pack, entity);
+        WritePackCell(pack, USING_TYPE_AMMO);
+        
+        CreateTimer(0.05, Timer_CheckPlayerUsing, pack, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
     }
     return Plugin_Continue;
 }
 
 // track player holding use button (for special events)
-public Action:Timer_CheckPlayerUsing(Handle:timer, any:client)
+public Action:Timer_CheckPlayerUsing(Handle:timer, any:pack)
 {
-    if (!IsClientAndInGame(client)) { return Plugin_Stop; }
+    ResetPack(pack);
+    new client = ReadPackCell(pack);
+    new entity = ReadPackCell(pack);
+    new itemType = ReadPackCell(pack);
+    
+    if (!IsClientAndInGame(client) || !IsValidEntity(entity)) { return Plugin_Stop; }
     
     new buttons = GetClientButtons(client);
-    
+
     // if a player is close enough and still using... keep checking
     
     new Float:playerPos[3];
     GetClientAbsOrigin(client, playerPos);
     new Float: fDistance = GetVectorDistance(playerPos, g_fProgressLocation[client]);
     
-    if (!(buttons & IN_USE) || fDistance > ITEM_USE_DISTANCE || client != g_iDeployingAmmo)
+    if ((!(buttons & IN_USE) && !g_bClientHoldingUse[client]) || fDistance > ITEM_USE_DISTANCE || client != SUPPORT_GetClientUsingEntity(entity))
     {
         KillProgressBar(client);
         g_bShowedProgressHint = false;
-        g_iDeployingAmmo = 0;
+        g_iClientUsing[client] = 0;
+        CloseHandle(pack);
         return Plugin_Stop;
     }
     
@@ -1395,16 +1614,44 @@ public Action:Timer_CheckPlayerUsing(Handle:timer, any:client)
     if (!g_bShowedProgressHint && GetGameTime() - g_fProgressTime[client] > 0.5)
     {
         g_bShowedProgressHint = true;
-        PrintHintText(client, "Repacking ammo pile...");
+        switch (itemType)
+        {
+            case USING_TYPE_AMMO: { PrintHintText(client, "Repacking ammo pile..."); }
+            case USING_TYPE_GIFT: { PrintHintText(client, "Unwrapping gift..."); }
+            default: { PrintHintText(client, "Doing something that takes time..."); }
+        }
     }
     
-    // timer expired and buttons still held, then success
-    if (GetGameTime() - g_fProgressTime[client] > EVENT_AMMO_PACKTIME)
+    switch (itemType)
     {
-        EVENT_RepackAmmo(client, g_iDeployedAmmo);
-        g_bShowedProgressHint = false;
-        g_iDeployingAmmo = 0;
-        return Plugin_Stop;
+        case USING_TYPE_AMMO:
+        {
+            if (GetGameTime() - g_fProgressTime[client] > EVENT_AMMO_PACKTIME)
+            {
+                EVENT_RepackAmmo(client, g_iDeployedAmmo);  // could use entity here.. see if we can remove iDeployedAmmo?
+                g_bShowedProgressHint = false;
+                g_iClientUsing[client] = 0;
+                CloseHandle(pack);
+                return Plugin_Stop;
+            }
+        }
+        case USING_TYPE_GIFT:
+        {
+            if (GetGameTime() - g_fProgressTime[client] > USING_TIME_GIFT)
+            {
+                RANDOM_DoGiftEffect(client, g_iClientUsing[client]);
+                g_bShowedProgressHint = false;
+                g_iClientUsing[client] = 0;
+                CloseHandle(pack);
+                return Plugin_Stop;
+            }
+        }
+        default: {
+            // USING_TIME_DEFAULT;
+            // do what?
+            CloseHandle(pack);
+            return Plugin_Stop;
+        }
     }
     
     return Plugin_Continue;
@@ -1698,6 +1945,7 @@ public Action:Event_PlayerSpawn(Handle:hEvent, const String:name[], bool:dontBro
     new client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
 
     if (!IsClientAndInGame(client) || IsFakeClient(client) || GetClientTeam(client) != TEAM_INFECTED) { return Plugin_Continue; }
+    
     if (!g_bHasSpawned[client]) { ClearSpawnGhostTimer(client); }
     g_bHasSpawned[client] = true;
     g_bHasGhost[client] = false;
@@ -1915,7 +2163,6 @@ public Action:Timer_CheckPlayerGhostDelayed(Handle:hTimer, any:client)
     if (IsClientAndInGame(client) && IsValidEntity(client) && IsPlayerGhost(client)) {
         DetermineSpawnClass(client, GetEntProp(client, Prop_Send, "m_zombieClass"));
     }
-
 }
 
 public Action:Timer_SpawnGhostClass(Handle:hTimer, any:client)
@@ -2053,7 +2300,7 @@ public OnEntityCreated(entity, const String:classname[])
     else if (_:g_iSpecialEvent == EVT_AMMO && classnameOEC == CREATED_AMMO_DEPLOYED)
     {
         // create an ammo pile instead
-        CreateTimer(0.05, EVENT_DeployAmmo, entity, TIMER_FLAG_NO_MAPCHANGE);
+        CreateTimer(0.01, EVENT_DeployAmmo, entity, TIMER_FLAG_NO_MAPCHANGE);
     }
 }
 

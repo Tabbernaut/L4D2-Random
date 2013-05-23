@@ -40,7 +40,6 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     g_bInsightInfDone = false;
     
     g_bSpecialEventPlayerCheck = false;
-    g_iDeployingAmmo = 0;
     g_bNoWeapons = false;
     g_bNoAmmo = false;
     
@@ -140,6 +139,9 @@ SUPPORT_CleanArrays()
         
         g_fGotGhost[i] = 0.0;
         g_fDeathAfterGhost[i] = 0.0;
+        
+        g_iClientUsing[i] = 0;
+        g_bClientHoldingUse[i] = false;
         
         // skeet tracking
         ResetHunter(i);
@@ -934,6 +936,19 @@ SUPPORT_MultiTankRoundPrep()
 
 // ===========================================================================
 
+// for item using (progress bar stuff), see what client is using an entity is used
+SUPPORT_GetClientUsingEntity(entity)
+{
+    for (new i=1; i <= MaxClients; i++)
+    {
+        if (IsSurvivor(i) && g_iClientUsing[i] == entity) {
+            return i;
+        }
+    }
+    
+    return 0;
+}
+
 // for encumbrance etc, target = client
 Float: SUPPORT_GetSpeedFactor(target)
 {
@@ -1133,13 +1148,6 @@ EVENT_RepackAmmo(client, ammo)
     AcceptEntityInput(ammo, "Kill");
 }
 
-
-public Action: Timer_AmmoVocalize (Handle:timer, any:client)
-{
-    // doesn't work.. why?
-    FakeClientCommand(client, "vocalize %s", "PlayerSpotAmmo");
-}
-
 // find out whether a hard path is loaded
 bool: SUPPORT_StripperDetectAlt()
 {
@@ -1173,6 +1181,14 @@ bool: SUPPORT_StripperDetectAlt()
     }
     
     return false;
+}
+
+
+// stop animations we triggered
+EndSurvivorAnim(client)
+{
+    new PropOff_flCycle = FindSendPropInfo("CTerrorPlayer", "m_flCycle");
+    SetEntDataFloat(client, PropOff_flCycle, 2.0, true);
 }
 
 /*
@@ -2352,6 +2368,121 @@ SUPPORT_StormStart()
 
 
 
+
+
+
+/*  Vocalization by AtomicStryker
+    ----------------------------- */
+
+public Action: Timer_Vocalize_Random(Handle:timer, any:pack)
+{
+    ResetPack(pack);
+    new client = ReadPackCell(pack);
+    new String: arg[256];
+    ReadPackString(pack, arg, sizeof(arg));
+    CloseHandle(pack);
+    
+    Vocalize_Random(client, arg);
+}
+
+public Vocalize_Random(client, String:arg[256])
+{
+    if (!client || !IsClientAndInGame(client)) { return; }
+    
+    decl String:model[256];
+    GetEntPropString(client, Prop_Data, "m_ModelName", model, sizeof(model));
+    
+    if (StrContains(model, "gambler") != -1) { FormatEx(model, sizeof(model), "gambler"); }
+    else if (StrContains(model, "coach") != -1) { FormatEx(model, sizeof(model), "coach"); }
+    else if (StrContains(model, "mechanic") != -1) { FormatEx(model, sizeof(model), "mechanic"); }
+    else if (StrContains(model, "producer") != -1) { FormatEx(model, sizeof(model), "producer"); }
+    else if (StrContains(model, "namvet") != -1) { FormatEx(model, sizeof(model), "namvet"); }
+    else if (StrContains(model, "teengirl") != -1) { FormatEx(model, sizeof(model), "teengirl"); }
+    else if (StrContains(model, "biker") != -1) { FormatEx(model, sizeof(model), "biker"); }
+    else if (StrContains(model, "manager") != -1) { FormatEx(model, sizeof(model), "manager"); }
+    
+    
+    decl String:scenefile[256], String:checknumber[3];
+    new foundfilescounter;
+    decl validfiles[71];
+    for (new i = 1; i <= 70; i++) {
+        if (i < 10) {
+            FormatEx(checknumber, sizeof(checknumber), "0%i", i);
+        }
+        else {
+            FormatEx(checknumber, sizeof(checknumber), "%i", i);
+        }
+        
+        FormatEx(scenefile, sizeof(scenefile), "scenes/%s/%s%s.vcd", model, arg, checknumber);
+        
+        if (!FileExists(scenefile)) continue;
+        
+        foundfilescounter++;
+        validfiles[foundfilescounter] = i;
+    }
+    
+    if (!foundfilescounter) { return; }
+    
+    
+    new randomint = GetRandomInt(1, foundfilescounter);
+    if (validfiles[randomint] < 10) {
+        FormatEx(checknumber, sizeof(checknumber), "0%i", validfiles[randomint]);
+    }
+    else {
+        FormatEx(checknumber, sizeof(checknumber), "%i", validfiles[randomint]);
+    }
+    FormatEx(scenefile, sizeof(scenefile), "scenes/%s/%s%s.vcd", model, arg, checknumber);
+    
+    
+    // do vocalization    
+    new tempent = CreateEntityByName("instanced_scripted_scene");
+    DispatchKeyValue(tempent, "SceneFile", scenefile);
+    DispatchSpawn(tempent);
+    SetEntPropEnt(tempent, Prop_Data, "m_hOwner", client);
+    ActivateEntity(tempent);
+    AcceptEntityInput(tempent, "Start", client, client);
+    HookSingleEntityOutput(tempent, "OnCompletion", EntityOutput:OnSceneCompletion, true);
+
+    return;
+}
+
+public Vocalize_Specific(client, String:arg[256])
+{
+    if (!client || !IsClientAndInGame(client)) { return; }
+    
+    decl String:model[256];
+    GetEntPropString(client, Prop_Data, "m_ModelName", model, sizeof(model));
+    
+    if (StrContains(model, "gambler") != -1) { FormatEx(model, sizeof(model), "gambler"); }
+    else if (StrContains(model, "coach") != -1) { FormatEx(model, sizeof(model), "coach"); }
+    else if (StrContains(model, "mechanic") != -1) { FormatEx(model, sizeof(model), "mechanic"); }
+    else if (StrContains(model, "producer") != -1) { FormatEx(model, sizeof(model), "producer"); }
+    else if (StrContains(model, "namvet") != -1) { FormatEx(model, sizeof(model), "namvet"); }
+    else if (StrContains(model, "teengirl") != -1) { FormatEx(model, sizeof(model), "teengirl"); }
+    else if (StrContains(model, "biker") != -1) { FormatEx(model, sizeof(model), "biker"); }
+    else if (StrContains(model, "manager") != -1) { FormatEx(model, sizeof(model), "manager"); }
+    
+    decl String:scenefile[256];
+    FormatEx(scenefile, sizeof(scenefile), "scenes/%s/%s.vcd", model, arg);
+    
+    if (!FileExists(scenefile)) { return; }
+    
+    
+    new tempent = CreateEntityByName("instanced_scripted_scene");
+    DispatchKeyValue(tempent, "SceneFile", scenefile);
+    DispatchSpawn(tempent);
+    SetEntPropEnt(tempent, Prop_Data, "m_hOwner", client);
+    ActivateEntity(tempent);
+    AcceptEntityInput(tempent, "Start", client, client);
+    HookSingleEntityOutput(tempent, "OnCompletion", EntityOutput:OnSceneCompletion, true);
+
+    return;
+}
+
+public OnSceneCompletion(const String:s_Output[], i_Caller, i_Activator, Float:f_Delay)
+{
+    RemoveEdict(i_Caller);
+}
 
 
 /*

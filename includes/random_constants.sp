@@ -1,54 +1,10 @@
 #pragma semicolon 1
 
-
 const           DEBUG_MODE              = 1;
 
-const           TEAM_SPECTATOR          = 1;
-const           TEAM_SURVIVOR           = 2;
-const           TEAM_INFECTED           = 3;
 
-const           PLAYER_SLOT_PRIMARY     = 0;
-const           PLAYER_SLOT_SECONDARY   = 1;
-const           PLAYER_SLOT_THROWABLE   = 2;
-const           PLAYER_SLOT_KIT         = 3;
-const           PLAYER_SLOT_PILL         = 3;
-
-const           ASSAULT_RIFLE_OFFSET_IAMMO      = 12;
-const           SMG_OFFSET_IAMMO                = 20;
-const           SHOTGUN_OFFSET_IAMMO            = 28;
-const           AUTO_SHOTGUN_OFFSET_IAMMO       = 32;
-const           SNIPER_OFFSET_IAMMO             = 36;
-const           MILITARY_SNIPER_OFFSET_IAMMO    = 40;
-const           GRENADE_LAUNCHER_OFFSET_IAMMO   = 68;
-
-const           ZC_SMOKER               = 1;
-const           ZC_BOOMER               = 2;
-const           ZC_HUNTER               = 3;
-const           ZC_SPITTER              = 4;
-const           ZC_JOCKEY               = 5;
-const           ZC_CHARGER              = 6;
-const           ZC_WITCH                = 7;
-const           ZC_TANK                 = 8;
-const           ZC_NOTINFECTED          = 9;
-const           ZC_TOTAL                = 7;
-
-const           SC_NICK_BILL            = 0;            // m_survivorCharacter
-const           SC_ROCHELLE_ZOEY        = 1;
-const           SC_COACH_LOUIS          = 2;
-const           SC_ELLIS_FRANCIS        = 3;
-
-const Float:    ZC_TIMEROFFSET          = 0.5;
-const Float:    ZC_TIMERDEATHCHECK      = 0.05;
-const Float:    ZC_TIMERAFTERTANK       = 0.01;
-const Float:    ZC_TIMERCHECKGHOST      = 0.05;         // was 0.1 for ZCS .. bit annoying though
-
-const           WEPID_PILLS             = 15;           // for pickup checks
-const           WEPID_ADREN             = 23;
-
-const           INCAP_DEFAULT           = 2;
-const           INCAP_MINIMUM           = 1;
-const           INCAP_MAXIMUM           = 3;
-const           HEALTH_MAXIMUM          = 100;
+// Random global size config
+// -------------------------
 
 const           TEAM_SIZE               = 4;
 const           ENTITY_COUNT            = 2048;
@@ -66,18 +22,16 @@ const Float:    MAX_RAYDIF              = 100.0;        // maximum z-difference 
 const           MAX_DOORS               = 128;          // amount of doors to track
 const           MAX_BOOBYTRAPS          = 128;          // amount of boobytraps to add maximally
 
-const Float:    BLND_ENT_CHECK_INTERVAL = 1.0;          // for 'blind infected' adaptation
-const Float:    BLND_TRACE_TOLERANCE    = 75.0;
-
-const Float:    ITEM_PICKUP_DISTANCE    = 64.0;         // how far can a survivor 'reach' for a gift box?
-const Float:    ITEM_USE_DISTANCE       = 16.0;         // how far a survivor can move before aborting a use-progress-bar type action
-const Float:    ITEM_USE_FREEZE_TIME    = 0.5;          // after how long of starting a progress-bar use type action you're frozen (while you hold USE)
-
+// String lengths
+// --------------
 const           STR_MAX_WPCLASSNAME     = 48;
 const           STR_MAX_ITEMGIVEN       = 48;
 const           STR_MAX_MODELNAME       = 48;
 const           STR_MAX_MAPNAME         = 24;
 
+
+// Random configuration
+// --------------------
 const Float:    DELAY_FIRSTMAPLOAD      = 5.0;          // how long to wait before doing round prep on the very first map loading
 const Float:    DELAY_ROUNDPREP         = 1.0;          // how long between actual round prep and item handling etc
 const Float:    DELAY_SECONDHALF        = 1.0;          // how long to wait on secondroundhalf before restoring items
@@ -85,6 +39,155 @@ const Float:    DELAY_SECONDHALF_REP    = 1.25;         // how long to wait on s
 const Float:    DELAY_SURVSETUP         = 0.25;         // how long to wait after team switch/join to set survivor startup (for GetPlayerSlot check)
 const Float:    DELAY_TEAMSWAP          = 0.1;          // how long to wait before applying changes after team swap..
 
+const           INCAP_DEFAULT           = 2;
+const           INCAP_MINIMUM           = 1;
+const           INCAP_MAXIMUM           = 3;
+const           HEALTH_MAXIMUM          = 100;
+
+const Float:    ITEM_PICKUP_DISTANCE    = 64.0;         // how far can a survivor 'reach' for a gift box?
+const Float:    ITEM_USE_DISTANCE       = 16.0;         // how far a survivor can move before aborting a use-progress-bar type action
+const Float:    ITEM_USE_FREEZE_TIME    = 0.5;          // after how long of starting a progress-bar use type action you're frozen (while you hold USE)
+
+const Float:    USING_TIME_DEFAULT      = 3.0;
+const Float:    USING_TIME_GIFT         = 4.0;
+
+const           GIFT_MIN_ITEMS          = 2;            // amount of items to minimally spawn out of a gift box
+const           GIFT_MAX_ITEMS          = 6;            
+const Float:    GIFTUSE_TIMEOUT         = 0.25;         // how long after playerUse command to wait (avoid spamming use)
+const Float:    GIFTREPORT_TIMEOUT      = 1.0;          // how long after playerUse command to wait (avoid spamming messages)
+
+
+// multi/mini tanks and witches
+const Float:    MULTITANK_EARLY         = 0.25;         // for 2-tank-rounds: where to spawn early tank
+const Float:    MULTITANK_LATE          = 0.75;         //                         and the late one
+const Float:    MULTITANK_HEALTHITEMS   = 1.5;          // factor by which to change health item weight for double-tanked map
+
+const           MULTIWITCH_MIN          = 3;            // amount of witches in multi-witch mode
+const           MULTIWITCH_MAX          = 7;
+const Float:    MULTIWITCH_FLOW_MIN     = 0.1;          // earliest a multiwitch can spawn
+const Float:    MULTIWITCH_FLOW_MAX     = 0.9;
+const Float:    MULTIWITCH_FLOW_BETWEEN = 0.1;          // minimum flow distance between two witches
+const Float:    MULTIWITCH_FLOW_TANK    = 0.15;         // minimum distance a witch must be from tank spawn
+const bool:     MULTIWITCH_ALLOW_TANK   = true;         // multiwitches possible when there's a tank?
+
+const           MULTITANK_MAX           = 9;
+const           MINITANKS_NUM           = 9;            // 9 tanks, 1250 health each
+const           MINITANKS_HEALTH        = 900;
+const Float:    MINITANKS_FLOW_MIN      = 0.1;
+const Float:    MINITANKS_FLOW_MAX      = 0.9;
+const Float:    MINITANKS_FLOW_INT      = 0.1;
+const Float:    MINITANKS_FLOW_VAR      = 0.025;        // tiny flow variation, for funzies
+const Float:    MINITANKS_SCALE         = 0.67;         // scale the model by what?
+const Float:    MINITANK_MELEE_DMG      = 200.0;        // damage minitanks take from melee weapons
+const           MINITANK_FRUST_TIME     = 10;           // half normal frustration time
+const           MINITANKS_DAMAGE        = 20;           // minitanks punch does a bit less damage
+const           MINITANKS_HITTABLE_DMG  = 50;           // how much damage hittables do for minitanks
+
+// item balance
+const Float:    ITEM_FACTOR_2V2         = 0.5;          // how many of the items available in #v# game
+const Float:    ITEM_FACTOR_3V3         = 0.75;
+
+const           RATE_MAGNUM             = 10;           // 1 in [#] = magnum (vs normal pistol)
+const           RATE_SMG                = 2;            // 1 in [#] = normal smg (vs silenced)
+const           RATE_PUMPSHOT           = 2;            // 1 in [#] = pumpshotgun/auto (vs chrome/spas)
+const           RATE_CSS                = 6;            // 1 in [#] = css weapon (vs l4d2 native)
+const           RATE_CSS_SNIPER         = 2;            // 1 in [#] = css sniper (vs l4d2 native sniper)
+const           RATE_DEFIB              = 6;            // 1 in [#] = defib (vs medkit)
+const           RATE_ADREN              = 4;            // 1 in [#] = adrenaline (vs pills)
+const           RATE_CAN_BARREL         = 6;            // 1 in [#] = explosive barrel (vs normal canisters)
+const           RATE_CAN_GAS            = 4;            // 1 in [#] = gas can (vs explosive canisters)
+const           RATE_UPG_LASER          = 5;            // 1 in [#] = lasersights (vs incendiary/explosives)
+const           RATE_UPG_EXPLOSIVE      = 10;           // 1 in [#] = explosives (vs incendiary)
+
+// difficulty scaling
+const Float:    EVENT_VERYHARD_SITIME   = 0.5;          // more difficult, SI-wise
+const Float:    EVENT_HARD_SITIME       = 0.75;
+const Float:    EVENT_EASY_SITIME       = 1.25;
+const Float:    EVENT_VERYEASY_SITIME   = 1.5; 
+
+const Float:    EVENT_SUPEREASY_CILIM   = 0.25;         // super easy, common-wise
+const Float:    EVENT_VERYEASY_CILIM    = 0.5; 
+const Float:    EVENT_EASY_CILIM        = 0.75;
+const Float:    EVENT_HARD_CILIM        = 1.25;
+const Float:    EVENT_VERYHARD_CILIM    = 1.5;
+
+// event config
+const Float:    EVENT_ITEM_WEIGHT       = 0.2;          // EVT_ITEM         set weight of picked item type to this factor of total weight
+const Float:    EVENT_UNCOMMON_CHANCE   = 0.5;          // EVT_UNCOMMON     half the common become uncommon
+const Float:    EVENT_CLOWNS_CHANCE     = 0.7;          // EVT_CLOWNS       plenty of clowns
+const Float:    EVENT_ABUND_JUNKWGHT    = 0.5;          // EVT_ABUNDANCE    by what factor to change junk amount
+const Float:    EVENT_DEFIB_EXTRA       = 2.5;          // EVT_DEFIB        by what factor to change defib amount
+const Float:    EVENT_DEFIB_PILLS       = 1.5;          // EVT_DEFIB        by what factor to change pills amount
+const Float:    EVENT_ADREN_EXTRA       = 3.5;          // EVT_ADREN        by what factor to change adren amount
+const Float:    EVENT_ADREN_LESSER      = 0.5;          // EVT_ADREN        by what factor to change a bunch of other items (less useful in this mode)
+const Float:    EVENT_ADREN_DECAY       = 1.5;          // EVT_ADREN        by what factor to change pill decay rate
+const           EVENT_NOHUD_MASK        = 64;           // EVT_NOHUD        bitmask for what to hide
+const           EVENT_PENALTY_ITEM      = 5;            // EVT_PEN_ITEM     how many points to deduct
+const           EVENT_PENALTY_HEALTH    = 15;           // EVT_PEN_HEALTH   how many points to deduct
+const bool:     EVENT_PENALTY_CI        = false;        // EVT_PEN_M2       whether there are penalties for common-shoves
+const           EVENT_PENALTY_M2_CI     = 2;            // EVT_PEN_M2       how many points to deduct for shoving
+const           EVENT_PENALTY_M2_SI     = 15;           // EVT_PEN_M2       how many points to deduct for shoving
+const           EVENT_SKEET_BONUS       = 15;           // EVT_SKEET        how many points to add per (real) skeet
+const           EVENT_SKEET_BONUS_TEAM  = 15;           // EVT_SKEET        for a team-skeet (the same for now?)
+const Float:    EVENT_FF_FACTOR         = 0.3;          // EVT_NOHUD        bitmask for what to hide
+const Float:    EVENT_LOCKEDCHANCE      = 0.7;          // EVT_DOORS        most doors closed -- melees will be given on start
+const           EVENT_DOORS_MINMELEE    = 2;            // EVT_DOORS        how many melees at least for locked doors event?
+const           EVENT_BADCOMBO_AMMO     = 25;           // EVT_BADCOMBO     how many grenades ammo?
+const Float:    EVENT_PROTECT_WEAK      = 2.0;          // EVT_PROTECT      factor the damage changes for the weak player
+const Float:    EVENT_PROTECT_STRONG    = 0.75;         // EVT_PROTECT      factor the damage changes for the stronger players
+const Float:    EVENT_PROTECT_CIWEAK    = 1.5;
+const Float:    EVENT_PROTECT_CISTRONG  = 0.5;
+const Float:    EVENT_BOOBYTRAP_CHANCE  = 0.1;          // EVT_BOOBYTRAP    odds that an item or door is boobytrapped
+const Float:    EVENT_SKEET_HUNTERS     = 0.8;          // EVT_SKEET        odds that a capping SI is a hunter
+const Float:    EVENT_FIREPOWER_AMMO    = 1.25;         // EVT_FIREPOWER    factor that ammo for T2 weapons is multiplied
+const Float:    EVENT_AMMO_PACKTIME     = 3.0;          // EVT_AMMO         time it takes to repack ammo
+const Float:    EVENT_AMMO_FACTOR       = 0.12;         // EVT_AMMO         how much ammo there is in weapons lying around
+
+const Float:    EVENT_ENC_W_T1          = 1.5;          // EVT_ENCUMBERED   for determining total player weight
+const Float:    EVENT_ENC_W_T2          = 2.5;
+const Float:    EVENT_ENC_W_T3          = 3.5;
+const Float:    EVENT_ENC_W_PISTOL      = 0.5;          // magnum weighs 2 pistols
+const Float:    EVENT_ENC_W_MELEE       = 1.5;
+const Float:    EVENT_ENC_W_THROWABLE   = 1.0;
+const Float:    EVENT_ENC_W_KIT         = 2.0;
+const Float:    EVENT_ENC_W_PILL        = 0.5;
+const Float:    EVENT_ENC_W_PROP        = 2.5;          // propane tanks, gnome, cola, etc
+const Float:    EVENT_ENC_W_THRESH      = 4.1;          // EVT_ENCUMBERED   weight threshold for slowing down
+const Float:    EVENT_ENC_W_FAST_THRESH = 2.6;          //                  weight threshold for speeding up
+const Float:    EVENT_ENC_W_RANGE       = 6.0;          //                  range on top of weight threshold (total weight can exceed 10.0)
+const Float:    EVENT_ENC_FAST_MAX      = 0.5;          //                  max speed-up (1.0 + this value = speed factor)
+const Float:    EVENT_ENC_SLOW_MAX      = 0.8;          //                  max slowdown (1.0 - this value = speed factor)
+
+// misc
+const Float:    GNOME_FINALE_DIST_FACTOR = 0.25;        // by how much to weight finale distance for gnome value
+
+const           EARLY_DOORS_MINMELEE    = 1;            // how many melees at least for early locked doors
+const           MANY_DOORS_EVENTFACTOR  = 3;            // how many times event weight for the doors events on many-doors-maps?
+
+const           TANK_DROP_ITEMS_MIN     = 2;            // how many items a tank can drop minimally
+const           TANK_DROP_ITEMS_MAX     = 5;
+
+const           BOOMCOMBO_REWARD        = 6;            // amount of common to spawn extra for 2/3 boom combo's
+
+const Float:    PIPEDUD_MINTIME         = 2.4;          // how much time minimally before dudding pipe
+const Float:    PIPEDUD_ADDTIME         = 2.5;          // how much time to add maximally to mintime
+
+const Float:    SACKPROT_MARGIN         = 3.0;          // seconds margin: after this time, someone dying counts as the attack someone should join in to not be saving
+
+const           DIFF_RATING_GLOW_THRESH     = 3;        // how high the round difficulty rating must be before we're more likely to keep glows on
+const           DIFF_RATING_INCAP_THRESH    = 4;        // how high before we keep minimum default incaps
+const           DIFF_RATING_PILL_THRESH     = 5;        // how high before we guarantee pills
+const           DIFF_RATING_2PRIM_THRESH    = 0;        // how high before we guarantee 2 primaries
+const           DIFF_RATING_3PRIM_THRESH    = 2;        // how high before we guarantee 3 primaries
+const           DIFF_RATING_4PRIM_THRESH    = 5;        // how high before we guarantee full load-out (primaries + secondaries)
+const Float:    DIFF_RATING_NOITEM_LOW      = 0.5;      // what a low no-item value is (for very difficult rounds)
+const Float:    DIFF_RATING_NOITEM_HIGH     = 1.5;      // what a high no-item value is (for very easy rounds)
+const           DIFF_RATING_NOITEM_DIF_HIGH = 6;        // when to force towards the lowest noitem value
+const           DIFF_RATING_NOITEM_DIF_LOW  = 0;        // when to force towards the highest noitem value
+
+
+// Random indexes
+// --------------
 const           INDEX_NOITEM            = 0;            // indices for picking random item replacement (must always be lowest!)
 const           INDEX_PISTOL            = 1;
 const           INDEX_T1SMG             = 2;
@@ -168,45 +271,21 @@ const           EQ_POINTS               = 1024;         // for distance & bonus
 
 const           EQ_EVERYTHING           = 2047;         // minimum value for which everything is equal
 
-const Float:    MULTITANK_EARLY         = 0.25;         // for 2-tank-rounds: where to spawn early tank
-const Float:    MULTITANK_LATE          = 0.75;         //                         and the late one
-const Float:    MULTITANK_HEALTHITEMS   = 1.5;          // factor by which to change health item weight for double-tanked map
+const           USING_TYPE_UNKNOWN      = 0;            // when using an item (entity), what type is it?
+const           USING_TYPE_AMMO         = 1;
+const           USING_TYPE_GIFT         = 2;
 
-const           MULTIWITCH_MIN          = 3;            // amount of witches in multi-witch mode
-const           MULTIWITCH_MAX          = 7;
-const Float:    MULTIWITCH_FLOW_MIN     = 0.1;          // earliest a multiwitch can spawn
-const Float:    MULTIWITCH_FLOW_MAX     = 0.9;
-const Float:    MULTIWITCH_FLOW_BETWEEN = 0.1;          // minimum flow distance between two witches
-const Float:    MULTIWITCH_FLOW_TANK    = 0.15;         // minimum distance a witch must be from tank spawn
-const bool:     MULTIWITCH_ALLOW_TANK   = true;         // multiwitches possible when there's a tank?
-
-const           MULTITANK_MAX           = 9;
-const           MINITANKS_NUM           = 9;            // 9 tanks, 1250 health each
-const           MINITANKS_HEALTH        = 900;
-const Float:    MINITANKS_FLOW_MIN      = 0.1;
-const Float:    MINITANKS_FLOW_MAX      = 0.9;
-const Float:    MINITANKS_FLOW_INT      = 0.1;
-const Float:    MINITANKS_FLOW_VAR      = 0.025;        // tiny flow variation, for funzies
-const Float:    MINITANKS_SCALE         = 0.67;         // scale the model by what?
-const Float:    MINITANK_MELEE_DMG      = 200.0;        // damage minitanks take from melee weapons
-const           MINITANK_FRUST_TIME     = 10;           // half normal frustration time
-const           MINITANKS_DAMAGE        = 20;           // minitanks punch does a bit less damage
-const           MINITANKS_HITTABLE_DMG  = 50;           // how much damage hittables do for minitanks
-
-const Float:    ITEM_FACTOR_2V2         = 0.5;          // how many of the items available in #v# game
-const Float:    ITEM_FACTOR_3V3         = 0.75;
-
-const           RATE_MAGNUM             = 10;           // 1 in [#] = magnum (vs normal pistol)
-const           RATE_SMG                = 2;            // 1 in [#] = normal smg (vs silenced)
-const           RATE_PUMPSHOT           = 2;            // 1 in [#] = pumpshotgun/auto (vs chrome/spas)
-const           RATE_CSS                = 6;            // 1 in [#] = css weapon (vs l4d2 native)
-const           RATE_CSS_SNIPER         = 2;            // 1 in [#] = css sniper (vs l4d2 native sniper)
-const           RATE_DEFIB              = 6;            // 1 in [#] = defib (vs medkit)
-const           RATE_ADREN              = 4;            // 1 in [#] = adrenaline (vs pills)
-const           RATE_CAN_BARREL         = 6;            // 1 in [#] = explosive barrel (vs normal canisters)
-const           RATE_CAN_GAS            = 4;            // 1 in [#] = gas can (vs explosive canisters)
-const           RATE_UPG_LASER          = 5;            // 1 in [#] = lasersights (vs incendiary/explosives)
-const           RATE_UPG_EXPLOSIVE      = 10;           // 1 in [#] = explosives (vs incendiary)
+const           GIFT_POS_HEALTH         = 0;
+const           GIFT_POS_HEALTH_T       = 1;
+const           GIFT_POS_ITEMS          = 2;
+const           GIFT_POS_LASER          = 6;
+const           GIFT_POS_AMMO           = 8;
+const           GIFT_POS_INSIGHT        = 9;
+const           GIFT_NEG_EXPLODE        = 1;
+const           GIFT_NEG_PANIC          = 3;
+const           GIFT_NEG_VOMIT          = 5;
+const           GIFT_NEG_FIRE           = 7;
+const           GIFT_NEG_INSIGHT        = 8;
 
 const           DIFFICULTY_NOCHANGE     = 0;            // don't change it
 const           DIFFICULTY_NORMAL       = 1;            // event difficulty
@@ -216,90 +295,20 @@ const           DIFFICULTY_EASY         = 4;
 const           DIFFICULTY_VERYEASY     = 5;
 const           DIFFICULTY_SUPEREASY    = 6;
 
-const Float:    EVENT_VERYHARD_SITIME   = 0.5;          // more difficult, SI-wise
-const Float:    EVENT_HARD_SITIME       = 0.75;
-const Float:    EVENT_EASY_SITIME       = 1.25;
-const Float:    EVENT_VERYEASY_SITIME   = 1.5; 
-
-const Float:    EVENT_SUPEREASY_CILIM   = 0.25;         // super easy, common-wise
-const Float:    EVENT_VERYEASY_CILIM    = 0.5; 
-const Float:    EVENT_EASY_CILIM        = 0.75;
-const Float:    EVENT_HARD_CILIM        = 1.25;
-const Float:    EVENT_VERYHARD_CILIM    = 1.5;
-
-const Float:    EVENT_ITEM_WEIGHT       = 0.2;          // EVT_ITEM         set weight of picked item type to this factor of total weight
-const Float:    EVENT_UNCOMMON_CHANCE   = 0.5;          // EVT_UNCOMMON     half the common become uncommon
-const Float:    EVENT_CLOWNS_CHANCE     = 0.7;          // EVT_CLOWNS       plenty of clowns
-const Float:    EVENT_ABUND_JUNKWGHT    = 0.5;          // EVT_ABUNDANCE    by what factor to change junk amount
-const Float:    EVENT_DEFIB_EXTRA       = 2.5;          // EVT_DEFIB        by what factor to change defib amount
-const Float:    EVENT_DEFIB_PILLS       = 1.5;          // EVT_DEFIB        by what factor to change pills amount
-const Float:    EVENT_ADREN_EXTRA       = 3.5;          // EVT_ADREN        by what factor to change adren amount
-const Float:    EVENT_ADREN_LESSER      = 0.5;          // EVT_ADREN        by what factor to change a bunch of other items (less useful in this mode)
-const Float:    EVENT_ADREN_DECAY       = 1.5;          // EVT_ADREN        by what factor to change pill decay rate
-const           EVENT_NOHUD_MASK        = 64;           // EVT_NOHUD        bitmask for what to hide
-const           EVENT_PENALTY_ITEM      = 5;            // EVT_PEN_ITEM     how many points to deduct
-const           EVENT_PENALTY_HEALTH    = 15;           // EVT_PEN_HEALTH   how many points to deduct
-const bool:     EVENT_PENALTY_CI        = false;        // EVT_PEN_M2       whether there are penalties for common-shoves
-const           EVENT_PENALTY_M2_CI     = 2;            // EVT_PEN_M2       how many points to deduct for shoving
-const           EVENT_PENALTY_M2_SI     = 15;           // EVT_PEN_M2       how many points to deduct for shoving
-const           EVENT_SKEET_BONUS       = 15;           // EVT_SKEET        how many points to add per (real) skeet
-const           EVENT_SKEET_BONUS_TEAM  = 15;           // EVT_SKEET        for a team-skeet (the same for now?)
-const Float:    EVENT_FF_FACTOR         = 0.3;          // EVT_NOHUD        bitmask for what to hide
-const Float:    EVENT_LOCKEDCHANCE      = 0.7;          // EVT_DOORS        most doors closed -- melees will be given on start
-const           EVENT_DOORS_MINMELEE    = 2;            // EVT_DOORS        how many melees at least for locked doors event?
-const           EVENT_BADCOMBO_AMMO     = 25;           // EVT_BADCOMBO     how many grenades ammo?
-const Float:    EVENT_PROTECT_WEAK      = 2.0;          // EVT_PROTECT      factor the damage changes for the weak player
-const Float:    EVENT_PROTECT_STRONG    = 0.75;         // EVT_PROTECT      factor the damage changes for the stronger players
-const Float:    EVENT_PROTECT_CIWEAK    = 1.5;
-const Float:    EVENT_PROTECT_CISTRONG  = 0.5;
-const Float:    EVENT_BOOBYTRAP_CHANCE  = 0.1;          // EVT_BOOBYTRAP    odds that an item or door is boobytrapped
-const Float:    EVENT_SKEET_HUNTERS     = 0.8;          // EVT_SKEET        odds that a capping SI is a hunter
-const Float:    EVENT_FIREPOWER_AMMO    = 1.25;         // EVT_FIREPOWER    factor that ammo for T2 weapons is multiplied
-const Float:    EVENT_AMMO_PACKTIME     = 3.0;          // EVT_AMMO         time it takes to repack ammo
-const Float:    EVENT_AMMO_FACTOR       = 0.12;         // EVT_AMMO         how much ammo there is in weapons lying around
-
-const Float:    EVENT_ENC_W_T1          = 1.5;          // EVT_ENCUMBERED   for determining total player weight
-const Float:    EVENT_ENC_W_T2          = 2.5;
-const Float:    EVENT_ENC_W_T3          = 3.5;
-const Float:    EVENT_ENC_W_PISTOL      = 0.5;          // magnum weighs 2 pistols
-const Float:    EVENT_ENC_W_MELEE       = 1.5;
-const Float:    EVENT_ENC_W_THROWABLE   = 1.0;
-const Float:    EVENT_ENC_W_KIT         = 2.0;
-const Float:    EVENT_ENC_W_PILL        = 0.5;
-const Float:    EVENT_ENC_W_PROP        = 2.5;          // propane tanks, gnome, cola, etc
-const Float:    EVENT_ENC_W_THRESH      = 4.1;          // EVT_ENCUMBERED   weight threshold for slowing down
-const Float:    EVENT_ENC_W_FAST_THRESH = 2.6;          //                  weight threshold for speeding up
-const Float:    EVENT_ENC_W_RANGE       = 6.0;          //                  range on top of weight threshold (total weight can exceed 10.0)
-const Float:    EVENT_ENC_FAST_MAX      = 0.5;          //                  max speed-up (1.0 + this value = speed factor)
-const Float:    EVENT_ENC_SLOW_MAX      = 0.8;          //                  max slowdown (1.0 - this value = speed factor)
-
-const           EARLY_DOORS_MINMELEE    = 1;            // how many melees at least for early locked doors
-const           MANY_DOORS_EVENTFACTOR  = 3;            // how many times event weight for the doors events on many-doors-maps?
-
-const           TANK_DROP_ITEMS_MIN     = 2;            // how many items a tank can drop minimally
-const           TANK_DROP_ITEMS_MAX     = 5;
-
-const           GIFT_MIN_ITEMS          = 2;            // amount of items to minimally spawn out of a gift box
-const           GIFT_MAX_ITEMS          = 6;            
-const Float:    GIFTUSE_TIMEOUT         = 0.25;         // how long after playerUse command to wait (avoid spamming use)
-const Float:    GIFTREPORT_TIMEOUT      = 1.0;          // how long after playerUse command to wait (avoid spamming messages)
-
 const           SILENCED_SURV           = 0;            // silent survivors
 const           SILENCED_SI             = 1;
 const           SILENCED_CI             = 2;            // not sure if I want to use this
 
-new const String: DOOR_SOUND[]          = "doors/latchlocked2.wav";
-new const String: EXPLOSION_SOUND[]     = "ambient/explosions/explode_1.wav";
-new const String: EXPLOSION_SOUND2[]    = "ambient/explosions/explode_2.wav";
-new const String: EXPLOSION_SOUND3[]    = "ambient/explosions/explode_3.wav";
-new const String: EXPLOSION_DEBRIS[]    = "animation/van_inside_debris.wav";
-new const String: BOOMGIFT_SOUND[]      = "player/boomer/voice/vomit/male_boomer_vomit_03.wav";
-new const String: PANICGIFT_SOUND[]     = "ambient/alarms/klaxon1.wav";
 
-//new const String: MODEL_W_MOLOTOV[]     = "models/w_models/weapons/w_eq_molotov.mdl";
-new const String: MODEL_GASCAN[]        = "models/props_junk/gascan001a.mdl";
-new const String: MODEL_FIREWORKS[]     = "models/props_junk/explosive_box001.mdl";
-new const String: MODEL_L4D1AMMO[]      = "models/props_unique/spawn_apartment/coffeeammo.mdl";
+// Third-party and mechanics configuration
+// ---------------------------------------
+const Float:    BLND_ENT_CHECK_INTERVAL = 1.0;          // for 'blind infected' adaptation
+const Float:    BLND_TRACE_TOLERANCE    = 75.0;
+
+const Float:    ZC_TIMEROFFSET          = 0.5;
+const Float:    ZC_TIMERDEATHCHECK      = 0.05;
+const Float:    ZC_TIMERAFTERTANK       = 0.01;
+const Float:    ZC_TIMERCHECKGHOST      = 0.05;         // was 0.1 for ZCS .. bit annoying though
 
 const           EXPLOSION_RADIUS        = 200;
 const Float:    EXPLOSION_POWER_HIGH    = 50.0;
@@ -307,43 +316,92 @@ const Float:    EXPLOSION_POWER_LOW     = 25.0;
 const Float:    EXPLOSION_DURATION      = 15.0;
 const Float:    EXPLOSION_DURATION_MIN  = 1.0;
 
-const Float:    PIPEDUD_MINTIME         = 2.4;          // how much time minimally before dudding pipe
-const Float:    PIPEDUD_ADDTIME         = 2.5;          // how much time to add maximally to mintime
-
-const           BOOMCOMBO_REWARD        = 6;            // amount of common to spawn extra for 2/3 boom combo's
-
 const Float:    TESTENTITY_TIMER        = 2.5;          // when to check for entity Z location
 const Float:    TESTENTITY_UPSHIFT      = 35.0;         // by how much to teleport the entity above its origin if it dropped too far
 const Float:    TESTENTITY_THRESH       = 50.0;         // threshold for detecting entity's that 'fell through the floor'
 
-const Float:    GNOME_FINALE_DIST_FACTOR = 0.25;        // by how much to weight finale distance for gnome value
-
 const Float:    TIMER_PICKUPCHECK       = 0.05;         // super brief delay to check whether an item was really picked up, or actually given
+const Float:    SHOTGUN_BLAST_TIME      = 0.1;          // shotgun blast max time for tracking pellets (anything but 0, while super small, really)
+const Float:    TIMER_POUNCE            = 0.1;          // repeat timer to check when hunter has landed (for skeet tracking)
+
+
+// Resources
+// ---------
+new const String: DOOR_SOUND[]          = "doors/latchlocked2.wav";
+new const String: EXPLOSION_SOUND[]     = "ambient/explosions/explode_1.wav";
+new const String: EXPLOSION_SOUND2[]    = "ambient/explosions/explode_2.wav";
+new const String: EXPLOSION_SOUND3[]    = "ambient/explosions/explode_3.wav";
+new const String: EXPLOSION_DEBRIS[]    = "animation/van_inside_debris.wav";
+new const String: BOOMGIFT_SOUND[]      = "player/boomer/voice/vomit/male_boomer_vomit_03.wav";
+new const String: PANICGIFT_SOUND[]     = "ambient/alarms/klaxon1.wav";
+new const String: GIFTUNWRAP_SOUND[]    = "player/ammo_pack_use.wav";
+
+//new const String: MODEL_W_MOLOTOV[]     = "models/w_models/weapons/w_eq_molotov.mdl";
+new const String: MODEL_GASCAN[]        = "models/props_junk/gascan001a.mdl";
+new const String: MODEL_FIREWORKS[]     = "models/props_junk/explosive_box001.mdl";
+new const String: MODEL_L4D1AMMO[]      = "models/props_unique/spawn_apartment/coffeeammo.mdl";
+
+
+// Game built in values
+// --------------------
+const           TEAM_SPECTATOR          = 1;
+const           TEAM_SURVIVOR           = 2;
+const           TEAM_INFECTED           = 3;
+
+const           PLAYER_SLOT_PRIMARY     = 0;
+const           PLAYER_SLOT_SECONDARY   = 1;
+const           PLAYER_SLOT_THROWABLE   = 2;
+const           PLAYER_SLOT_KIT         = 3;
+const           PLAYER_SLOT_PILL        = 4;
+
+const           ASSAULT_RIFLE_OFFSET_IAMMO      = 12;
+const           SMG_OFFSET_IAMMO                = 20;
+const           SHOTGUN_OFFSET_IAMMO            = 28;
+const           AUTO_SHOTGUN_OFFSET_IAMMO       = 32;
+const           SNIPER_OFFSET_IAMMO             = 36;
+const           MILITARY_SNIPER_OFFSET_IAMMO    = 40;
+const           GRENADE_LAUNCHER_OFFSET_IAMMO   = 68;
+
+const           ANIM_EVENT_HEAL_OTHER   = 43;               // for l4d2_direct's doanimationevent
+const           ANIM_EVENT_COLA_DELIVER = 55;
+
+/*
+const           ANIM_NICK_HEAL_OTHER    = 569;              // healing animation when using medkit on someone else
+const           ANIM_COACH_HEAL_OTHER   = 570;
+const           ANIM_ELLIS_HEAL_OTHER   = 574;
+const           ANIM_ROCH_HEAL_OTHER    = 578;
+const           ANIM_BILL_HEAL_OTHER    = 484;
+const           ANIM_LOUIS_HEAL_OTHER   = 484;
+const           ANIM_FRANCIS_HEAL_OTHER = 487;
+const           ANIM_ZOEY_HEAL_OTHER    = 487;
+*/
+
+const           ZC_SMOKER               = 1;
+const           ZC_BOOMER               = 2;
+const           ZC_HUNTER               = 3;
+const           ZC_SPITTER              = 4;
+const           ZC_JOCKEY               = 5;
+const           ZC_CHARGER              = 6;
+const           ZC_WITCH                = 7;
+const           ZC_TANK                 = 8;
+const           ZC_NOTINFECTED          = 9;
+const           ZC_TOTAL                = 7;
+
+//const           SC_NICK_BILL            = 0;            // m_survivorCharacter
+//const           SC_ROCHELLE_ZOEY        = 1;
+//const           SC_COACH_LOUIS          = 2;
+//const           SC_ELLIS_FRANCIS        = 3;
+
+const           WEPID_PILLS             = 15;           // for pickup checks
+const           WEPID_ADREN             = 23;
 
 const           WITCHES_NIGHT           = 0;            // sv_force_time_of_day value
 const           WITCHES_DAY             = 3;
 
-/* const           WITCH_SEQUENCE_STANDING     = 2;        // m_nSequence
-const           WITCH_SEQUENCE_SITTING      = 4; */
-
-const Float:    SHOTGUN_BLAST_TIME          = 0.1;      // shotgun blast max time for tracking pellets (anything but 0, while super small, really)
-const Float:    TIMER_POUNCE                = 0.1;      // repeat timer to check when hunter has landed (for skeet tracking)
-
-const           DIFF_RATING_GLOW_THRESH     = 3;        // how high the round difficulty rating must be before we're more likely to keep glows on
-const           DIFF_RATING_INCAP_THRESH    = 4;        // how high before we keep minimum default incaps
-const           DIFF_RATING_PILL_THRESH     = 5;        // how high before we guarantee pills
-const           DIFF_RATING_2PRIM_THRESH    = 0;        // how high before we guarantee 2 primaries
-const           DIFF_RATING_3PRIM_THRESH    = 2;        // how high before we guarantee 3 primaries
-const           DIFF_RATING_4PRIM_THRESH    = 5;        // how high before we guarantee full load-out (primaries + secondaries)
-const Float:    DIFF_RATING_NOITEM_LOW      = 0.5;      // what a low no-item value is (for very difficult rounds)
-const Float:    DIFF_RATING_NOITEM_HIGH     = 1.5;      // what a high no-item value is (for very easy rounds)
-const           DIFF_RATING_NOITEM_DIF_HIGH = 6;        // when to force towards the lowest noitem value
-const           DIFF_RATING_NOITEM_DIF_LOW  = 0;        // when to force towards the highest noitem value
-
-const Float:    SACKPROT_MARGIN         = 3.0;          // seconds margin: after this time, someone dying counts as the attack someone should join in to not be saving
 
 
 // structs, enums
+// --------------
 
 enum entityBlindable            // for use with tries to check if an entity causes problems with the blind-infected approach
 {
@@ -624,12 +682,32 @@ new const String: g_csPreCacheModels[][] =
     //"models/w_models/weapons/50cal.mdl",
 };
 
+new const String: g_csPrefetchSounds[][] =
+{
+    "doors/latchlocked2.wav",
+    "player/ammo_pack_use.wav",
+    "ambient/explosions/explode_1.wav",
+    "ambient/explosions/explode_2.wav",
+    "ambient/explosions/explode_3.wav",
+    "animation/van_inside_debris.wav",
+    "player/boomer/voice/vomit/male_boomer_vomit_03.wav",
+    "ambient/alarms/klaxon1.wav"
+    /*
+    // gift lines
+    "player/mechanic/worldc2m3b13.wav",
+    "player/mechanic/worldc2m3b14.wav",
+    "player/mechanic/worldc2m3b15.wav",
+    "player/mechanic/worldc2m3b16.wav"
+    */
+};
+
 new const String: g_csCSSWeapons[][] =
 {
     "weapon_smg_mp5",
     "weapon_rifle_sg552",
     "weapon_sniper_awp",
     "weapon_sniper_scout"
+    //"weapon_rifle_m60"
 };
 
 // friendly names for ZC_<CLASS> values
