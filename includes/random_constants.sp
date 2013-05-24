@@ -52,9 +52,11 @@ const Float:    USING_TIME_DEFAULT      = 3.0;
 const Float:    USING_TIME_GIFT         = 3.5;
 
 const           GIFT_MIN_ITEMS          = 2;            // amount of items to minimally spawn out of a gift box
-const           GIFT_MAX_ITEMS          = 6;            
+const           GIFT_MAX_ITEMS          = 6;
+const Float:    GIFT_EXPLODE_DELAY      = 0.25;         // time between opening gift and actual explosion
 const Float:    GIFTUSE_TIMEOUT         = 0.25;         // how long after playerUse command to wait (avoid spamming use)
 const Float:    GIFTREPORT_TIMEOUT      = 1.0;          // how long after playerUse command to wait (avoid spamming messages)
+
 
 
 // multi/mini tanks and witches

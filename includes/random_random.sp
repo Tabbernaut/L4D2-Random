@@ -2779,7 +2779,13 @@ RANDOM_DoGiftEffect(client, entity)
         switch (randomPick) {
             case GIFT_NEG_EXPLODE: {   // explosion (small and big)
                 PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04explosive surprise\x01!", client);
-                CreateExplosion(targetPos, (GetRandomInt(0, 1)) ? EXPLOSION_POWER_LOW : EXPLOSION_POWER_HIGH);
+                
+                new Handle:pack = CreateDataPack();
+                WritePackFloat(pack, (GetRandomInt(0, 1)) ? EXPLOSION_POWER_LOW : EXPLOSION_POWER_HIGH );
+                WritePackFloat(pack, targetPos[0]);
+                WritePackFloat(pack, targetPos[1]);
+                WritePackFloat(pack, targetPos[2]);
+                CreateTimer(GIFT_EXPLODE_DELAY, Timer_CreateExplosion, pack, TIMER_FLAG_NO_MAPCHANGE);
             }
             case GIFT_NEG_PANIC: {   // panic event (sound siren of some sort)
                 PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04panic surprise\x01!", client);

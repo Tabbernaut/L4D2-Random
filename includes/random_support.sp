@@ -1903,6 +1903,22 @@ SpawnPanicHorde(client, mobs = 1)
 
 
 
+// create explosion (delayed)
+public Action: Timer_CreateExplosion(Handle:timer, any:pack)
+{
+    new Float:targetPos[3];
+    
+    ResetPack(pack);
+    new Float: power = ReadPackFloat(pack);
+    targetPos[0] = ReadPackFloat(pack);
+    targetPos[1] = ReadPackFloat(pack);
+    targetPos[2] = ReadPackFloat(pack);
+    CloseHandle(pack);
+    
+    CreateExplosion(targetPos, power);
+    
+    return Plugin_Continue;
+}
 // create explosion
 CreateExplosion(Float:carPos[3], Float:power, bool:fire = false)
 {
