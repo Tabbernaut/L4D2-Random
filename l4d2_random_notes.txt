@@ -37,24 +37,39 @@ L4D2_Random
     to-do:
     ------
             - high:     remove sm_voc / sm_voc_this commands for final version
+
+            - bugfix:   try ways to fix defib event health display
             
+            - bugfix:   fix campaign mode random:
+                            - remove items that the survivors bring and use all items in the map? fix for events
             - bugfix:   multiwitch: message doesn't show for second team, only one witch spawned, though.
                         - cannot reproduce locally.
+            - bugfix:   gift animations don't work for l4d1 survivors?
+                            - works locally, no prob -- maybe it's broken on linux?
+                            - do more testing!
             
             - medium:   make separate 'randmap' config: with stabby's random map stuff.
-            
-            - medium:   fix campaign mode random:
-                        - remove items that the survivors bring and use all items in the map? fix for events
-                        
+            - low:      randomize hittables: if a car is positioned normally (not at a weird angle), give odds to replace with forklift or log?
+        
             
     minor cleanup / details
     -----------------------
+    
             - low:      ammo event: when someone dies, shortly after: check if there exists an upgrade pack anywhere
                             either in possession of players or on the map -- if not, generate one near the corpse.
                             
             - code:     Clean up the l4d_drop copied code some more.
             - code:     "The SetEntProp functions have a parameter for the array index, use it instead of doing manually lookups and computing offsets."
-            
+    
+    video:
+    ------
+        get footage for:
+            - item randomization: some saferooms.. maybe some bits of walking around, picking shit up
+            - gift unwrapping (w anim), maybe more effects
+            - event footage
+                - ammo deployment event
+            - quadcaps
+                - probably have some
             
     harder paths
     ------------

@@ -199,6 +199,18 @@ RANDOM_DetermineRandomStuff()
     if (mapnameType == MAPS_NOCOLA) { g_bNoColaItem = true; } else { g_bNoColaItem = false; }
     
     
+    // some maps shouldn't have tank flow variation
+    if ( g_fDefTankFlowVariation != 0.0 &&
+        (
+                StrEqual(mapname, "c1m1_hotel", false)
+            ||  StrEqual(mapname, "c2m3_coaster", false)
+            ||  StrEqual(mapname, "c8m4_interior", false)
+        )
+    ) {
+        SetConVarFloat(FindConVar("versus_tank_flow_team_variation"), 0.0);
+    }
+    
+    
     // keep old difficulty-rating if it's the second half
     if (!g_bSecondHalf)
     {
@@ -1289,7 +1301,7 @@ RandomizeItems()
     }
     
     // chance/force ammo to be in start saferoom
-    if (!countStartAmmo && GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarStartItemAmmo))
+    if (!countStartAmmo && !g_bNoAmmo && GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarStartItemAmmo))
     {
         new changeIndex = GetRandomInt(0, countStartItems - 1);
         changeIndex = arStartItems[changeIndex];
@@ -1312,8 +1324,6 @@ RandomizeItems()
     
     // done, do a report
     DoItemsServerReport();
-    //PrintDebug("[rand] Randomized and stored %i entities. (Weak weapons: %i, Strong weapons: %i, Health items: %i, Usable items: %i, Silly/Junk: %i, Nothing: %i)", g_iStoredEntities, iCountWeapon, iCountWeaponT2, iCountHealth, iCountUsable, iCountSilly, iCountNoitem);
-    //PrintDebug("[rand] Generated %i gnomes and %i random gift boxes.", iCountSillyGnome, iCountSillyGift);
     
     
     // testing: did the item drop underneath the map?
@@ -2948,6 +2958,20 @@ DetermineSpawnClass(any:client, any:iClass)
         return;
     }
     
+    // no spitters during tank
+    if (g_bIsTankInPlay && iClass == ZC_SPITTER && GetConVarBool(g_hCvarNoSpitterDuringTank))
+    {
+        // either boomer, or cappers:
+        if (g_iSpecialEvent != _:EVT_QUADS && !GetConVarBool(g_hCvarNoSupportSI) && GetRandomInt(0,4) == 0) {
+            iClass = ZC_BOOMER;
+        }
+        else {
+            new randomIndex = GetRandomInt( g_iSpawnWeightedChoicesStartCappers, g_iSpawnWeightedChoicesTotal - 1);
+            iClass = g_iArSpawnWeightedChoices[randomIndex];
+        }
+        
+    }
+    
     // sack protection
     if (checkSacking && GetConVarBool(g_hCvarSackProtection))
     {
@@ -3050,7 +3074,8 @@ DetermineSpawnClass(any:client, any:iClass)
         } else if (iClass == ZC_BOOMER) {
             if (boomers) { iClass = (smokers) ? ZC_HUNTER : ( (GetRandomInt(0,1)) ? ZC_SMOKER : ZC_HUNTER ); }
         }
-    }        
+    }
+    
     
     // prepare ghost for change
     if (IsPlayerGhost(client) && iClass >= ZC_SMOKER)

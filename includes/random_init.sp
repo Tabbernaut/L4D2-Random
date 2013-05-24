@@ -31,6 +31,7 @@ INIT_DefineCVars()
     g_hCvarNoSupportSI = CreateConVar(                      "rand_only_cappers",             "0",       "If set, only allows cappers to spawn (useful for 2v2s 3v3s).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarRestrictMelee = CreateConVar(                    "rand_restrict_melee",           "1",       "If set, only allows normal l4d2 melee weapons to spawn.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarRandomTank = CreateConVar(                       "rand_tank",                     "1",       "Whether player selection for tank is purely random.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarNoSpitterDuringTank = CreateConVar(              "rand_tank_nospitter",           "1",       "Block spitter while tank is up?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarBoomedTime = CreateConVar(                       "rand_boomed_time",             "10.0",     "The time window in seconds that boomer team-ups are rewarded (2+ boomers getting booms on different survivors). 0 = boomer combos are not rewarded.", FCVAR_PLUGIN, true, 0.0, true, 20.0);
     g_hCvarGnomeBonus = CreateConVar(                       "rand_gnome_bonus",              "0.25",    "The bonus given for bringing a gnome from start to end saferoom. (lower than 10 = amount of times distance, greater = static bonus)", FCVAR_PLUGIN, true, 0.0);
     g_hCvarGnomeFinaleFactor = CreateConVar(                "rand_gnome_finale_factor",      "0.5",     "The gnome bonus is worth this factor on finales.", FCVAR_PLUGIN, true, 0.0);
@@ -182,6 +183,7 @@ INIT_CVarsGetDefault()
     g_iDefTankHealth =          GetConVarInt(FindConVar("z_tank_health"));
     g_iDefTankFrustTime =       GetConVarInt(FindConVar("z_frustration_lifetime"));
     g_iDefTankDamage =          GetConVarInt(FindConVar("vs_tank_damage"));
+    g_fDefTankFlowVariation =   GetConVarFloat(FindConVar("versus_tank_flow_team_variation"));
     
     if (FindConVar("hc_car_standing_damage") != INVALID_HANDLE) {
         g_iDefTankHittableDamage =  GetConVarInt(FindConVar("hc_car_standing_damage"));

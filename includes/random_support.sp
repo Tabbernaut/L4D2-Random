@@ -180,6 +180,7 @@ EVENT_ResetOtherCvars()
     SetConVarInt(FindConVar("z_tank_health"), g_iDefTankHealth);
     SetConVarInt(FindConVar("z_frustration_lifetime"), g_iDefTankFrustTime);
     SetConVarInt(FindConVar("vs_tank_damage"), g_iDefTankDamage);
+    SetConVarFloat(FindConVar("versus_tank_flow_team_variation"), g_fDefTankFlowVariation);
     
     // hittable control
     if (FindConVar("hc_car_standing_damage") != INVALID_HANDLE) {
@@ -298,17 +299,12 @@ EVENT_RoundStartPreparation()
     switch (_:g_iSpecialEvent)
     {
         case EVT_DEFIB: {
-            // start out black and white
-            /*
-                removed this, caused HUD-uglies
-                besides, now there's a reward to keeping first life...
             for (new i=1; i <= MaxClients; i++) {
                 if (IsSurvivor(i)) {
                     SetEntProp(i, Prop_Send, "m_bIsOnThirdStrike", 1);
-                    SetEntProp(i, Prop_Send, "m_isGoingToDie", 1);
+                    //SetEntProp(i, Prop_Send, "m_isGoingToDie", 1);    // breaks hud
                 }
             }
-            */
         }
         
         case EVT_ADREN: {

@@ -177,7 +177,6 @@ public OnPluginStart()
     RegConsoleCmd("sm_drop",    RandomDrop_Cmd,     "Drop your currently selected weapon or item.");
     
     // Admin and test commands
-    //RegAdminCmd("rand_forcerandom", TestForceRandom_Cmd,  ADMFLAG_CHEATS, "...");
     RegAdminCmd("rand_test_gnomes", TestGnomes_Cmd, ADMFLAG_CHEATS, "...");
     RegAdminCmd("rand_test_swap",   TestSwap_Cmd,   ADMFLAG_CHEATS, "...");
     RegAdminCmd("rand_test_ents",   TestEnts_Cmd,   ADMFLAG_CHEATS, "...");
@@ -201,8 +200,8 @@ public OnPluginStart()
     
     
     // vocalize test
-    RegConsoleCmd("sm_voc", Cmd_Vocalize_Random);
-    RegConsoleCmd("sm_voc_this", Cmd_Vocalize_Specified);
+    RegAdminCmd("sm_voc", Cmd_Vocalize_Random, ADMFLAG_CHEATS, "...");
+    RegAdminCmd("sm_voc_this", Cmd_Vocalize_Specified, ADMFLAG_CHEATS, "...");
     
     
     // Do first randomization to prevent errors
@@ -484,6 +483,14 @@ public Action: TestGnomes_Cmd(client, args)
         return Plugin_Handled;
     }
     
+    // test messing around with health
+    //SetEntityHealth(client, 1);
+    //SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 99.0);
+    //SetEntPropFloat(client, Prop_Send, "m_healthBufferTime", GetGameTime());
+    //SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 0.0);
+    //SetEntityHealth(client, 100);
+    //SetEntProp(client, Prop_Send, "m_bIsOnThirdStrike", 1);
+    
     
     // test: are we in saferoom?
     new bool: inStart = IsEntityInSaferoom(client, true, false);
@@ -564,14 +571,6 @@ public Action: TestEvent_Cmd(client, args)
     
     return Plugin_Handled;
 }
-/*
-public Action: TestForceRandom_Cmd(client, args)
-{
-    // forces randomization for next map restart
-    g_bRestartedOnce = true;
-    return Plugin_Handled;
-}
-*/
 
 /*
     Commands
@@ -876,9 +875,24 @@ public Action: Event_SoundPlayed(clients[64], &numClients, String:sample[PLATFOR
             {
                 return Plugin_Handled;
             }
-            else if (g_iSpecialEventExtra == SILENCED_SI && IsInfected(entity))
+            else if (g_iSpecialEventExtra == SILENCED_SI)
             {
-                return Plugin_Handled;
+                if (IsInfected(entity)) {
+                    // block all
+                    return Plugin_Handled;
+                }
+                else if (IsSurvivor(entity)) {
+                    // pick out a few things they can't say anymore
+                    if (    StrContains(sample, "warnboom", false) != -1
+                        ||  StrContains(sample, "warncharger", false) != -1
+                        ||  StrContains(sample, "warnhunter", false) != -1
+                        ||  StrContains(sample, "warnjockey", false) != -1
+                        ||  StrContains(sample, "warnspitter", false) != -1
+                    ) {
+                        return Plugin_Handled;
+                    }
+                } 
+                
             }
         }
     }
@@ -1171,7 +1185,7 @@ public Action:Timer_TeamSwapDelayed(Handle:hTimer, any:pack)
     else if (_:g_iSpecialEvent == EVT_DEFIB && newTeam == TEAM_SURVIVOR)
     {
         SetEntProp(client, Prop_Send, "m_bIsOnThirdStrike", 1);
-        SetEntProp(client, Prop_Send, "m_isGoingToDie", 1);
+        //SetEntProp(client, Prop_Send, "m_isGoingToDie", 1);       // nice idea, but this breaks the health bars
     }
 }
 
