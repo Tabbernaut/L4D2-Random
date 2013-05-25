@@ -7,12 +7,13 @@
 - Added 'sack-detection' and punishment: it is now almost always better to attack as a team. Keeping chargers or other powerful infected while sacking the rest will only give you weaker classes on the next attack.
 - Tanks are now handed to players at random (though your odds of getting a tank decrease the more you already had).
 - Increased chances of getting tanks on normal maps (50% -> 60%) and slightly decreased chance on intro/finale maps.
-- Increased chances of getting special events.
+- Double tanks and multi-witches. Sometimes you get two tanks on a map, sometimes you get a whole bunch of witches.
+- Increased chances of getting a special event each round.
 - Added a whole bunch of freaky special events. There are now 31 in total (not counting variations on themes).
 - Added new special event category: bonus/penalty rounds. This may mean that on some rounds, using health items or m2s cost you points.
 - Special event selection now avoids repicking the same special event in one game.
 - Prevented game-breaking selection of events for finale maps.
-- Starting saferooms are now guaranteed to have a lot more items and a lot less of those will be junk.
+- Starting saferooms are now guaranteed to have a lot more items and a lot less of those will be junk. There's also a good chance of getting an ammo pile.
 - End saferooms no longer have any items.
 - Increased amount of useful items spawning on finales. Normal ammo pile spawns on finales are not randomized.
 - Reduced chances of survivor getting just 1 incap before death (only 1 in 4 times; only 1 in 6 times for randeasy).
@@ -26,11 +27,13 @@
 - Fixed weather events (storm and fog) not working right on second round. Blocked weather events on Hard Rain 3 & 4.
 - Fixed the 'marksmen' event, survivors no longer start with incorrect weapons.
 - Dead Center map 2 no longer has cola spawning anywhere but in the supermarket.
-- Increased the odds that gifts have a positive effect; added a few more gift effects.
+- Increased the odds that gifts have a positive effect; added a few more gift effects (both positive and negative).
 - Gifts may no longer be opened before the round is live.
+- Gifts now take time to open, a progress bar is displayed. Also, added sweet third-person animations for using gifts.
 - Fixed spammy PlayerUse effect when opening gifts (caused you to insta-grab gift items).
 - Fixed items falling through floors or out of the map.
 - Tweaked item balance (yet again).
+- No spitters during tank.
 - Added AI damagefix (AI hunters/chargers take damage as if they were human-controlled).
 - Added pounce protect plugin (damage doesn't cancel hunters walljumping).
 - Fixed some compatibility problems with custom campaigns (on guarantees though; bug reports welcome).

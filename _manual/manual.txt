@@ -61,8 +61,9 @@ Match modes
 -----------
 Random is designed to be used in its default match mode (simply named 'random'), but other variations are available:
 
-'rand2v2' / 'rand3v3' 	are for playing with 4 or 6 people.
+'rand2v2' / 'rand3v3' 	included for completeness' sake -- things are more fun with 8.
 'randeasy'		makes things a lot easier (more like vanilla) for survivors.
+'randhard'		makes things harder for survivors; there are no T2 or T3 weapons in this, and a lot less health items.
 'randumb'		makes things insane random... anything goes in this mode and nothing is balanced
 
 There's also a 'campaign mode' for Random, which is discussed separately below.
@@ -72,7 +73,7 @@ There's also a 'campaign mode' for Random, which is discussed separately below.
 Difficulty
 ----------
 Random is designed for experienced players. It is (probably) easier for survivors than Promod, since there are more items around, but the random spawns and special events can still make rounds a challenge. The scoring system is distance + damage bonus (0 damage = 1 * full distance bonus), which means that better teams stand a good chance of making a fair bonus by making saferoom. (The damage bonus works like the Promod 3.3 beta / Throwback version, but it's scaled to 1 * map distance.)
-I'd say it's playable for non-confogl players (I've done a lot of testing with a group of experienced vanilla players, who struggled with it but still managed to enjoy it). However, for the average vanilla versus player, I'd recommend playing RandEasy instead. This version has more items, T2 weapons and ammo and is less likely to give the survivors a serious challenge.
+I'd say it's playable for non-confogl players (I've done a lot of testing with a group of experienced vanilla players, who struggled with it but still managed to enjoy it). However, for the average vanilla versus player, I'd recommend playing RandEasy instead. This version has more items, T2 weapons and ammo and is less likely to give the survivors a serious challenge. For the really hardcore players (or just those that hate T2s/T3s no matter what), there's 'randhard', which should keep them struggling...
 
 
 
