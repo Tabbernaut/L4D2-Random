@@ -114,7 +114,8 @@ Here's a complete list of the special events:
 
 21. Shove Penalty
 -----------------
-	Every time a survivor shoves (m2's) a special infected, their team loses 15 points.
+	Every time a survivor shoves (m2's) a special infected, their team loses 15 points. Only shovable capping infected
+	count (jockey, hunter, smoker), there are no penalties for shoving boomers or spitters.
 	Type "!bonus" to see the current total penalty.
 
 22. Magic Gun Swap

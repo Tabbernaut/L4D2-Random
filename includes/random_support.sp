@@ -40,7 +40,8 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     g_bInsightInfDone = false;
     
     g_bSpecialEventPlayerCheck = false;
-    g_bNoWeapons = false;
+    g_bNoPriWeapons = false;
+    g_bNoSecWeapons = false;
     g_bNoAmmo = false;
     
     g_fDudTimeExpire = 0.0;
@@ -383,7 +384,7 @@ HUDRestoreClient(client)
 
 
 // only for penalties
-EVENT_ReportPenalty(client=-1)
+EVENT_ReportPenalty(client = -1, extraInfo = -1)
 {
     switch (_:g_iSpecialEvent)
     {
@@ -402,10 +403,13 @@ EVENT_ReportPenalty(client=-1)
             }
         }
         case EVT_PEN_M2: {
+            new String: tmpStr[20] = "";
+            if (extraInfo > 0) { Format(tmpStr, sizeof(tmpStr), "on %s ", g_csSIClassName[extraInfo]); }
+            
             if (client != -1) {
-                PrintToChatAll("\x01[\x05r\x01] M2 by %N cost \x04%i\x01 points.", client, EVENT_PENALTY_M2_SI);
+                PrintToChatAll("\x01[\x05r\x01] Shove %sby %N cost \x04%i\x01 points.", tmpStr, client, EVENT_PENALTY_M2_SI);
             } else {
-                PrintToChatAll("\x01[\x05r\x01] M2 cost \x04%i\x01 points.", EVENT_PENALTY_M2_SI);
+                PrintToChatAll("\x01[\x05r\x01] Shove %scost \x04%i\x01 points.", tmpStr, EVENT_PENALTY_M2_SI);
             }
         }
     }

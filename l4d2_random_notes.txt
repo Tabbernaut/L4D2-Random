@@ -7,22 +7,29 @@ L4D2_Random
             
             in consideration
             ----------------
+            
+            - axe effect / rockstar [stab]
+                everyone gets an axe/guitar, all common are female, no tank only spitters and boomettes
+                    - see if it works without melee weapon unlock, if not, do a check and change / limit event on some maps?
+                    - find cvar to make all boomers boomettes
+                    - replace male commons with female ones
+                    - block all uncommon infected
+                    - change boom-combo stuff ... just give more common?
+                        - maybe make boomcombos give different advantages? something that's fun for SI
+                    - finally, set event weight to 3 (now at 0 to avoid probs)
+                    
             - 'witch hunt': spawns many witches all over the place -- only way to score points = by killing them [pbonus]
                     consider it a 'miniwitches': give them 50% health, 50 dmg claw?
                     - how though, technically?
                     - no tanks during this
             
-            - gnome VIP: only one gnome spawns (start saferoom), it must be brought or the end saferoom won't close
-                or: gnome heaven, where the only way to score (many) points is to bring gnomes
-                - for example: given only 1 gnome: distance points are frozen unless gnome is held
-            
-            - axe effect / rockstar [stab]
-                everyone gets an axe/guitar, all common are female, no tank only spitters and boomettes
-            
             in doubt
             --------
             - 'time penalty': every minute played gives a 25 point penalty on the round score
-            
+            - gnome VIP: only one gnome spawns (start saferoom), it must be brought or the end saferoom won't close
+                or: gnome heaven, where the only way to score (many) points is to bring gnomes
+                - for example: given only 1 gnome: distance points are frozen unless gnome is held
+                
             rejected
             --------
             - 'pistol round': only pistols (magnums included). No locked doors and easier ci/si. [maybe]
@@ -32,14 +39,10 @@ L4D2_Random
             - quad damage [stab]
                 one player gets special glow / sound => deals 4* damage
                 tag-game: SI and survivors get quad, it switches when one hits another
-            
+                
             
     to-do:
     ------
-            - high:     remove sm_voc / sm_voc_this commands for final version
-
-            - bugfix:   try ways to fix defib event health display
-            
             - bugfix:   fix campaign mode random:
                             - remove items that the survivors bring and use all items in the map? fix for events
             - bugfix:   multiwitch: message doesn't show for second team, only one witch spawned, though.
@@ -50,26 +53,20 @@ L4D2_Random
             
             - medium:   make separate 'randmap' config: with stabby's random map stuff.
             - low:      randomize hittables: if a car is positioned normally (not at a weird angle), give odds to replace with forklift or log?
+            - low:      gift animation doesn't play when there's usable stuff near it
         
             
     minor cleanup / details
     -----------------------
-    
-            - low:      ammo event: when someone dies, shortly after: check if there exists an upgrade pack anywhere
-                            either in possession of players or on the map -- if not, generate one near the corpse.
-                            
+            - glitch:   c10m3 is seen as 'a finale' (check separately?)
+            - reminder: remove sm_voc / sm_voc_this commands for final version
             - code:     Clean up the l4d_drop copied code some more.
             - code:     "The SetEntProp functions have a parameter for the array index, use it instead of doing manually lookups and computing offsets."
+            - code:     replace clunky map tries with a single map trie with flags-values
     
     video:
     ------
-        get footage for:
-            - item randomization: some saferooms.. maybe some bits of walking around, picking shit up
-            - gift unwrapping (w anim), maybe more effects
-            - event footage
-                - ammo deployment event
-            - quadcaps
-                - probably have some
+        ...
             
     harder paths
     ------------
@@ -97,7 +94,19 @@ L4D2_Random
             c12m2       forced routes, long way through building
             c12m4       my map changes / route change
             c12m5       cornfield changes
-            
+          
+
+    FAQ's
+    -----
+        - I hate things like Buy- and Perkmods, incapped crawling, and RPG mods. Will I hate Random too?
+        - I hate T2s and medkits, should I try Random?
+        - Is Random ready for tournaments?
+        - Does Random work with custom campaigns?
+        - What is 'random' about Random?
+        - I don't want to install confogl. How do I install Random for campaign mode only? 
+        - Where is the source code for Random?
+        
+        
     ideas:
     ------
         
@@ -236,6 +245,24 @@ Some stuff to keep in mind:
             m_bSurvivorGlowEnabled
             
             
+Harder  coop:
+
+    sm_cvar z_hear_gunfire_range 400
+    sm_cvar z_hear_runner_far_range 1000
+    sm_cvar z_hear_runner_near_range 750
+    sm_cvar z_force_attack_from_sound_range 850
+    sm_cvar z_vision_range 850
+    sm_cvar z_alert_range 1400
+    sm_cvar z_vision_range_alert 1700
+    sm_cvar z_acquire_far_range 5000
+    sm_cvar z_acquire_far_time 2
+    sm_cvar z_acquire_near_range 500
+    sm_cvar z_acquire_near_time 0.1
+    sm_cvar z_vision_range_obscured 700
+    sm_cvar z_vision_range_obscured_alert 900
+    sm_cvar z_close_target_notice_distance 90
+    
+    
 L4D2_DoAnimationEvent() event list
 ----------------------------------
 

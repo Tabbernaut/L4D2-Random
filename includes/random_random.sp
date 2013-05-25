@@ -61,12 +61,22 @@ DoReport(client=0)
     }
     
     // report special event, if any
-    if (g_iSpecialEvent != -1) {
-        if (g_iSpecialEvent == _:EVT_ITEM) {
+    if (g_iSpecialEvent != -1)
+    {
+        if (g_iSpecialEvent == _:EVT_WOMEN) {
+            if (g_iSpecialEventExtra == _:EVTWOMEN_TYPE_AXE) {
+                Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! \x04Axe Effect\x01 - deal with the crazy women.");
+            } else {
+                Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! \x04Rock Stars\x01 - deal with the crazy groupies.");
+            }
+        }
+        else if (g_iSpecialEvent == _:EVT_ITEM) {
             Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! %s%s.", g_csEventText[g_iSpecialEvent], g_csItemTypeText[g_iSpecialEventExtra] );
-        } else if (g_iSpecialEvent == _:EVT_SILENCE) {
+        }
+        else if (g_iSpecialEvent == _:EVT_SILENCE) {
             Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! %s%s.", g_csEventText[g_iSpecialEvent], (g_iSpecialEventExtra == SILENCED_SI) ? "special infected" : "survivors" );
-        } else {
+        }
+        else {
             Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! %s", g_csEventText[g_iSpecialEvent]);
         }
         iLine++;
@@ -184,6 +194,8 @@ ReportSpecialEventRole(bool:isNew=false, client=0)
 RANDOM_DetermineRandomStuff()
 {
     new bool: bDoItemRePrep = false;        // true if we need to do PrepareChoices()
+    new bool: bBlockTank = false;           // so we can block tank on some event picks
+    new bool: bBlockDoubleTank = false;     // so we can block double tank on some event picks
     
     // prepare random choices (if required)
     if (!g_bSecondHalf) {
@@ -366,9 +378,7 @@ RANDOM_DetermineRandomStuff()
         if (g_bSecondHalf && g_iSpecialEvent != -1) { fSpecialEventChance = 1.0; }
         
         // force a special event if we haven't had one in a while
-        if (fSpecialEventChance > 0.5 && g_iNoSpecialEventStreak > 2) {
-            fSpecialEventChance = 1.0;
-        }
+        if (fSpecialEventChance > 0.5 && g_iNoSpecialEventStreak > 2) { fSpecialEventChance = 1.0; }
         
         if (GetRandomFloat(0.001,1.0) <= fSpecialEventChance || g_iSpecialEventToForce != -1)
         {
@@ -386,18 +396,6 @@ RANDOM_DetermineRandomStuff()
             {
                 new randomIndex = GetRandomInt(0, (g_iEventWeightedChoicesTotal-1));
                 g_iSpecialEvent = g_iArEventWeightedChoices[randomIndex];
-
-                // avoid random_storm requiring plugins on intro maps (or non-storm maps)
-                if (mapnameType == MAPS_INTRO || mapnameType == MAPS_NOSTORM)
-                {
-                    new count = 0;  // just a safeguard to prevent eternal loops
-                    while ((g_iSpecialEvent == EVT_WEATHER || g_iSpecialEvent == EVT_FOG) && count < 1000) {
-                        count++;
-                        randomIndex = GetRandomInt(0, (g_iEventWeightedChoicesTotal-1));
-                        g_iSpecialEvent = g_iArEventWeightedChoices[randomIndex];
-                    }
-                    if (count == 1000) { g_iSpecialEvent = -1; }
-                }
             }
             
             // select, put in timeout
@@ -473,6 +471,7 @@ RANDOM_DetermineRandomStuff()
                 case EVT_ADREN: {
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
                     bDoItemRePrep = true;
+                    bBlockTank = true;
                     SetConVarFloat(FindConVar("pain_pills_decay_rate"), g_fDefPillDecayRate * EVENT_ADREN_DECAY);
                     g_iDifficultyRating += 2;
                 }
@@ -521,7 +520,7 @@ RANDOM_DetermineRandomStuff()
                 }
                 case EVT_GUNSWAP: {
                     // don't allow normal weapon spawns
-                    g_bNoWeapons = true;
+                    g_bNoPriWeapons = true;
                     g_bNoAmmo = true;
                 }
                 case EVT_MINITANKS: {
@@ -547,6 +546,7 @@ RANDOM_DetermineRandomStuff()
                     L4D2Direct_SetVSWitchToSpawnThisRound(1, false);
                     g_bWitchWillSpawn = false;
                     g_bTankWillSpawn = true;
+                    bBlockDoubleTank = true;
                     
                     SUPPORT_MultiTankRandomization();
                     
@@ -578,6 +578,15 @@ RANDOM_DetermineRandomStuff()
                     g_bNoAmmo = true;
                     g_bSpecialEventPlayerCheck = true;
                 }
+                case EVT_WOMEN: {
+                    g_bNoPriWeapons = true;
+                    g_bNoSecWeapons = true;
+                    g_bNoAmmo = true;
+                    bBlockTank = true;
+                    EVENT_SetDifficulty(DIFFICULTY_VERYHARD, DIFFICULTY_HARD);
+                    
+                    g_iSpecialEventExtra = GetRandomInt(EVTWOMEN_TYPE_AXE, EVTWOMEN_TYPE_ROCK);
+                }
                 
             }
             PrintDebug("[rand] Picked Special Event: %i (%s) [extra, %i, sub: %i, str: %s]", g_iSpecialEvent, g_csEventText[g_iSpecialEvent], g_iSpecialEventExtra, g_iSpecialEventExtraSub, g_sSpecialEventExtra);
@@ -598,7 +607,12 @@ RANDOM_DetermineRandomStuff()
     }
     
     // force the spawns if we have the cvars set
-    if (!g_bTankWillSpawn && GetConVarFloat(FindConVar("versus_tank_chance")) == 1.0) {
+    if (bBlockTank) {
+        L4D2Direct_SetVSTankToSpawnThisRound(0, false);
+        L4D2Direct_SetVSTankToSpawnThisRound(1, false);
+        g_bTankWillSpawn = false;
+    }
+    else  if (!g_bTankWillSpawn && GetConVarFloat(FindConVar("versus_tank_chance")) == 1.0) {
         L4D2Direct_SetVSTankToSpawnThisRound(0, true);
         L4D2Direct_SetVSTankToSpawnThisRound(1, true);
         g_bTankWillSpawn = true;
@@ -609,6 +623,7 @@ RANDOM_DetermineRandomStuff()
         g_bWitchWillSpawn = true;
     }
     
+    
     if (g_bTankWillSpawn) { g_iDifficultyRating += 2; }
     
     PrintDebug("[rand] Boss spawns: Tank: %i (%.2f) / Witch: %i (%.2f)", g_bTankWillSpawn, L4D2Direct_GetVSTankFlowPercent( (g_bSecondHalf) ? 1 : 0 ), g_bWitchWillSpawn, L4D2Direct_GetVSWitchFlowPercent( (g_bSecondHalf) ? 1 : 0 ));
@@ -616,7 +631,7 @@ RANDOM_DetermineRandomStuff()
     // multi-tanks? if so, set first tank to spawn early and last tank to spawn late
     // only determine if tanks will spawn at all
     //      tanks should not double-spawn on finales or first maps
-    if (g_bTankWillSpawn && _:g_iSpecialEvent != EVT_MINITANKS)
+    if (g_bTankWillSpawn && !bBlockDoubleTank)
     {
         if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
         {
@@ -853,7 +868,7 @@ RandomizeItems()
                 
                 if (!GetTrieValue(g_hTrieRandomizablePropPhysicsModel, modelname, classnameRoN)) { continue; }          // if it's not one of the prop_physics models, don't worry about it
             }
-            else if (L4D_IsMissionFinalMap() && classnameRoN == RANDOMIZABLE_ITEM_AMMO && GetRandomFloat(0.001,1.0) > GetConVarFloat(g_hCvarFinaleAmmoChance) && _:g_iSpecialEvent != EVT_AMMO)
+            else if (L4D_IsMissionFinalMap() && classnameRoN == RANDOMIZABLE_ITEM_AMMO && GetRandomFloat(0.001,1.0) > GetConVarFloat(g_hCvarFinaleAmmoChance) && !g_bNoAmmo)
             {
                 // don't touch ammo piles on finales
                 iCountFinaleAmmo++;
@@ -1563,7 +1578,7 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
         }
         
         case INDEX_KIT: {
-            if (GetRandomInt(0, 1) == 0 || _:g_iSpecialEvent == EVT_DEFIB && _:g_iSpecialEvent != EVT_L4D1) { randomPick = PCK_DEFIBRILLATOR; } else { randomPick = PCK_FIRST_AID_KIT; }
+            if (GetRandomInt(0, 4) < 2 || _:g_iSpecialEvent == EVT_DEFIB && _:g_iSpecialEvent != EVT_L4D1) { randomPick = PCK_DEFIBRILLATOR; } else { randomPick = PCK_FIRST_AID_KIT; }
         }
         
         case INDEX_AMMO: { randomPick = PCK_AMMO; }
@@ -1671,6 +1686,11 @@ RandomizeSurvivorItems()
         // adjust for skeet event
         else if (_:g_iSpecialEvent == EVT_SKEET) {
             if (randomPick == INDEX_SURV_T1SMG) { randomPick = INDEX_SURV_T1SHOT; }
+        }
+        // only give melees for women event
+        else if (_:g_iSpecialEvent == EVT_WOMEN) {
+            randomPick = INDEX_SURV_MELEE;
+            secondaryPick = -1;
         }
         
         switch (randomPick)
@@ -1781,9 +1801,17 @@ RandomizeSurvivorItems()
     }
     
     // check for special event
+    if (g_iSpecialEvent == _:EVT_GUNSWAP)
+    {
+        // give nothing but pistol (or melee)
+        for (new i=0; i < TEAM_SIZE; i++) {
+            g_iArStorageSurv[i] = PCK_PISTOL;
+            g_iArStorageSurvSec[i] = -1;
+        }
+    }
     //      so many doors locked, guarantee two melees
     //      but ignore for keymaster event, since the keymaster can unlock
-    if (g_iSpecialEvent != _:EVT_KEYMASTER)
+    else if (g_iSpecialEvent != _:EVT_KEYMASTER)
     {
         if (g_iSpecialEvent == _:EVT_DOORS && iCountMelee < EVENT_DOORS_MINMELEE)
         {
@@ -1804,7 +1832,7 @@ RandomizeSurvivorItems()
             }
         }
         // do a similar check if there are early door locks
-        else if (g_bEarlyLock && iCountMelee < EARLY_DOORS_MINMELEE)
+        else if (g_bEarlyLock && iCountMelee < EARLY_DOORS_MINMELEE && _:g_iSpecialEvent != EVT_BADCOMBO)
         {
             PrintDebug("[rand] Adding melees to deal with early locks.");
             for (new i=0; i < TEAM_SIZE; i++)
@@ -1823,6 +1851,7 @@ RandomizeSurvivorItems()
             }
         }
     }
+    
     
     /*
         don't do this here (yet) .. too imprecise without taking start saferoom status into account
@@ -1948,7 +1977,7 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
     new ent;
     
     // if we're not allowing weapon spawns... set to noitem
-    if (g_bNoWeapons && !overrideBlocks)
+    if (g_bNoPriWeapons && !overrideBlocks)
     {
         switch (type)
         {
@@ -1969,6 +1998,16 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
             case PCK_SHOTGUN_SPAS: { type = PCK_NOITEM; }
             case PCK_GRENADE_LAUNCHER: { type = PCK_NOITEM; }
             case PCK_RIFLE_M60: { type = PCK_NOITEM; }
+        }
+    }
+    if (g_bNoSecWeapons && !overrideBlocks)
+    {
+        switch (type)
+        {
+            case PCK_PISTOL: { type = PCK_NOITEM; }
+            case PCK_PISTOL_MAGNUM: { type = PCK_NOITEM; }
+            case PCK_MELEE: { type = PCK_NOITEM; }
+            case PCK_CHAINSAW: { type = PCK_NOITEM; }
         }
     }
     if (g_bNoAmmo && !overrideBlocks)
@@ -2346,7 +2385,19 @@ ChangeSurvivorSetup(index, client)
         case PCK_MELEE: {
             // special case
             PrintDebug("[rand] Handed melee weapon (%s) to %N.", g_sMeleeClass[(g_iArStorageSurvMelee[index])], client);
-            GiveItemMelee(client, g_sMeleeClass[(g_iArStorageSurvMelee[index])]);
+            
+            if (_:g_iSpecialEvent == EVT_WOMEN) {
+                // don't use stored, use whatever the event requires
+                //  test if this works without melee unlocker..
+                switch (_:g_iSpecialEventExtra)
+                {
+                    case EVTWOMEN_TYPE_AXE: { GiveItemMelee(client, "weapon_fireaxe"); }
+                    case EVTWOMEN_TYPE_ROCK: { GiveItemMelee(client, "weapon_guitar"); }
+                }
+            }
+            else {
+                GiveItemMelee(client, g_sMeleeClass[(g_iArStorageSurvMelee[index])]);
+            }
             weaponname = "";
         }
     }
@@ -3015,17 +3066,17 @@ DetermineSpawnClass(any:client, any:iClass)
             new support = CountInfectedClass(ZC_BOOMER, client) + CountInfectedClass(ZC_SPITTER, client);
             
             // a. force max 1 charger
-            if (iClass == ZC_CHARGER && chargers > 0) {
+            if ( iClass == ZC_CHARGER && chargers > 0 ) {
                 iClass = GetRandomInt(ZC_SMOKER, ZC_JOCKEY);
             }
             
             // b. force max 2 smokers and 2 hunters
-            else if (iClass == ZC_SMOKER) {
+            if ( iClass == ZC_SMOKER ) {
                 if (smokers > 1) {
                     iClass = GetRandomInt(ZC_BOOMER, (_:g_iSpecialEvent == EVT_L4D1) ? ZC_HUNTER : ZC_JOCKEY );
                 }
             }
-            else if (iClass == ZC_HUNTER && _:g_iSpecialEvent != EVT_L4D1) {
+            else if ( iClass == ZC_HUNTER && _:g_iSpecialEvent != EVT_L4D1 ) {
                 if (hunters > 1) {
                     // give anything but a hunter (or more than 1 smoker)
                     iClass = GetRandomInt( (smokers > 0) ? ZC_BOOMER : ZC_SMOKER, ZC_SPITTER );
@@ -3034,7 +3085,7 @@ DetermineSpawnClass(any:client, any:iClass)
             }
             
             // c. force non-quad (can override previous after-sackdetect-pick)
-            if (support == 0 && g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) {
+            if ( support == 0 && g_iSpecialEvent != _:EVT_QUADS && !GetConVarBool(g_hCvarNoSupportSI) ) {
                 if (_:g_iSpecialEvent == EVT_L4D1) {
                     iClass = ZC_BOOMER;
                 } else {
@@ -3586,9 +3637,11 @@ RANDOM_PrepareChoicesEvents()
     // check map type
     new String: mapname[64];
     new mapsType: mapnameType;
+    new mapsType: mapnameStorm;
     
     GetCurrentMap(mapname, sizeof(mapname));
     GetTrieValue(g_hTrieMapsDoors, mapname, mapnameType);
+    GetTrieValue(g_hTrieMaps, mapname, mapnameStorm);
     
     
     // special event choices
@@ -3629,8 +3682,17 @@ RANDOM_PrepareChoicesEvents()
         {
             if (mapnameType == MAPS_NODOORS) {
                 continue;
-            } else if (mapnameType == MAPS_MANYDOORS) {
+            }
+            else if (mapnameType == MAPS_MANYDOORS) {
                 count *= MANY_DOORS_EVENTFACTOR;
+            }
+        }
+        
+        // storm maps? not on intros or nostorm maps
+        if ( i == EVT_WEATHER || i == EVT_FOG )
+        {
+            if (mapnameStorm == MAPS_INTRO || mapnameStorm == MAPS_NOSTORM) {
+                continue;
             }
         }
         

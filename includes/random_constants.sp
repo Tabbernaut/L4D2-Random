@@ -255,11 +255,12 @@ const           EVT_BOOBYTRAP           = 27;
 const           EVT_SKEET               = 28;
 const           EVT_FIREPOWER           = 29;
 const           EVT_AMMO                = 30;
+const           EVT_WOMEN               = 31;
 
-//const           EVT_PEN_TIME            = ;
-//const           EVT_WITCHHUNT           = ;
-
-const           EVT_TOTAL               = 31;
+const           EVT_TOTAL               = 32;
+    
+const           EVTWOMEN_TYPE_AXE       = 1;            // axe effect
+const           EVTWOMEN_TYPE_ROCK      = 2;            // rockstars
     
 const           EQ_ITEMS                = 1;            // flags for rand_equal cvar
 const           EQ_DOORS                = 2;
@@ -315,7 +316,7 @@ const Float:    ZC_TIMERAFTERTANK       = 0.01;
 const Float:    ZC_TIMERCHECKGHOST      = 0.05;         // was 0.1 for ZCS .. bit annoying though
 
 const           EXPLOSION_RADIUS        = 200;
-const Float:    EXPLOSION_POWER_HIGH    = 50.0;
+const Float:    EXPLOSION_POWER_HIGH    = 40.0;
 const Float:    EXPLOSION_POWER_LOW     = 25.0;
 const Float:    EXPLOSION_DURATION      = 15.0;
 const Float:    EXPLOSION_DURATION_MIN  = 1.0;
@@ -604,7 +605,7 @@ new const String: g_csEventText[][] =
     "\x04Pickup Penalty\x01 - Any item pickup costs \x045\x01 points.",
     "\x04Health Penalty\x01 - Using any health item costs \x0415\x01 points.",
     "\x04Shove Penalty\x01 - Using m2 on special infected costs \x0415\x01 points.",
-    "\x04Magic Gun Swap\x01",
+    "\x04Magic Gun Swap\x01 - Empty your clip to get a new weapon.",
     "\x04Mini-Tanks\x01 - Many small tanks will spawn.",
     "\x04Keymaster\x01 - Only one player can use doors.",
     "\x04Bad Combo\x01 - Start with GL and Chainsaw.",
@@ -613,7 +614,8 @@ new const String: g_csEventText[][] =
     "\x04Booby Traps\x01 - Doors and items may be wired with explosives.",
     "\x04Skeet Shoot\x01 - Skeet hunters for \x0415\x01 bonus points.",
     "\x04Firepower\x01 - Tier 2 weapons everywhere.",
-    "\x04Ammo Shortage\x01 - Deploy and repack your team's ammo."
+    "\x04Ammo Shortage\x01 - Deploy and repack your team's ammo.",
+    "[women event]"     // two variants: Axe Effect and Rock Stars, replace name in report
 };
 
 new const String: g_csJunkModels[][] =

@@ -70,7 +70,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.18",
+    version = "1.0.19",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -1907,10 +1907,15 @@ public Action:Event_ShovedPlayer(Handle:event, const String:name[], bool:dontBro
     
     //PrintToChatAll("%N shoved player %N.", client, victim);
     
-    if (_:g_iSpecialEvent == EVT_PEN_M2) {
+    if (_:g_iSpecialEvent == EVT_PEN_M2)
+    {
+        // only on cappers (except charger)
+        new classType = GetEntProp(victim, Prop_Send, "m_zombieClass");
+        if (classType == ZC_CHARGER || classType == ZC_BOOMER || classType == ZC_SPITTER) { return; }
+        
         g_iBonusCount++;
         PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_M2_SI );
-        EVENT_ReportPenalty(client);
+        EVENT_ReportPenalty(client, classType);
     }
 }
 
