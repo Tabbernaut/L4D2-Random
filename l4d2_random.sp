@@ -206,6 +206,7 @@ public OnPluginStart()
     
     // Do first randomization to prevent errors
     RANDOM_PrepareChoicesSpawns();
+    RANDOM_PrepareChoicesGiftEffects();
 }
 
 /*
@@ -383,9 +384,6 @@ public Action:Cmd_Vocalize_Specified(client, args)
 
 public OnPluginEnd()
 {
-    // timers
-    //if (g_bTimerCheckFirstHuman) { KillTimer(g_hTimerCheckFirstHuman); }
-    
     INIT_CVarsReset();
     
     // storm plugin
@@ -410,11 +408,6 @@ public OnClientDisconnect_Post(client)
 
 public OnClientPostAdminCheck(client)
 {
-    /*
-    // hook for gnome bonus
-    SDKHook(client, SDKHook_WeaponDropPost, Event_DropWeapon);
-    */
-    
     SDKHook(client, SDKHook_WeaponEquipPost, OnWeaponEquip);    // hook for item penalty
     SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);        // hook for events damage changes
     
@@ -774,9 +767,9 @@ public Action:OnPlayerRunCmd(client, &buttons)
     if ((buttons & IN_USE))
     {
         new check = RANDOM_CheckPlayerGiftUse(client);
-        g_bClientHoldingUse[client] = (check == 2);
-        if (check != 1) { return Plugin_Handled; }
+        if (!check) { return Plugin_Handled; }
     }
+    
     return Plugin_Continue;
 }
 
@@ -1317,13 +1310,25 @@ public DoBoomerComboReward(combo, victim)
     }
     
     // give appropriate reward
-    if (combo == 2 || combo == 3 || combo != TEAM_SIZE) {
-        g_bBoomHighRewardMode = (combo == 3);
-        g_iCommonBoomQueue += BOOMCOMBO_REWARD;
-        SpawnCommon(BOOMCOMBO_REWARD);
-    } else {
-        // reward quad-combo with huge horde
-        SpawnPanicHorde(victim, 2);
+    if (_:g_iSpecialEvent == EVT_WOMEN) 
+    {
+        // do something special for evt women?
+        //  for now, just spawn panic hordes..
+        if (combo > 2)
+        {
+            SpawnPanicHorde(victim, combo - 1);
+        }
+    }
+    else
+    {
+        if (combo == 2 || combo == 3 || combo != TEAM_SIZE) {
+            g_bBoomHighRewardMode = (combo == 3);
+            g_iCommonBoomQueue += BOOMCOMBO_REWARD;
+            SpawnCommon(BOOMCOMBO_REWARD);
+        } else {
+            // reward quad-combo with huge horde
+            SpawnPanicHorde(victim, 2);
+        }
     }
 }
 
@@ -1709,6 +1714,9 @@ public Action:Event_ItemPickup(Handle:event, const String:name[], bool:dontBroad
             new itemPickupPenalty: itemHasPenalty;
             if (GetTrieValue(g_hTriePenaltyItems, sItem, itemHasPenalty))
             {
+                // prevent double penalties for some items that are also weapons:
+                if (itemHasPenalty == ITEM_PICKUP_PENALTY_SAW || itemHasPenalty == ITEM_PICKUP_PENALTY_MELEE) { return; }
+                
                 // it's a penaltied item, check if it's really picked up
                 g_bArJustBeenGiven[client] = false;
                 CreateTimer(TIMER_PICKUPCHECK, Timer_CheckItemPickup, client, TIMER_FLAG_NO_MAPCHANGE);
@@ -1978,7 +1986,20 @@ public Action:Event_PlayerSpawn(Handle:hEvent, const String:name[], bool:dontBro
 {
     new client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
 
-    if (!IsClientAndInGame(client) || IsFakeClient(client) || GetClientTeam(client) != TEAM_INFECTED) { return Plugin_Continue; }
+    if (!IsClientAndInGame(client) || GetClientTeam(client) != TEAM_INFECTED) { return Plugin_Continue; }
+    
+    // for special women event, replace male with female boomer
+    if (_:g_iSpecialEvent == EVT_WOMEN && GetEntProp(client, Prop_Send, "m_zombieClass") == ZC_BOOMER )
+    {
+        new String:model[64];
+        GetEntPropString(client, Prop_Data, "m_ModelName", model, sizeof(model));
+        
+        if (StrEqual(model, "models/infected/boomer.mdl", false)) {
+            SetEntityModel(client, "models/infected/boomette.mdl");
+        }
+    }
+    
+    if (IsFakeClient(client)) { return Plugin_Continue; }
     
     if (!g_bHasSpawned[client]) { ClearSpawnGhostTimer(client); }
     g_bHasSpawned[client] = true;
@@ -2262,6 +2283,19 @@ public OnEntityCreated(entity, const String:classname[])
     if (classnameOEC == CREATED_INFECTED) 
     {
         
+        // for women special event... make them female, no uncommon
+        if (_:g_iSpecialEvent == EVT_WOMEN)
+        {
+            if(entity > 0 && IsValidEntity(entity) && IsValidEdict(entity))
+            {
+                if (StrEqual(classname, "infected", false))
+                {
+                    SDKHook(entity, SDKHook_SpawnPost, OnCommonInfectedSpawned);
+                }
+            }
+        }
+        
+        
         new Float: fChance = GetConVarFloat(g_hCvarUncommonChance);
         new bool: isUncommon = false;
         
@@ -2421,6 +2455,40 @@ public Action:Timer_PipeCheck(Handle:timer, any:entity)
 
 
 
+
+// hooked on EVT_WOMEN
+public OnCommonInfectedSpawned(entity)
+{
+    // only proceed if it is really a pipe
+    if (!IsValidEntity(entity)) { return; }
+    
+    new String:model[64];
+    GetEntPropString(entity, Prop_Data, "m_ModelName", model, sizeof(model));
+    
+    if (    StrContains(model, "_ceda") != -1
+        ||  StrContains(model, "_clown") != -1
+        ||  StrContains(model, "_mud") != -1
+        ||  StrContains(model, "_riot") != -1
+        ||  StrContains(model, "_roadcrew") != -1
+    ) {
+        // uncommon
+        
+        new Float: location[3];
+        GetEntPropVector(entity, Prop_Send, "m_vecOrigin", location);
+        
+        AcceptEntityInput(entity, "Kill");
+        
+        SpawnCommonLocation(location, true);    // female common
+        return;
+    }
+    
+    // it's a normal common
+    // if male, change it
+    if (StrContains(model, "_male_") != -1)
+    {
+        SetEntityModel(entity, g_csFemaleCommonModels[ GetRandomInt(0, sizeof(g_csFemaleCommonModels) - 1) ]);
+    }
+}
 /*
     SI Spawning
     -------------------------- */

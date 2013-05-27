@@ -10,7 +10,7 @@
 - Double tanks and multi-witches. Sometimes you get two tanks on a map, sometimes you get a whole bunch of witches.
 - Tanks drop a handful of items on getting killed (except in the mini-tanks special event).
 - Increased chances of getting a special event each round.
-- Added a whole bunch of freaky special events. There are now 31 in total (not counting variations on themes).
+- Added a whole bunch of freaky special events. There are now 32 in total (not counting variations on themes).
 - Added new special event category: bonus/penalty rounds. This may mean that on some rounds, using health items or m2s cost you points.
 - Special event selection now avoids repicking the same special event in one game.
 - Prevented game-breaking selection of events for finale maps.

@@ -129,6 +129,7 @@ const           EVENT_PENALTY_HEALTH    = 15;           // EVT_PEN_HEALTH   how 
 const bool:     EVENT_PENALTY_CI        = false;        // EVT_PEN_M2       whether there are penalties for common-shoves
 const           EVENT_PENALTY_M2_CI     = 2;            // EVT_PEN_M2       how many points to deduct for shoving
 const           EVENT_PENALTY_M2_SI     = 15;           // EVT_PEN_M2       how many points to deduct for shoving
+const           EVENT_PENALTY_TIME      = 25;           // EVT_PEN_TIME     how many points to deduct for 1 minute
 const           EVENT_SKEET_BONUS       = 15;           // EVT_SKEET        how many points to add per (real) skeet
 const           EVENT_SKEET_BONUS_TEAM  = 15;           // EVT_SKEET        for a team-skeet (the same for now?)
 const Float:    EVENT_FF_FACTOR         = 0.3;          // EVT_NOHUD        bitmask for what to hide
@@ -256,12 +257,14 @@ const           EVT_SKEET               = 28;
 const           EVT_FIREPOWER           = 29;
 const           EVT_AMMO                = 30;
 const           EVT_WOMEN               = 31;
+const           EVT_PEN_TIME            = 32;
 
-const           EVT_TOTAL               = 32;
+const           EVT_TOTAL               = 33;
     
 const           EVTWOMEN_TYPE_AXE       = 1;            // axe effect
 const           EVTWOMEN_TYPE_ROCK      = 2;            // rockstars
-    
+const           EVTWOMEN_TYPE_BEAT      = 3;            // fallback: any available
+
 const           EQ_ITEMS                = 1;            // flags for rand_equal cvar
 const           EQ_DOORS                = 2;
 const           EQ_GLOWS                = 4;
@@ -288,14 +291,15 @@ const           GIFT_POS_LASER          = 4;
 const           GIFT_POS_INSIGHT        = 5;
 const           GIFT_NEG_VOMIT          = 6;
 const           GIFT_NEG_PANIC          = 7;
-const           GIFT_NEG_EXPLODE        = 8;
-const           GIFT_NEG_FIRE           = 9;
-const           GIFT_NEG_INSIGHT        = 10;
+const           GIFT_NEG_ALLDROP        = 8;
+const           GIFT_NEG_EXPLODE        = 9;
+const           GIFT_NEG_FIRE           = 10;
+const           GIFT_NEG_INSIGHT        = 11;
 
 const           GIFT_FIRST_POS_NSR      = 3;            // not-saferoom safe
 const           GIFT_FIRST_NEG          = 6;
-const           GIFT_FIRST_NEG_NSR      = 8;
-const           GIFT_TOTAL              = 11;
+const           GIFT_FIRST_NEG_NSR      = 9;
+const           GIFT_TOTAL              = 12;
 
 const           DIFFICULTY_NOCHANGE     = 0;            // don't change it
 const           DIFFICULTY_NORMAL       = 1;            // event difficulty
@@ -350,6 +354,8 @@ new const String: GIFTUNWRAP_SOUND[]    = "player/ammo_pack_use.wav";
 new const String: MODEL_GASCAN[]        = "models/props_junk/gascan001a.mdl";
 new const String: MODEL_FIREWORKS[]     = "models/props_junk/explosive_box001.mdl";
 new const String: MODEL_L4D1AMMO[]      = "models/props_unique/spawn_apartment/coffeeammo.mdl";
+
+new const String: MODEL_BOOMETTE[]      = "models/infected/boomette.mdl";
 
 
 // Game built in values
@@ -620,7 +626,8 @@ new const String: g_csEventText[][] =
     "\x04Skeet Shoot\x01 - Skeet hunters for \x0415\x01 bonus points.",
     "\x04Firepower\x01 - Tier 2 weapons everywhere.",
     "\x04Ammo Shortage\x01 - Deploy and repack your team's ammo.",
-    "[women event]"     // two variants: Axe Effect and Rock Stars, replace name in report
+    "[women event]",                                                                            // two variants: Axe Effect and Rock Stars, replace name in report (plus backup variant)
+    "\x04Time Penalty\x01 - Every minute spent costs \x0425\x01 points."
 };
 
 new const String: g_csJunkModels[][] =
@@ -642,6 +649,12 @@ new const String: g_csUncommonModels[][] =
     "models/infected/common_male_clown.mdl",
     "models/infected/common_male_mud.mdl",
     "models/infected/common_male_roadcrew.mdl"
+};
+
+new const String: g_csFemaleCommonModels[][] =
+{
+    "models/infected/common_female_tankTop_jeans.mdl",
+    "models/infected/common_female_tshirt_skirt.mdl"
 };
 
 new const String: g_csPreCacheModels[][] =

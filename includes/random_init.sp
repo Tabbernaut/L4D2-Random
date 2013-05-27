@@ -59,7 +59,7 @@ INIT_DefineCVars()
     g_hCvarTankFlowVariance = CreateConVar(                 "rand_tankflow_variance",        "0.1",     "Amount of variance allowed for multiple tank spawns (around 0.25 and 0.75).", FCVAR_PLUGIN, true, 0.0, true, 0.20);
     g_hCvarItemDropChance = CreateConVar(                   "rand_itemdrop_chance",          "0.01",    "Chances of common infected dropping an item.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarTankItemDropChance = CreateConVar(               "rand_tankitemdrop_chance",      "0.75",    "Chances of a (normal) tank dropping some items.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    g_hCvarGiftPositiveChance = CreateConVar(               "rand_giftgood_chance",          "0.66",    "Chances of opening a gift resulting in something positive.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarGiftPositiveChance = CreateConVar(               "rand_giftgood_chance",          "0.63",    "Chances of opening a gift resulting in something positive.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarPipeDudChance = CreateConVar(                    "rand_pipedud_chance",           "0.35",    "Chances of a pipebomb being a dud.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarAvoidIncapsChance = CreateConVar(                "rand_moreincaps_chance",        "0.35",    "If the incap count is only 1 (33%), odds that it gets set to 2 anyway.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarFinaleAmmoChance = CreateConVar(                 "rand_finale_ammo",              "0.0",     "Chances of finale ammo piles being randomized.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -126,8 +126,8 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_L4D1] = CreateConVar(            "rand_weight_evt_l4d1",          "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_FF] = CreateConVar(              "rand_weight_evt_ff",            "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_SILENCE] = CreateConVar(         "rand_weight_evt_sound",        "10",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_PEN_ITEM] = CreateConVar(        "rand_weight_evt_penitem",       "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_PEN_HEALTH] = CreateConVar(      "rand_weight_evt_penhealth",     "4",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_PEN_ITEM] = CreateConVar(        "rand_weight_evt_penitem",       "3",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_PEN_HEALTH] = CreateConVar(      "rand_weight_evt_penhealth",     "3",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_PEN_M2] = CreateConVar(          "rand_weight_evt_penm2",         "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_GUNSWAP] = CreateConVar(         "rand_weight_evt_gunswap",      "10",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_MINITANKS] = CreateConVar(       "rand_weight_evt_minitanks",     "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -139,19 +139,21 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_SKEET] = CreateConVar(           "rand_weight_evt_skeet",         "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_FIREPOWER] = CreateConVar(       "rand_weight_evt_firepower",     "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_AMMO] = CreateConVar(            "rand_weight_evt_ammo",          "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_WOMEN] = CreateConVar(           "rand_weight_evt_women",         "0",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_WOMEN] = CreateConVar(           "rand_weight_evt_women",         "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_PEN_TIME] = CreateConVar(        "rand_weight_evt_pentime",       "0",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     g_hArCvarGiftWeight[GIFT_POS_HEALTH] = CreateConVar(    "rand_weight_gift_health",       "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_POS_HEALTH_T] = CreateConVar(  "rand_weight_gift_temphealth",   "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_POS_AMMO] = CreateConVar(      "rand_weight_gift_getammo",      "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarGiftWeight[GIFT_POS_ITEMS] = CreateConVar(     "rand_weight_gift_getitems",     "8",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_POS_ITEMS] = CreateConVar(     "rand_weight_gift_getitems",     "7",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_POS_LASER] = CreateConVar(     "rand_weight_gift_getlaser",     "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarGiftWeight[GIFT_POS_INSIGHT] = CreateConVar(   "rand_weight_gift_survinsight",  "1",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_POS_INSIGHT] = CreateConVar(   "rand_weight_gift_survinsight",  "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_NEG_VOMIT] = CreateConVar(     "rand_weight_gift_vomit",        "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_NEG_PANIC] = CreateConVar(     "rand_weight_gift_panic",        "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_NEG_ALLDROP] = CreateConVar(   "rand_weight_gift_alldrop",      "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_NEG_EXPLODE] = CreateConVar(   "rand_weight_gift_explode",      "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_NEG_FIRE] = CreateConVar(      "rand_weight_gift_fire",         "4",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarGiftWeight[GIFT_NEG_INSIGHT] = CreateConVar(   "rand_weight_gift_infinsight",   "1",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_NEG_INSIGHT] = CreateConVar(   "rand_weight_gift_infinsight",   "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     
     // built in cvars (for tracking)
@@ -585,6 +587,14 @@ INIT_PrecacheModels(bool: noMapStarted = false)
         }
     }
     
+    // Common
+    for (new i=0; i < sizeof(g_csFemaleCommonModels); i++)
+    {
+        if (!IsModelPrecached(g_csFemaleCommonModels[i])) {
+            PrecacheModel(g_csFemaleCommonModels[i], true);
+        }
+    }
+    
     // Junk
     for (new i=0; i < sizeof(g_csJunkModels); i++)
     {
@@ -592,6 +602,9 @@ INIT_PrecacheModels(bool: noMapStarted = false)
             PrecacheModel(g_csJunkModels[i], true);
         }
     }
+    
+    // Boomette
+    PrecacheModel(MODEL_BOOMETTE, true);
     
     // CSS weapons
     if (!noMapStarted) {

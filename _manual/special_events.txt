@@ -166,3 +166,9 @@ Here's a complete list of the special events:
 	There's no ammo piles and weapons have very little ammo in them on pickup. Luckily, your team has a special ammo pack
 	that can be deployed as an ammo pile. Hold the USE key to repack the pile as a carryable pack again. Be careful not to
 	lose it, as you only get one for the whole round.
+
+32. Axe Effect; Rockstars; Wifebeaters
+----------------------------------------
+	These effects only feature women, who come in big hordes at the survivors (mostly because three of them are male).
+	Survivors only have their melee weapon (Axe Effect: a fireaxe, Rockstars: a guitar, Wifebeaters: any) to fight them off.
+	The only special infected are female boomers and spitters.

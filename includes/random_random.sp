@@ -64,10 +64,11 @@ DoReport(client=0)
     if (g_iSpecialEvent != -1)
     {
         if (g_iSpecialEvent == _:EVT_WOMEN) {
-            if (g_iSpecialEventExtra == _:EVTWOMEN_TYPE_AXE) {
-                Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! \x04Axe Effect\x01 - deal with the crazy women.");
-            } else {
-                Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! \x04Rock Stars\x01 - deal with the crazy groupies.");
+            switch (_:g_iSpecialEventExtra)
+            {
+                case EVTWOMEN_TYPE_AXE:     { Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! \x04Axe Effect\x01 - deal with the crazy women."); }
+                case EVTWOMEN_TYPE_ROCK:    { Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! \x04Rock Stars\x01 - deal with the crazy groupies."); }
+                default:                    { Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! \x04Wifebeaters\x01 - it's not right, but you have no choice."); }
             }
         }
         else if (g_iSpecialEvent == _:EVT_ITEM) {
@@ -196,6 +197,7 @@ RANDOM_DetermineRandomStuff()
     new bool: bDoItemRePrep = false;        // true if we need to do PrepareChoices()
     new bool: bBlockTank = false;           // so we can block tank on some event picks
     new bool: bBlockDoubleTank = false;     // so we can block double tank on some event picks
+    new bool: bBlockWitch = false;
     
     // prepare random choices (if required)
     if (!g_bSecondHalf) {
@@ -510,6 +512,9 @@ RANDOM_DetermineRandomStuff()
                 case EVT_PEN_M2: {
                     g_bUsingPBonus = true;
                 }
+                case EVT_PEN_TIME: {
+                    g_bUsingPBonus = true;
+                }
                 case EVT_SKEET: {
                     g_bUsingPBonus = true;
                     SetConVarInt(FindConVar("z_smoker_limit"), 1);
@@ -583,9 +588,32 @@ RANDOM_DetermineRandomStuff()
                     g_bNoSecWeapons = true;
                     g_bNoAmmo = true;
                     bBlockTank = true;
+                    bBlockWitch = true;
                     EVENT_SetDifficulty(DIFFICULTY_VERYHARD, DIFFICULTY_HARD);
                     
-                    g_iSpecialEventExtra = GetRandomInt(EVTWOMEN_TYPE_AXE, EVTWOMEN_TYPE_ROCK);
+                    SetConVarInt(FindConVar("z_smoker_limit"), 0);
+                    SetConVarInt(FindConVar("z_hunter_limit"), 0);
+                    SetConVarInt(FindConVar("z_jockey_limit"), 0);
+                    SetConVarInt(FindConVar("z_charger_limit"), 0);
+                    SetConVarInt(FindConVar("z_boomer_limit"), 4);
+                    SetConVarInt(FindConVar("z_spitter_limit"), 2);
+                    
+                    // which melee is available? this determines the event type
+                    new bool: bAxe = IsMeleeAvailable("fireaxe");
+                    new bool: bGuitar = IsMeleeAvailable("electric_guitar");
+                    
+                    if (bAxe && bGuitar) {
+                        g_iSpecialEventExtra = GetRandomInt(EVTWOMEN_TYPE_AXE, EVTWOMEN_TYPE_ROCK);
+                    }
+                    else if (bAxe) {
+                        g_iSpecialEventExtra = EVTWOMEN_TYPE_AXE;
+                    }
+                    else if (bGuitar) {
+                        g_iSpecialEventExtra = EVTWOMEN_TYPE_ROCK;
+                    }
+                    else {
+                        g_iSpecialEventExtra = EVTWOMEN_TYPE_BEAT;
+                    }
                 }
                 
             }
@@ -616,6 +644,12 @@ RANDOM_DetermineRandomStuff()
         L4D2Direct_SetVSTankToSpawnThisRound(0, true);
         L4D2Direct_SetVSTankToSpawnThisRound(1, true);
         g_bTankWillSpawn = true;
+    }
+    
+    if (bBlockWitch) {
+        L4D2Direct_SetVSWitchToSpawnThisRound(0, false);
+        L4D2Direct_SetVSWitchToSpawnThisRound(1, false);
+        g_bWitchWillSpawn = false;
     }
     if (!g_bWitchWillSpawn && GetConVarFloat(FindConVar("versus_witch_chance")) == 1.0 && _:g_iSpecialEvent != EVT_MINITANKS) {
         L4D2Direct_SetVSWitchToSpawnThisRound(0, true);
@@ -2395,8 +2429,9 @@ ChangeSurvivorSetup(index, client)
                 //  test if this works without melee unlocker..
                 switch (_:g_iSpecialEventExtra)
                 {
-                    case EVTWOMEN_TYPE_AXE: { GiveItemMelee(client, "weapon_fireaxe"); }
-                    case EVTWOMEN_TYPE_ROCK: { GiveItemMelee(client, "weapon_guitar"); }
+                    case EVTWOMEN_TYPE_AXE:     { GiveItemMelee(client, "fireaxe"); }
+                    case EVTWOMEN_TYPE_ROCK:    { GiveItemMelee(client, "electric_guitar"); }
+                    default:                    { GiveItemMelee(client, g_sMeleeClass[(g_iArStorageSurvMelee[index])]); }
                 }
             }
             else {
@@ -2488,6 +2523,7 @@ ChangeSurvivorSetup(index, client)
         note:   we don't know for sure that it's a gift if this is called!
                 we do know that client is a real client
         return: 1 for normal USE continuation, 0 for Plugin_Handled there, 2 for blocking, but setting flag for usingitemcheck
+                however, this doesn't work right (odd progress bar glitch when using 2, so nm)
 */
 RANDOM_CheckPlayerGiftUse(client)
 {
@@ -2652,7 +2688,7 @@ RANDOM_DoGiftEffect(client, entity)
         new randomIndex = GetRandomInt( (inSaferoom) ? g_iGiftWeightedChoicesStartPosSaferoom : 0, (g_bInsightSurvDone) ? g_iGiftWeightedChoicesStartPosInsight - 1 : g_iGiftWeightedChoicesStartNegative - 1 );
         new randomPick = g_iArGiftWeightedChoices[randomIndex];
         
-        //PrintToChatAll("client: %i, Entity: %i: pos pick: %i", client, entity, randomPick);
+        PrintToChatAll("client: %i, Entity: %i: pos pick: %i", client, entity, randomPick);
         
         switch (randomPick)
         {
@@ -2802,7 +2838,7 @@ RANDOM_DoGiftEffect(client, entity)
         new randomIndex = GetRandomInt( (inSaferoom) ? g_iGiftWeightedChoicesStartNegSaferoom : g_iGiftWeightedChoicesStartNegative, (g_bInsightInfDone || g_bCampaignMode ) ? g_iGiftWeightedChoicesStartNegInsight - 1 : g_iGiftWeightedChoicesTotal - 1 );
         new randomPick = g_iArGiftWeightedChoices[randomIndex];
         
-        //PrintToChatAll("client: %i, Entity: %i: neg pick: %i", client, entity, randomPick);
+        PrintToChatAll("client: %i, Entity: %i: neg pick: %i", client, entity, randomPick);
         
         switch (randomPick)
         {
@@ -2836,6 +2872,32 @@ RANDOM_DoGiftEffect(client, entity)
                 WritePackCell(pack, client);
                 WritePackString(pack, "boomerreaction");
                 CreateTimer(0.5, Timer_Vocalize_Random, pack, TIMER_FLAG_NO_MAPCHANGE);
+            }
+            case GIFT_NEG_ALLDROP: {   // everone drops everything
+                PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04magic slippery fingers\x01!", client);
+                
+                // entire team:
+                for (new i=1; i <= MaxClients; i++)
+                {
+                    if (IsSurvivor(i) && IsPlayerAlive(i) && !IsIncapacitated(i) && !IsHangingFromLedge(i))
+                    {
+                        // drop stuff
+                        //  for item pickup penalty event, only drop primaries
+                        for (new j = PLAYER_SLOT_PRIMARY; j <= ((_:g_iSpecialEvent == EVT_PEN_ITEM) ? PLAYER_SLOT_PRIMARY : PLAYER_SLOT_PILL); j++)
+                        {
+                            SUPPORT_DropItemSlot(i, j);
+                            if (j == PLAYER_SLOT_SECONDARY) {
+                                // drop twice for dualies
+                                SUPPORT_DropItemSlot(i, j);
+                            }
+                        }
+                        
+                        new Handle:pack = CreateDataPack();
+                        WritePackCell(pack, i);
+                        WritePackString(pack, "ReactionNegative");
+                        CreateTimer( GetRandomFloat(0.15, 0.35) , Timer_Vocalize_Random, pack, TIMER_FLAG_NO_MAPCHANGE);
+                    }
+                }
             }
             case GIFT_NEG_FIRE: {   // fire(works)-trap
                 if (GetRandomInt(0, 1) == 0) {
@@ -3650,7 +3712,7 @@ RANDOM_PrepareChoicesEvents()
         //      all scoring events, because no score
         if (    g_bCampaignMode
             &&  (   i == EVT_QUADS || i == EVT_L4D1 || i == EVT_FF || i == EVT_MINITANKS
-                ||  i == EVT_PEN_ITEM || i == EVT_PEN_HEALTH || i == EVT_PEN_M2 || i == EVT_SKEET )
+                ||  i == EVT_PEN_ITEM || i == EVT_PEN_HEALTH || i == EVT_PEN_M2 || i == EVT_PEN_TIME || i == EVT_SKEET )
         ) {
             continue;
         }
@@ -3694,7 +3756,7 @@ RANDOM_PrepareChoicesGiftEffects()
     
     // gift effect choices
     // ---------------------
-    for (new i=0; i < EVT_TOTAL; i++)
+    for (new i=0; i < GIFT_TOTAL; i++)
     {
         count = GetConVarInt(g_hArCvarGiftWeight[i]);
         
@@ -3767,6 +3829,14 @@ RANDOM_PrepareChoicesSpawns()
         {
             // no tickets for non-L4D1 classes
             if (i > ZC_HUNTER) { continue; }
+        }
+        else if (_:g_iSpecialEvent == EVT_WOMEN)
+        {
+            // no tickets for cappers
+            if (i == ZC_BOOMER)         { count = 6; }
+            else if (i == ZC_SPITTER)   { count = 2; }
+            else                        { continue; }
+            
         }
         
         for (new j=0; j < count; j++)

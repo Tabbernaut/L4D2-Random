@@ -7,17 +7,6 @@ L4D2_Random
             
             in consideration
             ----------------
-            
-            - axe effect / rockstar [stab]
-                everyone gets an axe/guitar, all common are female, no tank only spitters and boomettes
-                    - see if it works without melee weapon unlock, if not, do a check and change / limit event on some maps?
-                    - find cvar to make all boomers boomettes
-                    - replace male commons with female ones
-                    - block all uncommon infected
-                    - change boom-combo stuff ... just give more common?
-                        - maybe make boomcombos give different advantages? something that's fun for SI
-                    - finally, set event weight to 3 (now at 0 to avoid probs)
-                    
             - 'witch hunt': spawns many witches all over the place -- only way to score points = by killing them [pbonus]
                     consider it a 'miniwitches': give them 50% health, 50 dmg claw?
                     - how though, technically?
@@ -26,7 +15,7 @@ L4D2_Random
             
             in doubt
             --------
-            - 'time penalty': every minute played gives a 25 point penalty on the round score
+            
             - gnome VIP: only one gnome spawns (start saferoom), it must be brought or the end saferoom won't close
                 or: gnome heaven, where the only way to score (many) points is to bring gnomes
                 - for example: given only 1 gnome: distance points are frozen unless gnome is held
@@ -44,34 +33,19 @@ L4D2_Random
             
     to-do:
     ------
-            - bugfix:   double-reported pickup penalties on event (mikkel).
-                        possibly only duplicate report, not actually wrong penalty total..
-    
             - bugfix:   fix campaign mode random:
                             - remove items that the survivors bring and use all items in the map? fix for events
             - bugfix:   multiwitch: message doesn't show for second team, only one witch spawned, though.
                         - cannot reproduce locally.
-            - bugfix:   gift animations don't work for l4d1 survivors?
-                            - works locally, no prob -- maybe it's broken on linux?
-                            - do more testing!
-            
-            - test:     gift animation doesn't play when there's usable stuff near it (fixed now?)
-            - high:     test new gift randomization
-            
-            - low:      gift effects to add:
-                        -- reconsider the following
-                            - ammo depletion (where sensible): remove 50% ammo - not in SR
-                            - weapon steal (where sensible) - not in SR
-                            - item steal (pick random slot, bigger chances of less useful) - not in SR
-                                    why? you can !drop before gifts, nullifying the risk
-                        - magic item drop (everyone drops all their items) - not in SR
-                        - clusterbomb-pipebomb-spawner (5-10 pipes flying out in random directions)
             
             - medium:   make separate 'randmap' config: with stabby's random map stuff.
             - low:      randomize hittables: if a car is positioned normally (not at a weird angle), give odds to replace with forklift or log?
             
+            - low:      think of better boomcombo reward for groupies/women event
+            - low:      make time penalty event work with pauses (and change its weight)
+            
             - superlow: team randomizer function (!randteams) (use all players currently in teams, or include specs if less than required team size)
-            - superlow: random team going first per round in versus. how? possible?
+            - superlow: random team going first per round in versus. how? possible? worth the effort?
             
             
     minor cleanup / details

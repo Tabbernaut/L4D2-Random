@@ -205,9 +205,9 @@ new                     g_iArBoobyTrap          [MAX_BOOBYTRAPS]            = {-
 new     Float:          g_fProgressTime         [MAXPLAYERS+1]              = 0.0;                  // for keeping track of progress bar
 new     Float:          g_fProgressLocation     [MAXPLAYERS+1][3];                                  // for keeping track of progress bar location
 new                     g_iDeployedAmmo                                     = 0;                    // what is the deployed ammo pile?
-//new                     g_iDeployingAmmo                                    = 0;                    // the client that's deploying ammo
 new     bool:           g_bShowedProgressHint                               = false;                // so we only show the text once
-
+new     Handle:         g_hTimePenaltyTimer                                 = INVALID_HANDLE;       // for the EVT_PEN_TIME
+new                     g_iTimePenaltyCounter                               = 0;                    // counts seconds for the time penalty
 
 
 // ConVars

@@ -52,6 +52,9 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     ClearBoomerTracking();              // clear arrays for tracking boomer combo's
     ResetGnomes();                      // clear gnome tracking array for bonus scoring
     
+    // timer cleanup
+    if (g_hTimePenaltyTimer != INVALID_HANDLE) { KillTimer(g_hTimePenaltyTimer); }
+    
     // handle the randomization 
     RANDOM_DetermineRandomStuff();
     
@@ -350,6 +353,13 @@ public Action: EVENT_SurvivorsLeftSaferoom(Handle:timer)
             // first time baby gets picked with a visible report
             EVENT_PickSpecialEventRole(-1, false);
         }
+        
+        case EVT_PEN_TIME: {
+            // start timer
+            g_iTimePenaltyCounter = 0;
+            g_hTimePenaltyTimer = CreateTimer( 1.0 , Timer_TimePenalty, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+        }
+        
     }
 }
 
@@ -412,6 +422,9 @@ EVENT_ReportPenalty(client = -1, extraInfo = -1)
                 PrintToChatAll("\x01[\x05r\x01] Shove %scost \x04%i\x01 points.", tmpStr, EVENT_PENALTY_M2_SI);
             }
         }
+        case EVT_PEN_TIME: {
+            PrintToChatAll("\x01[\x05r\x01] Minute passed, \x04%i\x01 point penalty.", EVENT_PENALTY_TIME);
+        }
     }
 }
 
@@ -453,10 +466,39 @@ EVENT_DisplayRoundPenalty(client=-1)
                 PrintToChatAll("\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 skeet%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_SKEET_BONUS * g_iBonusCount);
             }
         }
+        case EVT_PEN_TIME:
+        {
+            PrintToChatAll("\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 minute%s cost \x04%i\x01 points so far.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_PENALTY_TIME * g_iBonusCount);
+        }
     }
 }
 
 
+
+
+// penalty timer
+public Action: Timer_TimePenalty(Handle:timer)
+{
+    // halt timer on round end
+    if (!g_bInRound) {
+        PrintToChatAll("not in round");
+        g_hTimePenaltyTimer = INVALID_HANDLE;
+        return Plugin_Stop;
+    }
+    
+    g_iTimePenaltyCounter++;
+    
+    if (g_iTimePenaltyCounter == 60)
+    {
+        g_iTimePenaltyCounter = 1;
+        
+        g_iBonusCount++;
+        PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_TIME );
+        EVENT_ReportPenalty();
+    }
+    
+    return Plugin_Continue;
+}
 
 EVENT_ReportBoobytrap(client=-1)
 {
@@ -1894,6 +1936,25 @@ SpawnCommon(client, mobs = 1)
     SetCommandFlags("z_spawn", flags);
 }
 
+// spawning a zombie (in exact location, normal way)
+SpawnCommonLocation(Float:location[3], bool: isFemale = false)
+{
+    new zombie = CreateEntityByName("infected");
+    
+    if (isFemale)
+    {
+        // force female model
+        SetEntityModel(zombie, g_csFemaleCommonModels[ GetRandomInt(0, sizeof(g_csFemaleCommonModels) - 1) ]);
+    }
+    
+    new ticktime = RoundToNearest( FloatDiv( GetGameTime() , GetTickInterval() ) ) + 5;
+    SetEntProp(zombie, Prop_Data, "m_nNextThinkTick", ticktime);
+
+    DispatchSpawn(zombie);
+    ActivateEntity(zombie);
+    
+    TeleportEntity(zombie, location, NULL_VECTOR, NULL_VECTOR);
+}
 // spawning a horde (cheap way.. damnit)
 SpawnPanicHorde(client, mobs = 1)
 {
@@ -2254,6 +2315,20 @@ ForceTankPlayer()
         }
     }
 }
+
+// checking for availability of melee weapons:
+bool: IsMeleeAvailable(const String:type[])
+{
+    for (new i=0; i < g_iMeleeClassCount; i++)
+    {
+        if (StrEqual(type, g_sMeleeClass[i], false)) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
 /*
     Support, blind infected
     -------------------------- */
@@ -2421,7 +2496,7 @@ SUPPORT_StormStart()
 
 
 
-/*  Vocalization by AtomicStryker
+/*  Vocalization (by AtomicStryker)
     ----------------------------- */
 
 public Action: Timer_Vocalize_Random(Handle:timer, any:pack)
@@ -2533,6 +2608,8 @@ public OnSceneCompletion(const String:s_Output[], i_Caller, i_Activator, Float:f
 {
     RemoveEdict(i_Caller);
 }
+
+
 
 
 /*
