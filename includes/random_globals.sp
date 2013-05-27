@@ -127,6 +127,13 @@ new                     g_iEventWeightedChoicesTotal;                           
 new                     g_iArSpawnWeightedChoices   [STORED_SI_MAX_COUNT];                          // all the choices for SI spawns (every category * its weight)
 new                     g_iSpawnWeightedChoicesTotal;                                               // total of WeightedChoices 'hat' filled for spawns
 new                     g_iSpawnWeightedChoicesStartCappers;                                        // where the capper spawn choices start (first spit, boom, then the rest)
+new                     g_iArGiftWeightedChoices    [STORED_GIFT_MAX_COUNT];                        // all the choices for gift effects
+new                     g_iGiftWeightedChoicesTotal;                                                // total of WeightedChoices 'hat' filled for gift effects
+new                     g_iGiftWeightedChoicesStartNegative;                                        // where the negative effects start
+new                     g_iGiftWeightedChoicesStartPosSaferoom;                                     // where the saferoom-okay effects start (positive)
+new                     g_iGiftWeightedChoicesStartNegSaferoom;                                     // where the saferoom-okay effects start (negative)
+new                     g_iGiftWeightedChoicesStartPosInsight;                                      // where the insight positive starts
+new                     g_iGiftWeightedChoicesStartNegInsight;                                      // where the insight negative starts
 
 // Actual choices storage
 new                     g_strArStorage          [ENTITY_COUNT][strEntityData];                      // Stored entities, type is INDEX_
@@ -207,6 +214,7 @@ new     bool:           g_bShowedProgressHint                               = fa
 new     Handle:         g_hArCvarWeight         [INDEX_TOTAL];                                      // cvar, per randomize-type, that sets an integer weight 
 new     Handle:         g_hArCvarSurvWeight     [INDEX_SURV_TOTAL];                                 // cvar, per randomize-type, that sets an integer weight -- for handing out starting weapon
 new     Handle:         g_hArCvarEvtWeight      [EVT_TOTAL];                                        // cvar, per randomize-type, that sets an integer weight -- for picking events
+new     Handle:         g_hArCvarGiftWeight     [GIFT_TOTAL];                                       // cvar, per randomize-type, that sets an integer weight -- for picking gift effects
 
 new     Handle:         g_hCvarConfogl                                      = INVALID_HANDLE;       // cvar whether to wait one map-restart before reading default cvar values
 new     Handle:         g_hCvarStripperMode                                 = INVALID_HANDLE;       // cvar what way to use stripper

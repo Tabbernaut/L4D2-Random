@@ -21,6 +21,7 @@ L4D2_Random
             - 'witch hunt': spawns many witches all over the place -- only way to score points = by killing them [pbonus]
                     consider it a 'miniwitches': give them 50% health, 50 dmg claw?
                     - how though, technically?
+                        - just spawn a witch every 0.8 distance, from 0.1 to max 0.9
                     - no tanks during this
             
             in doubt
@@ -43,6 +44,9 @@ L4D2_Random
             
     to-do:
     ------
+            - bugfix:   double-reported pickup penalties on event (mikkel).
+                        possibly only duplicate report, not actually wrong penalty total..
+    
             - bugfix:   fix campaign mode random:
                             - remove items that the survivors bring and use all items in the map? fix for events
             - bugfix:   multiwitch: message doesn't show for second team, only one witch spawned, though.
@@ -51,10 +55,24 @@ L4D2_Random
                             - works locally, no prob -- maybe it's broken on linux?
                             - do more testing!
             
+            - test:     gift animation doesn't play when there's usable stuff near it (fixed now?)
+            - high:     test new gift randomization
+            
+            - low:      gift effects to add:
+                        -- reconsider the following
+                            - ammo depletion (where sensible): remove 50% ammo - not in SR
+                            - weapon steal (where sensible) - not in SR
+                            - item steal (pick random slot, bigger chances of less useful) - not in SR
+                                    why? you can !drop before gifts, nullifying the risk
+                        - magic item drop (everyone drops all their items) - not in SR
+                        - clusterbomb-pipebomb-spawner (5-10 pipes flying out in random directions)
+            
             - medium:   make separate 'randmap' config: with stabby's random map stuff.
             - low:      randomize hittables: if a car is positioned normally (not at a weird angle), give odds to replace with forklift or log?
-            - low:      gift animation doesn't play when there's usable stuff near it
-        
+            
+            - superlow: team randomizer function (!randteams) (use all players currently in teams, or include specs if less than required team size)
+            - superlow: random team going first per round in versus. how? possible?
+            
             
     minor cleanup / details
     -----------------------
@@ -113,10 +131,6 @@ L4D2_Random
             - ?     - gift idea: X second slowdown (like EVT_ENCUMBERED)
             - ?     - gift idea: ghost-effect for survivors for X seconds (no outlines for SI) (even if running)
             - ?     - gift idea: see outlines on infected for X seconds ('telepathy')
-            - ?:    - gift idea: negative gift effect: steal item
-                        - tricky: make sure they don't happen with gunswap event, badcombo event (in saferoom)
-            - ?:    - gift idea: negative gift effect: steal ammo
-                        - tricky: make sure they don't happen with gunswap event, badcombo event (in saferoom)
             
             - ?     - investigate c1m1 elevator.. see if you can move it up instead and/or make an alternative
                       pathing using that (or the second elevator).

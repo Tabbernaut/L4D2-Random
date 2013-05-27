@@ -141,6 +141,19 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_AMMO] = CreateConVar(            "rand_weight_evt_ammo",          "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_WOMEN] = CreateConVar(           "rand_weight_evt_women",         "0",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
+    g_hArCvarGiftWeight[GIFT_POS_HEALTH] = CreateConVar(    "rand_weight_gift_health",       "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_POS_HEALTH_T] = CreateConVar(  "rand_weight_gift_temphealth",   "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_POS_AMMO] = CreateConVar(      "rand_weight_gift_getammo",      "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_POS_ITEMS] = CreateConVar(     "rand_weight_gift_getitems",     "8",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_POS_LASER] = CreateConVar(     "rand_weight_gift_getlaser",     "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_POS_INSIGHT] = CreateConVar(   "rand_weight_gift_survinsight",  "1",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_NEG_VOMIT] = CreateConVar(     "rand_weight_gift_vomit",        "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_NEG_PANIC] = CreateConVar(     "rand_weight_gift_panic",        "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_NEG_EXPLODE] = CreateConVar(   "rand_weight_gift_explode",      "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_NEG_FIRE] = CreateConVar(      "rand_weight_gift_fire",         "4",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_NEG_INSIGHT] = CreateConVar(   "rand_weight_gift_infinsight",   "1",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    
+    
     // built in cvars (for tracking)
     g_hCvarReadyUp = FindConVar("l4d_ready_enabled");
 }

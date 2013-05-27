@@ -712,9 +712,11 @@ RANDOM_DetermineRandomStuff()
         RestoreDoors();
     }
     
-    // prepare random choices for SI spawns (if required)
-    if (!g_bSecondHalf) {
-        RANDOM_PrepareChoicesSpawns();  // build events weighted choices array
+    // prepare random choices for things in the round
+    if ( !g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_EVENT) )
+    {
+        RANDOM_PrepareChoicesSpawns();          // build spawns weighted choices array
+        RANDOM_PrepareChoicesGiftEffects();     // build gift effects array
     }
     
     // first attack spawns
@@ -2026,7 +2028,9 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
     switch (type)
     {
         case PCK_NOITEM: {
-            g_strArStorage[index][entNumber] = 0;
+            if (index != -1) {
+                g_strArStorage[index][entNumber] = 0;
+            }
             return -1;
         }
         
@@ -2485,23 +2489,23 @@ ChangeSurvivorSetup(index, client)
                 we do know that client is a real client
         return: 1 for normal USE continuation, 0 for Plugin_Handled there, 2 for blocking, but setting flag for usingitemcheck
 */
-bool: RANDOM_CheckPlayerGiftUse(client)
+RANDOM_CheckPlayerGiftUse(client)
 {
     // avoid use spam (block use function for some time after gift opening):
     if (g_fGiftUseTimeout[client] != 0.0 && FloatSub(GetEngineTime(), g_fGiftUseTimeout[client]) < GIFTUSE_TIMEOUT) {
-        return false;
+        return 0;
     } else {
         g_fGiftUseTimeout[client] = 0.0;    // clean up
     }
     
     // check what we're aiming at
     new entity = GetClientAimTarget(client, false);
-    if (entity == -1) { return true; }
+    if (entity == -1) { return 1; }
     
     // check if it's a gift
     new String:targetname[32];
     GetEntPropString(entity, Prop_Data, "m_iName", targetname, sizeof(targetname));
-    if (!StrEqual(targetname, "random_gift")) { return true; }
+    if (!StrEqual(targetname, "random_gift")) { return 1; }
     
     // check if it's in reach
     new Float:playerPos[3];
@@ -2509,23 +2513,23 @@ bool: RANDOM_CheckPlayerGiftUse(client)
     GetClientAbsOrigin(client, playerPos);
     GetEntPropVector(entity, Prop_Send, "m_vecOrigin", targetPos);
     new Float:distance = GetVectorDistance(playerPos, targetPos);
-    if (distance > ITEM_PICKUP_DISTANCE) { return true; }
+    if (distance > ITEM_PICKUP_DISTANCE) { return 1; }
     
     // if we are the one using it, make sure USE goes through as normal
-    if (g_iClientUsing[client] == entity) { return true; }
+    if (g_iClientUsing[client] == entity) { return 2; }
     
     // check if anyone else is already using it, or we are using something else
-    if (SUPPORT_GetClientUsingEntity(entity) != 0 || g_iClientUsing[client] != 0) { return false; }
+    if (SUPPORT_GetClientUsingEntity(entity) != 0 || g_iClientUsing[client] != 0) { return 0; }
     
     // if readyup is enabled, don't allow opening until we're ready
     if (SUPPORT_IsInReady())
     {
         // show message if we didn't for a while
-        if (g_fGiftReportTimeout != 0.0 && FloatSub(GetEngineTime(), g_fGiftReportTimeout) <= GIFTREPORT_TIMEOUT) { return true; }
+        if (g_fGiftReportTimeout != 0.0 && FloatSub(GetEngineTime(), g_fGiftReportTimeout) <= GIFTREPORT_TIMEOUT) { return 1; }
         
         PrintToChat(client, "\x01[\x05r\x01] You must ready up before you can open a gift...");
         g_fGiftReportTimeout = GetEngineTime();
-        return true;
+        return 1;
     }
     
     // start use progress bar
@@ -2623,7 +2627,7 @@ bool: RANDOM_CheckPlayerGiftUse(client)
     
     
     // block normal function if we opened gift..
-    return false;
+    return 0;
 }
 
 RANDOM_DoGiftEffect(client, entity)
@@ -2639,34 +2643,14 @@ RANDOM_DoGiftEffect(client, entity)
     // gift is being used
     //PrintDebug("[rand] Gift used: %i", entity);
     
-    // take random action (use targetpos location)
-    new randomPick = 0;
     new bool: inSaferoom = (IsEntityInSaferoom(entity, false, false) || IsEntityInSaferoom(client, true, false));
     
     if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarGiftPositiveChance))
     {
         // positive effect
         
-        randomPick = GetRandomInt(0, (g_bInsightSurvDone) ? 8 : 9 );
-        
-        // special event, no ammo
-        if (g_bNoAmmo && (randomPick == 7 || randomPick == 8)) { randomPick = GetRandomInt(0, 6); }
-        
-        // fix for chance redistribution
-        if (randomPick > GIFT_POS_ITEMS && randomPick <= GIFT_POS_ITEMS + 3) { randomPick = GIFT_POS_ITEMS; }   // items - 4x
-        else if (randomPick == GIFT_POS_AMMO - 1) { randomPick = GIFT_POS_AMMO; }                               // ammo - 2x
-        
-        // don't give solid health when in adren mode:
-        if (_:g_iSpecialEvent == EVT_ADREN && randomPick == 0) { randomPick = GIFT_POS_HEALTH_T; }
-        // don't give ammo during gunswap event
-        else if (_:g_iSpecialEvent == EVT_GUNSWAP && randomPick == GIFT_POS_AMMO) {
-            randomPick = (GetRandomInt(0,1)) ? GIFT_POS_ITEMS : GIFT_POS_LASER;
-        }
-        
-        // don't give positive effects that are useless in (closed) saferoom
-        if (inSaferoom && (randomPick == GIFT_POS_HEALTH || randomPick == GIFT_POS_HEALTH_T || randomPick == GIFT_POS_AMMO) ) {
-            randomPick = (GetRandomInt(0,1)) ? GIFT_POS_LASER : ((g_bInsightSurvDone) ? GIFT_POS_ITEMS : GIFT_POS_INSIGHT);
-        }
+        new randomIndex = GetRandomInt( (inSaferoom) ? g_iGiftWeightedChoicesStartPosSaferoom : 0, (g_bInsightSurvDone) ? g_iGiftWeightedChoicesStartPosInsight - 1 : g_iGiftWeightedChoicesStartNegative - 1 );
+        new randomPick = g_iArGiftWeightedChoices[randomIndex];
         
         //PrintToChatAll("client: %i, Entity: %i: pos pick: %i", client, entity, randomPick);
         
@@ -2699,7 +2683,6 @@ RANDOM_DoGiftEffect(client, entity)
                 
             }
             case GIFT_POS_HEALTH_T: {   // give all temp health (in addition to whatever you had)
-                
                 new Float:fGameTime = GetGameTime();
                 new curHealth = GetEntProp(client, Prop_Send, "m_iHealth");
                 //new Float:tmpHealth = GetEntPropFloat(client, Prop_Send, "m_healthBuffer");
@@ -2816,18 +2799,13 @@ RANDOM_DoGiftEffect(client, entity)
     {
         // negative effect
        
-        randomPick = GetRandomInt(0, (g_bInsightInfDone || g_bCampaignMode) ? 7 : 8 );
-        
-        if (randomPick == 0 || randomPick == 2 || randomPick == 4 || randomPick == 6) { randomPick++; } // only insight has lower odds
-        
-        // don't give negative effects that are harmless in (closed) saferoom
-        if (inSaferoom && (randomPick == GIFT_NEG_PANIC || randomPick == GIFT_NEG_VOMIT) ) {
-            randomPick = (GetRandomInt(0,1) || g_bInsightInfDone) ? GIFT_NEG_FIRE : GIFT_NEG_INSIGHT;
-        }
+        new randomIndex = GetRandomInt( (inSaferoom) ? g_iGiftWeightedChoicesStartNegSaferoom : g_iGiftWeightedChoicesStartNegative, (g_bInsightInfDone || g_bCampaignMode ) ? g_iGiftWeightedChoicesStartNegInsight - 1 : g_iGiftWeightedChoicesTotal - 1 );
+        new randomPick = g_iArGiftWeightedChoices[randomIndex];
         
         //PrintToChatAll("client: %i, Entity: %i: neg pick: %i", client, entity, randomPick);
         
-        switch (randomPick) {
+        switch (randomPick)
+        {
             case GIFT_NEG_EXPLODE: {   // explosion (small and big)
                 PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04explosive surprise\x01!", client);
                 
@@ -3707,6 +3685,56 @@ RANDOM_PrepareChoicesEvents()
     PrintDebug("[rand] Prepared special event weight array: %i total weight over %i events.", total, EVT_TOTAL);
 }
 
+// preparation of choice-hat (gift effects)
+RANDOM_PrepareChoicesGiftEffects()
+{
+    new total = 0;
+    new count = 0;
+    
+    
+    // gift effect choices
+    // ---------------------
+    for (new i=0; i < EVT_TOTAL; i++)
+    {
+        count = GetConVarInt(g_hArCvarGiftWeight[i]);
+        
+        // remove if event / map condition blocks effect
+        if (    g_bNoAmmo && ( i == GIFT_POS_AMMO ) ) {
+            continue;
+        }
+        
+        // temp-health event(s): give temp health instead of full health
+        if ( _:g_iSpecialEvent == EVT_ADREN ) {
+            if (i == GIFT_POS_HEALTH) {
+                continue;
+            }
+            else if (i == GIFT_POS_HEALTH_T) {
+                count += GetConVarInt(g_hArCvarGiftWeight[GIFT_POS_HEALTH]);
+            }
+        }
+        
+        // events that have special weapon rules: don't steal primary
+        else if ( _:g_iSpecialEvent == EVT_GUNSWAP ) {
+            // no gift steal effects yet
+        }
+        
+        for (new j=0; j < count; j++)
+        {
+            g_iArGiftWeightedChoices[total+j] = i;
+        }
+        total += count;        
+
+        if (i == GIFT_FIRST_NEG) { g_iGiftWeightedChoicesStartNegative = total - count; }
+        else if (i == GIFT_FIRST_POS_NSR) { g_iGiftWeightedChoicesStartPosSaferoom = total - count; }
+        else if (i == GIFT_FIRST_NEG_NSR) { g_iGiftWeightedChoicesStartNegSaferoom = total - count; }
+        else if (i == GIFT_POS_INSIGHT) { g_iGiftWeightedChoicesStartPosInsight = total - count; }
+        else if (i == GIFT_NEG_INSIGHT) { g_iGiftWeightedChoicesStartNegInsight = total - count; }
+    }
+
+    g_iGiftWeightedChoicesTotal = total;
+    
+    PrintDebug("[rand] Prepared gift weight array: %i total weight over %i events.", total, GIFT_TOTAL);
+}
 
 // preparation of choice-hat (SI spawns)
 RANDOM_PrepareChoicesSpawns()
@@ -3890,11 +3918,6 @@ RANDOM_PrepareChoices()
             else if (_:g_iSpecialEvent == EVT_L4D1) {
                 // no l4d2-only items
                 if (i == INDEX_UPGRADE || i == INDEX_MELEE || i == INDEX_T3) { count = 0; }
-            }
-            
-            if (g_bDoubleTank && i == INDEX_PILL) {
-                // increase chances of finding pills/adren for 2-tank maps
-                count = RoundFloat(GetConVarInt(g_hArCvarWeight[i]) * MULTITANK_HEALTHITEMS); 
             }
             total_items += count;
         }

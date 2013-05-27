@@ -13,6 +13,7 @@ const           MELEE_CLASS_LENGTH      = 32;
 const           STORED_MAX_COUNT        = 1024;         // just arbitrary, users shouldn't exceed this total
 const           STORED_SURV_MAX_COUNT   = 256;          // just arbitrary, users shouldn't exceed this total
 const           STORED_SI_MAX_COUNT     = 60;           // internal, so not even risky (max 10 per class)
+const           STORED_GIFT_MAX_COUNT   = 128;          // just arbitrary, users shouldn't exceed this total
 const           GNOME_MAX_COUNT         = 128;          // just arbitrary, users shouldn't exceed this total (because why make gnome heaven?)
 const           MAX_REPORTLINES         = 15;
 const           REPLINELENGTH           = 256;          // maximum length of a 'report line'
@@ -60,9 +61,8 @@ const Float:    GIFTREPORT_TIMEOUT      = 1.0;          // how long after player
 
 
 // multi/mini tanks and witches
-const Float:    MULTITANK_EARLY         = 0.25;         // for 2-tank-rounds: where to spawn early tank
+const Float:    MULTITANK_EARLY         = 0.35;         // for 2-tank-rounds: where to spawn early tank
 const Float:    MULTITANK_LATE          = 0.75;         //                         and the late one
-const Float:    MULTITANK_HEALTHITEMS   = 1.5;          // factor by which to change health item weight for double-tanked map
 
 const           MULTIWITCH_MIN          = 3;            // amount of witches in multi-witch mode
 const           MULTIWITCH_MAX          = 7;
@@ -282,15 +282,20 @@ const           USING_TYPE_GIFT         = 2;
 
 const           GIFT_POS_HEALTH         = 0;
 const           GIFT_POS_HEALTH_T       = 1;
-const           GIFT_POS_ITEMS          = 2;
-const           GIFT_POS_LASER          = 6;
-const           GIFT_POS_AMMO           = 8;
-const           GIFT_POS_INSIGHT        = 9;
-const           GIFT_NEG_EXPLODE        = 1;
-const           GIFT_NEG_PANIC          = 3;
-const           GIFT_NEG_VOMIT          = 5;
-const           GIFT_NEG_FIRE           = 7;
-const           GIFT_NEG_INSIGHT        = 8;
+const           GIFT_POS_AMMO           = 2;
+const           GIFT_POS_ITEMS          = 3;
+const           GIFT_POS_LASER          = 4;
+const           GIFT_POS_INSIGHT        = 5;
+const           GIFT_NEG_VOMIT          = 6;
+const           GIFT_NEG_PANIC          = 7;
+const           GIFT_NEG_EXPLODE        = 8;
+const           GIFT_NEG_FIRE           = 9;
+const           GIFT_NEG_INSIGHT        = 10;
+
+const           GIFT_FIRST_POS_NSR      = 3;            // not-saferoom safe
+const           GIFT_FIRST_NEG          = 6;
+const           GIFT_FIRST_NEG_NSR      = 8;
+const           GIFT_TOTAL              = 11;
 
 const           DIFFICULTY_NOCHANGE     = 0;            // don't change it
 const           DIFFICULTY_NORMAL       = 1;            // event difficulty
