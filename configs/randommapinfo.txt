@@ -1,18 +1,14 @@
-// intro:
-//	1 = is intro map (first of campaign)
+// intro		1 = is intro map (first of campaign)
+// difficulty		offset for random difficulty rating. Gets -1 for intros and +2 for finales.
+// doors		0 = no doors on map;	1 = normal amount of doors;  2 = many doors on map
 //
-// difficulty:
-//	is offset for random difficulty rating. Gets -1 for intros and +2 for finales.
+// no_tank		1 = block tanks on the map
+// no_tank_var		1 = disable tank variation
+// no_witch		1 = block witches on the map
 //
-// doors:
-//	0 = no doors on map;	1 = normal amount of doors;  2 = many doors on map
-//
-// no_storm:
-//	1 = don't do any storm-related things on this map
-//
-// no_cola:
-//	1 = don't spawn cola on this map (or give points for it)
-//
+// no_storm		1 = don't do any storm-related things on this map
+// no_cola		1 = don't spawn cola on this map (or give points for it)
+
 
 "RandomMap"
 {
@@ -21,6 +17,7 @@
 		"intro"		"1"
 		"difficulty"	"0"
 		"doors"		"2"
+		"no_tank_var"	"1"
 	}
 	"c1m2_streets"
 	{
@@ -51,6 +48,7 @@
 	{
 		"difficulty"	"3"
 		"doors"		"0"
+		"no_tank_var"	"1"
 	}
 	"c2m4_barns"
 	{
@@ -67,6 +65,7 @@
 		"intro"		"1"
 		"difficulty"	"1"
 		"doors"		"0"
+		"no_tank_var"	"1"
 	}
 	"c3m2_swamp"
 	{
@@ -94,13 +93,13 @@
 	"c4m3_sugarmill_b"
 	{
 		"difficulty"	"3"
-		"nostorm"	"1"
+		"no_storm"	"1"
 		"doors"		"0"
 	}
 	"c4m4_milltown_b"
 	{
 		"difficulty"	"1"
-		"nostorm"	"1"
+		"no_storm"	"1"
 	}
 	"c4m5_milltown_escape"
 	{
@@ -150,6 +149,7 @@
 	{
 		"intro"		"1"
 		"difficulty"	"1"
+		"no_tank"	"1"
 	}
 	"c7m2_barge"
 	{
@@ -176,6 +176,7 @@
 	{
 		"difficulty"	"1"
 		"doors"		"2"
+		"no_tank_var"	"1"
 	}
 	"c8m5_rooftop"
 	{
