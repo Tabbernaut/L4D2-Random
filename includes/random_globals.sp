@@ -26,6 +26,10 @@ new     bool:           g_bPlayersLeftStart                                 = fa
 new     bool:           g_bSoundHooked                                      = false;                // true when there's a soundhook in place
 new                     g_iSpecialEventToForce                              = -1;                   // if this is anything but -1, forces special event for one round(half) -- debug function
 
+// Pause tracking
+new     bool:           g_bIsPaused                                         = false;                // whether game is paused
+new     Float:          g_fPauseAttemptTime                                 = 0.0;                  // when the !pause command was issued
+
 // Stripper
 new     bool:           g_bStripperPresent                                  = false;                // whether a cvar-configurable Stripper:Source is present
 new     String:         g_sStripperDir          [128];                                              // the directory that the stripper cfg files are in
@@ -41,7 +45,6 @@ new     Float:          g_fGiftReportTimeout                                = 0.
 new     Float:          g_fGiftUseTimeout       [MAXPLAYERS+1]              = {0.0,...};            // stores time when player last used gift (to prevent use spam after opening)
 new                     g_iClientUsing          [MAXPLAYERS+1]              = {0,...};              // entity that a client is doing a progress-bar type use action on, if any
 new     bool:           g_bClientHoldingUse     [MAXPLAYERS+1]              = {false,...};          // for some use fixes: whether player is holding use key (while still blocking it)
-
 
 // Tanks
 new                     g_iHadTanks             [MAXPLAYERS+1]              = {0,...};              // how many tanks did the player get this game?
@@ -64,7 +67,6 @@ new                     g_iWitchNum;				                                        
 new                     g_iWitchIndex;                                                              // the index of the current witch (in the witch flows array)
 new     Float:          g_fArWitchFlows         [MULTIWITCH_MAX];                                   // stores flow distances for the current round
 new     bool:           g_bArWitchSitting       [MULTIWITCH_MAX]            = {true,...};           // stores whether each witch is sitting or walking
-
 
 // SI Spawning / ghosts
 new     Handle:         g_confRaw                                           = INVALID_HANDLE;
@@ -97,6 +99,7 @@ new                     g_iBoomsPerBoomer       [TEAM_SIZE]                 = {0
 new                     g_iBoomersInCombo       [TEAM_SIZE]                 = {0,...};              // the clients that are part of the current boomer combo
 new     Float:          g_fBoomTime             [TEAM_SIZE]                 = {0.0,...};            // when the boomer got its most recent boom
 new     Float:          g_fDudTimeExpire                                    = 0.0;                  // time when pipeboms will work again after a 2+ boom combo
+new     Float:          g_fRewardTime                                       = 0.0;                  // for how long the reward should work (common limit change for women event)
 
 // Hunter and skeet tracking
 new     bool:           bHunterPouncing         [MAXPLAYERS + 1]            = {false,...};          // whether the hunter is currently pouncing
@@ -212,9 +215,12 @@ new     Handle:         g_kRIData                                           = IN
 new     bool:           g_RI_bIsIntro                                       = false;                // only true for intro maps
 new                     g_RI_iDifficulty                                    = 0;                    // difficulty offset for this specific map
 new                     g_RI_iDoors                                         = 1;                    // 0 = no doors on map, 1 = normal, 2 = many doors
+new     bool:           g_RI_bNoTank                                        = false;                // block tank spawns
+new     bool:           g_RI_bNoTankVar                                     = false;                // set tank variation to 0
+new     bool:           g_RI_bNoWitch                                       = false;                // block witch spawns
 new     bool:           g_RI_bNoStorm                                       = false;                // block storms for this map
 new     bool:           g_RI_bNoCola                                        = false;                // block cola spawns
-new     bool:           g_RI_bNoWitch                                       = false;                // block witch spawns
+
 
 // ConVars
 new     Handle:         g_hArCvarWeight         [INDEX_TOTAL];                                      // cvar, per randomize-type, that sets an integer weight 
@@ -223,6 +229,7 @@ new     Handle:         g_hArCvarEvtWeight      [EVT_TOTAL];                    
 new     Handle:         g_hArCvarGiftWeight     [GIFT_TOTAL];                                       // cvar, per randomize-type, that sets an integer weight -- for picking gift effects
 
 new     Handle:         g_hCvarConfogl                                      = INVALID_HANDLE;       // cvar whether to wait one map-restart before reading default cvar values
+new     Handle:         g_hCvarSimplePauseCheck                             = INVALID_HANDLE;       // cvar whether we should do a very simple pause check
 new     Handle:         g_hCvarStripperMode                                 = INVALID_HANDLE;       // cvar what way to use stripper
 new     Handle:         g_hCvarStripperPath                                 = INVALID_HANDLE;       // cvar stripper cfg path (base)
 new     Handle:         g_hCvarRIKeyValuesPath                              = INVALID_HANDLE;       // cvar dir to randommap.txt
@@ -293,6 +300,7 @@ new     Handle:         g_hCvarRandBonusMax                                 = IN
 
 // Default convars
 new     Handle:         g_hCvarReadyUp                                      = INVALID_HANDLE;       // cvar handle for readyup checking
+new     Handle:         g_hCvarPausable                                     = INVALID_HANDLE;       // cvar handle for pausable/pausing checking
 
 // Default values
 new                     g_iTeamSize                                         = 4;

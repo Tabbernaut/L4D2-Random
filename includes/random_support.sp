@@ -39,6 +39,9 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     }
     
     // called before randomization
+    g_bIsPaused = false;
+    g_fPauseAttemptTime = 0.0;
+    
     g_bIsFirstAttack = true;
     g_bPlayersLeftStart = false;
     g_bFirstReportDone = false;
@@ -117,7 +120,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     } 
     
     // some things need to be delayed to work right
-    g_hTimerReport = CreateTimer(DELAY_ROUNDPREP, Timer_DelayedRoundPrep, _, TIMER_FLAG_NO_MAPCHANGE);
+    g_hTimerReport = CreateTimer( (g_bCampaignMode) ? DELAY_ROUNDPREP_COOP : DELAY_ROUNDPREP , Timer_DelayedRoundPrep, _, TIMER_FLAG_NO_MAPCHANGE);
     
 }
 
@@ -487,6 +490,11 @@ EVENT_DisplayRoundPenalty(client=-1)
 // penalty timer
 public Action: Timer_TimePenalty(Handle:timer)
 {
+    // when paused, don't keep ticking
+    if (g_bIsPaused) {
+        return Plugin_Continue;
+    }
+    
     // halt timer on round end
     if (!g_bInRound) {
         PrintToChatAll("not in round");

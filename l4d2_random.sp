@@ -70,7 +70,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.20",
+    version = "1.0.21",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -182,8 +182,7 @@ public OnPluginStart()
     RegAdminCmd("rand_test_ents",   TestEnts_Cmd,   ADMFLAG_CHEATS, "...");
     RegAdminCmd("rand_test_event",  TestEvent_Cmd,  ADMFLAG_CHEATS, "...");
         
-    /*
-        Listen for ghost-exploit check
+    /*  Listen for ghost-exploit check
         -------------------------------
         catching these because there is no way to directly
         detect players going spectator... there's a team switch,
@@ -193,6 +192,9 @@ public OnPluginStart()
     RegConsoleCmd("say",        Say_Cmd,        "...");
     RegConsoleCmd("say_team",   Say_Cmd,        "...");
     
+    /*  Listen for pausing & unpausing */
+    //RegConsoleCmd("pause",      Pause_Cmd,      "...");
+    RegConsoleCmd("unpause",    Unpause_Cmd,    "...");
     
     // Blind infected
     g_hBlockedEntities = CreateArray(_:EntInfo);
@@ -641,6 +643,52 @@ public Action: Say_Cmd(client, args)
 
 
 
+// pausing
+public Action:OnClientCommand(client, args)
+{
+    new String:cmd[16];
+    GetCmdArg(0, cmd, sizeof(cmd));
+    
+    if (!g_bIsPaused || GetConVarBool(g_hCvarSimplePauseCheck)) { return Plugin_Continue; }
+    
+    if (StrEqual(cmd, "sm_pause"))
+    {
+        if (!SUPPORT_IsInReady())
+        {
+            // not certain yet, might be blocked/disabled..
+            //  if sv_pausable changes, we know
+            g_bIsPaused = true;
+            g_fPauseAttemptTime = GetGameTime();
+        }
+    }
+    
+    return Plugin_Continue;
+}
+
+public OnCvarPausableChanged(Handle:cvar, const String:oldVal[], const String:newVal[])
+{
+    if (StringToInt(newVal))
+    {
+        // if this happens after pause command, we're paused
+        if (!g_bIsPaused && ( (GetConVarBool(g_hCvarSimplePauseCheck)) || (g_fPauseAttemptTime != 0.0 && GetGameTime() - g_fPauseAttemptTime <= 5.0) ) )
+        {
+            g_fPauseAttemptTime = 0.0;
+            g_bIsPaused = true;
+            PrintDebug("[rand] PAUSED.");
+        }
+    }
+}
+
+public Action: Unpause_Cmd(client, args)
+{
+    // detect if we're in a pause
+    if (GetConVarBool(FindConVar("sv_pausable")))
+    {
+        g_bIsPaused = false;
+        PrintDebug("[rand] Unpaused...");
+    }
+    return Plugin_Continue;
+}
 /*
     Round management
     -------------------------- */
@@ -704,6 +752,8 @@ public OnMapStart()
 
 public OnMapEnd()
 {
+    KvRewind(g_kRIData);
+    
     // switch stripper file for next map
     INIT_StripperSwitch();
     
@@ -1030,26 +1080,6 @@ public Action: Event_PlayerLeftStartArea(Handle:event, const String:name[], bool
     */
 }
 
-/*
-public Action: Timer_CheckForRealSaferoomExit(Handle:timer)
-{
-    // check if survivors have actually really left saferoom or still in readyup
-    //PrintToChatAll("inready? %i", SUPPORT_IsInReady());
-    
-    if (SUPPORT_IsInReady()) { return Plugin_Continue; }
-    
-    for (new i=1; i <= MaxClients; i++)
-    {
-        if (IsSurvivor(i) && !IsEntityInSaferoom(i, true, false))
-        {
-            SurvivorsReallyLeftSaferoom();
-            return Plugin_Stop;
-        }
-    }
-    
-    return Plugin_Continue;
-}
-*/
 // this is called iff the round has actually really started
 SurvivorsReallyLeftSaferoom()
 {
@@ -1318,11 +1348,19 @@ public DoBoomerComboReward(combo, victim)
     if (_:g_iSpecialEvent == EVT_WOMEN) 
     {
         // do something special for evt women?
+        if (combo > 1)
+        {
+            SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * EVENT_VERYHARD_CILIM) + (EVENT_WOMEN_EXTRACOMMON * (combo - 1)) );
+            CreateTimer(1.0, Timer_CheckEndBoomComboReward, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+        }
+        
+        
         //  for now, just spawn panic hordes..
         if (combo > 2)
         {
             SpawnPanicHorde(victim, combo - 1);
         }
+        
     }
     else
     {
@@ -1335,6 +1373,17 @@ public DoBoomerComboReward(combo, victim)
             SpawnPanicHorde(victim, 2);
         }
     }
+}
+
+// unset common limit
+public Action: Timer_CheckEndBoomComboReward(Handle:timer)
+{
+    if (GetGameTime() - g_fRewardTime > EVENT_WOMEN_LIMITTIME || !g_bInRound)
+    {
+        SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * EVENT_VERYHARD_CILIM) );
+        return Plugin_Stop;
+    }
+    return Plugin_Continue;
 }
 
 // boomer track
@@ -1920,7 +1969,7 @@ public Action:Event_ShovedPlayer(Handle:event, const String:name[], bool:dontBro
     
     //PrintToChatAll("%N shoved player %N.", client, victim);
     
-    if (_:g_iSpecialEvent == EVT_PEN_M2)
+    if ( _:g_iSpecialEvent == EVT_PEN_M2 && !IsFakeClient(client) )
     {
         // only on cappers (except charger)
         new classType = GetEntProp(victim, Prop_Send, "m_zombieClass");
@@ -2000,7 +2049,7 @@ public Action:Event_PlayerSpawn(Handle:hEvent, const String:name[], bool:dontBro
         GetEntPropString(client, Prop_Data, "m_ModelName", model, sizeof(model));
         
         if (StrEqual(model, "models/infected/boomer.mdl", false)) {
-            SetEntityModel(client, "models/infected/boomette.mdl");
+            SetEntityModel(client, MODEL_BOOMETTE);
         }
     }
     

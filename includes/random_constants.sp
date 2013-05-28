@@ -35,6 +35,7 @@ const           STR_MAX_MAPNAME         = 24;
 // --------------------
 const Float:    DELAY_FIRSTMAPLOAD      = 5.0;          // how long to wait before doing round prep on the very first map loading
 const Float:    DELAY_ROUNDPREP         = 1.0;          // how long between actual round prep and item handling etc
+const Float:    DELAY_ROUNDPREP_COOP    = 8.0;          // coop 'transitions' items, so make sure we randomize after that happens
 const Float:    DELAY_SECONDHALF        = 1.0;          // how long to wait on secondroundhalf before restoring items
 const Float:    DELAY_SECONDHALF_REP    = 1.25;         // how long to wait on secondroundhalf before doing the report
 const Float:    DELAY_SURVSETUP         = 0.25;         // how long to wait after team switch/join to set survivor startup (for GetPlayerSlot check)
@@ -145,6 +146,8 @@ const Float:    EVENT_SKEET_HUNTERS     = 0.8;          // EVT_SKEET        odds
 const Float:    EVENT_FIREPOWER_AMMO    = 1.25;         // EVT_FIREPOWER    factor that ammo for T2 weapons is multiplied
 const Float:    EVENT_AMMO_PACKTIME     = 3.0;          // EVT_AMMO         time it takes to repack ammo
 const Float:    EVENT_AMMO_FACTOR       = 0.12;         // EVT_AMMO         how much ammo there is in weapons lying around
+const Float:    EVENT_WOMEN_LIMITTIME   = 7.5;          // EVT_WOMEN        how long per combo-step to keep increased common limit
+const           EVENT_WOMEN_EXTRACOMMON = 5;            // EVT_WOMEN        how many extra common per combo (limit increase)
 
 const Float:    EVENT_ENC_W_T1          = 1.5;          // EVT_ENCUMBERED   for determining total player weight
 const Float:    EVENT_ENC_W_T2          = 2.5;
@@ -693,10 +696,14 @@ new const String: g_csPreCacheModels[][] =
     "models/weapons/melee/w_golfclub.mdl",
     "models/weapons/melee/w_katana.mdl",
     "models/weapons/melee/w_machete.mdl",
-    "models/weapons/melee/w_tonfa.mdl"
+    "models/weapons/melee/w_tonfa.mdl",
     
     //"models/w_models/weapons/w_minigun.mdl",
     //"models/w_models/weapons/50cal.mdl",
+    
+    // boomette
+    "models/infected/boomette.mdl",
+    "models/infected/limbs/exploded_boomette.mdl"
 };
 
 new const String: g_csPrefetchSounds[][] =

@@ -15,6 +15,7 @@ INIT_DefineCVars()
     // ConVars
     
     g_hCvarConfogl = CreateConVar(                          "rand_confogl",                  "1",       "Whether random is loaded as a confogl matchmode (changes the way cvar defaults are read).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarSimplePauseCheck = CreateConVar(                 "rand_simplepausecheck",         "1",       "Uses sv_pausable for a simple pause check.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarStripperMode = CreateConVar(                     "rand_stripper_mode",            "2",       "When using Stripper:Source: mode 0 = don't change dir; 1 = toggle standard and _alt (50%); 2 = standard + _alt (33%); 3 = same, but (25%).", FCVAR_PLUGIN, true, 0.0, true, 2.0);
     g_hCvarStripperPath = CreateConVar(                     "rand_stripper_path",            "addons/stripper", "The Stripper:Source directory random uses as its base.", FCVAR_PLUGIN);
     g_hCvarRIKeyValuesPath = CreateConVar(                  "rand_randominfo_path",          "configs/randommapinfo.txt", "The path to the randommap.txt with keyvalues for per-map random settings.", FCVAR_PLUGIN);
@@ -141,7 +142,7 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_FIREPOWER] = CreateConVar(       "rand_weight_evt_firepower",     "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_AMMO] = CreateConVar(            "rand_weight_evt_ammo",          "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_WOMEN] = CreateConVar(           "rand_weight_evt_women",         "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_PEN_TIME] = CreateConVar(        "rand_weight_evt_pentime",       "0",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_PEN_TIME] = CreateConVar(        "rand_weight_evt_pentime",       "3",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     g_hArCvarGiftWeight[GIFT_POS_HEALTH] = CreateConVar(    "rand_weight_gift_health",       "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_POS_HEALTH_T] = CreateConVar(  "rand_weight_gift_temphealth",   "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -159,6 +160,10 @@ INIT_DefineCVars()
     
     // built in cvars (for tracking)
     g_hCvarReadyUp = FindConVar("l4d_ready_enabled");
+    g_hCvarPausable = FindConVar("sv_pausable");
+    
+    // hook change of convar
+    HookConVarChange(g_hCvarPausable, OnCvarPausableChanged);
 }
 
 INIT_CVarsGetDefault()
@@ -330,6 +335,7 @@ INIT_FillTries()
     SetTrieValue(g_hTrieBlindable, "predicted_viewmodel",       ENTITY_NOT_BLINDABLE);
     SetTrieValue(g_hTrieBlindable, "instanced_scripted_scene",  ENTITY_NOT_BLINDABLE);
     SetTrieValue(g_hTrieBlindable, "func_occluder",             ENTITY_NOT_BLINDABLE);
+    SetTrieValue(g_hTrieBlindable, "ability_vomit",             ENTITY_NOT_BLINDABLE);
     
     g_hTriePenaltyItems = CreateTrie();
     SetTrieValue(g_hTriePenaltyItems, "melee",                      ITEM_PICKUP_PENALTY_MELEE);
@@ -480,9 +486,11 @@ bool: RI_KV_UpdateRandomMapInfo()
     g_RI_bIsIntro = false;      // whether the map is the first of campaign
     g_RI_iDifficulty = 0;       // difficulty offset for map
     g_RI_iDoors = 1;            // normal doors amount (2 = many, 0 = no doors)
+    g_RI_bNoTank = false;       // whether we should block tanks
+    g_RI_bNoTankVar = false;    // whether we should set tank variation to 0
+    g_RI_bNoWitch = false;      // whether we should block witches
     g_RI_bNoStorm = false;      // whether there shouldn't be storms on the map
     g_RI_bNoCola = false;       // whether we should block cola on the map
-    g_RI_bNoWitch = false;      // whether we should block witches
     
     new String: mapname[64];
     GetCurrentMap(mapname, sizeof(mapname));
@@ -493,14 +501,19 @@ bool: RI_KV_UpdateRandomMapInfo()
         g_RI_bIsIntro = bool: (KvGetNum(g_kRIData, "intro", 0));
         g_RI_iDifficulty = KvGetNum(g_kRIData, "difficulty", g_RI_iDifficulty);
         g_RI_iDoors = KvGetNum(g_kRIData, "doors", g_RI_iDoors);
+        g_RI_bNoTank = bool: (KvGetNum(g_kRIData, "no_tank", 0));
+        g_RI_bNoTankVar = bool: (KvGetNum(g_kRIData, "no_tank_var", 0));
+        g_RI_bNoWitch = bool: (KvGetNum(g_kRIData, "no_witch", 0));
         g_RI_bNoStorm = bool: (KvGetNum(g_kRIData, "no_storm", 0));
         g_RI_bNoCola = bool: (KvGetNum(g_kRIData, "no_cola", 0));
-        g_RI_bNoWitch = bool: (KvGetNum(g_kRIData, "no_witch", 0));
+        
+        PrintDebug("[RI] Read data: intro: %i; difficulty: %i; doors; %i; nostorm: %i", g_RI_bIsIntro, g_RI_iDifficulty, g_RI_iDoors, g_RI_bNoStorm);
+        
         return true;
     }
     
     // no keyvalue set found for map:
-    LogMessage("[RI] RandomMapInfo for %s is missing.", mapname);
+    LogMessage("[RI] RandomMapInfo for '%s' is missing.", mapname);
     
     // if no data found, set default stuff we should assume
     if (L4D_IsMissionFinalMap())
@@ -599,9 +612,6 @@ INIT_PrecacheModels(bool: noMapStarted = false)
             PrecacheModel(g_csJunkModels[i], true);
         }
     }
-    
-    // Boomette
-    PrecacheModel(MODEL_BOOMETTE, true);
     
     // CSS weapons
     if (!noMapStarted) {

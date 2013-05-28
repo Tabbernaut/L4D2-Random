@@ -204,22 +204,6 @@ RANDOM_DetermineRandomStuff()
         RANDOM_PrepareChoicesEvents();      // rebuild events weighted choices array
     }
     
-    // get map name and type
-    new String: mapname[64];
-    GetCurrentMap(mapname, sizeof(mapname));
-    
-    
-    // some maps shouldn't have tank flow variation
-    if ( g_fDefTankFlowVariation != 0.0 &&
-        (
-                StrEqual(mapname, "c1m1_hotel", false)
-            ||  StrEqual(mapname, "c2m3_coaster", false)
-            ||  StrEqual(mapname, "c8m4_interior", false)
-        )
-    ) {
-        SetConVarFloat(FindConVar("versus_tank_flow_team_variation"), 0.0);
-    }
-    
     
     // keep old difficulty-rating if it's the second half
     if (!g_bSecondHalf)
@@ -631,7 +615,7 @@ RANDOM_DetermineRandomStuff()
     }
     
     // force the spawns if we have the cvars set
-    if (bBlockTank) {
+    if (bBlockTank || g_RI_bNoTank) {
         L4D2Direct_SetVSTankToSpawnThisRound(0, false);
         L4D2Direct_SetVSTankToSpawnThisRound(1, false);
         g_bTankWillSpawn = false;
@@ -653,8 +637,16 @@ RANDOM_DetermineRandomStuff()
         g_bWitchWillSpawn = true;
     }
     
-    
-    if (g_bTankWillSpawn) { g_iDifficultyRating += 2; }
+    if (g_bTankWillSpawn)
+    {
+        g_iDifficultyRating += 2;
+        
+        // some maps shouldn't have tank flow variation
+        if ( g_fDefTankFlowVariation != 0.0 && g_RI_bNoTankVar )
+        {
+            SetConVarFloat(FindConVar("versus_tank_flow_team_variation"), 0.0);
+        }
+    }
     
     PrintDebug("[rand] Boss spawns: Tank: %i (%.2f) / Witch: %i (%.2f)", g_bTankWillSpawn, L4D2Direct_GetVSTankFlowPercent( (g_bSecondHalf) ? 1 : 0 ), g_bWitchWillSpawn, L4D2Direct_GetVSWitchFlowPercent( (g_bSecondHalf) ? 1 : 0 ));
     
@@ -877,6 +869,7 @@ RandomizeItems()
     new iCountNoitem = 0;                   // just some score-keeping for debugging 
     new iCountFinaleAmmo = 0;               // how many forced finale ammo piles (also decreased on re-rolls)
     new iCountStartAmmo = 0;                // how many starting ammo piles?
+    new bool: bForceFinaleAmmo;
     
     new String:classname[128];
     new curEnt;                             // the entity we're currently storing data for
@@ -887,6 +880,8 @@ RandomizeItems()
     
     for (new i=0; i < entityCount; i++)
     {
+        bForceFinaleAmmo = false;
+        
         if (IsValidEntity(i)) {
         
             GetEdictClassname(i, classname, sizeof(classname));
@@ -904,7 +899,7 @@ RandomizeItems()
             {
                 // don't touch ammo piles on finales
                 iCountFinaleAmmo++;
-                continue;
+                bForceFinaleAmmo = true;
             }
             
             //PrintDebug("[rand] Entity %d is randomizable: %s.", i, classname);
@@ -940,11 +935,15 @@ RandomizeItems()
             
             
             // prevent finale flooded with ammo... repick
-            if (iCountFinaleAmmo)
+            if (iCountFinaleAmmo && !bForceFinaleAmmo && randomPick == INDEX_AMMO)
             {
                 iCountFinaleAmmo--;
                 randomIndex = GetRandomInt(0, (g_iWeightedChoicesTotal-1));
                 randomPick = g_iArWeightedChoices[randomIndex];
+            }
+            // force ammo choice for finale pile
+            else if (bForceFinaleAmmo) {
+                randomPick = INDEX_AMMO;
             }
             
             // saferoom handling
@@ -982,7 +981,7 @@ RandomizeItems()
                     }
                 }
             }
-            else if (g_strArStorage[curEnt][entInEndSaferoom])
+            else if (g_strArStorage[curEnt][entInEndSaferoom] && !g_bCampaignMode)
             {
                 if (GetConVarFloat(g_hCvarEndSafeItem) > 0.0 && GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarEndSafeItem)) {
                     if (randomPick == INDEX_NOITEM) {
@@ -1435,12 +1434,6 @@ RestoreItems()
                 GetEntPropString(i, Prop_Data, "m_ModelName", modelname, STR_MAX_MODELNAME);
                 if (!GetTrieValue(g_hTrieRandomizablePropPhysicsModel, modelname, classnameRoN)) { continue; }          // if it's not one of the prop_physics models, don't worry about it
             }
-            else if (L4D_IsMissionFinalMap() && classnameRoN == RANDOMIZABLE_ITEM_AMMO && GetRandomFloat(0.001,1.0) > GetConVarFloat(g_hCvarFinaleAmmoChance) && !g_bNoAmmo)
-            {
-                // don't touch ammo piles on finales
-                continue;
-            }
-            
             
             // the entity was randomize material, delete it now
             AcceptEntityInput(i, "Kill");
@@ -1512,10 +1505,10 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
         }
     }
     else if (_:g_iSpecialEvent == EVT_L4D1) {
-        if (randomIndex == INDEX_MELEE || randomIndex == INDEX_T3) { randomIndex = INDEX_PISTOL; }
+        if ( randomIndex == INDEX_MELEE || randomIndex == INDEX_T3 || randomIndex == INDEX_UPGRADE ) { randomIndex = INDEX_PISTOL; }
     }
     else if (_:g_iSpecialEvent == EVT_GUNSWAP) {
-        if (randomIndex == INDEX_AMMO || randomIndex == INDEX_UPGRADE) { randomIndex = (GetRandomInt(0,1)) ? INDEX_THROWABLE : INDEX_PILL; }
+        if ( randomIndex == INDEX_AMMO || randomIndex == INDEX_UPGRADE ) { randomIndex = (GetRandomInt(0,1)) ? INDEX_THROWABLE : INDEX_PILL; }
     }
     
     switch (randomIndex)
@@ -2350,6 +2343,22 @@ ChangeSurvivorSetup(index, client)
     new type = g_iArStorageSurv[index];
     new ammo = 0;
     new ammoOffset = 0;
+    
+    // if we're playing coop, strip survivor items first
+    if (g_bCampaignMode)
+    {
+        for (new i = PLAYER_SLOT_PRIMARY; i <= PLAYER_SLOT_PILL; i++)
+        {
+            
+            new weaponIndex = GetPlayerWeaponSlot(client, i);
+            if (weaponIndex > -1) {
+                new String:classname[STR_MAX_WPCLASSNAME];
+                GetEdictClassname(weaponIndex, classname, sizeof(classname)); 
+                RemovePlayerItem(client, weaponIndex);
+            }
+        }
+        GiveItem(client, "weapon_pistol", 0, 0);
+    }
     
     // pill-giving?
     switch (g_iArStorageSurvPills[index])
