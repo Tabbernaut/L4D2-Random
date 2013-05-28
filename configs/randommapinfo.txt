@@ -1,0 +1,545 @@
+// intro:
+//	1 = is intro map (first of campaign)
+//
+// difficulty:
+//	is offset for random difficulty rating. Gets -1 for intros and +2 for finales.
+//
+// doors:
+//	0 = no doors on map;	1 = normal amount of doors;  2 = many doors on map
+//
+// no_storm:
+//	1 = don't do any storm-related things on this map
+//
+// no_cola:
+//	1 = don't spawn cola on this map (or give points for it)
+//
+
+"RandomMap"
+{
+	"c1m1_hotel"
+	{
+		"intro"		"1"
+		"difficulty"	"0"
+		"doors"		"2"
+	}
+	"c1m2_streets"
+	{
+		"no_cola"	"1"
+		"difficulty"	"2"
+	}
+	"c1m3_mall"
+	{
+		"difficulty"	"1"
+		"doors"		"0"
+	}
+	"c1m4_atrium"
+	{
+		"difficulty"	"3"
+		"doors"		"0"
+	}
+	"c2m1_highway"
+	{
+		"intro"		"1"
+		"difficulty"	"1"
+	}
+	"c2m2_fairgrounds"
+	{
+		"difficulty"	"2"
+		"doors"		"0"
+	}
+	"c2m3_coaster"
+	{
+		"difficulty"	"3"
+		"doors"		"0"
+	}
+	"c2m4_barns"
+	{
+		"difficulty"	"1"
+		"doors"		"0"
+	}
+	"c2m5_concert"
+	{
+		"difficulty"	"2"
+		"doors"		"0"
+	}
+	"c3m1_plankcountry"
+	{
+		"intro"		"1"
+		"difficulty"	"1"
+		"doors"		"0"
+	}
+	"c3m2_swamp"
+	{
+		"difficulty"	"1"
+		"doors"		"0"
+	}
+	"c3m3_shantytown"
+	{
+		"difficulty"	"2"
+		"doors"		"0"
+	}
+	"c3m4_plantation"
+	{
+		"difficulty"	"3"
+	}
+	"c4m1_milltown_a"
+	{
+		"intro"		"1"
+	}
+	"c4m2_sugarmill_a"
+	{
+		"difficulty"	"2"
+		"doors"		"0"
+	}
+	"c4m3_sugarmill_b"
+	{
+		"difficulty"	"3"
+		"nostorm"	"1"
+		"doors"		"0"
+	}
+	"c4m4_milltown_b"
+	{
+		"difficulty"	"1"
+		"nostorm"	"1"
+	}
+	"c4m5_milltown_escape"
+	{
+		"difficulty"	"3"
+		"doors"		"0"
+	}
+	"c5m1_waterfront"
+	{
+		"intro"		"1"
+	}
+	"c5m2_park"
+	{
+		"difficulty"	"2"
+		"doors"		"0"
+	}
+	"c5m3_cemetery"
+	{
+		"difficulty"	"2"
+		"doors"		"0"
+	}
+	"c5m4_quarter"
+	{
+		"difficulty"	"2"
+	}
+	"c5m5_bridge"
+	{
+		"difficulty"	"1"
+		"doors"		"0"
+	}
+	"c6m1_riverbank"
+	{
+		"intro"		"1"
+		"difficulty"	"1"
+		"no_storm"	"1"
+		"no_witch"	"1"
+	}
+	"c6m2_bedlam"
+	{
+		"difficulty"	"3"
+	}
+	"c6m3_port"
+	{
+		"difficulty"	"3"
+		"doors"		"0"
+	}
+	"c7m1_docks"
+	{
+		"intro"		"1"
+		"difficulty"	"1"
+	}
+	"c7m2_barge"
+	{
+		"difficulty"	"3"
+	}
+	"c7m3_port"
+	{
+		"difficulty"	"3"
+	}
+	"c8m1_apartment"
+	{
+		"intro"		"1"
+		"doors"		"2"
+	}
+	"c8m2_subway"
+	{
+		"difficulty"	"1"
+	}
+	"c8m3_sewers"
+	{
+		"difficulty"	"3"
+	}
+	"c8m4_interior"
+	{
+		"difficulty"	"1"
+		"doors"		"2"
+	}
+	"c8m5_rooftop"
+	{
+		"difficulty"	"2"
+		"doors"		"0"
+	}
+	"c9m1_alleys"
+	{
+		"intro"		"1"
+		"difficulty"	"2"
+		"doors"		"2"
+	}
+	"c9m2_lots"
+	{
+		"difficulty"	"3"
+		"doors"		"2"
+	}
+	"c10m1_caves"
+	{
+		"intro"		"1"
+		"difficulty"	"1"
+		"doors"		"0"
+	}
+	"c10m2_drainage"
+	{
+		"difficulty"	"1"
+		"doors"		"0"
+	}
+	"c10m3_ranchhouse"
+	{
+		"difficulty"	"2"
+	}
+	"c10m4_mainstreet"
+	{
+		"difficulty"	"2"
+	}
+	"c10m5_houseboat"
+	{
+		"difficulty"	"3"
+	}
+	"c11m1_greenhouse"
+	{
+		"intro"		"1"
+		"difficulty"	"0"
+	}
+	"c11m2_offices"
+	{
+		"difficulty"	"2"
+		"doors"		"2"
+	}
+	"c11m3_garage"
+	{
+		"difficulty"	"3"
+	}
+	"c11m4_terminal"
+	{
+		"difficulty"	"2"
+		"doors"		"2"
+	}
+	"c11m5_runway"
+	{
+		"difficulty"	"2"
+		"doors"		"0"
+	}
+	"c12m1_hilltop"
+	{
+		"intro"		"1"
+		"difficulty"	"0"
+		"doors"		"0"
+	}
+	"c12m2_traintunnel"
+	{
+		"difficulty"	"1"
+	}
+	"c12m3_bridge"
+	{
+		"difficulty"	"2"
+	}
+	"c12m4_barn"
+	{
+		"difficulty"	"1"
+	}
+	"c12m5_cornfield"
+	{
+		"difficulty"	"3"
+		"doors"		"1"
+	}
+	"c13m1_alpinecreek"
+	{
+		"intro"		"1"
+		"difficulty"	"1"
+		"doors"		"0"
+	}
+	"c13m2_southpinestream"
+	{
+		"difficulty"	"2"
+		"doors"		"0"
+	}
+	"c13m3_memorialbridge"
+	{
+		"difficulty"	"2"
+		"doors"		"0"
+	}
+	"c13m4_cutthroatcreek"
+	{
+		"difficulty"	"3"
+		"doors"		"0"
+	}
+	"c5m1_darkwaterfront"
+	{
+		"intro"		"1"
+	}
+	"c5m2_darkpark"
+	{
+		"difficulty"	"2"
+		"doors"		"0"
+	}
+	"c5m3_darkcemetery"
+	{
+		"difficulty"	"3"
+		"doors"		"0"
+	}
+	"c5m4_darkquarter"
+	{
+		"difficulty"	"3"
+		"doors"		"2"
+	}
+	"c5m5_darkbridge"
+	{
+		"difficulty"	"1"
+		"doors"		"0"
+	}
+	"cdta_01detour"
+	{
+		"intro"		"1"
+	}
+	"cdta_02road"
+	{
+	}
+	"cdta_03warehouse"
+	{
+	}
+	"cdta_04onarail"
+	{
+	}
+	"cdta_05finalroad"
+	{
+		"difficulty" 	"1"
+	}
+	"l4d_ihm01_forest"
+	{
+		"intro"		"1"
+		"difficulty" 	"2"
+	}
+	"l4d_ihm02_manor"
+	{
+		"difficulty" 	"3"
+	}
+	"l4d_ihm03_underground"
+	{
+		"difficulty" 	"4"
+	}
+	"l4d_ihm04_lumberyard"
+	{
+		"difficulty" 	"3"
+	}
+	"l4d_ihm05_lakeside"
+	{
+		"difficulty" 	"3"
+	}
+	"bloodtracks_01"
+	{
+		"intro"		"1"
+	}
+	"bloodtracks_02"
+	{
+	}
+	"bloodtracks_03"
+	{
+	}
+	"bloodtracks_04"
+	{
+		"difficulty" 	"3"
+	}
+	// carried off
+	"cwm1_intro"
+	{
+		"intro"		"1"
+	}
+	"cwm2_warehouse"
+	{
+	}
+	"cwm3_drain"
+	{
+	}
+	"cwm4_building"
+	{
+		"difficulty"	"3"
+	}
+	"l4d2_stadium1_apartment"
+	{
+		"intro"		"1"
+		"difficulty"	"1"
+	}
+	"l4d2_stadium2_riverwalk"
+	{
+		"difficulty"	"2"
+	}
+	"l4d2_stadium3_city1"
+	{
+		"difficulty"	"2"
+	}
+	"l4d2_stadium4_city2"
+	{
+		"difficulty"	"2"
+	}
+	"l4d2_stadium5_stadium"
+	{
+		"difficulty"	"2"
+	}
+	"hf01_theforest"
+	{
+		"intro"		"1"
+	}
+	"hf02_thesteeple"
+	{
+	}
+	"hf03_themansion"
+	{
+	}
+	"hf04_escape"
+	{
+		"difficulty"	"2"
+	}
+	"srocchurch"
+	{
+		"intro"		"1"
+		"difficulty"	"2"
+	}
+	"plaza_espana"
+	{
+		"difficulty"	"2"
+	}
+	"maria_cristina"
+	{
+		"difficulty"	"2"
+	}
+	"mnac"
+	{
+		"difficulty"	"3"
+	}
+	"l4d2_bts01_forest"
+	{
+		"intro"		"1"
+		"difficulty"	"2"
+	}
+	"l4d2_bts02_station"
+	{
+		"difficulty"	"2"
+	}
+	"l4d2_bts03_town"
+	{
+		"difficulty"	"3"
+	}
+	"l4d2_bts04_cinema"
+	{
+		"difficulty"	"3"
+	}
+	"l4d2_bts05_church"
+	{
+		"difficulty"	"3"
+	}
+	"l4d2_bts06_school"
+	{
+		"difficulty"	"4"
+	}
+	"l4d2_diescraper1_apartment_33"
+	{
+		"intro"		"1"
+		"difficulty"	"1"
+	}
+	"l4d2_diescraper2_streets_33"
+	{
+		"difficulty"	"2"
+	}
+	"l4d2_diescraper3_mid_33"
+	{
+		"difficulty"	"3"
+	}
+	"l4d2_diescraper4_top_33"
+	{
+		"difficulty"	"3"
+	}
+	"l4d_dbd2dc_anna_is_gone"
+	{
+		"intro"		"1"
+		"difficulty"	"1"
+	}
+	"l4d_dbd2dc_the_mall"
+	{
+		"difficulty"	"3"
+	}
+	"l4d_dbd2dc_clean_up"
+	{
+		"difficulty"	"3"
+	}
+	"l4d_dbd2dc_undead_center"
+	{
+		"difficulty"	"3"
+	}
+	"l4d_dbd2dc_new_dawn"
+	{
+		"difficulty"	"3"
+	}
+	// heaven can wait II
+	"AirCrash"
+	{
+		"intro"		"1"
+	}
+	"RiverMotel"
+	{
+	}
+	"OutSkirts"
+	{
+	}
+	"CityHall"
+	{
+	}
+	"BombShelter"
+	{
+		"difficulty" 	"2"
+	}
+	"l4d_149_1"
+	{
+		"intro"		"1"
+	}
+	"l4d_149_2"
+	{
+	}
+	"l4d_149_3"
+	{
+	}
+	"l4d_149_4"
+	{
+	}
+	"l4d_149_5"
+	{
+		"difficulty"	"2"
+	}
+	"l4d2_city17_01"
+	{
+		"intro"		"1"
+	}
+	"l4d2_city17_02"
+	{
+	}
+	"l4d2_city17_03"
+	{
+	}
+	"l4d2_city17_04"
+	{
+	}
+	"l4d2_city17_05"
+	{
+		"difficulty" 	"2"
+	}
+}
