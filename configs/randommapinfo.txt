@@ -274,6 +274,7 @@
 	{
 		"difficulty"	"2"
 		"doors"		"0"
+		"no_tank"	"1"
 	}
 	"c13m3_memorialbridge"
 	{
