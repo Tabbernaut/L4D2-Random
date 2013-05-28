@@ -30,7 +30,7 @@ L4D2_Random
             
     to-do:
     ------
-            - bugfix:   gunswap is STILL broken: spawns weapons (t3, t2, etc) in saferoom (nowhere else though)
+            - keep eye on: double damage bonus reporting, locally.. is this a problem?
             
             - bugfix:   fix campaign mode random:
                             - remove items that the survivors bring and use all items in the map? fix for events
@@ -38,7 +38,7 @@ L4D2_Random
                         - cannot reproduce locally.
             
             - medium:   force witch in same spots for both teams (no matter how many witches)
-            - medium:   make separate 'randmap' config: with stabby's random map stuff.
+            - medium:   test and include stabby's random map stuff so people can launch random campaigns after loading random
             
             - low:      think of better boomcombo reward for groupies/women event
             - low:      make time penalty event work with pauses (and change its weight)
@@ -47,10 +47,11 @@ L4D2_Random
             - superlow: randomize hittables: if a car is positioned normally (not at a weird angle), give odds to replace with forklift or log?
             - superlow: team randomizer function (!randteams) (use all players currently in teams, or include specs if less than required team size)
             - superlow: random team going first per round in versus. how? possible? worth the effort?
-            
+            - superlow: finale ammo (leaving it 'untouched') doesn't work very well with restoreitems.. find better way (only a problem if < 1.0 ammo kept)
             
     minor cleanup / details
     -----------------------
+            - nitpick:  gunswap event: survivors don't start with same weapons
             - glitch:   c10m3 is seen as 'a finale' (check separately?)
             - reminder: remove sm_voc / sm_voc_this commands for final version
             - code:     Clean up the l4d_drop copied code some more.

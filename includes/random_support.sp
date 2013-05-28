@@ -23,27 +23,35 @@
 // called as timer (to avoid some problems)
 public Action: SUPPORT_RoundPreparation(Handle:timer)
 {
+    // only reset on first roundhalf:
+    if (!g_bSecondHalf)
+    {
+        g_bStripperAltDetected = false;
+    }
+    
+    // only reset on first roundhalf or if event's not equal
+    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_EVENT))
+    {
+        g_bNoPriWeapons = false;
+        g_bNoSecWeapons = false;
+        g_bNoAmmo = false;
+        g_bSpecialEventPlayerCheck = false;
+    }
+    
     // called before randomization
     g_bIsFirstAttack = true;
     g_bPlayersLeftStart = false;
     g_bFirstReportDone = false;
-    g_bStripperAltDetected = false;
     g_iSpectateGhostCount = 0;
+    
+    g_bInsightSurvDone = false;         // so we only get the insight effect from a gift once per roundhalf
+    g_bInsightInfDone = false;
     
     g_bFirstTankSpawned = false;
     g_bIsTankInPlay = false;
     g_iTankClient = 0;
     
     g_iBonusCount = 0;
-    
-    g_bInsightSurvDone = false;         // so we only get the insight effect from a gift once per roundhalf
-    g_bInsightInfDone = false;
-    
-    g_bSpecialEventPlayerCheck = false;
-    g_bNoPriWeapons = false;
-    g_bNoSecWeapons = false;
-    g_bNoAmmo = false;
-    
     g_fDudTimeExpire = 0.0;
     
     // basic cleanup

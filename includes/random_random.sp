@@ -1435,6 +1435,11 @@ RestoreItems()
                 GetEntPropString(i, Prop_Data, "m_ModelName", modelname, STR_MAX_MODELNAME);
                 if (!GetTrieValue(g_hTrieRandomizablePropPhysicsModel, modelname, classnameRoN)) { continue; }          // if it's not one of the prop_physics models, don't worry about it
             }
+            else if (L4D_IsMissionFinalMap() && classnameRoN == RANDOMIZABLE_ITEM_AMMO && GetRandomFloat(0.001,1.0) > GetConVarFloat(g_hCvarFinaleAmmoChance) && !g_bNoAmmo)
+            {
+                // don't touch ammo piles on finales
+                continue;
+            }
             
             
             // the entity was randomize material, delete it now
