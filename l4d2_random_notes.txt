@@ -15,7 +15,6 @@ L4D2_Random
             
             in doubt
             --------
-            
             - gnome VIP: only one gnome spawns (start saferoom), it must be brought or the end saferoom won't close
                 or: gnome heaven, where the only way to score (many) points is to bring gnomes
                 - for example: given only 1 gnome: distance points are frozen unless gnome is held
@@ -26,24 +25,26 @@ L4D2_Random
             - weird SI: random SI abilities (CRox's code) -- just give every SI a random ability...
             - clockwork: clockwork timed spawns, deaths, rinse repeat (no tank?)
             - 'fallen survivor hunt'
-            - quad damage [stab]
-                one player gets special glow / sound => deals 4* damage
-                tag-game: SI and survivors get quad, it switches when one hits another
+            - quad damage [stab] -- one player gets special glow / sound => deals 4* damage -- tag-game: SI and survivors get quad, it switches when one hits another
                 
             
     to-do:
     ------
+            - bugfix:   gunswap is STILL broken: spawns weapons (t3, t2, etc) in saferoom (nowhere else though)
+            
             - bugfix:   fix campaign mode random:
                             - remove items that the survivors bring and use all items in the map? fix for events
             - bugfix:   multiwitch: message doesn't show for second team, only one witch spawned, though.
                         - cannot reproduce locally.
             
+            - medium:   force witch in same spots for both teams (no matter how many witches)
             - medium:   make separate 'randmap' config: with stabby's random map stuff.
-            - low:      randomize hittables: if a car is positioned normally (not at a weird angle), give odds to replace with forklift or log?
             
             - low:      think of better boomcombo reward for groupies/women event
             - low:      make time penalty event work with pauses (and change its weight)
+                            command listener for "pause" + sv_pausable = enabled check?
             
+            - superlow: randomize hittables: if a car is positioned normally (not at a weird angle), give odds to replace with forklift or log?
             - superlow: team randomizer function (!randteams) (use all players currently in teams, or include specs if less than required team size)
             - superlow: random team going first per round in versus. how? possible? worth the effort?
             

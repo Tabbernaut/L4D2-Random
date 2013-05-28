@@ -6,8 +6,6 @@ new     Handle:         g_hTrieRandomizableEntity                           = IN
 new     Handle:         g_hTrieRandomizablePropPhysicsModel                 = INVALID_HANDLE;       // trie for recognizing models of prop_physics to replace
 new     Handle:         g_hTrieEntityCreated                                = INVALID_HANDLE;       // trie for recognizing classnames of entities to handle
 new     Handle:         g_hTrieMeleeType                                    = INVALID_HANDLE;       // trie for recognizing which melees are 'normal'
-new     Handle:         g_hTrieMaps                                         = INVALID_HANDLE;       // trie for recognizing intro maps
-new     Handle:         g_hTrieMapsDoors                                    = INVALID_HANDLE;       // trie for recognizing whether a map has little or many doors
 new     Handle:         g_hTrieBlindable                                    = INVALID_HANDLE;       // trie for recognizing some problematic entities
 new     Handle:         g_hTriePenaltyItems                                 = INVALID_HANDLE;       // trie for recognizing items that carry a penalty on EVT_PEN_ITME
 new     Handle:         g_hTriePropItems                                    = INVALID_HANDLE;       // trie for recognizing prop items that can be carried (for EVT_ENCUMBERED)
@@ -168,7 +166,6 @@ new     bool:           g_bEarlyLock                                        = fa
 new                     g_iSpecialEventRole                                 = 0;                    // for player-selecting special events
 new                     g_iDefaultDistance                                  = 0;                    // how much distance the map is worth normally (at OnMapStart)
 new                     g_iDamageBonus                                      = 0;                    // how much bonus for this round (half) can be got (maximally)
-new     bool:           g_bNoColaItem                                       = false;                // disallow the cola item to spawn (anywhere but in the DeC2 store)
 
 // Insight
 new     bool:           g_bInsightSurvDone                                  = false;                // already 'had insight'?
@@ -210,6 +207,15 @@ new     Handle:         g_hTimePenaltyTimer                                 = IN
 new                     g_iTimePenaltyCounter                               = 0;                    // counts seconds for the time penalty
 
 
+// RandomMapInfo keyvalues
+new     Handle:         g_kRIData                                           = INVALID_HANDLE;       // keyvalues handle for randommapinfo.txt
+new     bool:           g_RI_bIsIntro                                       = false;                // only true for intro maps
+new                     g_RI_iDifficulty                                    = 0;                    // difficulty offset for this specific map
+new                     g_RI_iDoors                                         = 1;                    // 0 = no doors on map, 1 = normal, 2 = many doors
+new     bool:           g_RI_bNoStorm                                       = false;                // block storms for this map
+new     bool:           g_RI_bNoCola                                        = false;                // block cola spawns
+new     bool:           g_RI_bNoWitch                                       = false;                // block witch spawns
+
 // ConVars
 new     Handle:         g_hArCvarWeight         [INDEX_TOTAL];                                      // cvar, per randomize-type, that sets an integer weight 
 new     Handle:         g_hArCvarSurvWeight     [INDEX_SURV_TOTAL];                                 // cvar, per randomize-type, that sets an integer weight -- for handing out starting weapon
@@ -219,6 +225,7 @@ new     Handle:         g_hArCvarGiftWeight     [GIFT_TOTAL];                   
 new     Handle:         g_hCvarConfogl                                      = INVALID_HANDLE;       // cvar whether to wait one map-restart before reading default cvar values
 new     Handle:         g_hCvarStripperMode                                 = INVALID_HANDLE;       // cvar what way to use stripper
 new     Handle:         g_hCvarStripperPath                                 = INVALID_HANDLE;       // cvar stripper cfg path (base)
+new     Handle:         g_hCvarRIKeyValuesPath                              = INVALID_HANDLE;       // cvar dir to randommap.txt
 
 new     Handle:         g_hCvarEqual                                        = INVALID_HANDLE;       // cvar flags what to equalize between teams
 new     Handle:         g_hCvarDoReport                                     = INVALID_HANDLE;       // cvar whether to report anything at all

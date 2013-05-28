@@ -70,7 +70,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.19",
+    version = "1.0.20",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -385,6 +385,7 @@ public Action:Cmd_Vocalize_Specified(client, args)
 public OnPluginEnd()
 {
     INIT_CVarsReset();
+    RI_KV_Close();
     
     // storm plugin
     SUPPORT_StormReset();
@@ -677,6 +678,7 @@ public OnMapStart()
     if (g_bVeryFirstMapLoad)
     {
         INIT_CVarsGetDefault();         // do this here so the variables are config set
+        RI_KV_Load();                   // get RandomMap info (cvar now set to right dir)
         
         g_bVeryFirstMapLoad = false;
         
@@ -685,6 +687,9 @@ public OnMapStart()
         // removed from here
         // see below
     }
+    
+    // get this map's random-related info
+    RI_KV_UpdateRandomMapInfo();
     
     // try this now (the problem might have been the double_execution on timer)
     //  if it doesn't work right, just replace to above and use DELAY_FIRSTMAPLOAD again

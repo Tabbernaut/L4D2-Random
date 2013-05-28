@@ -206,11 +206,7 @@ RANDOM_DetermineRandomStuff()
     
     // get map name and type
     new String: mapname[64];
-    new mapsType: mapnameType;
     GetCurrentMap(mapname, sizeof(mapname));
-    GetTrieValue(g_hTrieMaps, mapname, mapnameType);
-    
-    if (mapnameType == MAPS_NOCOLA) { g_bNoColaItem = true; } else { g_bNoColaItem = false; }
     
     
     // some maps shouldn't have tank flow variation
@@ -233,7 +229,7 @@ RANDOM_DetermineRandomStuff()
         // finales are harder, intros easier
         if (L4D_IsMissionFinalMap()) {
             g_iDifficultyRating += 2;
-        } else if (mapnameType == MAPS_INTRO) {
+        } else if (g_RI_bIsIntro) {
             g_iDifficultyRating--;
         }
     }
@@ -646,7 +642,7 @@ RANDOM_DetermineRandomStuff()
         g_bTankWillSpawn = true;
     }
     
-    if (bBlockWitch) {
+    if (bBlockWitch || g_RI_bNoWitch) {
         L4D2Direct_SetVSWitchToSpawnThisRound(0, false);
         L4D2Direct_SetVSWitchToSpawnThisRound(1, false);
         g_bWitchWillSpawn = false;
@@ -669,7 +665,7 @@ RANDOM_DetermineRandomStuff()
     {
         if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
         {
-            if (mapnameType != MAPS_INTRO && !L4D_IsMissionFinalMap() && GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarDoubleTankChance))
+            if (!g_RI_bIsIntro && !L4D_IsMissionFinalMap() && GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarDoubleTankChance))
             {
                 g_bDoubleTank = true;
                 
@@ -1258,7 +1254,7 @@ RandomizeItems()
                 case INDEX_SILLY:
                 {
                     new tmpRnd = GetRandomInt(0, 2);
-                    if (!g_bNoColaItem && tmpRnd == 1) {
+                    if (!g_RI_bNoCola && tmpRnd == 1) {
                         g_strArStorage[curEnt][entPickedType] = PCK_SILLY_COLA;
                     } else {
                         g_strArStorage[curEnt][entPickedType] = PCK_SILLY_GNOME;
@@ -1635,7 +1631,7 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
         }
         
         case INDEX_SILLY: {
-            if (!g_bNoColaItem && GetRandomInt(0, 1) == 0) { randomPick = PCK_SILLY_COLA; } else { randomPick = PCK_SILLY_GNOME; }
+            if (!g_RI_bNoCola && GetRandomInt(0, 1) == 0) { randomPick = PCK_SILLY_COLA; } else { randomPick = PCK_SILLY_GNOME; }
         }
         
         case INDEX_GIFT: {
@@ -2688,7 +2684,7 @@ RANDOM_DoGiftEffect(client, entity)
         new randomIndex = GetRandomInt( (inSaferoom) ? g_iGiftWeightedChoicesStartPosSaferoom : 0, (g_bInsightSurvDone) ? g_iGiftWeightedChoicesStartPosInsight - 1 : g_iGiftWeightedChoicesStartNegative - 1 );
         new randomPick = g_iArGiftWeightedChoices[randomIndex];
         
-        PrintToChatAll("client: %i, Entity: %i: pos pick: %i", client, entity, randomPick);
+        //PrintToChatAll("client: %i, Entity: %i: pos pick: %i", client, entity, randomPick);
         
         switch (randomPick)
         {
@@ -2838,7 +2834,7 @@ RANDOM_DoGiftEffect(client, entity)
         new randomIndex = GetRandomInt( (inSaferoom) ? g_iGiftWeightedChoicesStartNegSaferoom : g_iGiftWeightedChoicesStartNegative, (g_bInsightInfDone || g_bCampaignMode ) ? g_iGiftWeightedChoicesStartNegInsight - 1 : g_iGiftWeightedChoicesTotal - 1 );
         new randomPick = g_iArGiftWeightedChoices[randomIndex];
         
-        PrintToChatAll("client: %i, Entity: %i: neg pick: %i", client, entity, randomPick);
+        //PrintToChatAll("client: %i, Entity: %i: neg pick: %i", client, entity, randomPick);
         
         switch (randomPick)
         {
@@ -3674,15 +3670,6 @@ RANDOM_PrepareChoicesEvents()
     new total = 0;
     new count = 0;
     
-    // check map type
-    new String: mapname[64];
-    new mapsType: mapnameType;
-    new mapsType: mapnameStorm;
-    
-    GetCurrentMap(mapname, sizeof(mapname));
-    GetTrieValue(g_hTrieMapsDoors, mapname, mapnameType);
-    GetTrieValue(g_hTrieMaps, mapname, mapnameStorm);
-    
     
     // special event choices
     // ---------------------
@@ -3720,21 +3707,21 @@ RANDOM_PrepareChoicesEvents()
         // many or no doors? change event availability
         if ( i == EVT_DOORS || i == EVT_KEYMASTER )
         {
-            if (mapnameType == MAPS_NODOORS) {
+            if (g_RI_iDoors == 0) {
                 continue;
             }
-            else if (mapnameType == MAPS_MANYDOORS) {
+            else if (g_RI_iDoors == 2) {
                 count *= MANY_DOORS_EVENTFACTOR;
             }
         }
         
-        // storm maps? not on intros or nostorm maps
-        if ( i == EVT_WEATHER || i == EVT_FOG )
+        // storm maps? trying with intro now, see if it works..
+        if ( g_RI_bNoStorm && ( i == EVT_WEATHER || i == EVT_FOG ) )
         {
-            if (mapnameStorm == MAPS_INTRO || mapnameStorm == MAPS_NOSTORM) {
-                continue;
-            }
+            continue;
         }
+        
+        // note: on g_RI_bNoWitch, block future EVT_MINIWITCH event...
         
         for (new j=0; j < count; j++)
         {

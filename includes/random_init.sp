@@ -17,6 +17,7 @@ INIT_DefineCVars()
     g_hCvarConfogl = CreateConVar(                          "rand_confogl",                  "1",       "Whether random is loaded as a confogl matchmode (changes the way cvar defaults are read).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarStripperMode = CreateConVar(                     "rand_stripper_mode",            "2",       "When using Stripper:Source: mode 0 = don't change dir; 1 = toggle standard and _alt (50%); 2 = standard + _alt (33%); 3 = same, but (25%).", FCVAR_PLUGIN, true, 0.0, true, 2.0);
     g_hCvarStripperPath = CreateConVar(                     "rand_stripper_path",            "addons/stripper", "The Stripper:Source directory random uses as its base.", FCVAR_PLUGIN);
+    g_hCvarRIKeyValuesPath = CreateConVar(                  "rand_randominfo_path",          "configs/randommapinfo.txt", "The path to the randommap.txt with keyvalues for per-map random settings.", FCVAR_PLUGIN);
     
     g_hCvarEqual = CreateConVar(                            "rand_equal",                  "2047",      "[Flags] What to keep equal between each team's survivor round (1: items; 2: doors; 4: glows; 8: event; 16: incaps; 32: horde; 64: item weighting; 128: starting health; 256: first attack; 512: tanks; 1024: scoring).", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarDoReport = CreateConVar(                         "rand_report",                   "1",       "Whether to do automatic reports at the start of a round.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
@@ -325,78 +326,10 @@ INIT_FillTries()
     SetTrieValue(g_hTrieMeleeType, "golfclub",                  MELEE_NORMAL);
     SetTrieValue(g_hTrieMeleeType, "hunting_knife",             MELEE_WEIRD);
     
-    g_hTrieMaps = CreateTrie();
-    SetTrieValue(g_hTrieMaps, "c1m1_hotel",                     MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "c2m1_highway",                   MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "c3m1_plankcountry",              MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "c4m1_milltown_a",                MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "c5m1_waterfront",                MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "c6m1_riverbank",                 MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "c7m1_docks",                     MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "c8m1_apartment",                 MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "c9m1_alleys",                    MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "c10m1_caves",                    MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "c11m1_greenhouse",               MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "c12m1_hilltop",                  MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "c13m1_alpinecreek",              MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "c5m1_darkwaterfront",            MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "bloodtracks_01",                 MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "gasfever_1",                     MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "cdta_01detour",                  MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "l4d2_stadium1_apartment",        MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "l4d_ihm01_forest",               MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "l4d2_diescraper1_apartment_33",  MAPS_INTRO);
-    SetTrieValue(g_hTrieMaps, "c1m2_streets",                   MAPS_NOCOLA);
-    SetTrieValue(g_hTrieMaps, "c4m3_sugarmill_b",               MAPS_NOSTORM);
-    SetTrieValue(g_hTrieMaps, "c4m4_milltown_b",                MAPS_NOSTORM);
-    
-    g_hTrieMapsDoors = CreateTrie();
-    SetTrieValue(g_hTrieMaps, "c1m1_hotel",                     MAPS_MANYDOORS);
-    SetTrieValue(g_hTrieMaps, "c8m1_apartment",                 MAPS_MANYDOORS);
-    SetTrieValue(g_hTrieMaps, "c8m4_interior",                  MAPS_MANYDOORS);
-    SetTrieValue(g_hTrieMaps, "c9m1_alleys",                    MAPS_MANYDOORS);
-    SetTrieValue(g_hTrieMaps, "c9m2_lots",                      MAPS_MANYDOORS);
-    SetTrieValue(g_hTrieMaps, "c11m2_offices",                  MAPS_MANYDOORS);
-    SetTrieValue(g_hTrieMaps, "c11m4_terminal",                 MAPS_MANYDOORS);
-    SetTrieValue(g_hTrieMaps, "c1m4_atrium",                    MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c2m2_fairgrounds",               MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c2m5_concert",                   MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c3m1_plankcountry",              MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c3m2_swamp",                     MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c3m3_shantytown",                MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c3m4_plantation",                MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c4m2_sugarmill_a",               MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c4m3_sugarmill_b",               MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c4m5_milltown_escape",           MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c5m2_park",                      MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c5m3_cemetery",                  MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c5m5_bridge",                    MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c6m3_port",                      MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c7m1_docks",                     MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c7m3_port",                      MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c8m5_rooftop",                   MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c10m1_caves",                    MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c10m2_drainage",                 MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c11m5_runway",                   MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c12m1_hilltop",                  MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c13m1_alpinecreek",              MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c13m2_southpinestream",          MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c13m3_memorialbridge",           MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c13m4_cutthroatcreek",           MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c5m2_darkpark",                  MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c5m3_darkcemetery",              MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "c5m5_darkbridge",                MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "cdta_05finalroad",               MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "hf04_escape",                    MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "mnac",                           MAPS_NODOORS);
-    SetTrieValue(g_hTrieMaps, "BombShelter",                    MAPS_NODOORS);
-    
-    
     g_hTrieBlindable = CreateTrie();
     SetTrieValue(g_hTrieBlindable, "predicted_viewmodel",       ENTITY_NOT_BLINDABLE);
     SetTrieValue(g_hTrieBlindable, "instanced_scripted_scene",  ENTITY_NOT_BLINDABLE);
     SetTrieValue(g_hTrieBlindable, "func_occluder",             ENTITY_NOT_BLINDABLE);
-    
     
     g_hTriePenaltyItems = CreateTrie();
     SetTrieValue(g_hTriePenaltyItems, "melee",                      ITEM_PICKUP_PENALTY_MELEE);
@@ -514,6 +447,70 @@ INIT_PrepareAllSDKCalls()
     CloseHandle(g_confRaw);
 }
 
+
+
+// KeyValues for random's map properties
+// -------------------------------------
+RI_KV_Close()
+{
+    if (g_kRIData == INVALID_HANDLE) { return; }
+    CloseHandle(g_kRIData);
+    g_kRIData = INVALID_HANDLE;
+}
+
+RI_KV_Load()
+{
+    decl String:sNameBuff[PLATFORM_MAX_PATH];
+    
+    GetConVarString(g_hCvarRIKeyValuesPath, sNameBuff, sizeof(sNameBuff));
+    
+    g_kRIData = CreateKeyValues("RandomMap");
+    BuildPath(Path_SM, sNameBuff, sizeof(sNameBuff), sNameBuff);
+    
+    if (!FileToKeyValues(g_kRIData, sNameBuff))
+    {
+        LogError("[RI] Couldn't load RandomMapInfo data!");
+        RI_KV_Close();
+        return;
+    }
+}
+
+bool: RI_KV_UpdateRandomMapInfo()
+{
+    g_RI_bIsIntro = false;      // whether the map is the first of campaign
+    g_RI_iDifficulty = 0;       // difficulty offset for map
+    g_RI_iDoors = 1;            // normal doors amount (2 = many, 0 = no doors)
+    g_RI_bNoStorm = false;      // whether there shouldn't be storms on the map
+    g_RI_bNoCola = false;       // whether we should block cola on the map
+    g_RI_bNoWitch = false;      // whether we should block witches
+    
+    new String: mapname[64];
+    GetCurrentMap(mapname, sizeof(mapname));
+    
+    // get keyvalues
+    if (KvJumpToKey(g_kRIData, mapname))
+    {
+        g_RI_bIsIntro = bool: (KvGetNum(g_kRIData, "intro", 0));
+        g_RI_iDifficulty = KvGetNum(g_kRIData, "difficulty", g_RI_iDifficulty);
+        g_RI_iDoors = KvGetNum(g_kRIData, "doors", g_RI_iDoors);
+        g_RI_bNoStorm = bool: (KvGetNum(g_kRIData, "no_storm", 0));
+        g_RI_bNoCola = bool: (KvGetNum(g_kRIData, "no_cola", 0));
+        g_RI_bNoWitch = bool: (KvGetNum(g_kRIData, "no_witch", 0));
+        return true;
+    }
+    
+    // no keyvalue set found for map:
+    LogMessage("[RI] RandomMapInfo for %s is missing.", mapname);
+    
+    // if no data found, set default stuff we should assume
+    if (L4D_IsMissionFinalMap())
+    {
+        g_RI_iDifficulty = 2;
+        g_RI_iDoors = 0;
+    }
+    
+    return false;
+}
 
 // melee weapon classes
 // melee stuff

@@ -1,5 +1,5 @@
 1.0
-- Now has damage bonus scoring instead of health bonus (equal to map distance, with some random variation). Beautified bonus reporting.
+- Now uses damage bonus scoring instead of health bonus (equal to map distance, with some random variation, no fixed survival bonus). Beautified bonus reporting.
 - Now has Gnome Bonus (tm) scoring. Bringing gnomes and packs of cola packs to the end saferoom will give you bonus points (scaled to the distance they had to be taken).
 - Distance points and damage bonus points vary randomly (but stay close to default values). Randumb has entirely random distance/bonus values.
 - Medkits now heal solid as normal again. In RandEasy they give the normal 80% heal, in any other mode only 50%. Defibs still bring you back in black and white mode.
@@ -21,6 +21,7 @@
 - Reduced chances of glows being disabled (15% now). On difficult rounds (tanks, special events), there's a much smaller chance of not having glows.
 - Used internal difficulty estimation for rounds to reduce the odds for particularly harsh combinations (1 incap, no glows, tough event, etc).
 - Difficulty estimation of round controls (to some extent) the amount of items that can be found on the map.
+- Now bases difficulty on (estimated) map's difficulty (see randommapinfo.txt update).
 - Multi-boomer combos spawn more and special uncommons (ie. multiple survivors each boomed by a different boomer). A quad-combo (4 boomers on 4 different survivors) spawns a megamob.
 - Pipebombs can randomly dud (33% chance to fail to explode).
 - A fair selection of maps have alternative pathing, which is randomly enabled (33% chance). A full list is available in the manual.
@@ -33,10 +34,12 @@
 - Gifts now take time to open, a progress bar is displayed. Also, added sweet third-person animations for using gifts.
 - Fixed spammy PlayerUse effect when opening gifts (caused you to insta-grab gift items).
 - Fixed items falling through floors or out of the map.
+- Blocked messing with witches on The Passing map 1 to avoid occasional crashes.
 - Tweaked item balance (yet again).
 - No spitters during tank.
 - Added AI damagefix (AI hunters/chargers take damage as if they were human-controlled).
 - Added pounce protect plugin (damage doesn't cancel hunters walljumping).
+- Now uses /configs/randommapinfo.txt to set per-map conditions. This finally makes Random configurable for any map without plugin updates now.
 - Fixed some compatibility problems with custom campaigns (on guarantees though; bug reports welcome).
 - Made plugin compatible with campaign mode (just in case anyone wants to play random coop). Separate coop config included.
 

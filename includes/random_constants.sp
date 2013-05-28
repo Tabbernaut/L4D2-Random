@@ -187,7 +187,7 @@ const           DIFF_RATING_3PRIM_THRESH    = 2;        // how high before we gu
 const           DIFF_RATING_4PRIM_THRESH    = 5;        // how high before we guarantee full load-out (primaries + secondaries)
 const Float:    DIFF_RATING_NOITEM_LOW      = 0.5;      // what a low no-item value is (for very difficult rounds)
 const Float:    DIFF_RATING_NOITEM_HIGH     = 1.5;      // what a high no-item value is (for very easy rounds)
-const           DIFF_RATING_NOITEM_DIF_HIGH = 6;        // when to force towards the lowest noitem value
+const           DIFF_RATING_NOITEM_DIF_HIGH = 8;        // when to force towards the lowest noitem value
 const           DIFF_RATING_NOITEM_DIF_LOW  = 0;        // when to force towards the highest noitem value
 
 
@@ -454,17 +454,6 @@ enum itemUseType               // for use with tries to check if an item is some
     ITEM_USE_COLA,
     ITEM_USE_PROP,
     ITEM_USE_AMMO
-}
-
-enum mapsType                   // for use with tries to check map type (intro or not)
-{
-    MAPS_NORMAL,
-    MAPS_INTRO,
-    MAPS_FINALE,
-    MAPS_NOCOLA,                // DC2, no cola spawns
-    MAPS_NOSTORM,               // HR3/4, no storm events
-    MAPS_MANYDOORS,
-    MAPS_NODOORS
 }
 
 enum CreatedEntityType          // for use with tries to determine whether to handle onEntityCreated
