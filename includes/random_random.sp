@@ -208,7 +208,7 @@ RANDOM_DetermineRandomStuff()
     // keep old difficulty-rating if it's the second half
     if (!g_bSecondHalf)
     {
-        g_iDifficultyRating = 0;
+        g_iDifficultyRating = g_RI_iDifficulty;
         
         // finales are harder, intros easier
         if (L4D_IsMissionFinalMap()) {

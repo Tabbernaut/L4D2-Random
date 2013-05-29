@@ -351,12 +351,16 @@
 	"bloodtracks_01"
 	{
 		"intro"		"1"
+		"difficulty"	"1"
 	}
 	"bloodtracks_02"
 	{
+		"difficulty"	"2"
 	}
 	"bloodtracks_03"
 	{
+		"difficulty"	"2"
+		"no_tank"	"1"
 	}
 	"bloodtracks_04"
 	{
@@ -366,12 +370,15 @@
 	"cwm1_intro"
 	{
 		"intro"		"1"
+		"difficulty"	"1"
 	}
 	"cwm2_warehouse"
 	{
+		"difficulty"	"2"
 	}
 	"cwm3_drain"
 	{
+		"difficulty"	"2"
 	}
 	"cwm4_building"
 	{
@@ -388,11 +395,11 @@
 	}
 	"l4d2_stadium3_city1"
 	{
-		"difficulty"	"2"
+		"difficulty"	"3"
 	}
 	"l4d2_stadium4_city2"
 	{
-		"difficulty"	"2"
+		"difficulty"	"3"
 	}
 	"l4d2_stadium5_stadium"
 	{
@@ -404,9 +411,11 @@
 	}
 	"hf02_thesteeple"
 	{
+		"difficulty"	"2"
 	}
 	"hf03_themansion"
 	{
+		"difficulty"	"2"
 	}
 	"hf04_escape"
 	{
@@ -496,15 +505,19 @@
 	"AirCrash"
 	{
 		"intro"		"1"
+		"difficulty"	"0"
 	}
 	"RiverMotel"
 	{
+		"difficulty"	"2"
 	}
 	"OutSkirts"
 	{
+		"difficulty"	"2"
 	}
 	"CityHall"
 	{
+		"difficulty"	"2"
 	}
 	"BombShelter"
 	{
@@ -516,12 +529,15 @@
 	}
 	"l4d_149_2"
 	{
+		"difficulty"	"2"
 	}
 	"l4d_149_3"
 	{
+		"difficulty"	"2"
 	}
 	"l4d_149_4"
 	{
+		"difficulty"	"2"
 	}
 	"l4d_149_5"
 	{
@@ -530,15 +546,19 @@
 	"l4d2_city17_01"
 	{
 		"intro"		"1"
+		"difficulty"	"2"
 	}
 	"l4d2_city17_02"
 	{
+		"difficulty"	"2"
 	}
 	"l4d2_city17_03"
 	{
+		"difficulty"	"2"
 	}
 	"l4d2_city17_04"
 	{
+		"difficulty"	"2"
 	}
 	"l4d2_city17_05"
 	{

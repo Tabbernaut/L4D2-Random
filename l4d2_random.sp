@@ -70,7 +70,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.21",
+    version = "1.0.22",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 

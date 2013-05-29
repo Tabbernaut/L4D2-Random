@@ -249,7 +249,7 @@ const           EVT_SILENCE             = 17;
 const           EVT_PEN_ITEM            = 18;
 const           EVT_PEN_HEALTH          = 19;
 const           EVT_PEN_M2              = 20;
-const           EVT_GUNSWAP             = 21;
+const           EVT_PEN_TIME            = 21;
 const           EVT_MINITANKS           = 22;
 const           EVT_KEYMASTER           = 23;
 const           EVT_BADCOMBO            = 24;
@@ -260,7 +260,7 @@ const           EVT_SKEET               = 28;
 const           EVT_FIREPOWER           = 29;
 const           EVT_AMMO                = 30;
 const           EVT_WOMEN               = 31;
-const           EVT_PEN_TIME            = 32;
+const           EVT_GUNSWAP             = 32;
 
 const           EVT_TOTAL               = 33;
     
@@ -608,7 +608,7 @@ new const String: g_csEventText[][] =
     "\x04Pickup Penalty\x01 - Any item pickup costs \x045\x01 points.",
     "\x04Health Penalty\x01 - Using any health item costs \x0415\x01 points.",
     "\x04Shove Penalty\x01 - Using m2 on special infected costs \x0415\x01 points.",
-    "\x04Magic Gun Swap\x01 - Empty your clip to get a new weapon.",
+    "\x04Time Penalty\x01 - Every minute spent costs \x0425\x01 points.",
     "\x04Mini-Tanks\x01 - Many small tanks will spawn.",
     "\x04Keymaster\x01 - Only one player can use doors.",
     "\x04Bad Combo\x01 - Start with GL and Chainsaw.",
@@ -619,7 +619,8 @@ new const String: g_csEventText[][] =
     "\x04Firepower\x01 - Tier 2 weapons everywhere.",
     "\x04Ammo Shortage\x01 - Deploy and repack your team's ammo.",
     "[women event]",                                                                            // two variants: Axe Effect and Rock Stars, replace name in report (plus backup variant)
-    "\x04Time Penalty\x01 - Every minute spent costs \x0425\x01 points."
+    "\x04Magic Gun Swap\x01 - Empty your clip to get a new weapon."
+    
 };
 
 new const String: g_csJunkModels[][] =
