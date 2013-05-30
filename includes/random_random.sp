@@ -3125,12 +3125,25 @@ DetermineSpawnClass(any:client, any:iClass)
             // a. force max 1 charger
             if ( iClass == ZC_CHARGER && chargers > 0 ) {
                 iClass = GetRandomInt(ZC_SMOKER, ZC_JOCKEY);
+                if ( (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) && (iClass == ZC_BOOMER || iClass == ZC_SPITTER) ) {
+                    switch (GetRandomInt(0,2)) {
+                        case 0: { iClass = ZC_SMOKER; }
+                        case 1: { iClass = ZC_HUNTER; }
+                        case 2: { iClass = ZC_JOCKEY; }
+                    }
+                }
             }
             
             // b. force max 2 smokers and 2 hunters
             if ( iClass == ZC_SMOKER ) {
                 if (smokers > 1) {
                     iClass = GetRandomInt(ZC_BOOMER, (_:g_iSpecialEvent == EVT_L4D1) ? ZC_HUNTER : ZC_JOCKEY );
+                    if ( (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) && (iClass == ZC_BOOMER || iClass == ZC_SPITTER) ) {
+                        switch (GetRandomInt(0,1)) {
+                            case 0: { iClass = ZC_HUNTER; }
+                            case 1: { iClass = ZC_JOCKEY; }
+                        }
+                    }
                 }
             }
             else if ( iClass == ZC_HUNTER && _:g_iSpecialEvent != EVT_L4D1 ) {
