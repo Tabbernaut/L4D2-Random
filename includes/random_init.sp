@@ -197,8 +197,13 @@ INIT_CVarsGetDefault()
     g_iDefJockeyLimit =         GetConVarInt(FindConVar("z_jockey_limit"));
     g_iDefChargerLimit =        GetConVarInt(FindConVar("z_charger_limit"));
     
+    g_iDefAmmoSmg =             GetConVarInt(FindConVar("ammo_smg_max"));
+    g_iDefAmmoShotgun =         GetConVarInt(FindConVar("ammo_shotgun_max"));
+    g_iDefAmmoHR =              GetConVarInt(FindConVar("ammo_huntingrifle_max"));
+    g_iDefAmmoSniper =          GetConVarInt(FindConVar("ammo_sniperrifle_max"));
     g_iDefAmmoRifle =           GetConVarInt(FindConVar("ammo_assaultrifle_max"));
     g_iDefAmmoAutoShotgun =     GetConVarInt(FindConVar("ammo_autoshotgun_max"));
+    
     
     g_fDefFFFactor =            GetConVarFloat(FindConVar("survivor_friendly_fire_factor_normal"));
     

@@ -324,6 +324,10 @@ new                     g_iDefSpitterLimit                                  = 1;
 new                     g_iDefJockeyLimit                                   = 1;
 new                     g_iDefChargerLimit                                  = 1;
 
+new                     g_iDefAmmoSmg                                       = 650;
+new                     g_iDefAmmoShotgun                                   = 80;
+new                     g_iDefAmmoHR                                        = 150;
+new                     g_iDefAmmoSniper                                    = 180;
 new                     g_iDefAmmoRifle                                     = 360;
 new                     g_iDefAmmoAutoShotgun                               = 90;
 

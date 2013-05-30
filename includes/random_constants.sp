@@ -145,6 +145,7 @@ const Float:    EVENT_BOOBYTRAP_CHANCE  = 0.1;          // EVT_BOOBYTRAP    odds
 const Float:    EVENT_SKEET_HUNTERS     = 0.8;          // EVT_SKEET        odds that a capping SI is a hunter
 const Float:    EVENT_FIREPOWER_AMMO    = 1.25;         // EVT_FIREPOWER    factor that ammo for T2 weapons is multiplied
 const Float:    EVENT_AMMO_PACKTIME     = 3.0;          // EVT_AMMO         time it takes to repack ammo
+const Float:    EVENT_MAXAMMO_FACTOR    = 0.5;          // EVT_AMMO         how much ammo max in weapons
 const Float:    EVENT_AMMO_FACTOR       = 0.12;         // EVT_AMMO         how much ammo there is in weapons lying around
 const Float:    EVENT_WOMEN_LIMITTIME   = 7.5;          // EVT_WOMEN        how long per combo-step to keep increased common limit
 const           EVENT_WOMEN_EXTRACOMMON = 5;            // EVT_WOMEN        how many extra common per combo (limit increase)

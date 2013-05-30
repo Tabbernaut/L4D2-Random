@@ -39,6 +39,8 @@ L4D2_Random
             
             - medium:   test and include stabby's random map stuff so people can launch random campaigns after loading random
             
+            - low:      add gascans (like those in DK1) to randomization list
+
             - superlow: randomize hittables: if a car is positioned normally (not at a weird angle), give odds to replace with forklift or log?
             - superlow: team randomizer function (!randteams) (use all players currently in teams, or include specs if less than required team size)
             - superlow: random team going first per round in versus. how? possible? worth the effort?
@@ -84,15 +86,6 @@ L4D2_Random
             c12m5       cornfield changes
           
 
-    FAQ's
-    -----
-        - I hate things like Buy- and Perkmods, incapped crawling, and RPG mods. Will I hate Random too?
-        - I hate T2s and medkits, should I try Random?
-        - Is Random ready for tournaments?
-        - Does Random work with custom campaigns?
-        - What is 'random' about Random?
-        - I don't want to install confogl. How do I install Random for campaign mode only? 
-        - Where is the source code for Random?
         
         
     ideas:

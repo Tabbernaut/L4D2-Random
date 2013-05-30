@@ -562,6 +562,13 @@ RANDOM_DetermineRandomStuff()
                 case EVT_AMMO: {
                     g_bNoAmmo = true;
                     g_bSpecialEventPlayerCheck = true;
+                    
+                    SetConVarInt(FindConVar("ammo_smg_max"), RoundFloat( float(g_iDefAmmoSmg) * EVENT_MAXAMMO_FACTOR) );
+                    SetConVarInt(FindConVar("ammo_shotgun_max"), RoundFloat( float(g_iDefAmmoShotgun) * EVENT_MAXAMMO_FACTOR) );
+                    SetConVarInt(FindConVar("ammo_huntingrifle_max"), RoundFloat( float(g_iDefAmmoHR) * EVENT_MAXAMMO_FACTOR) );
+                    SetConVarInt(FindConVar("ammo_sniperrifle_max"), RoundFloat( float(g_iDefAmmoSniper) * EVENT_MAXAMMO_FACTOR) );
+                    SetConVarInt(FindConVar("ammo_assaultrifle_max"), RoundFloat( float(g_iDefAmmoRifle) * EVENT_MAXAMMO_FACTOR) );
+                    SetConVarInt(FindConVar("ammo_autoshotgun_max"), RoundFloat( float(g_iDefAmmoAutoShotgun) * EVENT_MAXAMMO_FACTOR) );
                 }
                 case EVT_WOMEN: {
                     g_bNoPriWeapons = true;

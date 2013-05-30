@@ -188,6 +188,10 @@ EVENT_ResetOtherCvars()
     SetConVarInt(FindConVar("z_jockey_limit"), g_iDefJockeyLimit);
     SetConVarInt(FindConVar("z_charger_limit"), g_iDefChargerLimit);
     
+    SetConVarInt(FindConVar("ammo_smg_max"), g_iDefAmmoSmg);
+    SetConVarInt(FindConVar("ammo_shotgun_max"), g_iDefAmmoShotgun);
+    SetConVarInt(FindConVar("ammo_huntingrifle_max"), g_iDefAmmoHR);
+    SetConVarInt(FindConVar("ammo_sniperrifle_max"), g_iDefAmmoSniper);
     SetConVarInt(FindConVar("ammo_assaultrifle_max"), g_iDefAmmoRifle);
     SetConVarInt(FindConVar("ammo_autoshotgun_max"), g_iDefAmmoAutoShotgun);
     
