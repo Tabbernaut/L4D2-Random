@@ -172,6 +172,7 @@ public OnPluginStart()
 
     // Commands
     RegConsoleCmd("sm_rand",    RandomReport_Cmd,   "Report what special randomness is currently active.");
+    RegConsoleCmd("sm_random",  RandomReport_Cmd,   "Report what special randomness is currently active.");
     RegConsoleCmd("sm_bonus",   RandomBonus_Cmd,    "Report the special current round bonus (or penalty).");
     RegConsoleCmd("sm_penalty", RandomBonus_Cmd,    "Report the special current round bonus (or penalty).");
     RegConsoleCmd("sm_drop",    RandomDrop_Cmd,     "Drop your currently selected weapon or item.");
@@ -752,7 +753,7 @@ public OnMapStart()
 
 public OnMapEnd()
 {
-    KvRewind(g_kRIData);
+    if (g_kRIData != INVALID_HANDLE) { KvRewind(g_kRIData); }
     
     // switch stripper file for next map
     INIT_StripperSwitch();

@@ -212,7 +212,7 @@ RANDOM_DetermineRandomStuff()
         
         // finales are harder, intros easier
         if (L4D_IsMissionFinalMap()) {
-            g_iDifficultyRating += 2;
+            g_iDifficultyRating += 4;
         } else if (g_RI_bIsIntro) {
             g_iDifficultyRating--;
         }
@@ -2898,10 +2898,28 @@ RANDOM_DoGiftEffect(client, entity)
                 {
                     if (IsSurvivor(i) && IsPlayerAlive(i) && !IsIncapacitated(i) && !IsHangingFromLedge(i))
                     {
+                        new iDontMessWith = -1;
+                        
+                        // find a slot that we shouldn't mess with:
+                        if (_:g_iSpecialEvent == EVT_GUNSWAP) {
+                            iDontMessWith = 0;
+                        } else {
+                            for (new j = PLAYER_SLOT_PILL; j >= PLAYER_SLOT_PRIMARY; j--)
+                            {
+                                new item = GetPlayerWeaponSlot(i, j);
+                                if (item != -1 && IsValidEntity(item)) {
+                                    iDontMessWith = j;
+                                    break;
+                                }
+                            }
+                        }
+                        
                         // drop stuff
                         //  for item pickup penalty event, only drop primaries
                         for (new j = PLAYER_SLOT_PRIMARY; j <= ((_:g_iSpecialEvent == EVT_PEN_ITEM) ? PLAYER_SLOT_PRIMARY : PLAYER_SLOT_PILL); j++)
                         {
+                            if (j == iDontMessWith) { continue; }
+                            
                             SUPPORT_DropItemSlot(i, j);
                             if (j == PLAYER_SLOT_SECONDARY) {
                                 // drop twice for dualies
@@ -3854,7 +3872,7 @@ RANDOM_PrepareChoicesSpawns()
         else if (_:g_iSpecialEvent == EVT_WOMEN)
         {
             // no tickets for cappers
-            if (i == ZC_BOOMER)         { count = 6; }
+            if (i == ZC_BOOMER)         { count = 5; }
             else if (i == ZC_SPITTER)   { count = 2; }
             else                        { continue; }
             

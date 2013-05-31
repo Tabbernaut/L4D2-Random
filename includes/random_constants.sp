@@ -184,7 +184,7 @@ const Float:    PIPEDUD_ADDTIME         = 2.5;          // how much time to add 
 const Float:    SACKPROT_MARGIN         = 3.0;          // seconds margin: after this time, someone dying counts as the attack someone should join in to not be saving
 
 const           DIFF_RATING_GLOW_THRESH     = 3;        // how high the round difficulty rating must be before we're more likely to keep glows on
-const           DIFF_RATING_INCAP_THRESH    = 4;        // how high before we keep minimum default incaps
+const           DIFF_RATING_INCAP_THRESH    = 3;        // how high before we keep minimum default incaps
 const           DIFF_RATING_PILL_THRESH     = 5;        // how high before we guarantee pills
 const           DIFF_RATING_2PRIM_THRESH    = 0;        // how high before we guarantee 2 primaries
 const           DIFF_RATING_3PRIM_THRESH    = 2;        // how high before we guarantee 3 primaries
