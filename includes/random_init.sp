@@ -26,6 +26,7 @@ INIT_DefineCVars()
     g_hCvarReportSackProt = CreateConVar(                   "rand_report_sackprotection",    "2",       "Whether sack-protection measures are reported to the relevant players.", FCVAR_PLUGIN, true, 0.0, true, 2.0 );
     g_hCvarRandomSpawns = CreateConVar(                     "rand_random_si",                "1",       "Whether SI spawns are fully random (or Valve-ordered).", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
     g_hCvarSackProtection = CreateConVar(                   "rand_si_sackprotection",        "1",       "Whether SI spawn sacking is punished (keeping a charger hoping to get a multi-charger attack, for instance).", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
+    g_hCvarDeathOrderMode  = CreateConVar(                  "rand_si_deathorder",            "1",       "Death order mode: 0 = totally random; 1 = 3-spawn timeout with 60% repick rate; 2 = 4-spawn timeout with 100% repick rate.", FCVAR_PLUGIN, true, 0.0, true, 2.0 );
     g_hCvarDifficultyBalance = CreateConVar(                "rand_difficulty_balance",       "1",       "Whether round settings should be balanced according to estimated difficulty).", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
     g_hCvarM60Ammo = CreateConVar(                          "rand_m60_ammo",                "50",       "How much ammo an M60 spawns with.", FCVAR_PLUGIN, true, 0.0, false );
     g_hCvarClipFactorInc = CreateConVar(                    "rand_incendiary_ammo_factor",   "0.5",     "Incendiary ammo gives you a clip's normal size times this.", FCVAR_PLUGIN, true, 0.0, true, 2.0);
@@ -65,6 +66,7 @@ INIT_DefineCVars()
     g_hCvarPipeDudChance = CreateConVar(                    "rand_pipedud_chance",           "0.35",    "Chances of a pipebomb being a dud.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarAvoidIncapsChance = CreateConVar(                "rand_moreincaps_chance",        "0.35",    "If the incap count is only 1 (33%), odds that it gets set to 2 anyway.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarFinaleAmmoChance = CreateConVar(                 "rand_finale_ammo",              "0.0",     "Chances of finale ammo piles being randomized.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarMiniTankHealth = CreateConVar(                   "rand_minitankhealth",         "900",       "How much health minitanks have. This is two-thirds of its versus health (900 = 1350 in versus).", FCVAR_PLUGIN, true, 500.0, false);
     
     g_hCvarFinaleItemUseful =  CreateConVar(                "rand_item_finale_useful",       "0.25",    "Factor by which non-useful items are adjusted for finale maps (lower = easier map).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarStartItemNoJunk =  CreateConVar(                 "rand_item_start_nojunk",        "0.25",    "Chances items in start saferoom will be converted to something useful.", FCVAR_PLUGIN, true, 0.0, true, 1.0);

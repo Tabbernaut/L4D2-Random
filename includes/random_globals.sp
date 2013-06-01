@@ -86,6 +86,9 @@ new     bool:           g_bSpectateDeath        [MAXPLAYERS+1]              = {f
 new                     g_iSpectateGhost        [TEAM_SIZE];                                        // people that spectated while being SI ghosts.. remembered to avoid exploit
 new                     g_iSpectateGhostCount                               = 0;                    // amount of ghosts saved
 
+// Death order effect
+new                     g_iClassTimeout         [7]                         = 0;                    // the 'level' / counter for the timeout
+
 // Sack-exploitation checks
 new     Float:          g_fGotGhost             [MAXPLAYERS+1]              = {0.0,...};            // when player got their SI ghost most recently
 new     Float:          g_fDeathAfterGhost      [MAXPLAYERS+1]              = {0.0,...};            // the first SI death of another teammember after player got their ghost
@@ -244,6 +247,7 @@ new     Handle:         g_hCvarClipFactorInc                                = IN
 new     Handle:         g_hCvarClipFactorExp                                = INVALID_HANDLE;       // cvar for factor of explosive ammo clip
 new     Handle:         g_hCvarRandomSpawns                                 = INVALID_HANDLE;       // cvar whether to make SI spawns random
 new     Handle:         g_hCvarSackProtection                               = INVALID_HANDLE;       // cvar whether to punish SI sacking (to any degree)
+new     Handle:         g_hCvarDeathOrderMode                               = INVALID_HANDLE;       // cvar whether (and in what mode) to deal with death order
 new     Handle:         g_hCvarNoSupportSI                                  = INVALID_HANDLE;       // cvar whether to always spawn only cappers (for 2v2/3v3 etc)
 new     Handle:         g_hCvarTeamSize                                     = INVALID_HANDLE;       // cvar how many survivors in a team? used for balancing item spread (convar survivor_limit)
 new     Handle:         g_hCvarRestrictMelee                                = INVALID_HANDLE;       // cvar whether to restrict melee weapons to normal l4d2-material
@@ -254,6 +258,7 @@ new     Handle:         g_hCvarGnomeBonus                                   = IN
 new     Handle:         g_hCvarGnomeFinaleFactor                            = INVALID_HANDLE;       // cvar scaling gnome bonus for finale maps
 new     Handle:         g_hCvarGnomeAllowRandom                             = INVALID_HANDLE;       // cvar whether gnomes can drop at random
 new     Handle:         g_hCvarSpecialEventTimeout                          = INVALID_HANDLE;       // cvar how many maps it takes for a special event to be pickable again
+new     Handle:         g_hCvarMiniTankHealth                               = INVALID_HANDLE;       // cvar how much health a minitank has
 
 new     Handle:         g_hCvarFinaleItemUseful                             = INVALID_HANDLE;       // cvar the factor by which non-useful items are reduced for finale maps
 new     Handle:         g_hCvarStartItemNoJunk                              = INVALID_HANDLE;       // cvar the odds that junk gets changed to something useful in start saferoom

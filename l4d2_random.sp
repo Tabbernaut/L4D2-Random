@@ -70,7 +70,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.22",
+    version = "1.0.23",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -195,6 +195,8 @@ public OnPluginStart()
     
     /*  Listen for pausing & unpausing */
     //RegConsoleCmd("pause",      Pause_Cmd,      "...");
+    AddCommandListener(Listener_Pause, "pause");
+    AddCommandListener(Listener_Pause, "set_pause");
     RegConsoleCmd("unpause",    Unpause_Cmd,    "...");
     
     // Blind infected
@@ -645,6 +647,19 @@ public Action: Say_Cmd(client, args)
 
 
 // pausing
+public Action:Listener_Pause(client, const String:command[], argc)
+{
+    if (GetConVarBool(FindConVar("sv_pausable")))
+    {
+        g_fPauseAttemptTime = 0.0;
+        g_bIsPaused = true;
+        PrintDebug("[rand] PAUSED.");
+    }
+    else
+    {
+        g_fPauseAttemptTime = GetGameTime();
+    }
+}
 public Action:OnClientCommand(client, args)
 {
     new String:cmd[16];
@@ -658,7 +673,6 @@ public Action:OnClientCommand(client, args)
         {
             // not certain yet, might be blocked/disabled..
             //  if sv_pausable changes, we know
-            g_bIsPaused = true;
             g_fPauseAttemptTime = GetGameTime();
         }
     }
@@ -2128,8 +2142,10 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
     
     if (!IsClientAndInGame(attacker) || GetClientTeam(victim) != TEAM_INFECTED) { return Plugin_Continue; }
     
+    new zClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
+    
     // track hunter skeets?
-    if (_:g_iSpecialEvent == EVT_SKEET && GetEntProp(victim, Prop_Send, "m_zombieClass") == ZC_HUNTER)
+    if (_:g_iSpecialEvent == EVT_SKEET && zClass == ZC_HUNTER)
     {
         //PrintToChatAll("hunter died: %i dmg / %i team dmg", iHunterShotDmg[victim][attacker], iHunterShotDmgTeam[victim]);             
         
@@ -2150,6 +2166,19 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
         iHunterShotDmg[victim][attacker] = 0;
         bHunterPouncing[victim] = false;
     }
+    
+    // death order:
+    if (GetConVarInt(g_hCvarDeathOrderMode) > 0 && zClass >= ZC_SMOKER && zClass <= ZC_CHARGER)
+    {
+        new dMode = GetConVarInt(g_hCvarDeathOrderMode);
+        
+        if (dMode == 1) {
+            g_iClassTimeout[zClass] = 3;
+        } else {
+            g_iClassTimeout[zClass] = 4;
+        }
+    }
+    
     
     if (!IsFakeClient(victim))
     {
@@ -2209,7 +2238,7 @@ public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBro
     if (_:g_iSpecialEvent == EVT_MINITANKS)
     {
         CreateTimer(1.0, Timer_PrepareNextTank, _, TIMER_FLAG_NO_MAPCHANGE);
-        CreateTimer(1.0, Timer_SetTankMiniScale, client, TIMER_FLAG_NO_MAPCHANGE);
+        //CreateTimer(1.0, Timer_SetTankMiniScale, client, TIMER_FLAG_NO_MAPCHANGE);
     }
     else if (!g_bFirstTankSpawned)  // double tank ?
     {
@@ -2229,6 +2258,8 @@ public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBro
     return Plugin_Continue;
 }
 
+// this breaks all sorts of things, let's not do it
+/*
 public Action:Timer_SetTankMiniScale(Handle:hTimer, any:client)
 {
     if (IsClientAndInGame(client)) {
@@ -2236,6 +2267,7 @@ public Action:Timer_SetTankMiniScale(Handle:hTimer, any:client)
         SetEntPropFloat(client, Prop_Send,"m_flModelScale", MINITANKS_SCALE);
     }
 }
+*/
 
 public Action:Event_TankFrustrated(Handle:hEvent, const String:name[], bool:dontBroadcast)
 {

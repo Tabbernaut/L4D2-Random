@@ -164,6 +164,11 @@ SUPPORT_CleanArrays()
         ResetHunter(i);
     }
     
+    for (new i=ZC_SMOKER; i <= ZC_CHARGER; i++)
+    {
+        g_iClassTimeout[i] = 0;
+    }
+    
     // arrays for ZC / class changing code
     InitSpawnArrays();
 }
@@ -2286,13 +2291,14 @@ PickTankPlayer()
     new pick = 0;
     new pickCount = 0;
     new pickArray[96];
+    new tickets = 5;
     
     for (new i=1; i < MaxClients+1; i++)
     {
         if (IsInfected(i) && !IsFakeClient(i))
         {
             // if you didn't get one before, 5 entries
-            new tickets = 5;
+            tickets = 5;
             
             // -1 per tank you had. otherwise, scratch one, minimum of 1
             if (g_iHadTanks[i] > 0) { tickets -= g_iHadTanks[i]; }
@@ -2316,9 +2322,10 @@ ForceTankPlayer()
 {
     // randomly pick a tank player
     new tank = PickTankPlayer();
-    if (g_iHadTanks[tank] < 100) { g_iHadTanks[tank]++; }
     
     if (tank == 0) { return; }
+    
+    if (g_iHadTanks[tank] < 100) { g_iHadTanks[tank]++; }
     
     for (new i = 1; i < MaxClients+1; i++)
     {

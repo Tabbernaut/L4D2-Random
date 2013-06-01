@@ -75,7 +75,7 @@ const bool:     MULTIWITCH_ALLOW_TANK   = true;         // multiwitches possible
 
 const           MULTITANK_MAX           = 9;
 const           MINITANKS_NUM           = 9;            // 9 tanks, 1250 health each
-const           MINITANKS_HEALTH        = 900;
+//const           MINITANKS_HEALTH        = 900;
 const Float:    MINITANKS_FLOW_MIN      = 0.1;
 const Float:    MINITANKS_FLOW_MAX      = 0.9;
 const Float:    MINITANKS_FLOW_INT      = 0.1;

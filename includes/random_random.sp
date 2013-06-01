@@ -510,7 +510,7 @@ RANDOM_DetermineRandomStuff()
                 }
                 case EVT_MINITANKS: {
                     // set health (lower)
-                    SetConVarInt(FindConVar("z_tank_health"), MINITANKS_HEALTH);
+                    SetConVarInt(FindConVar("z_tank_health"), GetConVarInt(g_hCvarMiniTankHealth) );
                     SetConVarInt(FindConVar("z_frustration_lifetime"), MINITANK_FRUST_TIME);
                     SetConVarInt(FindConVar("vs_tank_damage"), MINITANKS_DAMAGE);
                     
@@ -3080,6 +3080,30 @@ DetermineSpawnClass(any:client, any:iClass)
         new randomIndex = GetRandomInt( (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) ? g_iSpawnWeightedChoicesStartCappers : 0, g_iSpawnWeightedChoicesTotal - 1);
         iClass = g_iArSpawnWeightedChoices[randomIndex];
         
+        // repicks for death order
+        if (g_iClassTimeout[iClass] > 0)
+        {
+            new dMode = GetConVarInt(g_hCvarDeathOrderMode);
+            
+            PrintDebug("[rand] classtimeout: for %i : %i (mode %i)", iClass, g_iClassTimeout[iClass], dMode);
+            
+            if (dMode == 1) {
+                if (GetRandomFloat(0.001,1.0) <= (float(g_iClassTimeout[iClass]) / 3.0) * 0.5) {
+                    randomIndex = GetRandomInt( (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) ? g_iSpawnWeightedChoicesStartCappers : 0, g_iSpawnWeightedChoicesTotal - 1);
+                    iClass = g_iArSpawnWeightedChoices[randomIndex];
+                }
+            }
+            else if (dMode == 2) {
+                if (GetRandomFloat(0.001,1.0) <= (float(g_iClassTimeout[iClass]) / 4.0) * 1.0) {
+                    randomIndex = GetRandomInt( (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) ? g_iSpawnWeightedChoicesStartCappers : 0, g_iSpawnWeightedChoicesTotal - 1);
+                    iClass = g_iArSpawnWeightedChoices[randomIndex];
+                }
+            }
+            
+            PrintDebug("[rand] classtimeout calc mode 1: %.2f)", (float(g_iClassTimeout[iClass]) / 3.0) * 0.5);
+            
+        }
+        
         //PrintDebug("[rand si] random pick. (%N = %i)", client, iClass);
         checkSacking = true;
     }
@@ -3164,10 +3188,18 @@ DetermineSpawnClass(any:client, any:iClass)
                     }
                 }
             }
-            else if ( iClass == ZC_HUNTER && _:g_iSpecialEvent != EVT_L4D1 ) {
+            
+            if ( iClass == ZC_HUNTER && _:g_iSpecialEvent != EVT_L4D1 ) {
                 if (hunters > 1) {
                     // give anything but a hunter (or more than 1 smoker)
-                    iClass = GetRandomInt( (smokers > 0) ? ZC_BOOMER : ZC_SMOKER, ZC_SPITTER );
+                    if ( g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI) ) {
+                        switch ( GetRandomInt((smokers > 0) ? 1 : 0, 1) ) {
+                            case 0: { iClass = ZC_SMOKER; }
+                            case 1: { iClass = ZC_JOCKEY; }
+                        }
+                    } else {
+                        iClass = GetRandomInt( (smokers > 0) ? ZC_BOOMER : ZC_SMOKER, ZC_HUNTER );
+                    }
                     if (iClass == ZC_HUNTER) { iClass = ZC_JOCKEY; }
                 }
             }
@@ -3221,6 +3253,11 @@ DetermineSpawnClass(any:client, any:iClass)
         }
     }
     
+    // handle timeouts
+    for (new i=ZC_SMOKER; i <= ZC_CHARGER; i++)
+    {
+        if (g_iClassTimeout[i] > 0) { g_iClassTimeout[i]--; }
+    }
     
     // prepare ghost for change
     if (IsPlayerGhost(client) && iClass >= ZC_SMOKER)
@@ -3863,6 +3900,11 @@ RANDOM_PrepareChoicesSpawns()
             } else if (i != ZC_BOOMER && i != ZC_SPITTER) {
                 count = 2;
             }
+        }
+        else if (_:g_iSpecialEvent == EVT_QUADS)
+        {
+            g_iSpawnWeightedChoicesStartCappers = 0;
+            if (i == ZC_BOOMER || i == ZC_SPITTER) { continue; }
         }
         else if (_:g_iSpecialEvent == EVT_L4D1)
         {

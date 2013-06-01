@@ -47,6 +47,13 @@ L4D2_Random
                         single witch: even she doesn't always seem to spawn for both teams?
                         - force witch in same spots for both teams (no matter how many witches)? to fix unfair witches & witch not spawning?
             
+            - test:     make a death-order odds-changer:
+                        every time something dies, it affects the odds negatively for that class (slightly),
+                        for the next 4 spawns (and with each, it should slowly bring back the odds to default?)
+                        - just give an XX% chance of repicking if a 'timing out' class is randomly picked,
+                            then reduce the XX-chance with each spawn, so it naturally peters out.
+                        - note: repicking can just as easily get the same spawn back... it just drops the odds (by enough)
+            
             - medium:   test and include stabby's random map stuff so people can launch random campaigns after loading random
 
             - superlow: randomize hittables: if a car is positioned normally (not at a weird angle), give odds to replace with forklift or log?
@@ -56,12 +63,18 @@ L4D2_Random
     minor cleanup / details
     -----------------------
             - bug:      no event on nm5: even with rand_event_chance 1 ?
+            - nitpick:  dark carnival 1 gas cans are not randomized..
             - nitpick:  gunswap event: survivors don't start with same weapons
             - glitch:   c10m3 is seen as 'a finale' (check separately?)
             - reminder: remove sm_voc / sm_voc_this commands for final version
             - code:     Clean up the l4d_drop copied code some more.
             - code:     "The SetEntProp functions have a parameter for the array index, use it instead of doing manually lookups and computing offsets."
             - code:     replace clunky map tries with a single map trie with flags-values
+    
+    notes:
+    ------
+            - I tried the modelscale netprop, which worked sometimes. most of the time it glitched
+              a LOT of things. It made some players practically immune to damage and so on. horrid.
     
     video:
     ------
