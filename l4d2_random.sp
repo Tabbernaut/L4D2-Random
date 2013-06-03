@@ -70,7 +70,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.24",
+    version = "1.0.26",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -135,6 +135,7 @@ public OnPluginStart()
     HookEvent("heal_success",               Event_MedkitUsed,               EventHookMode_Post);
     HookEvent("pills_used",                 Event_PillsUsed,                EventHookMode_Post);
     HookEvent("adrenaline_used",            Event_PillsUsed,                EventHookMode_Post);
+    HookEvent("revive_success",             Event_ReviveSuccess,            EventHookMode_Post);
     
     HookEvent("ability_use",                Event_AbilityUse,               EventHookMode_Post);
     HookEvent("lunge_pounce",               Event_LungePounce,              EventHookMode_Post);
@@ -170,7 +171,6 @@ public OnPluginStart()
         }
     }
 
-
     // Commands
     RegConsoleCmd("sm_rand",    RandomReport_Cmd,   "Report what special randomness is currently active.");
     RegConsoleCmd("sm_random",  RandomReport_Cmd,   "Report what special randomness is currently active.");
@@ -179,17 +179,14 @@ public OnPluginStart()
     RegConsoleCmd("sm_drop",    RandomDrop_Cmd,     "Drop your currently selected weapon or item.");
     
     // Admin and test commands
-    RegAdminCmd("rand_test_gnomes", TestGnomes_Cmd, ADMFLAG_CHEATS, "...");
-    RegAdminCmd("rand_test_swap",   TestSwap_Cmd,   ADMFLAG_CHEATS, "...");
-    RegAdminCmd("rand_test_ents",   TestEnts_Cmd,   ADMFLAG_CHEATS, "...");
-    RegAdminCmd("rand_test_event",  TestEvent_Cmd,  ADMFLAG_CHEATS, "...");
-        
-    /*  Listen for ghost-exploit check
-        -------------------------------
-        catching these because there is no way to directly
-        detect players going spectator... there's a team switch,
-        but no clue whether players were ghosts before then...
-    */
+    if (DEBUG_MODE == 1) {
+        RegAdminCmd("rand_test_gnomes", TestGnomes_Cmd, ADMFLAG_CHEATS, "...");
+        RegAdminCmd("rand_test_swap",   TestSwap_Cmd,   ADMFLAG_CHEATS, "...");
+        RegAdminCmd("rand_test_ents",   TestEnts_Cmd,   ADMFLAG_CHEATS, "...");
+        RegAdminCmd("rand_test_event",  TestEvent_Cmd,  ADMFLAG_CHEATS, "...");
+    }
+    
+    /*  Listen for specating */
     RegConsoleCmd("spectate",   Spectate_Cmd,   "...");
     RegConsoleCmd("say",        Say_Cmd,        "...");
     RegConsoleCmd("say_team",   Say_Cmd,        "...");
@@ -1863,6 +1860,10 @@ public Action:OnWeaponEquip(client, weapon)
     // debug
     //PrintToChatAll("%N equipped %i: %s", client, weapon, classname);
     
+    // not the pistol you get when incapacitated -- or the weapon you get handed back on revived
+    if (IsHangingFromLedge(client) || IsIncapacitated(client)) { return Plugin_Continue; }
+    else if (g_fLastReviveTime[client] != 0.0 && GetGameTime() - g_fLastReviveTime[client] < 0.05) { return Plugin_Continue; }
+    
     if (!SAFEDETECT_IsPlayerInStartSaferoom(client))
     {
         new itemPickupPenalty: itemHasPenalty;
@@ -1950,6 +1951,13 @@ public Action:Event_WeaponDrop(Handle:event, const String:name[], bool:dontBroad
     }
 }
 
+
+public Action:Event_ReviveSuccess(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    new client = GetClientOfUserId(GetEventInt(event, "subject"));
+    if (!IsClientAndInGame(client)) { return; }
+    g_fLastReviveTime[client] = GetGameTime();
+}
 
 /*  Weapon fire and item use
     ------------------------ */

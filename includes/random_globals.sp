@@ -141,6 +141,8 @@ new                     g_iGiftWeightedChoicesStartNegInsight;                  
 // Actual choices storage
 new                     g_strArStorage          [ENTITY_COUNT][strEntityData];                      // Stored entities, type is INDEX_
 new                     g_iStoredEntities                                   = 0;                    // size of strStoredEntities
+new                     g_strArHittableStorage  [HITTABLE_COUNT][strHittableData];                  // Stored entities (hittables)
+new                     g_iStoredHittables                                  = 0;                    // size of strStoredEntities
 new     String:         g_sArStorageMelee       [ENTITY_COUNT][MELEE_CLASS_LENGTH];                 // Stored melee-class per entity
 new                     g_iArStorageSurv        [TEAM_SIZE];                                        // survivor starting choice INDEX_START_
 new                     g_iArStorageSurvSec     [TEAM_SIZE];                                        // survivor starting choice INDEX_START_ (secondaries if first choice is a primary)
@@ -182,6 +184,7 @@ new                     g_iCountItemDefibs                                  = 0;
 
 // Gnome / bonus scoring
 new                     g_iJustPickedItemUp                                 = 0;                    // player_use => item_pickup (so we can exclude non-picked up gnomes)
+new     Float:          g_fLastReviveTime       [MAXPLAYERS+1]              = {0.0,...};            // when player was last revived from incap
 new                     g_iGnomeJustDropped                                 = 0;                    // for onentitydestroyed => onentitycreated gnome switching
 new                     g_iGnomes                                           = 0;                    // how many gnomes/cola items are detected on the map
 new                     g_strArGnomes           [GNOME_MAX_COUNT][strGnomeData];                    // the gnomes/cola in this map
@@ -261,6 +264,7 @@ new     Handle:         g_hCvarGnomeAllowRandom                             = IN
 new     Handle:         g_hCvarSpecialEventTimeout                          = INVALID_HANDLE;       // cvar how many maps it takes for a special event to be pickable again
 new     Handle:         g_hCvarMiniTankHealth                               = INVALID_HANDLE;       // cvar how much health a minitank has
 new     Handle:         g_hCvarBanTankFlows                                 = INVALID_HANDLE;       // cvar whether to take banned tank flow into account
+new     Handle:         g_hCvarRandomHittables                              = INVALID_HANDLE;       // cvar whether to randomize the hittables
 
 new     Handle:         g_hCvarFinaleItemUseful                             = INVALID_HANDLE;       // cvar the factor by which non-useful items are reduced for finale maps
 new     Handle:         g_hCvarStartItemNoJunk                              = INVALID_HANDLE;       // cvar the odds that junk gets changed to something useful in start saferoom
@@ -293,6 +297,7 @@ new     Handle:         g_hCvarGiftPositiveChance                           = IN
 new     Handle:         g_hCvarPipeDudChance                                = INVALID_HANDLE;       // cvar the odds of any pipebomb being a dud
 new     Handle:         g_hCvarAvoidIncapsChance                            = INVALID_HANDLE;       // cvar the odds of changing 1-incap-per-round back to 2 (so we can make it easier with a cvar)
 new     Handle:         g_hCvarFinaleAmmoChance                             = INVALID_HANDLE;       // cvar the odds that finale ammo is randomized
+new     Handle:         g_hCvarAlarmedCarChance                             = INVALID_HANDLE;       // cvar the odds that a car is alarmed
 
 new     Handle:         g_hCvarRandDistance                                 = INVALID_HANDLE;       // cvar whether we're using random distance points (mode)
 new     Handle:         g_hCvarRandDistVar                                  = INVALID_HANDLE;       // cvar the variance when using normal map distances

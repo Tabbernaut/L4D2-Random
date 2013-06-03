@@ -920,6 +920,7 @@ RandomizeItems()
 {
     // let the magic happen, randomize the hell out of everything
     g_iStoredEntities = 0;
+    g_iStoredHittables = 0;
     
     new RandomizableOrNot: classnameRoN;
     new entityCount = GetEntityCount();
@@ -931,6 +932,7 @@ RandomizeItems()
     
     new String:classname[128];
     new curEnt;                             // the entity we're currently storing data for
+    new curHit;                             // the hittable we're currently storing data for
 
     new Float: fAmmoVarMore = 1.0 + GetConVarFloat(g_hCvarAmmoVarianceMore);
     new Float: fAmmoVarLess = 1.0 - GetConVarFloat(g_hCvarAmmoVarianceLess);
@@ -950,8 +952,99 @@ RandomizeItems()
             {
                 new String:modelname[STR_MAX_MODELNAME];
                 GetEntPropString(i, Prop_Data, "m_ModelName", modelname, STR_MAX_MODELNAME);
+                if (!GetTrieValue(g_hTrieRandomizablePropPhysicsModel, modelname, classnameRoN)) { continue; }          // if it's not one of the prop_physics models we want to randomize, don't worry about it
                 
-                if (!GetTrieValue(g_hTrieRandomizablePropPhysicsModel, modelname, classnameRoN)) { continue; }          // if it's not one of the prop_physics models, don't worry about it
+                // hittables
+                if ((classnameRoN == HITTABLE_PHYSICS || classnameRoN == HITTABLE_PHYSICS_SMALL || classnameRoN == HITTABLE_PHYSICS_CAR || classnameRoN == HITTABLE_PHYSICS_ADDON))
+                {
+                    if (!GetConVarBool(g_hCvarRandomHittables)) { continue; }
+                    
+                    if (classnameRoN == HITTABLE_PHYSICS_ADDON) {
+                        // just remove it
+                        AcceptEntityInput(i, "Kill");
+                        continue;
+                    }
+                    
+                    // replace with random other hittable?
+                    curHit = g_iStoredHittables;
+                    g_iStoredHittables++;
+            
+                    g_strArHittableStorage[curHit][hitPickedType] = 0;          // cleanup, defaults:
+                    g_strArHittableStorage[curHit][hitIsCar] = false;
+                    g_strArHittableStorage[curHit][hitIsColored] = false;
+                    g_strArHittableStorage[curHit][hitIsAlarmed] = false;
+                    
+                    decl Float: horigin[3];
+                    decl Float: hangles[3];
+                    
+                    GetEntPropVector(i, Prop_Send, "m_vecOrigin", horigin);
+                    GetEntPropVector(i, Prop_Send, "m_angRotation", hangles);
+                    
+                    // taxi's are rotated 90 degrees to the left (+90 on z-ang)
+                    if (StrContains(modelname, "taxi_", false) != -1) {
+                        hangles[2] += 90.0;
+                    }
+                    
+                    g_strArHittableStorage[curHit][hitOrigin_a] = horigin[0];
+                    g_strArHittableStorage[curHit][hitOrigin_b] = horigin[1];
+                    g_strArHittableStorage[curHit][hitOrigin_c] = horigin[2];
+                    g_strArHittableStorage[curHit][hitAngles_a] = hangles[0];
+                    g_strArHittableStorage[curHit][hitAngles_b] = hangles[1];
+                    g_strArHittableStorage[curHit][hitAngles_c] = hangles[2];
+                    
+                    
+                    new randType = GetRandomInt( (classnameRoN == HITTABLE_PHYSICS_SMALL) ? HITTAB_FIRSTSMALL : 0 , HITTAB_TOTAL - 1);
+                    
+                    // for car: different odds (repicking?)
+                    if (classnameRoN == HITTABLE_PHYSICS_CAR && randType > HITTAB_LASTCAR)
+                    {
+                        if (GetRandomFloat(0.001, 1.0) <= HITTABLE_CAR_REPICK) {
+                            randType = GetRandomInt( 0 , HITTAB_LASTCAR);
+                        }
+                    }
+                    
+                    g_strArHittableStorage[curHit][hitPickedType] = randType;
+                    
+                    if (randType <= HITTAB_LASTCAR)
+                    {
+                        g_strArHittableStorage[curHit][hitIsCar] = true;
+                        
+                        // is it alarmed?
+                        if (GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarAlarmedCarChance))
+                        {
+                            g_strArHittableStorage[curHit][hitIsAlarmed] = true;
+                            randType = HITTAB_CAR95;
+                        }
+                        
+                        // only color normal cars
+                        if (randType == HITTAB_CARTAXI) {
+                            g_strArHittableStorage[curHit][hitIsColored] = true;
+                            g_strArHittableStorage[curHit][hitAngles_c] += 90.0;
+                            
+                            // yellow or white taxi
+                            if (GetRandomInt(0,2) == 0) {
+                                g_strArHittableStorage[curHit][hitColor_r] = 255;
+                                g_strArHittableStorage[curHit][hitColor_g] = 255;
+                                g_strArHittableStorage[curHit][hitColor_b] = 255;
+                            } else {
+                                g_strArHittableStorage[curHit][hitColor_r] = GetRandomInt(200,254);
+                                g_strArHittableStorage[curHit][hitColor_g] = GetRandomInt(180,254);
+                                g_strArHittableStorage[curHit][hitColor_b] = GetRandomInt(0,50);
+                            }
+                        }
+                        else {
+                            g_strArHittableStorage[curHit][hitIsColored] = (randType == HITTAB_CARPOLICE) ? false : true;
+                            
+                            // pick a color
+                            g_strArHittableStorage[curHit][hitColor_r] = GetRandomInt(1,254);
+                            g_strArHittableStorage[curHit][hitColor_g] = GetRandomInt(1,254);
+                            g_strArHittableStorage[curHit][hitColor_b] = GetRandomInt(1,254);
+                        }
+                    }
+                    
+                    AcceptEntityInput(i, "Kill");
+                    continue;
+                }
             }
             else if (L4D_IsMissionFinalMap() && classnameRoN == RANDOMIZABLE_ITEM_AMMO && GetRandomFloat(0.001,1.0) > GetConVarFloat(g_hCvarFinaleAmmoChance) && !g_bNoAmmo)
             {
@@ -1426,6 +1519,12 @@ RandomizeItems()
         CreateEntity(i);
     }
     
+    // also add hittables
+    for (new i=0; i < g_iStoredHittables; i++)
+    {
+        CreateHittable(i);
+    }
+    
     // done, do a report
     DoItemsServerReport();
     
@@ -1491,6 +1590,15 @@ RestoreItems()
                 new String:modelname[STR_MAX_MODELNAME];
                 GetEntPropString(i, Prop_Data, "m_ModelName", modelname, STR_MAX_MODELNAME);
                 if (!GetTrieValue(g_hTrieRandomizablePropPhysicsModel, modelname, classnameRoN)) { continue; }          // if it's not one of the prop_physics models, don't worry about it
+                
+                // hittables
+                if ((classnameRoN == HITTABLE_PHYSICS || classnameRoN == HITTABLE_PHYSICS_SMALL || classnameRoN == HITTABLE_PHYSICS_CAR || classnameRoN == HITTABLE_PHYSICS_ADDON))
+                {
+                    if (!GetConVarBool(g_hCvarRandomHittables)) { continue; }
+                    
+                    AcceptEntityInput(i, "Kill");
+                    continue;
+                }
             }
             
             // the entity was randomize material, delete it now
@@ -1503,6 +1611,12 @@ RestoreItems()
     for (new i=0; i < g_iStoredEntities; i++)
     {
         CreateEntity(i);
+    }
+    
+    // also add hittables
+    for (new i=0; i < g_iStoredHittables; i++)
+    {
+        CreateHittable(i);
     }
     
     // testing: did the item drop underneath the map?
@@ -2394,6 +2508,90 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
         PrintDebug("[rand] Spawned entity %i (type: %i).", ent, type);
     }
     */
+    
+    return ent;
+}
+
+// for the hittables on a map
+CreateHittable(index)
+{
+    new type;
+    new ent;
+    new Float: itemOrigin[3], Float: itemAngles[3];
+    new String: targetName[24];
+    
+    // if it's an alarmed car, let the support function handle it
+    if (g_strArHittableStorage[index][hitIsAlarmed])
+    {
+        SpawnAlarmCar(index);
+        return -1;  // no entity, okay for now.
+    }
+    
+    
+    type = g_strArHittableStorage[index][hitPickedType];
+    
+    itemOrigin[0] = g_strArHittableStorage[index][hitOrigin_a];
+    itemOrigin[1] = g_strArHittableStorage[index][hitOrigin_b];
+    itemOrigin[2] = g_strArHittableStorage[index][hitOrigin_c];
+    itemAngles[0] = g_strArHittableStorage[index][hitAngles_a];
+    itemAngles[1] = g_strArHittableStorage[index][hitAngles_b];
+    itemAngles[2] = g_strArHittableStorage[index][hitAngles_c];
+    
+    // temp fix, no rotation other than z
+    //itemAngles[0] = 0.0;
+    //itemAngles[1] = 0.0;
+    
+    // move it up a bit to prevent clipping in floor (wrecked sedan)
+    itemOrigin[2] += 20.0;
+ 
+    if (type == -1) { return -1; }
+
+    Format(targetName, sizeof(targetName), "RandomHittable%i", index+1);
+    
+    ent = CreateEntityByName("prop_physics");
+    DispatchKeyValue(ent, "model", g_csHittableModels[type]);
+    DispatchKeyValue(ent, "spawnflags", "256");
+    DispatchKeyValue(ent, "targetname", targetName);
+    DispatchKeyValueVector(ent, "origin", itemOrigin);
+    DispatchKeyValueVector(ent, "angles", itemAngles);
+    
+    if (g_strArHittableStorage[index][hitIsColored])
+    {
+        decl String: tmpStr[24];
+        Format(tmpStr, sizeof(tmpStr), "%i %i %i", g_strArHittableStorage[index][hitColor_r], g_strArHittableStorage[index][hitColor_g], g_strArHittableStorage[index][hitColor_b]);
+        DispatchKeyValue(ent, "rendercolor", tmpStr);
+    }
+    
+    if (!IsValidEntity(ent) || ent == 0) {
+        g_strArHittableStorage[index][hitNumber] = 0;
+        PrintDebug("[rand] Random pick resulted in invalid hittable entity! (index: %d, ent: %d, type: %d).", index, ent, type);
+        return -1;
+    }
+    
+    // create the actual replacement entity
+    DispatchSpawn(ent);
+    ActivateEntity(ent);
+    
+    // add the glass/addon
+    if (type <= HITTAB_LASTADDON)
+    {
+        new entAd;
+        // add prop_dynamic
+        entAd = CreateEntityByName("prop_dynamic");
+        DispatchKeyValue(entAd, "model", g_csHittableModels[type + HITTAB_TOTAL] );
+        DispatchKeyValue(entAd, "disableshadows", "1");
+        DispatchKeyValueVector(entAd, "origin", itemOrigin);
+        DispatchKeyValueVector(entAd, "angles", itemAngles);
+        
+        if (entAd != 0 && IsValidEntity(entAd)) {
+            g_strArHittableStorage[index][hitNumberAddonA] = entAd;
+            DispatchSpawn(entAd);
+            ActivateEntity(entAd);
+            
+            SetVariantString(targetName);
+            AcceptEntityInput(entAd, "SetParent");
+        }
+    }
     
     return ent;
 }

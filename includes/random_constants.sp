@@ -8,6 +8,7 @@ const           DEBUG_MODE              = 1;
 
 const           TEAM_SIZE               = 4;
 const           ENTITY_COUNT            = 2048;
+const           HITTABLE_COUNT          = 128;          // just arbitrary
 const           MELEE_CLASS_COUNT       = 32;
 const           MELEE_CLASS_LENGTH      = 32;
 const           STORED_MAX_COUNT        = 1024;         // just arbitrary, users shouldn't exceed this total
@@ -27,8 +28,8 @@ const           MAX_BOOBYTRAPS          = 128;          // amount of boobytraps 
 // --------------
 const           STR_MAX_WPCLASSNAME     = 48;
 const           STR_MAX_ITEMGIVEN       = 48;
-const           STR_MAX_MODELNAME       = 48;
-const           STR_MAX_MAPNAME         = 24;
+const           STR_MAX_MODELNAME       = 64;
+const           STR_MAX_MAPNAME         = 32;
 
 
 // Random configuration
@@ -200,6 +201,8 @@ const Float:    DIFF_RATING_NOITEM_HIGH     = 1.5;      // what a high no-item v
 const           DIFF_RATING_NOITEM_DIF_HIGH = 8;        // when to force towards the lowest noitem value
 const           DIFF_RATING_NOITEM_DIF_LOW  = 0;        // when to force towards the highest noitem value
 
+const Float:    HITTABLE_CAR_REPICK     = 0.5;          // the odds that a car will be repicked as a (different) car
+
 
 // Random indexes
 // --------------
@@ -276,6 +279,30 @@ const           EVT_TOTAL               = 35;
 const           EVTWOMEN_TYPE_AXE       = 1;            // axe effect
 const           EVTWOMEN_TYPE_ROCK      = 2;            // rockstars
 const           EVTWOMEN_TYPE_BEAT      = 3;            // fallback: any available
+
+const           HITTAB_CAR69            = 0;            // cars
+const           HITTAB_CAR84            = 1;
+const           HITTAB_CAR82            = 2;
+const           HITTAB_CAR95            = 3;
+const           HITTAB_CARPOLICE        = 4;
+const           HITTAB_CARTAXI          = 5;
+const           HITTAB_CAR82WRECK       = 6;            // cars without addons
+const           HITTAB_CAR95WRECK       = 7;
+const           HITTAB_FORKLIFT         = 8;
+const           HITTAB_CART             = 9;
+const           HITTAB_TREE             = 10;
+const           HITTAB_DUMPSTER         = 11;            // smaller
+const           HITTAB_DUMPSTER_ALT     = 12;
+const           HITTAB_TREETRUNK        = 13;
+const           HITTAB_BUMPERCAR        = 14;
+const           HITTAB_HAYBAIL          = 15;
+const           HITTAB_HANDTRUCK        = 16;
+const           HITTAB_TABLE            = 17;
+
+const           HITTAB_LASTADDON        = 7;
+const           HITTAB_LASTCAR          = 7;
+const           HITTAB_FIRSTSMALL       = 10;
+const           HITTAB_TOTAL            = 18;
 
 const           EQ_ITEMS                = 1;            // flags for rand_equal cvar
 const           EQ_DOORS                = 2;
@@ -484,7 +511,11 @@ enum RandomizableOrNot          // for use with tries to determine ent's random-
 {
     RANDOMIZABLE_ITEM,
     RANDOMIZABLE_PHYSICS,
-    RANDOMIZABLE_ITEM_AMMO
+    RANDOMIZABLE_ITEM_AMMO,
+    HITTABLE_PHYSICS,
+    HITTABLE_PHYSICS_SMALL,         // dumpsters and smaller
+    HITTABLE_PHYSICS_CAR,           // only cars
+    HITTABLE_PHYSICS_ADDON          // the glass on cars
 }
 
 enum pickType                   // which option was randomly picked? data recreated on this basis
@@ -519,6 +550,25 @@ enum strEntityData                  // everything required to recreate the entit
             entAmmoMax,             // for weapons: to fill to max ammo
     bool:   entCheckOrigin,         // if enabled, CreateEntity checks origin for wall/floor stuckness
             entJunkType             // index of junkModels array
+}
+
+enum strHittableData                // everything required to recreate the hittable
+{
+            hitNumber,              // what is the actual entity number?
+            hitNumberAddonA,        // entnumber for glass bit (which is parented to it) 0 for none
+            hitPickedType,
+    Float:  hitOrigin_a,
+    Float:  hitOrigin_b,
+    Float:  hitOrigin_c,
+    Float:  hitAngles_a,
+    Float:  hitAngles_b,
+    Float:  hitAngles_c,
+    bool:   hitIsCar,
+    bool:   hitIsColored,              // if true, it also has rendercolors
+    bool:   hitIsAlarmed,
+            hitColor_r,
+            hitColor_g,
+            hitColor_b
 }
 
 enum EntInfo                        // for blind_infected adaptation
@@ -647,6 +697,37 @@ new const String: g_csJunkModels[][] =
     "models/props_interiors/tv.mdl",
     "models/props_urban/shopping_cart001.mdl",
     "models/props_urban/tire001.mdl"
+};
+
+new const String: g_csHittableModels[][] =
+{
+    "models/props_vehicles/cara_69sedan.mdl",
+    "models/props_vehicles/cara_84sedan.mdl",
+    "models/props_vehicles/cara_82hatchback.mdl",
+    "models/props_vehicles/cara_95sedan.mdl",
+    "models/props_vehicles/police_car_rural.mdl",
+    "models/props_vehicles/taxi_city.mdl",
+    "models/props_vehicles/cara_82hatchback_wrecked.mdl",
+    "models/props_vehicles/cara_95sedan_wrecked.mdl",
+    "models/props/cs_assault/forklift.mdl",
+    "models/props_vehicles/airport_baggage_cart2.mdl",
+    "models/props_foliage/swamp_fallentree01_bare.mdl",
+    "models/props_junk/dumpster.mdl",
+    "models/props_junk/dumpster_2.mdl",
+    "models/props_foliage/tree_trunk_fallen.mdl",
+    "models/props_fairgrounds/bumpercar.mdl",               // "props_fairgrounds/bumper_car01.mdl" ?
+    "models/props_unique/haybails_single.mdl",
+    "models/props/cs_assault/handtruck.mdl",
+    "models/props_urban/round_table001.mdl",
+    "models/props_vehicles/cara_69sedan_glass.mdl",         // index + totalchoices = glas for index
+    "models/props_vehicles/cara_84sedan_glass.mdl",
+    "models/props_vehicles/cara_82hatchback_glass.mdl",
+    "models/props_vehicles/cara_95sedan_glass.mdl",
+    "models/props_vehicles/police_car_city_glass.mdl",
+    "models/props_vehicles/taxi_city_glass.mdl",
+    "models/props_vehicles/cara_82hatchback_wrecked_glass.mdl",
+    "models/props_vehicles/cara_95sedan_wrecked_glass.mdl",
+    "models/props_vehicles/cara_95sedan_glass_alarm.mdl"    // alarmed sedan only
 };
 
 new const String: g_csUncommonModels[][] =

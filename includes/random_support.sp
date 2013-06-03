@@ -65,6 +65,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     
     // timer cleanup
     if (g_hTimePenaltyTimer != INVALID_HANDLE) { KillTimer(g_hTimePenaltyTimer); }
+    g_hTimePenaltyTimer = INVALID_HANDLE;
     
     // handle the randomization 
     RANDOM_DetermineRandomStuff();
@@ -2665,8 +2666,517 @@ Float:MULTIWITCH_GetMaxSurvivorCompletion()
     return flow;
 }
 
+
+/*  Alarmed car
+    -------------------------- */
+
+#define ALARMCAR_MODEL         "models/props_vehicles/cara_95sedan.mdl"
+#define ALARMCAR_GLASS        "models/props_vehicles/cara_95sedan_glass_alarm.mdl"
+#define ALARMCAR_GLASS_OFF    "models/props_vehicles/cara_95sedan_glass.mdl"
+#define COLOR_REDCAR        "222 92 86"
+#define COLOR_REDLIGHT        "255 13 19"
+#define COLOR_WHITELIGHT    "252 243 226"
+#define COLOR_YELLOWLIGHT    "224 162 44"
+#define DISTANCE_BACK        103.0
+#define DISTANCE_FRONT        101.0
+#define DISTANCE_SIDE        27.0
+#define DISTANCE_SIDETURN    34.0
+#define DISTANCE_UPBACK        31.0
+#define DISTANCE_UPFRONT    29.0
+
+SpawnAlarmCar(index)
+{
+    // init
+    new carEntity, glassEntity, glassOffEntity, alarmTimer, chirpSound, alarmSound;
+    new carLights[6], gameEventInfo;
+    
+    new Float: itemOrigin[3], Float: itemAngles[3];
+    itemOrigin[0] = g_strArHittableStorage[index][hitOrigin_a];
+    itemOrigin[1] = g_strArHittableStorage[index][hitOrigin_b];
+    itemOrigin[2] = g_strArHittableStorage[index][hitOrigin_c];
+    itemAngles[0] = g_strArHittableStorage[index][hitAngles_a];
+    itemAngles[1] = g_strArHittableStorage[index][hitAngles_b];
+    itemAngles[2] = g_strArHittableStorage[index][hitAngles_c];
+    
+    // move it up a bit to prevent clipping in floor
+    itemOrigin[2] += 20.0;
+    
+    decl String:carName[64], String:glassName[64], String:glassOffName[64], String:alarmTimerName[64];
+    decl String:chirpSoundName[64], String:alarmSoundName[64], String:carLightsName[64];
+    decl String:carHeadLightsName[64], String:tempString[256];
+    
+    Format(carName, 64, "sm_alarmcar_car%d", index+1);
+    Format(glassName, 64, "sm_alarmcar_glass%d", index+1);
+    Format(glassOffName, 64, "sm_alarmcar_glassoff%d", index+1);
+    Format(alarmTimerName, 64, "sm_alarmcar_alarmtimer%d", index+1);
+    Format(chirpSoundName, 64, "sm_alarmcar_chirpsound%d", index+1);
+    Format(alarmSoundName, 64, "sm_alarmcar_alarmsound%d", index+1);
+    Format(carLightsName, 64, "sm_alarmcar_carlights%d", index+1);
+    Format(carHeadLightsName, 64, "sm_alarmcar_carheadlights%d", index+1);
+    
+    // create car model
+    carEntity = CreateAlarmCar();
+    if (carEntity == -1) {
+        return;
+    }
+    
+    DispatchKeyValue(carEntity, "targetname", carName);
+    DispatchKeyValue(carEntity, "model", ALARMCAR_MODEL);
+    DispatchKeyValue(carEntity, "renderamt", "255");    
+    
+    if (g_strArHittableStorage[index][hitIsColored])
+    {
+        decl String: tmpStr[24];
+        Format(tmpStr, sizeof(tmpStr), "%i %i %i", g_strArHittableStorage[index][hitColor_r], g_strArHittableStorage[index][hitColor_g], g_strArHittableStorage[index][hitColor_b]);
+        DispatchKeyValue(carEntity, "rendercolor", tmpStr);
+    }
+    
+    Format(tempString, 256, "%s,Enable,,0,-1", alarmTimerName);
+    DispatchKeyValue(carEntity, "OnCarAlarmStart", tempString);
+    Format(tempString, 256, "%s,Disable,,0,-1", alarmTimerName);
+    DispatchKeyValue(carEntity, "OnCarAlarmEnd", tempString);
+    Format(tempString, 256, "%s,PlaySound,,0,-1", alarmSoundName);
+    DispatchKeyValue(carEntity, "OnCarAlarmStart", tempString);
+    Format(tempString, 256, "%s,StopSound,,0,-1", alarmSoundName);
+    DispatchKeyValue(carEntity, "OnCarAlarmEnd", tempString);
+    Format(tempString, 256, "%s,PlaySound,,0.2,-1", chirpSoundName);
+    DispatchKeyValue(carEntity, "OnCarAlarmChirpStart", tempString);
+    Format(tempString, 256, "%s,HideSprite,,0.7,-1", carLightsName);
+    DispatchKeyValue(carEntity, "OnCarAlarmChirpEnd", tempString);
+    Format(tempString, 256, "%s,ShowSprite,,0.2,-1", carLightsName);
+    DispatchKeyValue(carEntity, "OnCarAlarmChirpStart", tempString);
+    Format(tempString, 256, "%s,Disable,,0,-1", glassName);
+    DispatchKeyValue(carEntity, "OnCarAlarmStart", tempString);
+    Format(tempString, 256, "%s,Enable,,0,-1", glassOffName);
+    DispatchKeyValue(carEntity, "OnCarAlarmStart", tempString);
+    
+    TeleportEntity(carEntity, itemOrigin, itemAngles, NULL_VECTOR);
+    DispatchSpawn(carEntity);
+    ActivateEntity(carEntity);
+    SetEntityMoveType(carEntity, MOVETYPE_NONE);
+    
+    // create glass model
+    glassEntity = CreateCarGlass(ALARMCAR_GLASS, glassName, itemOrigin, itemAngles, carName);
+    if (glassEntity == -1) {
+        KillEntity(carEntity);
+        PrintDebug("[rand] car alarm problem: could not create car glass entity");
+        return;
+    }
+
+    // create off glass model 
+    // ################################
+    glassOffEntity = CreateCarGlass(ALARMCAR_GLASS_OFF, glassOffName, itemOrigin, itemAngles, carName);
+    if (glassOffEntity == -1) {
+        KillEntity(carEntity);
+        PrintDebug("[rand] car alarm problem: could not create car glass entity");
+        return;
+    }
+    
+    // create alarm timer
+    // ################################
+    alarmTimer = CreateEntityByName("logic_timer");    
+    if (alarmTimer == -1) {
+        KillEntity(carEntity);
+        PrintDebug("[rand] car alarm problem: could not create logic timer entity!");
+        return;
+    }    
+    
+    DispatchKeyValue(alarmTimer, "UseRandomTime", "0");
+    DispatchKeyValue(alarmTimer, "targetname", alarmTimerName);
+    DispatchKeyValue(alarmTimer, "StartDisabled", "1");
+    DispatchKeyValue(alarmTimer, "spawnflags", "0");
+    DispatchKeyValue(alarmTimer, "RefireTime", ".75");
+    
+    Format(tempString, 256, "%s,ShowSprite,,0,-1", carLightsName);
+    DispatchKeyValue(alarmTimer, "OnTimer", tempString);
+    Format(tempString, 256, "%s,HideSprite,,0.5,-1", carLightsName);
+    DispatchKeyValue(alarmTimer, "OnTimer", tempString);
+    Format(tempString, 256, "%s,HideSprite,,0.5,-1", carLightsName);
+    DispatchKeyValue(alarmTimer, "OnTimer", tempString);
+    Format(tempString, 256, "%s,ShowSprite,,0,-1", carLightsName);
+    DispatchKeyValue(alarmTimer, "OnTimer", tempString);
+    
+    Format(tempString, 256, "%s,LightOff,,0.5,-1", carHeadLightsName);
+    DispatchKeyValue(alarmTimer, "OnTimer", tempString);
+    Format(tempString, 256, "%s,LightOn,,0,-1", carHeadLightsName);
+    DispatchKeyValue(alarmTimer, "OnTimer", tempString);    
+
+    TeleportEntity(alarmTimer, itemOrigin, NULL_VECTOR, NULL_VECTOR);
+    DispatchSpawn(alarmTimer);
+
+    // create game event info
+    gameEventInfo = CreateGameEvent(itemOrigin);
+    if (gameEventInfo == -1) {
+        KillEntity(carEntity);
+        KillEntity(alarmTimer);
+        
+        PrintDebug("[rand] car alarm problem: could not create game event info entity!");
+        return;
+    }    
+    
+    // create sounds
+    new Float:soundsPosition[3];
+    CopyVector(itemOrigin, soundsPosition);
+    soundsPosition[2] += 80.0;
+    
+    chirpSound = CreateCarSound(soundsPosition, chirpSoundName, carName, "Car.Alarm.Chirp2", "48");
+    alarmSound = CreateCarSound(soundsPosition, alarmSoundName, carName, "Car.Alarm", "16");
+    
+    // create lights
+    new Float:distances[9] = {DISTANCE_FRONT, DISTANCE_SIDETURN, DISTANCE_UPFRONT, DISTANCE_BACK, DISTANCE_SIDE, DISTANCE_UPBACK, DISTANCE_FRONT, DISTANCE_SIDE, DISTANCE_UPFRONT};
+    CreateLights(carLights, itemOrigin, itemAngles, distances, carLightsName, carHeadLightsName, carName);
+
+    // check entities
+    decl String:entityName[16];
+    new bool:somethingWrong;
+    
+    if (chirpSound == -1 || alarmSound == -1) {
+        entityName = "sound";
+        somethingWrong = true;    
+    }
+    else {
+        for (new i = 0; i < 6; i++) {
+            if (carLights[i] == -1) {
+                entityName = "lights";
+                somethingWrong = true;
+                break;
+            }
+        }
+    }        
+    
+    if (somethingWrong) {
+        // delete everything
+        KillEntity(carEntity);
+        KillEntity(alarmTimer);    
+        KillEntity(gameEventInfo);    
+        
+        PrintDebug("[rand] car alarm problem: could not create %s entity!", entityName);
+        return;
+    }
+    
+    // allow car moving
+    CreateTimer(0.2, Timer_CarMove, carEntity, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+CreateAlarmCar() {
+    new carEntity = CreateEntityByName("prop_car_alarm");
+    if (carEntity == -1) return -1;
+    
+    DispatchKeyValue(carEntity, "spawnflags", "256");
+    DispatchKeyValue(carEntity, "fadescale", "1");
+    DispatchKeyValue(carEntity, "fademindist", "-1"); 
+    DispatchKeyValue(carEntity, "inertiaScale", "1.0"); 
+    DispatchKeyValue(carEntity, "physdamagescale", "0.1"); 
+    DispatchKeyValue(carEntity, "BreakableType", "0");
+    DispatchKeyValue(carEntity, "forcetoenablemotion", "0");
+    DispatchKeyValue(carEntity, "massScale", "0");
+    DispatchKeyValue(carEntity, "PerformanceMode", "0");
+    DispatchKeyValue(carEntity, "nodamageforces", "0");
+    
+    DispatchKeyValue(carEntity, "skin", "0");
+    DispatchKeyValue(carEntity, "shadowcastdist", "0");
+    DispatchKeyValue(carEntity, "rendermode", "0");
+    DispatchKeyValue(carEntity, "renderfx", "0");
+    DispatchKeyValue(carEntity, "pressuredelay", "0");
+    DispatchKeyValue(carEntity, "minhealthdmg", "0");
+    DispatchKeyValue(carEntity, "mindxlevel", "0");
+    DispatchKeyValue(carEntity, "maxdxlevel", "0");
+    DispatchKeyValue(carEntity, "fademaxdist", "0");
+    DispatchKeyValue(carEntity, "ExplodeRadius", "0");
+    DispatchKeyValue(carEntity, "ExplodeDamage", "0");
+    DispatchKeyValue(carEntity, "disableshadows", "0");
+    DispatchKeyValue(carEntity, "disablereceiveshadows", "0");
+    DispatchKeyValue(carEntity, "Damagetype", "0");
+    DispatchKeyValue(carEntity, "damagetoenablemotion", "0");
+    DispatchKeyValue(carEntity, "body", "0");
+    
+    return carEntity;
+}
+
+CreateCarGlass(const String:modelName[], const String:targetName[], const Float:position[3], const Float:angle[3], const String:carName[]) {
+    new glassEntity = CreateEntityByName("prop_car_glass");
+    if (glassEntity == -1) return -1;
+    
+    DispatchKeyValue(glassEntity, "model", modelName);
+    DispatchKeyValue(glassEntity, "targetname", targetName);
+    
+    DispatchKeyValue(glassEntity, "spawnflags", "0");    
+    DispatchKeyValue(glassEntity, "solid", "6");
+    DispatchKeyValue(glassEntity, "MinAnimTime", "5");
+    DispatchKeyValue(glassEntity, "MaxAnimTime", "10");
+    DispatchKeyValue(glassEntity, "fadescale", "1");
+    DispatchKeyValue(glassEntity, "fademindist", "-1");
+    
+    // teleport and spawn
+    TeleportEntity(glassEntity, position, angle, NULL_VECTOR);
+    DispatchSpawn(glassEntity);
+    ActivateEntity(glassEntity);
+    
+    // parent to car
+    SetVariantString(carName);
+    AcceptEntityInput(glassEntity, "SetParent", glassEntity, glassEntity, 0);    
+    
+    return glassEntity;
+}
+
+CreateGameEvent(const Float:position[3]) {
+    new gameEventInfo = CreateEntityByName("info_game_event_proxy");
+    if (gameEventInfo == -1) return -1;
+    
+    DispatchKeyValue(gameEventInfo, "targetname", "caralarm_game_event");
+    DispatchKeyValue(gameEventInfo, "spawnflags", "1");
+    DispatchKeyValue(gameEventInfo, "range", "100");
+    DispatchKeyValue(gameEventInfo, "event_name", "explain_disturbance");
+    
+    TeleportEntity(gameEventInfo, position, NULL_VECTOR, NULL_VECTOR);
+    DispatchSpawn(gameEventInfo);    
+    ActivateEntity(gameEventInfo);
+    
+    return gameEventInfo;
+}
+
+CreateCarSound(const Float:entityPosition[3], const String:targetName[], const String:sourceName[], const String:messageName[], const String:spawnFlags[]) {
+    new soundEntity = CreateEntityByName("ambient_generic");
+    if (soundEntity == -1) {
+        return -1;
+    }    
+    
+    DispatchKeyValue(soundEntity, "targetname", targetName);
+    DispatchKeyValue(soundEntity, "SourceEntityName", sourceName);
+    DispatchKeyValue(soundEntity, "message", messageName);
+    DispatchKeyValue(soundEntity, "radius", "4000");
+    DispatchKeyValue(soundEntity, "pitchstart", "100");
+    DispatchKeyValue(soundEntity, "pitch", "100");
+    DispatchKeyValue(soundEntity, "health", "10");
+    DispatchKeyValue(soundEntity, "spawnflags", spawnFlags);    
+    DispatchKeyValue(soundEntity, "volstart", "0");
+    DispatchKeyValue(soundEntity, "spinup", "0");
+    DispatchKeyValue(soundEntity, "spindown", "0");
+    DispatchKeyValue(soundEntity, "preset", "0");
+    DispatchKeyValue(soundEntity, "lfotype", "0");
+    DispatchKeyValue(soundEntity, "lforate", "0");
+    DispatchKeyValue(soundEntity, "lfomodvol", "0");
+    DispatchKeyValue(soundEntity, "lfomodpitch", "0");
+    DispatchKeyValue(soundEntity, "fadeoutsecs", "0");
+    DispatchKeyValue(soundEntity, "fadeinsecs", "0");
+    DispatchKeyValue(soundEntity, "cspinup", "0");
+    
+    TeleportEntity(soundEntity, entityPosition, NULL_VECTOR, NULL_VECTOR);
+    DispatchSpawn(soundEntity);
+    ActivateEntity(soundEntity);
+    
+    SetVariantString(sourceName);
+    AcceptEntityInput(soundEntity, "SetParent", soundEntity, soundEntity, 0);
+    
+    return soundEntity;
+}
+
+CreateLights(carLights[6], const Float:position[3], const Float:angle[3], const Float:distance[9], const String:lightName[], const String:headLightName[], const String:carName[]) {
+    decl Float:lightPosition[3], Float:lightDistance[3];
+    
+    CopyVector(position, lightPosition);
+    lightDistance[0] = distance[0];
+    lightDistance[1] = distance[1]*-1.0;
+    lightDistance[2] = distance[2];
+    MoveVectorPosition3D(lightPosition, angle, lightDistance); // front left
+    carLights[0] = CreateCarLight(lightPosition, lightName, carName, COLOR_YELLOWLIGHT);
+    
+    CopyVector(position, lightPosition);
+    lightDistance[1] = distance[1];
+    MoveVectorPosition3D(lightPosition, angle, lightDistance); // front right
+    carLights[1] = CreateCarLight(lightPosition, lightName, carName, COLOR_YELLOWLIGHT);
+    
+    CopyVector(position, lightPosition);
+    lightDistance[0] = distance[3]*-1.0;
+    lightDistance[1] = distance[4]*-1.0;
+    lightDistance[2] = distance[5];
+    MoveVectorPosition3D(lightPosition, angle, lightDistance); // back left
+    carLights[2] = CreateCarLight(lightPosition, lightName, carName, COLOR_REDLIGHT);
+    
+    CopyVector(position, lightPosition);
+    lightDistance[1] = distance[4];
+    MoveVectorPosition3D(lightPosition, angle, lightDistance); // back right
+    carLights[3] = CreateCarLight(lightPosition, lightName, carName, COLOR_REDLIGHT);
+    
+    // create head lights
+    CopyVector(position, lightPosition);
+    lightDistance[0] = distance[6];
+    lightDistance[1] = distance[7]*-1.0;
+    lightDistance[2] = distance[8];
+    MoveVectorPosition3D(lightPosition, angle, lightDistance); // front left
+    carLights[4] = CreateCarHeadLight(lightPosition, angle, headLightName, carName);    
+
+    CopyVector(position, lightPosition);
+    lightDistance[1] = distance[7];
+    MoveVectorPosition3D(lightPosition, angle, lightDistance); // front right
+    carLights[5] = CreateCarHeadLight(lightPosition, angle, headLightName, carName);    
+}
 /*
-    L4D2 Storm plugin
+CreateCarBlinkLight(const Float:entityPosition[3], const String:targetName[], const String:parentName[]) {
+    new lightEntity = CreateEntityByName("env_sprite");
+    if (lightEntity == -1) {
+        return -1;
+    }    
+    
+    DispatchKeyValue(lightEntity, "targetname", targetName);
+    DispatchKeyValue(lightEntity, "spawnflags", "0");
+    DispatchKeyValue(lightEntity, "scale", "0.4");
+    DispatchKeyValue(lightEntity, "rendermode", "9");
+    DispatchKeyValue(lightEntity, "renderfx", "0");
+    DispatchKeyValue(lightEntity, "rendercolor", COLOR_REDLIGHT);
+    DispatchKeyValue(lightEntity, "renderamt", "255");
+    DispatchKeyValue(lightEntity, "model", "sprites/glow.vmt");
+    DispatchKeyValue(lightEntity, "HDRColorScale", "0.4");
+    DispatchKeyValue(lightEntity, "GlowProxySize", "35");
+    DispatchKeyValue(lightEntity, "framerate", "10.0");
+    DispatchKeyValue(lightEntity, "fadescale", "1");
+    DispatchKeyValue(lightEntity, "fademindist", "-1");
+    DispatchKeyValue(lightEntity, "disablereceiveshadows", "0");
+    
+    TeleportEntity(lightEntity, entityPosition, NULL_VECTOR, NULL_VECTOR);
+    DispatchSpawn(lightEntity);
+    ActivateEntity(lightEntity);
+    
+    SetVariantString(parentName);
+    AcceptEntityInput(lightEntity, "SetParent", lightEntity, lightEntity, 0);
+    
+    return lightEntity;
+}
+*/
+
+CreateCarLight(const Float:entityPosition[3], const String:targetName[], const String:parentName[], const String:renderColor[]) {
+    new lightEntity = CreateEntityByName("env_sprite");
+    if (lightEntity == -1) {
+        return -1;
+    }    
+    
+    DispatchKeyValue(lightEntity, "targetname", targetName);
+    DispatchKeyValue(lightEntity, "spawnflags", "0");
+    DispatchKeyValue(lightEntity, "scale", ".5");
+    DispatchKeyValue(lightEntity, "rendermode", "9");
+    DispatchKeyValue(lightEntity, "renderfx", "0");
+    DispatchKeyValue(lightEntity, "rendercolor", renderColor);
+    DispatchKeyValue(lightEntity, "renderamt", "255");
+    DispatchKeyValue(lightEntity, "model", "sprites/glow.vmt");
+    DispatchKeyValue(lightEntity, "HDRColorScale", "0.7");
+    DispatchKeyValue(lightEntity, "GlowProxySize", "5");
+    DispatchKeyValue(lightEntity, "framerate", "10.0");
+    DispatchKeyValue(lightEntity, "fadescale", "1");
+    DispatchKeyValue(lightEntity, "fademindist", "-1");
+    DispatchKeyValue(lightEntity, "disablereceiveshadows", "0");
+    
+    TeleportEntity(lightEntity, entityPosition, NULL_VECTOR, NULL_VECTOR);
+    DispatchSpawn(lightEntity);
+    ActivateEntity(lightEntity);
+    
+    SetVariantString(parentName);
+    AcceptEntityInput(lightEntity, "SetParent", lightEntity, lightEntity, 0);
+    
+    return lightEntity;
+}
+
+CreateCarHeadLight(const Float:entityPosition[3], const Float:entityAngles[3], const String:targetName[], const String:parentName[]) {
+    new lightEntity = CreateEntityByName("beam_spotlight");
+    if (lightEntity == -1) {
+        return -1;
+    }    
+    
+    DispatchKeyValue(lightEntity, "targetname", targetName);
+    DispatchKeyValue(lightEntity, "spawnflags", "2");
+    DispatchKeyValue(lightEntity, "spotlightwidth", "32");
+    DispatchKeyValue(lightEntity, "spotlightlength", "256");
+    DispatchKeyValue(lightEntity, "rendermode", "5");
+    DispatchKeyValue(lightEntity, "rendercolor", COLOR_WHITELIGHT);
+    DispatchKeyValue(lightEntity, "renderamt", "150");
+    DispatchKeyValue(lightEntity, "maxspeed", "100");
+    DispatchKeyValue(lightEntity, "HDRColorScale", ".5");
+    DispatchKeyValue(lightEntity, "fadescale", "1");
+    DispatchKeyValue(lightEntity, "fademindist", "-1");
+    
+    TeleportEntity(lightEntity, entityPosition, entityAngles, NULL_VECTOR);
+    DispatchSpawn(lightEntity);
+    ActivateEntity(lightEntity);
+    
+    SetVariantString(parentName);
+    AcceptEntityInput(lightEntity, "SetParent", lightEntity, lightEntity, 0);
+    
+    return lightEntity;
+}
+
+public Action:Timer_CarMove(Handle:timer, any:carEntity) {
+    if (IsValidEntity(carEntity)) SetEntityMoveType(carEntity, MOVETYPE_VPHYSICS);
+}
+
+stock KillEntity(const entity) {
+	if (entity < 1) return;
+	if (!IsValidEntity(entity)) return;
+	if (AcceptEntityInput(entity, "Kill")) return;
+	
+	RemoveEdict(entity);
+}
+
+MoveVectorPosition3D(Float:position[3], const Float:constAngles[3], const Float:constDistance[3]) {
+	decl Float:angle[3], Float:dirFw[3], Float:dirRi[3], Float:dirUp[3], Float:distance[3];
+	CopyVector(constDistance, distance);
+	
+	angle[0] = DegToRad(constAngles[0]);
+	angle[1] = DegToRad(constAngles[1]);
+	angle[2] = DegToRad(constAngles[2]);	
+	
+	// roll (rotation over x)
+	dirFw[0] = 1.0;
+	dirFw[1] = 0.0;
+	dirFw[2] = 0.0;
+	dirRi[0] = 0.0;
+	dirRi[1] = Cosine(angle[2]);
+	dirRi[2] = Sine(angle[2])*-1;
+	dirUp[0] = 0.0;
+	dirUp[1] = Sine(angle[2]);
+	dirUp[2] = Cosine(angle[2]);
+	MatrixMulti(dirFw, dirRi, dirUp, distance);
+	
+	// pitch (rotation over y)
+	dirFw[0] = Cosine(angle[0]);
+	dirFw[1] = 0.0;
+	dirFw[2] = Sine(angle[0]);
+	dirRi[0] = 0.0;
+	dirRi[1] = 1.0;
+	dirRi[2] = 0.0;
+	dirUp[0] = Sine(angle[0])*-1;
+	dirUp[1] = 0.0;
+	dirUp[2] = Cosine(angle[0]);
+	MatrixMulti(dirFw, dirRi, dirUp, distance);
+
+	// yaw (rotation over z)
+	dirFw[0] = Cosine(angle[1]);
+	dirFw[1] = Sine(angle[1])*-1;
+	dirFw[2] = 0.0;
+	dirRi[0] = Sine(angle[1]);
+	dirRi[1] = Cosine(angle[1]);
+	dirRi[2] = 0.0;
+	dirUp[0] = 0.0;
+	dirUp[1] = 0.0;
+	dirUp[2] = 1.0;
+	MatrixMulti(dirFw, dirRi, dirUp, distance);
+	
+	// addition
+	for (new i = 0; i < 3; i++) position[i] += distance[i];
+}
+
+MatrixMulti(const Float:matA[3], const Float:matB[3], const Float:matC[3], Float:vec[3]) {
+	new Float:res[3];
+	for (new i = 0; i < 3; i++) res[0] += matA[i]*vec[i];
+	for (new i = 0; i < 3; i++) res[1] += matB[i]*vec[i];
+	for (new i = 0; i < 3; i++) res[2] += matC[i]*vec[i];	
+	CopyVector(res, vec);
+}
+
+CopyVector(const Float:original[3], Float:copy[3]) {
+	for (new i = 0; i < 3; i++) copy[i] = original[i];
+}
+
+
+/*  L4D2 Storm plugin
     -------------------------- */
     
 SUPPORT_StormReset()

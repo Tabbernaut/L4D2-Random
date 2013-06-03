@@ -40,6 +40,9 @@ INIT_DefineCVars()
     g_hCvarGnomeFinaleFactor = CreateConVar(                "rand_gnome_finale_factor",      "0.5",     "The gnome bonus is worth this factor on finales.", FCVAR_PLUGIN, true, 0.0);
     g_hCvarGnomeAllowRandom = CreateConVar(                 "rand_gnome_random",             "0",       "Whether gnomes can drop at random (from gifts, common drops etc)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarSpecialEventTimeout = CreateConVar(              "rand_event_timeout",            "5",       "How many maps must be played before the same special event may be picked again.", FCVAR_PLUGIN, true, 0.0, false);
+    g_hCvarBanTankFlows = CreateConVar(                     "rand_ban_tanks",                "1",       "Whether tank flow bans will be taken into account.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarRandomHittables = CreateConVar(                  "rand_hittables",                "1",       "Whether hittables should be randomized too.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarMiniTankHealth = CreateConVar(                   "rand_minitankhealth",        "1000",       "How much health minitanks have. This is two-thirds of its versus health (900 = 1350 in versus).", FCVAR_PLUGIN, true, 500.0, false);
     
     g_hCvarNoitemVariance = CreateConVar(                   "rand_noitem_variance",          "0.25",    "Variance of weight for 'no item' in item randomizer.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarSpecialEventChance = CreateConVar(               "rand_event_chance",             "0.65",    "Chances of any map going in 'special event' mode.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -66,8 +69,7 @@ INIT_DefineCVars()
     g_hCvarPipeDudChance = CreateConVar(                    "rand_pipedud_chance",           "0.35",    "Chances of a pipebomb being a dud.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarAvoidIncapsChance = CreateConVar(                "rand_moreincaps_chance",        "0.35",    "If the incap count is only 1 (33%), odds that it gets set to 2 anyway.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarFinaleAmmoChance = CreateConVar(                 "rand_finale_ammo",              "0.0",     "Chances of finale ammo piles being randomized.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    g_hCvarMiniTankHealth = CreateConVar(                   "rand_minitankhealth",        "1000",       "How much health minitanks have. This is two-thirds of its versus health (900 = 1350 in versus).", FCVAR_PLUGIN, true, 500.0, false);
-    g_hCvarBanTankFlows = CreateConVar(                     "rand_ban_tanks",                "1",       "Whether tank flow bans will be taken into account.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarAlarmedCarChance = CreateConVar(                 "rand_caralarm_chance",          "0.33",    "Chances of a car being alarmed.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     
     g_hCvarFinaleItemUseful =  CreateConVar(                "rand_item_finale_useful",       "0.25",    "Factor by which non-useful items are adjusted for finale maps (lower = easier map).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarStartItemNoJunk =  CreateConVar(                 "rand_item_start_nojunk",        "0.25",    "Chances items in start saferoom will be converted to something useful.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -116,21 +118,21 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_ITEM] = CreateConVar(            "rand_weight_evt_item",          "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_HORDE_HUGE] = CreateConVar(      "rand_weight_evt_horde",         "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_HORDE_NONE] = CreateConVar(      "rand_weight_evt_nohorde",       "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_UNCOMMON] = CreateConVar(        "rand_weight_evt_uncommon",      "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_CLOWNS] = CreateConVar(          "rand_weight_evt_circus",        "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_UNCOMMON] = CreateConVar(        "rand_weight_evt_uncommon",      "4",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_CLOWNS] = CreateConVar(          "rand_weight_evt_circus",        "3",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_DOORS] = CreateConVar(           "rand_weight_evt_doors",         "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_QUADS] = CreateConVar(           "rand_weight_evt_quads",         "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_WEATHER] = CreateConVar(         "rand_weight_evt_storm",        "10",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_WEATHER] = CreateConVar(         "rand_weight_evt_storm",         "8",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_FOG] = CreateConVar(             "rand_weight_evt_fog",           "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_ABUNDANCE] = CreateConVar(       "rand_weight_evt_abundance",     "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_SNIPER] = CreateConVar(          "rand_weight_evt_sniper",        "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_GIFTS] = CreateConVar(           "rand_weight_evt_gifts",        "11",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_GIFTS] = CreateConVar(           "rand_weight_evt_gifts",        "10",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_DEFIB] = CreateConVar(           "rand_weight_evt_defib",         "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_ADREN] = CreateConVar(           "rand_weight_evt_adren",         "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_NOHUD] = CreateConVar(           "rand_weight_evt_nohud",         "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_L4D1] = CreateConVar(            "rand_weight_evt_l4d1",          "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_L4D1] = CreateConVar(            "rand_weight_evt_l4d1",          "6",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_FF] = CreateConVar(              "rand_weight_evt_ff",            "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_SILENCE] = CreateConVar(         "rand_weight_evt_sound",        "10",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_SILENCE] = CreateConVar(         "rand_weight_evt_sound",         "8",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_PEN_ITEM] = CreateConVar(        "rand_weight_evt_penitem",       "3",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_PEN_HEALTH] = CreateConVar(      "rand_weight_evt_penhealth",     "3",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_PEN_M2] = CreateConVar(          "rand_weight_evt_penm2",         "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -145,9 +147,9 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_FIREPOWER] = CreateConVar(       "rand_weight_evt_firepower",     "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_AMMO] = CreateConVar(            "rand_weight_evt_ammo",          "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_WOMEN] = CreateConVar(           "rand_weight_evt_women",         "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_GUNSWAP] = CreateConVar(         "rand_weight_evt_gunswap",      "10",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_GUNSWAP] = CreateConVar(         "rand_weight_evt_gunswap",       "9",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_WITCHES] = CreateConVar(         "rand_weight_evt_witches",       "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_BADSANTA] = CreateConVar(        "rand_weight_evt_badgifts",      "6",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_BADSANTA] = CreateConVar(        "rand_weight_evt_badgifts",      "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     g_hArCvarGiftWeight[GIFT_POS_HEALTH] = CreateConVar(    "rand_weight_gift_health",       "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_POS_HEALTH_T] = CreateConVar(  "rand_weight_gift_temphealth",   "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -208,7 +210,6 @@ INIT_CVarsGetDefault()
     g_iDefAmmoSniper =          GetConVarInt(FindConVar("ammo_sniperrifle_max"));
     g_iDefAmmoRifle =           GetConVarInt(FindConVar("ammo_assaultrifle_max"));
     g_iDefAmmoAutoShotgun =     GetConVarInt(FindConVar("ammo_autoshotgun_max"));
-    
     
     g_fDefFFFactor =            GetConVarFloat(FindConVar("survivor_friendly_fire_factor_normal"));
     
@@ -330,26 +331,53 @@ INIT_FillTries()
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_equipment/oxygentank01.mdl",        RANDOMIZABLE_PHYSICS);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props/cs_office/Fire_Extinguisher.mdl",   RANDOMIZABLE_PHYSICS);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/gnome.mdl",                    RANDOMIZABLE_PHYSICS);
-    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/explosive_box001.mdl",         RANDOMIZABLE_PHYSICS);    
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/explosive_box001.mdl",         RANDOMIZABLE_PHYSICS);
+    
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/cara_69sedan.mdl",             HITTABLE_PHYSICS_CAR);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/cara_69sedan_glass.mdl",       HITTABLE_PHYSICS_ADDON);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/cara_82hatchback.mdl",         HITTABLE_PHYSICS_CAR);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/cara_82hatchback_glass.mdl",   HITTABLE_PHYSICS_ADDON);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/cara_84sedan.mdl",             HITTABLE_PHYSICS_CAR);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/cara_84sedan_glass.mdl",       HITTABLE_PHYSICS_ADDON);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/cara_95sedan.mdl",             HITTABLE_PHYSICS_CAR);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/cara_95sedan_glass.mdl",       HITTABLE_PHYSICS_ADDON);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/cara_82hatchback_wrecked.mdl", HITTABLE_PHYSICS_CAR);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/cara_95sedan_wrecked.mdl",     HITTABLE_PHYSICS_CAR);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/police_car_city.mdl",          HITTABLE_PHYSICS_CAR);  // share city_glass
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/police_car_rural.mdl",         HITTABLE_PHYSICS_CAR);  // share city_glass
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/police_car_city_glass.mdl",    HITTABLE_PHYSICS_ADDON);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/taxi_city.mdl",                HITTABLE_PHYSICS_CAR);  // share city_glass
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/taxi_rural.mdl",               HITTABLE_PHYSICS_CAR);  // share city_glass
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/taxi_city_glass.mdl",          HITTABLE_PHYSICS_ADDON);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/dumpster.mdl",                     HITTABLE_PHYSICS_SMALL);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/dumpster_2.mdl",                   HITTABLE_PHYSICS_SMALL);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props/cs_assault/forklift.mdl",               HITTABLE_PHYSICS);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_foliage/swamp_fallentree01_bare.mdl",   HITTABLE_PHYSICS_SMALL);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_foliage/tree_trunk_fallen.mdl",         HITTABLE_PHYSICS_SMALL);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_fairgrounds/bumpercar.mdl",             HITTABLE_PHYSICS_SMALL);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_fairgrounds/bumpercar_pole.mdl",        HITTABLE_PHYSICS_ADDON);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/airport_baggage_cart2.mdl",    HITTABLE_PHYSICS);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_unique/haybails_single.mdl",            HITTABLE_PHYSICS_SMALL);
+    
     
     g_hTrieMeleeType = CreateTrie();                                                                                                // classname trie for finding 'normal' melees
-    SetTrieValue(g_hTrieMeleeType, "fireaxe",                   MELEE_NORMAL);
-    SetTrieValue(g_hTrieMeleeType, "frying_pan",                MELEE_NORMAL);
-    SetTrieValue(g_hTrieMeleeType, "machete",                   MELEE_NORMAL);
-    SetTrieValue(g_hTrieMeleeType, "baseball_bat",              MELEE_NORMAL);
-    SetTrieValue(g_hTrieMeleeType, "crowbar",                   MELEE_NORMAL);
-    SetTrieValue(g_hTrieMeleeType, "cricket_bat",               MELEE_NORMAL);
-    SetTrieValue(g_hTrieMeleeType, "tonfa",                     MELEE_NORMAL);
-    SetTrieValue(g_hTrieMeleeType, "katana",                    MELEE_NORMAL);
-    SetTrieValue(g_hTrieMeleeType, "electric_guitar",           MELEE_NORMAL);
-    SetTrieValue(g_hTrieMeleeType, "golfclub",                  MELEE_NORMAL);
-    SetTrieValue(g_hTrieMeleeType, "hunting_knife",             MELEE_WEIRD);
+    SetTrieValue(g_hTrieMeleeType, "fireaxe",                       MELEE_NORMAL);
+    SetTrieValue(g_hTrieMeleeType, "frying_pan",                    MELEE_NORMAL);
+    SetTrieValue(g_hTrieMeleeType, "machete",                       MELEE_NORMAL);
+    SetTrieValue(g_hTrieMeleeType, "baseball_bat",                  MELEE_NORMAL);
+    SetTrieValue(g_hTrieMeleeType, "crowbar",                       MELEE_NORMAL);
+    SetTrieValue(g_hTrieMeleeType, "cricket_bat",                   MELEE_NORMAL);
+    SetTrieValue(g_hTrieMeleeType, "tonfa",                         MELEE_NORMAL);
+    SetTrieValue(g_hTrieMeleeType, "katana",                        MELEE_NORMAL);
+    SetTrieValue(g_hTrieMeleeType, "electric_guitar",               MELEE_NORMAL);
+    SetTrieValue(g_hTrieMeleeType, "golfclub",                      MELEE_NORMAL);
+    SetTrieValue(g_hTrieMeleeType, "hunting_knife",                 MELEE_WEIRD);
     
     g_hTrieBlindable = CreateTrie();
-    SetTrieValue(g_hTrieBlindable, "predicted_viewmodel",       ENTITY_NOT_BLINDABLE);
-    SetTrieValue(g_hTrieBlindable, "instanced_scripted_scene",  ENTITY_NOT_BLINDABLE);
-    SetTrieValue(g_hTrieBlindable, "func_occluder",             ENTITY_NOT_BLINDABLE);
-    SetTrieValue(g_hTrieBlindable, "ability_vomit",             ENTITY_NOT_BLINDABLE);
+    SetTrieValue(g_hTrieBlindable, "predicted_viewmodel",           ENTITY_NOT_BLINDABLE);
+    SetTrieValue(g_hTrieBlindable, "instanced_scripted_scene",      ENTITY_NOT_BLINDABLE);
+    SetTrieValue(g_hTrieBlindable, "func_occluder",                 ENTITY_NOT_BLINDABLE);
+    SetTrieValue(g_hTrieBlindable, "ability_vomit",                 ENTITY_NOT_BLINDABLE);
     
     g_hTriePenaltyItems = CreateTrie();
     SetTrieValue(g_hTriePenaltyItems, "melee",                      ITEM_PICKUP_PENALTY_MELEE);
@@ -621,6 +649,14 @@ INIT_PrecacheModels(bool: noMapStarted = false)
     {
         if (!IsModelPrecached(g_csFemaleCommonModels[i])) {
             PrecacheModel(g_csFemaleCommonModels[i], true);
+        }
+    }
+    
+    // Hittables
+    for (new i=0; i < sizeof(g_csHittableModels); i++)
+    {
+        if (!IsModelPrecached(g_csHittableModels[i])) {
+            PrecacheModel(g_csHittableModels[i], true);
         }
     }
     
