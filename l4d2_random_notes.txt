@@ -7,23 +7,6 @@ L4D2_Random
             
             in consideration
             ----------------
-            - 'witch hunt': spawns many witches all over the place -- only way to score points = by killing them [pbonus]
-                    consider it a 'miniwitches': give them 50% health, 50 dmg claw?
-                    - how though, technically?
-                        - just spawn a witch every 0.8 distance, from 0.1 to max 0.9
-                    - no tanks during this
-            
-            - coal from santa
-                            - many gifts
-                            - all gifts have negative effects
-                            - but you get 20 points for each opened present
-            
-            - women event:  do something for boomers
-                        - increase boomer/spitter speed
-                        - increase boomer scratch damage (a bit)
-                        - decrease vomit recharge 
-                        - boomer bitchslap?
-                        - add weak witches to women event? meh.
             
             in doubt
             --------
@@ -41,18 +24,11 @@ L4D2_Random
                 
             
     to-do:
-    ------
-            - bugfix:   multiwitch: message doesn't show for second team, only one witch spawned, though.
-                        - cannot reproduce locally.
-                        single witch: even she doesn't always seem to spawn for both teams?
-                        - force witch in same spots for both teams (no matter how many witches)? to fix unfair witches & witch not spawning?
+    ------  
+            - bugfix:   getting incapped with melee => pistol = pickup penalty?
             
-            - test:     make a death-order odds-changer:
-                        every time something dies, it affects the odds negatively for that class (slightly),
-                        for the next 4 spawns (and with each, it should slowly bring back the odds to default?)
-                        - just give an XX% chance of repicking if a 'timing out' class is randomly picked,
-                            then reduce the XX-chance with each spawn, so it naturally peters out.
-                        - note: repicking can just as easily get the same spawn back... it just drops the odds (by enough)
+            - consider: death-order odds-changer:
+                        - while repicking, also take into account the odds of repicking another class we should be less likely to pick?
             
             - medium:   test and include stabby's random map stuff so people can launch random campaigns after loading random
 
@@ -86,26 +62,6 @@ L4D2_Random
         minor changes
         -------------
             c1m2        just some spawn cover changes (no harder map pathing, nor is it detected)
-            
-        path changes
-        ------------
-            c1m3        lower route + change to final area
-            c2m4        blocked a few paths at start and before barns
-            c3m3        some most-direct paths blocked
-            c3m4        through house at start, roadblock in village
-            c4m1        blocked path near garage sale, filled up road a bit
-            c4m4        stabby's event
-            c5m1        path forced halfway
-            c5m3        different maze version (tougher), made house with hole (at ~50%) one-way-drop
-            c5m4        forced pathing near end of map
-            c8m1        forced long way around the map
-            c8m4        harder pathing near reception
-            c10m2       blocked routes near start and after event
-            c10m4       added a bunch of obstructions in first parts of map
-            c11m4       a number of small detours and spawn cover
-            c12m2       forced routes, long way through building
-            c12m4       my map changes / route change
-            c12m5       cornfield changes
           
 
         

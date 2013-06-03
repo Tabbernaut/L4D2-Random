@@ -67,15 +67,14 @@ const Float:    MULTITANK_LATE          = 0.75;         //                      
 
 const           MULTIWITCH_MIN          = 3;            // amount of witches in multi-witch mode
 const           MULTIWITCH_MAX          = 7;
-const Float:    MULTIWITCH_FLOW_MIN     = 0.1;          // earliest a multiwitch can spawn
-const Float:    MULTIWITCH_FLOW_MAX     = 0.9;
-const Float:    MULTIWITCH_FLOW_BETWEEN = 0.1;          // minimum flow distance between two witches
+const Float:    MULTIWITCH_FLOW_MIN     = 0.15;         // earliest a multiwitch can spawn
+const Float:    MULTIWITCH_FLOW_MAX     = 0.85;
+const Float:    MULTIWITCH_FLOW_BETWEEN = 0.075;        // minimum flow distance between two witches
 const Float:    MULTIWITCH_FLOW_TANK    = 0.15;         // minimum distance a witch must be from tank spawn
 const bool:     MULTIWITCH_ALLOW_TANK   = true;         // multiwitches possible when there's a tank?
 
 const           MULTITANK_MAX           = 9;
 const           MINITANKS_NUM           = 9;            // 9 tanks, 1250 health each
-//const           MINITANKS_HEALTH        = 900;
 const Float:    MINITANKS_FLOW_MIN      = 0.1;
 const Float:    MINITANKS_FLOW_MAX      = 0.9;
 const Float:    MINITANKS_FLOW_INT      = 0.1;
@@ -116,6 +115,7 @@ const Float:    EVENT_VERYHARD_CILIM    = 1.5;
 
 // event config
 const Float:    EVENT_ITEM_WEIGHT       = 0.2;          // EVT_ITEM         set weight of picked item type to this factor of total weight
+const Float:    EVENT_BADSANTA_WEIGHT   = 0.125;        // EVT_BADSANTA     set weight of picked item type to this factor of total weight
 const Float:    EVENT_UNCOMMON_CHANCE   = 0.5;          // EVT_UNCOMMON     half the common become uncommon
 const Float:    EVENT_CLOWNS_CHANCE     = 0.7;          // EVT_CLOWNS       plenty of clowns
 const Float:    EVENT_ABUND_JUNKWGHT    = 0.5;          // EVT_ABUNDANCE    by what factor to change junk amount
@@ -149,6 +149,12 @@ const Float:    EVENT_MAXAMMO_FACTOR    = 0.5;          // EVT_AMMO         how 
 const Float:    EVENT_AMMO_FACTOR       = 0.12;         // EVT_AMMO         how much ammo there is in weapons lying around
 const Float:    EVENT_WOMEN_LIMITTIME   = 7.5;          // EVT_WOMEN        how long per combo-step to keep increased common limit
 const           EVENT_WOMEN_EXTRACOMMON = 5;            // EVT_WOMEN        how many extra common per combo (limit increase)
+const Float:    EVENT_WOMEN_MELEEDMG    = 500.0;        // EVT_WOMEN        how much damage a melee does against a witch
+const Float:    EVENT_WOMEN_WITCHDMG    = 25.0;         // EVT_WOMEN        how much damage a witch does against an upright survivor
+const Float:    EVENT_WITCHES_WITCHDMG  = 50.0;         // EVT_WITCHES      how much damage a witch does against an upright survivor
+const           EVENT_WITCHES_BONUS     = 25;           // EVT_WITCHES      how many points to give for each witch kill
+const Float:    EVENT_WITCHES_SPAWNFREQ = 40.0;         // EVT_WITCHES      spawn witch every X seconds
+const           EVENT_BADSANTA_BONUS    = 20;           // EVT_BADSANTA     how many points to give for each gift unwrap
 
 const Float:    EVENT_ENC_W_T1          = 1.5;          // EVT_ENCUMBERED   for determining total player weight
 const Float:    EVENT_ENC_W_T2          = 2.5;
@@ -176,7 +182,7 @@ const           TANK_DROP_ITEMS_MAX     = 5;
 
 const           BOOMCOMBO_REWARD        = 6;            // amount of common to spawn extra for 2/3 boom combo's
 const Float:    BOOMCOMBO_DUDTIME       = 10.0;         // how long after a boomer combo started will pipebombs have higher dud-chacne
-const Float:    BOOMCOMBO_DUDCHANCE     = 0.75;
+const Float:    BOOMCOMBO_DUDCHANCE     = 0.67;
 
 const Float:    PIPEDUD_MINTIME         = 2.4;          // how much time minimally before dudding pipe
 const Float:    PIPEDUD_ADDTIME         = 2.5;          // how much time to add maximally to mintime
@@ -262,8 +268,10 @@ const           EVT_FIREPOWER           = 29;
 const           EVT_AMMO                = 30;
 const           EVT_WOMEN               = 31;
 const           EVT_GUNSWAP             = 32;
+const           EVT_WITCHES             = 33;
+const           EVT_BADSANTA            = 34;
 
-const           EVT_TOTAL               = 33;
+const           EVT_TOTAL               = 35;
     
 const           EVTWOMEN_TYPE_AXE       = 1;            // axe effect
 const           EVTWOMEN_TYPE_ROCK      = 2;            // rockstars
@@ -341,6 +349,9 @@ const Float:    TESTENTITY_THRESH       = 50.0;         // threshold for detecti
 const Float:    TIMER_PICKUPCHECK       = 0.05;         // super brief delay to check whether an item was really picked up, or actually given
 const Float:    SHOTGUN_BLAST_TIME      = 0.1;          // shotgun blast max time for tracking pellets (anything but 0, while super small, really)
 const Float:    TIMER_POUNCE            = 0.1;          // repeat timer to check when hunter has landed (for skeet tracking)
+
+const Float:    MULTIWITCH_EXTRA_FLOW   = 3000.0;
+const Float:    MULTIWITCH_RESPAWN_FREQ = 5.0;
 
 
 // Resources
@@ -465,7 +476,8 @@ enum CreatedEntityType          // for use with tries to determine whether to ha
     CREATED_INFECTED,
     CREATED_PIPEBOMB,
     CREATED_PROP_PHYSICS,
-    CREATED_AMMO_DEPLOYED       // explosive/incendiary
+    CREATED_AMMO_DEPLOYED,      // explosive/incendiary
+    CREATED_WITCH
 }
 
 enum RandomizableOrNot          // for use with tries to determine ent's random-replaceableness
@@ -620,8 +632,9 @@ new const String: g_csEventText[][] =
     "\x04Firepower\x01 - Tier 2 weapons everywhere.",
     "\x04Ammo Shortage\x01 - Deploy and repack your team's ammo.",
     "[women event]",                                                                            // two variants: Axe Effect and Rock Stars, replace name in report (plus backup variant)
-    "\x04Magic Gun Swap\x01 - Empty your clip to get a new weapon."
-    
+    "\x04Magic Gun Swap\x01 - Empty your clip to get a new weapon.",
+    "\x04Witch Hunt\x01 - Kill witches for \x0425\x01 bonus points.",
+    "\x04Lousy Gifts\x01 - All gifts are bad! \x0420\x01 bonus for unwrapping anyway."
 };
 
 new const String: g_csJunkModels[][] =

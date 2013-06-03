@@ -70,7 +70,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.23",
+    version = "1.0.24",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -138,6 +138,7 @@ public OnPluginStart()
     
     HookEvent("ability_use",                Event_AbilityUse,               EventHookMode_Post);
     HookEvent("lunge_pounce",               Event_LungePounce,              EventHookMode_Post);
+    HookEvent("witch_killed",               Event_WitchDeath,               EventHookMode_Post);
     
     
     // default convars
@@ -194,10 +195,10 @@ public OnPluginStart()
     RegConsoleCmd("say_team",   Say_Cmd,        "...");
     
     /*  Listen for pausing & unpausing */
-    //RegConsoleCmd("pause",      Pause_Cmd,      "...");
+    RegConsoleCmd("unpause",    Unpause_Cmd,    "...");
     AddCommandListener(Listener_Pause, "pause");
     AddCommandListener(Listener_Pause, "set_pause");
-    RegConsoleCmd("unpause",    Unpause_Cmd,    "...");
+    
     
     // Blind infected
     g_hBlockedEntities = CreateArray(_:EntInfo);
@@ -626,18 +627,10 @@ public Action: Say_Cmd(client, args)
         GetCmdArg(1, sMessage, sizeof(sMessage));
 
         if (StrEqual(sMessage, "!rand")) return Plugin_Handled;
+        else if (StrEqual(sMessage, "!random")) return Plugin_Handled;
         else if (StrEqual (sMessage, "!drop")) return Plugin_Handled;
         else if (StrEqual (sMessage, "!bonus")) return Plugin_Handled;
         else if (StrEqual (sMessage, "!penalty")) return Plugin_Handled;
-        
-        // catch 'ready' and 'r' and other chat-attempts at readyup?
-        if (StrEqual(sMessage, "ready", false) || StrEqual(sMessage, "r", false)) {
-            FakeClientCommand(client, "sm_ready");
-            PrintToChatAll("test!");
-        }
-        else if (StrEqual(sMessage, "unready", false) || StrEqual(sMessage, "nr", false)) {
-            FakeClientCommand(client, "sm_unready");
-        }
     }
     
     return Plugin_Continue;
@@ -800,6 +793,13 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
     if (g_bInRound && g_bUsingPBonus)   // only display once, and only when using pbonus
     {
         EVENT_DisplayRoundPenalty();
+    }
+    
+    // stop timers we might have been using
+    if (g_hWitchSpawnTimer != INVALID_HANDLE)
+    {
+        CloseHandle(g_hWitchSpawnTimer);
+        g_hWitchSpawnTimer = INVALID_HANDLE;
     }
     
     if (g_bInRound) { g_bInRound = false; }
@@ -977,8 +977,31 @@ public Action: Event_SoundPlayed(clients[64], &numClients, String:sample[PLATFOR
 
 public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype)
 {
-    if (_:g_iSpecialEvent != EVT_MINITANKS && _:g_iSpecialEvent != EVT_PROTECT) { return Plugin_Continue; }
-    if ( !IsClientAndInGame(victim) || damage == 0.0 ) { return Plugin_Continue; }
+    if (    _:g_iSpecialEvent != EVT_MINITANKS
+        &&  _:g_iSpecialEvent != EVT_PROTECT
+        &&  _:g_iSpecialEvent != EVT_WOMEN
+        &&  _:g_iSpecialEvent != EVT_WITCHES
+        ||  !IsValidEntity(attacker)
+        ||  damage == 0.0
+    ) {
+        return Plugin_Continue;
+    }
+    
+    // women, where the witch should die more easily to melee swings
+    if ( _:g_iSpecialEvent == EVT_WOMEN || _:g_iSpecialEvent == EVT_WITCHES )
+    {
+        if (!IsClientAndInGame(attacker))
+        {
+            decl String:attackClass[64];
+            GetEdictClassname(attacker, attackClass, 64);
+            if (!StrEqual(attackClass, "witch")) { return Plugin_Continue; }
+            
+            damage = (_:g_iSpecialEvent == EVT_WOMEN) ? EVENT_WOMEN_WITCHDMG : EVENT_WITCHES_WITCHDMG;
+            return Plugin_Changed;
+        }
+    }
+    
+    if ( !IsClientAndInGame(victim) ) { return Plugin_Continue; }
     
     // protect, baby player takes more damage (the others less)
     if (_:g_iSpecialEvent == EVT_PROTECT)
@@ -1029,7 +1052,31 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
     return Plugin_Continue;
 }
 
+public Action: OnTakeDamage_Witch(victim, &attacker, &inflictor, &Float:damage, &damagetype)
+{
+    // only hooked on EVT_WOMEN, for making melees do diff. damage to witches
+    if (    _:g_iSpecialEvent != EVT_WOMEN
+        ||  damage == 0.0
+        ||  !IsClientAndInGame(attacker)
+        ||  GetClientTeam(attacker) != TEAM_SURVIVOR
+        ||  !IsValidEntity(victim)
+        ||  !IsValidEntity(inflictor)
+    ) {
+        return Plugin_Continue;
+    }
 
+    decl String:victimClass[64];
+    GetEdictClassname(victim, victimClass, 64);
+    if (!StrEqual(victimClass, "witch")) { return Plugin_Continue; }
+    
+    new String: classname[32];
+    GetEdictClassname(inflictor, classname, sizeof(classname));
+    if (!StrEqual(classname, "weapon_melee", false)) { return Plugin_Continue; }
+    
+    damage = EVENT_WOMEN_MELEEDMG;
+    return Plugin_Changed;
+}
+    
 /*  Human tracking (join/etc)
     -------------------------- */
 
@@ -1441,7 +1488,7 @@ public Event_PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
     }
         
     // handle new hit (only shotgun), and only on pouncing hunters
-    if (bHunterPouncing[victim] && damagetype & DMG_BUCKSHOT) {
+    if (GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce") && damagetype & DMG_BUCKSHOT) {
         
         // first pellet hit?
         if (fHunterShotStart[victim][attacker] == 0.0)
@@ -1478,36 +1525,15 @@ public Event_AbilityUse(Handle:event, const String:name[], bool:dontBroadcast)
     new String:abilityName[64];
     GetEventString(event, "ability", abilityName, sizeof(abilityName));
     
-    if (IsClientAndInGame(client) && strcmp(abilityName, "ability_lunge", false) == 0 && !bHunterPouncing[client])
+    if (IsClientAndInGame(client) && strcmp(abilityName, "ability_lunge", false) == 0)
     {
         // hunter started a pounce
-        
         iHunterShotDmgTeam[client] = 0; // reset team damage for each pounce
-        
-        bHunterPouncing[client] = true;
-        CreateTimer(TIMER_POUNCE, Timer_GroundTouch, client, TIMER_REPEAT);
     }
 }
-
-public Action: Timer_GroundTouch(Handle:timer, any:client)
-{
-    if (IsClientAndInGame(client) && (isGrounded(client) || !IsPlayerAlive(client)) )
-    {
-        // Reached the ground or died in mid-air
-        bHunterPouncing[client] = false;
-        KillTimer(timer);
-    }
-}
-
-public bool:isGrounded(client)
-{
-    return (GetEntProp(client,Prop_Data,"m_fFlags") & FL_ONGROUND) > 0;
-}
-
 
 public ResetHunter(client)
 {
-    bHunterPouncing[client] = false;
     iHunterShotDmgTeam[client] = 0;
     for (new i=1; i <= MaxClients; i++)
     {
@@ -2047,6 +2073,22 @@ public Action:Event_WeaponFire(Handle:event, const String:name[], bool:dontBroad
     }
 }
 
+
+public Event_WitchDeath(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    if (_:g_iSpecialEvent != EVT_WITCHES) { return; }
+    
+    new client = GetClientOfUserId(GetEventInt(event, "userid"));
+    //new witchEnt = GetEventInt(event, "witchid");
+    
+    // witch was killed, give bonus to survivors (if killer was a survivor)
+    if (!IsClientAndInGame(client) || GetClientTeam(client) != TEAM_SURVIVOR) { return; }
+    
+    g_iBonusCount++;
+    PBONUS_AddRoundBonus( EVENT_WITCHES_BONUS );
+    PrintToChatAll("\x01[\x05r\x01] A witch was killed for \x04%i\x01 points.", EVENT_WITCHES_BONUS);
+    
+}
 /*
     Ghosts and spawning events
     -------------------------- */
@@ -2164,24 +2206,23 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
         
         iHunterShotDmgTeam[victim] = 0;
         iHunterShotDmg[victim][attacker] = 0;
-        bHunterPouncing[victim] = false;
-    }
-    
-    // death order:
-    if (GetConVarInt(g_hCvarDeathOrderMode) > 0 && zClass >= ZC_SMOKER && zClass <= ZC_CHARGER)
-    {
-        new dMode = GetConVarInt(g_hCvarDeathOrderMode);
-        
-        if (dMode == 1) {
-            g_iClassTimeout[zClass] = 3;
-        } else {
-            g_iClassTimeout[zClass] = 4;
-        }
     }
     
     
     if (!IsFakeClient(victim))
     {
+        // death order:
+        if (GetConVarInt(g_hCvarDeathOrderMode) > 0 && zClass >= ZC_SMOKER && zClass <= ZC_CHARGER)
+        {
+            new dMode = GetConVarInt(g_hCvarDeathOrderMode);
+            
+            if (dMode == 1) {
+                g_iClassTimeout[zClass] = 3;
+            } else {
+                g_iClassTimeout[zClass] = 4;
+            }
+        }
+        
         // sack protection, check if someone got a ghost and doesn't have a first death set yet
         g_fGotGhost[victim] = 0.0;
         g_fDeathAfterGhost[victim] = 0.0;
@@ -2367,7 +2408,15 @@ public OnEntityCreated(entity, const String:classname[])
     new CreatedEntityType: classnameOEC;
     if (!GetTrieValue(g_hTrieEntityCreated, classname, classnameOEC)) { return; }
     
-    if (classnameOEC == CREATED_INFECTED) 
+    if (classnameOEC == CREATED_WITCH)
+    {
+        if (_:g_iSpecialEvent == EVT_WOMEN)
+        {
+            // hook witch for damage
+            SDKHook(entity, SDKHook_OnTakeDamage, OnTakeDamage_Witch);
+        }
+    }
+    else if (classnameOEC == CREATED_INFECTED) 
     {
         
         // for women special event... make them female, no uncommon

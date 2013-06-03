@@ -105,7 +105,6 @@ new     Float:          g_fDudTimeExpire                                    = 0.
 new     Float:          g_fRewardTime                                       = 0.0;                  // for how long the reward should work (common limit change for women event)
 
 // Hunter and skeet tracking
-new     bool:           bHunterPouncing         [MAXPLAYERS + 1]            = {false,...};          // whether the hunter is currently pouncing
 new                     iHunterShotDmgTeam      [MAXPLAYERS + 1];                                   // counting shotgun blast damage for hunter, counting entire survivor team's damage
 new                     iHunterShotDmg          [MAXPLAYERS + 1][MAXPLAYERS + 1];                   // counting shotgun blast damage for hunter / skeeter combo
 new     Float:          fHunterShotStart        [MAXPLAYERS + 1][MAXPLAYERS + 1];                   // when the last shotgun blast on hunter started (if at any time) by an attacker
@@ -211,7 +210,7 @@ new                     g_iDeployedAmmo                                     = 0;
 new     bool:           g_bShowedProgressHint                               = false;                // so we only show the text once
 new     Handle:         g_hTimePenaltyTimer                                 = INVALID_HANDLE;       // for the EVT_PEN_TIME
 new                     g_iTimePenaltyCounter                               = 0;                    // counts seconds for the time penalty
-
+new     Handle:         g_hWitchSpawnTimer                                  = INVALID_HANDLE;       // crox's multiwitches
 
 // RandomMapInfo keyvalues
 new     Handle:         g_kRIData                                           = INVALID_HANDLE;       // keyvalues handle for randommapinfo.txt
@@ -223,6 +222,8 @@ new     bool:           g_RI_bNoTankVar                                     = fa
 new     bool:           g_RI_bNoWitch                                       = false;                // block witch spawns
 new     bool:           g_RI_bNoStorm                                       = false;                // block storms for this map
 new     bool:           g_RI_bNoCola                                        = false;                // block cola spawns
+new                     g_RI_iTankBanStart                                  = 0;                    // block specific tank spawn range
+new                     g_RI_iTankBanEnd                                    = 0;                    // block specific tank spawn range
 
 
 // ConVars
@@ -259,6 +260,7 @@ new     Handle:         g_hCvarGnomeFinaleFactor                            = IN
 new     Handle:         g_hCvarGnomeAllowRandom                             = INVALID_HANDLE;       // cvar whether gnomes can drop at random
 new     Handle:         g_hCvarSpecialEventTimeout                          = INVALID_HANDLE;       // cvar how many maps it takes for a special event to be pickable again
 new     Handle:         g_hCvarMiniTankHealth                               = INVALID_HANDLE;       // cvar how much health a minitank has
+new     Handle:         g_hCvarBanTankFlows                                 = INVALID_HANDLE;       // cvar whether to take banned tank flow into account
 
 new     Handle:         g_hCvarFinaleItemUseful                             = INVALID_HANDLE;       // cvar the factor by which non-useful items are reduced for finale maps
 new     Handle:         g_hCvarStartItemNoJunk                              = INVALID_HANDLE;       // cvar the odds that junk gets changed to something useful in start saferoom
@@ -343,3 +345,6 @@ new                     g_iDefTankFrustTime                                 = 20
 new                     g_iDefTankDamage                                    = 24;
 new                     g_iDefTankHittableDamage                            = 100;      // for hittable control
 new     Float:          g_fDefTankFlowVariation                             = 0.1;
+
+new                     g_iDefVomitInterval                                 = 30;
+new                     g_iDefSpitInterval                                  = 20;

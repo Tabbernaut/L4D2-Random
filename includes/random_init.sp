@@ -66,7 +66,8 @@ INIT_DefineCVars()
     g_hCvarPipeDudChance = CreateConVar(                    "rand_pipedud_chance",           "0.35",    "Chances of a pipebomb being a dud.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarAvoidIncapsChance = CreateConVar(                "rand_moreincaps_chance",        "0.35",    "If the incap count is only 1 (33%), odds that it gets set to 2 anyway.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarFinaleAmmoChance = CreateConVar(                 "rand_finale_ammo",              "0.0",     "Chances of finale ammo piles being randomized.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    g_hCvarMiniTankHealth = CreateConVar(                   "rand_minitankhealth",         "900",       "How much health minitanks have. This is two-thirds of its versus health (900 = 1350 in versus).", FCVAR_PLUGIN, true, 500.0, false);
+    g_hCvarMiniTankHealth = CreateConVar(                   "rand_minitankhealth",        "1000",       "How much health minitanks have. This is two-thirds of its versus health (900 = 1350 in versus).", FCVAR_PLUGIN, true, 500.0, false);
+    g_hCvarBanTankFlows = CreateConVar(                     "rand_ban_tanks",                "1",       "Whether tank flow bans will be taken into account.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     
     g_hCvarFinaleItemUseful =  CreateConVar(                "rand_item_finale_useful",       "0.25",    "Factor by which non-useful items are adjusted for finale maps (lower = easier map).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarStartItemNoJunk =  CreateConVar(                 "rand_item_start_nojunk",        "0.25",    "Chances items in start saferoom will be converted to something useful.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -145,6 +146,7 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_AMMO] = CreateConVar(            "rand_weight_evt_ammo",          "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_WOMEN] = CreateConVar(           "rand_weight_evt_women",         "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_GUNSWAP] = CreateConVar(         "rand_weight_evt_gunswap",      "10",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_WITCHES] = CreateConVar(         "rand_weight_evt_witches",       "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     g_hArCvarGiftWeight[GIFT_POS_HEALTH] = CreateConVar(    "rand_weight_gift_health",       "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_POS_HEALTH_T] = CreateConVar(  "rand_weight_gift_temphealth",   "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -214,6 +216,9 @@ INIT_CVarsGetDefault()
     g_iDefTankDamage =          GetConVarInt(FindConVar("vs_tank_damage"));
     g_fDefTankFlowVariation =   GetConVarFloat(FindConVar("versus_tank_flow_team_variation"));
     
+    g_iDefVomitInterval =       GetConVarInt(FindConVar("z_vomit_interval"));
+    g_iDefSpitInterval =        GetConVarInt(FindConVar("z_spit_interval"));
+    
     if (FindConVar("hc_car_standing_damage") != INVALID_HANDLE) {
         g_iDefTankHittableDamage =  GetConVarInt(FindConVar("hc_car_standing_damage"));
     }
@@ -277,6 +282,7 @@ INIT_FillTries()
     SetTrieValue(g_hTrieEntityCreated, "physics_prop",                              CREATED_PROP_PHYSICS);
     SetTrieValue(g_hTrieEntityCreated, "upgrade_ammo_explosive",                    CREATED_AMMO_DEPLOYED);
     SetTrieValue(g_hTrieEntityCreated, "upgrade_ammo_incendiary",                   CREATED_AMMO_DEPLOYED);
+    SetTrieValue(g_hTrieEntityCreated, "witch",                                     CREATED_WITCH);
     
     g_hTrieRandomizableEntity = CreateTrie();                                                                                       // classname trie for finding randomizable items
     SetTrieValue(g_hTrieRandomizableEntity, "weapon_spawn",                         RANDOMIZABLE_ITEM);
@@ -499,6 +505,9 @@ bool: RI_KV_UpdateRandomMapInfo()
     g_RI_bNoStorm = false;      // whether there shouldn't be storms on the map
     g_RI_bNoCola = false;       // whether we should block cola on the map
     
+    g_RI_iTankBanStart = -1;    // block some tank spawns
+    g_RI_iTankBanEnd = -1;
+    
     new String: mapname[64];
     GetCurrentMap(mapname, sizeof(mapname));
     
@@ -513,6 +522,8 @@ bool: RI_KV_UpdateRandomMapInfo()
         g_RI_bNoWitch = bool: (KvGetNum(g_kRIData, "no_witch", 0));
         g_RI_bNoStorm = bool: (KvGetNum(g_kRIData, "no_storm", 0));
         g_RI_bNoCola = bool: (KvGetNum(g_kRIData, "no_cola", 0));
+        g_RI_iTankBanStart = KvGetNum(g_kRIData, "tank_ban_start", -1);
+        g_RI_iTankBanEnd = KvGetNum(g_kRIData, "tank_ban_end", -1);
         
         PrintDebug("[RI] Read data: intro: %i; difficulty: %i; doors; %i; nostorm: %i", g_RI_bIsIntro, g_RI_iDifficulty, g_RI_iDoors, g_RI_bNoStorm);
         

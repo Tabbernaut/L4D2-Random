@@ -117,7 +117,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     if (g_iSpecialEvent == _:EVT_WEATHER || g_iSpecialEvent == _:EVT_FOG)
     {
         SUPPORT_StormStart();
-    } 
+    }
     
     // some things need to be delayed to work right
     g_hTimerReport = CreateTimer( (g_bCampaignMode) ? DELAY_ROUNDPREP_COOP : DELAY_ROUNDPREP , Timer_DelayedRoundPrep, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -205,6 +205,9 @@ EVENT_ResetOtherCvars()
     SetConVarInt(FindConVar("z_frustration_lifetime"), g_iDefTankFrustTime);
     SetConVarInt(FindConVar("vs_tank_damage"), g_iDefTankDamage);
     SetConVarFloat(FindConVar("versus_tank_flow_team_variation"), g_fDefTankFlowVariation);
+    
+    SetConVarInt(FindConVar("z_vomit_interval"), g_iDefVomitInterval);
+    SetConVarInt(FindConVar("z_spit_interval"), g_iDefSpitInterval);
     
     // hittable control
     if (FindConVar("hc_car_standing_damage") != INVALID_HANDLE) {
@@ -340,6 +343,21 @@ EVENT_RoundStartPreparation()
         
         case EVT_BOOBYTRAP: {
             // traps are picked after items are randomized
+        }
+        
+        case EVT_WITCHES: {
+            // start timer to autospawn witches
+            if (g_hWitchSpawnTimer != INVALID_HANDLE)
+            {
+                CloseHandle(g_hWitchSpawnTimer);
+            }
+            g_hWitchSpawnTimer = CreateTimer(EVENT_WITCHES_SPAWNFREQ, Timer_WitchSpawn, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+            
+            // respawn timer too (only once, destroyed at mapchange)
+            if (!g_bSecondHalf)
+            {
+                CreateTimer(MULTIWITCH_RESPAWN_FREQ, Timer_WitchRespawn, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+            }
         }
     }
 }
@@ -866,7 +884,7 @@ SUPPORT_MultiWitchRandomization()
         
         // store in array
         g_fArWitchFlows[index] = tmpSpot;
-        g_bArWitchSitting[index] = (GetRandomInt(0,3) == 0) ? false : true;
+        g_bArWitchSitting[index] = (GetRandomInt(0,3) == 0) ? true : false;
         
         PrintDebug("[rand] Multi-witch [%i] to spawn at: %f (%s)", index, g_fArWitchFlows[index], (g_bArWitchSitting[index]) ? "sitting" : "walking");
         
@@ -919,11 +937,7 @@ public Action: Timer_PrepareNextWitch(Handle:timer)
     L4D2Direct_SetVSWitchFlowPercent(0, g_fArWitchFlows[g_iWitchIndex]);
     L4D2Direct_SetVSWitchFlowPercent(1, g_fArWitchFlows[g_iWitchIndex]);
     
-    if (g_bArWitchSitting[g_iWitchIndex]) {
-        SetConVarInt(FindConVar("sv_force_time_of_day"), WITCHES_NIGHT);
-    } else {
-        SetConVarInt(FindConVar("sv_force_time_of_day"), WITCHES_DAY);
-    }
+    SetConVarInt(FindConVar("sv_force_time_of_day"), (g_bArWitchSitting[g_iWitchIndex]) ? WITCHES_NIGHT : WITCHES_DAY );
     
     g_iWitchIndex++;
 }
@@ -2356,8 +2370,50 @@ bool: IsMeleeAvailable(const String:type[])
     return false;
 }
 
-/*
-    Support, blind infected
+
+/*  Support, spawn class selection
+    ------------------------------ */
+// manipulate array by reference so we can easily manage a tmp pick-array
+AddSpawnClass(classes[], &numFilled, zclass)
+{
+    for (new i=0; i < numFilled; i++)
+    {
+        if (classes[i] == zclass) { return; }
+    }
+    classes[numFilled] = zclass;
+    numFilled++;
+}
+
+RemoveSpawnClass(classes[], &numFilled, zclass)
+{
+    if (numFilled == 0) { return; }
+    
+    new bool: found = false;
+    for (new i=0; i < numFilled; i++)
+    {
+        if (classes[i] == zclass) {
+            found = true;
+        }
+        if (found && i + 1 < numFilled) {
+            classes[i] = classes[i+1];
+        }
+    }
+    if (found) {
+        numFilled--;
+    }
+}
+
+bool: IsAcceptedClass(classes[], numFilled, zclass)
+{
+    for (new i=0; i < numFilled; i++)
+    {
+        if (classes[i] == zclass) { return true; }
+    }
+    return false;
+}
+
+
+/*  Support, blind infected
     -------------------------- */
 
 public Action:Timer_EntCheck(Handle:timer)
@@ -2492,6 +2548,122 @@ public SetBlindEntityAsSeen(entity)
     }
 }
 
+
+// returns true as long as no survivor is in any saferoom
+bool: NoSurvivorInSaferoom()
+{
+    for (new i=1; i <= MaxClients; i++)
+    {
+        if (IsSurvivor(i) && IsPlayerAlive(i))
+        {
+            if (IsEntityInSaferoom(i, true, false) || IsEntityInSaferoom(i, true, true)) { return false; }
+        }
+    }
+    return true;
+}
+
+/*  CRox multiwitch plugin
+    ---------------------- */
+public Action:Timer_WitchSpawn(Handle:timer)
+{
+    if (_:g_iSpecialEvent != EVT_WITCHES) {
+        g_hWitchSpawnTimer = INVALID_HANDLE;
+        return Plugin_Stop;
+    }
+    
+    if (!g_bIsTankInPlay && !g_bIsPaused && g_bPlayersLeftStart && NoSurvivorInSaferoom())
+    {
+        
+        for (new i=1; i <= MaxClients; i++)
+        {
+            if (IsClientInGame(i))
+            {
+                CheatCommand(i, "z_spawn", "witch auto");
+                return Plugin_Continue;
+            }
+        }
+    }
+    return Plugin_Continue;
+}
+public Action:Timer_WitchRespawn(Handle:timer)
+{
+    if (_:g_iSpecialEvent != EVT_WITCHES) { return Plugin_Stop; }
+    
+    if (!g_bIsTankInPlay && !g_bIsPaused && g_bPlayersLeftStart && NoSurvivorInSaferoom())
+    {
+        new psychonic = GetMaxEntities();
+        decl String:buffer[64];
+        decl Address:pNavArea;
+        decl Float:flow;
+        new Float:survMaxFlow = MULTIWITCH_GetMaxSurvivorCompletion();
+        new witchSpawnCount = 0;
+        decl Float:origin[3];
+        decl m_nSequence;
+
+        if (survMaxFlow > MULTIWITCH_EXTRA_FLOW)
+        {
+            for (new entity = MaxClients+1; entity <= psychonic; entity++)
+            {
+                if (IsValidEntity(entity) && GetEntityClassname(entity, buffer, sizeof(buffer)) && StrEqual(buffer, "witch"))
+                {
+                    m_nSequence = GetEntProp(entity, Prop_Send, "m_nSequence");
+                    // We only want to respawn fully passive witches
+                    switch (m_nSequence)
+                    {
+                        case 2, 10, 11, 4:
+                        {
+                            GetEntPropVector(entity, Prop_Send, "m_vecOrigin", origin);
+                            pNavArea = L4D2Direct_GetTerrorNavArea(origin);
+                            flow = L4D2Direct_GetTerrorNavAreaFlow(pNavArea);
+                            if (survMaxFlow > flow + MULTIWITCH_EXTRA_FLOW) {
+                                AcceptEntityInput(entity, "Kill");
+                                witchSpawnCount++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (witchSpawnCount)
+        {
+            for (new client = 1; client <= MaxClients; client++)
+            {
+                if (IsClientInGame(client)) {
+                    for (new i = 0; i < witchSpawnCount; i++)
+                    {
+                        CheatCommand(i, "z_spawn", "witch auto");
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    
+    return Plugin_Continue;
+}
+
+Float:MULTIWITCH_GetMaxSurvivorCompletion()
+{
+    new Float:flow = 0.0;
+    decl Float:tmp_flow;
+    decl Float:origin[3];
+    decl Address:pNavArea;
+    for (new client = 1; client <= MaxClients; client++)
+    {
+        if (IsClientInGame(client) && GetClientTeam(client) == TEAM_SURVIVOR)
+        {
+            GetClientAbsOrigin(client, origin);
+            pNavArea = L4D2Direct_GetTerrorNavArea(origin);
+            if (pNavArea != Address_Null)
+            {
+                tmp_flow = L4D2Direct_GetTerrorNavAreaFlow(pNavArea);
+                flow = (flow > tmp_flow) ? flow : tmp_flow;
+            }
+        }
+    }
+    return flow;
+}
 
 /*
     L4D2 Storm plugin

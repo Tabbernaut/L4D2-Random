@@ -575,7 +575,6 @@ RANDOM_DetermineRandomStuff()
                     g_bNoSecWeapons = true;
                     g_bNoAmmo = true;
                     bBlockTank = true;
-                    bBlockWitch = true;
                     EVENT_SetDifficulty(DIFFICULTY_VERYHARD, DIFFICULTY_HARD);
                     
                     SetConVarInt(FindConVar("z_smoker_limit"), 0);
@@ -584,6 +583,9 @@ RANDOM_DetermineRandomStuff()
                     SetConVarInt(FindConVar("z_charger_limit"), 0);
                     SetConVarInt(FindConVar("z_boomer_limit"), 4);
                     SetConVarInt(FindConVar("z_spitter_limit"), 2);
+                    
+                    SetConVarInt(FindConVar("z_vomit_interval"), 15);
+                    SetConVarInt(FindConVar("z_spit_interval"), 15);
                     
                     // which melee is available? this determines the event type
                     new bool: bAxe = IsMeleeAvailable("fireaxe");
@@ -601,6 +603,18 @@ RANDOM_DetermineRandomStuff()
                     else {
                         g_iSpecialEventExtra = EVTWOMEN_TYPE_BEAT;
                     }
+                }
+                case EVT_WITCHES: {
+                    g_bUsingPBonus = true;
+                    bBlockTank = true;
+                    EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
+                    
+                    // set half the distance
+                    L4D_SetVersusMaxCompletionScore( RoundFloat( float(L4D_GetVersusMaxCompletionScore()) * 0.5 ) );
+                }
+                case EVT_BADSANTA: {
+                    g_bUsingPBonus = true;
+                    g_iSpecialEventExtra = INDEX_GIFT;
                 }
                 
             }
@@ -627,7 +641,7 @@ RANDOM_DetermineRandomStuff()
         L4D2Direct_SetVSTankToSpawnThisRound(1, false);
         g_bTankWillSpawn = false;
     }
-    else  if (!g_bTankWillSpawn && GetConVarFloat(FindConVar("versus_tank_chance")) == 1.0) {
+    else if (!g_bTankWillSpawn && GetConVarFloat(FindConVar("versus_tank_chance")) == 1.0) {
         L4D2Direct_SetVSTankToSpawnThisRound(0, true);
         L4D2Direct_SetVSTankToSpawnThisRound(1, true);
         g_bTankWillSpawn = true;
@@ -638,7 +652,9 @@ RANDOM_DetermineRandomStuff()
         L4D2Direct_SetVSWitchToSpawnThisRound(1, false);
         g_bWitchWillSpawn = false;
     }
-    if (!g_bWitchWillSpawn && GetConVarFloat(FindConVar("versus_witch_chance")) == 1.0 && _:g_iSpecialEvent != EVT_MINITANKS) {
+    else if (!g_bWitchWillSpawn && GetConVarFloat(FindConVar("versus_witch_chance")) == 1.0 && _:g_iSpecialEvent != EVT_MINITANKS || _:g_iSpecialEvent == EVT_WOMEN) {
+        // block witches on minitanks
+        // force witch on women event
         L4D2Direct_SetVSWitchToSpawnThisRound(0, true);
         L4D2Direct_SetVSWitchToSpawnThisRound(1, true);
         g_bWitchWillSpawn = true;
@@ -647,6 +663,31 @@ RANDOM_DetermineRandomStuff()
     if (g_bTankWillSpawn)
     {
         g_iDifficultyRating += 2;
+        
+        // check tank flow bans:
+        if (GetConVarBool(g_hCvarBanTankFlows) && g_RI_iTankBanStart != -1 && g_RI_iTankBanEnd != -1)
+        {
+            // banned range?
+            new Float: tankFlows[2];
+            L4D2_GetVersusTankFlowPercent(tankFlows);
+            new iTankSpawn = RoundToNearest(tankFlows[0] * 100.0);
+            
+            if (iTankSpawn >= g_RI_iTankBanStart && iTankSpawn <= g_RI_iTankBanEnd) {
+                // banned tank
+                
+                new minFlow = (minFlow < 15) ? 15 : minFlow;
+                new maxFlow = (maxFlow > 85) ? 85 : maxFlow;
+                
+                new range = maxFlow - minFlow;
+                new r     = 15 + GetRandomInt(0, 70-range);
+                iTankSpawn = r >= minFlow ? r + range : r;
+                
+                tankFlows[0] = float(iTankSpawn) / 100.0;
+                tankFlows[1] = tankFlows[0];
+                
+                L4D2_SetVersusTankFlowPercent(tankFlows);
+            }
+        }
         
         // some maps shouldn't have tank flow variation
         if ( g_fDefTankFlowVariation != 0.0 && g_RI_bNoTankVar )
@@ -660,12 +701,21 @@ RANDOM_DetermineRandomStuff()
     // multi-tanks? if so, set first tank to spawn early and last tank to spawn late
     // only determine if tanks will spawn at all
     //      tanks should not double-spawn on finales or first maps
+    //      double-tanks also won't happen if their base positions fall withing a banned range
     if (g_bTankWillSpawn && !bBlockDoubleTank)
     {
         if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
         {
-            if (!g_RI_bIsIntro && !L4D_IsMissionFinalMap() && GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarDoubleTankChance))
-            {
+            if (!g_RI_bIsIntro && !L4D_IsMissionFinalMap() && GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarDoubleTankChance)
+                &&  (       !GetConVarBool(g_hCvarBanTankFlows)
+                        ||  g_RI_iTankBanStart == -1
+                        ||  g_RI_iTankBanEnd == -1
+                        ||  (
+                                (MULTITANK_EARLY < g_RI_iTankBanStart || MULTITANK_EARLY > g_RI_iTankBanEnd)
+                                &&  (MULTITANK_LATE < g_RI_iTankBanStart || MULTITANK_LATE > g_RI_iTankBanEnd)
+                            )
+                    )
+            ) {
                 g_bDoubleTank = true;
                 
                 new Float: fTmpVarLess = 1.0 - GetConVarFloat(g_hCvarTankFlowVariance);
@@ -721,10 +771,11 @@ RANDOM_DetermineRandomStuff()
     {
         if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
         {
-            if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarMultiWitchChance) && !g_bTankWillSpawn) {
+            if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarMultiWitchChance)) {
                 g_bMultiWitch = true;
                 SUPPORT_MultiWitchRandomization();
-                g_iDifficultyRating += 2;
+                g_iDifficultyRating += (g_iWitchNum > 6) ? 4 : ((g_iWitchNum > 4) ? 3 : 2);
+                SetConVarInt(FindConVar("sv_force_time_of_day"), (g_bArWitchSitting[0]) ? WITCHES_NIGHT : WITCHES_DAY );
             } else {
                 g_bMultiWitch = false;
             }
@@ -1729,6 +1780,9 @@ RandomizeSurvivorItems()
             randomPick = INDEX_SURV_MELEE;
             secondaryPick = -1;
         }
+        else if (_:g_iSpecialEvent == EVT_WITCHES) {
+            randomPick = INDEX_SURV_T1SHOT;
+        }
         
         switch (randomPick)
         {
@@ -2426,6 +2480,34 @@ ChangeSurvivorSetup(index, client)
     
     new String:weaponname[STR_MAX_ITEMGIVEN] = "";
     
+    // add secondary (if required)
+    new typeSec = g_iArStorageSurvSec[index];
+    
+    if (typeSec != _:PCK_NOITEM)
+    {        
+        switch (typeSec)
+        {
+            case PCK_DUALS: {           weaponname = "weapon_pistol"; }
+            case PCK_PISTOL_MAGNUM: {   weaponname = "weapon_pistol_magnum"; }
+            case PCK_MELEE: {
+                // special case
+                PrintDebug("[rand] Handed melee weapon (%s) to %N.", g_sMeleeClass[(g_iArStorageSurvMelee[index])], client);
+                GiveItemMelee(client, g_sMeleeClass[(g_iArStorageSurvMelee[index])]);
+                weaponname = "";
+            }
+        }
+        
+        if (strlen(weaponname))
+        {
+            // debug reporting
+            PrintDebug("[rand] Handed %s to %N.", weaponname, client);
+            GiveItem(client, weaponname, ammo, ammoOffset);
+        }
+    }
+    
+    weaponname = "";
+    
+    // add primary
     switch (type)
     {
         case PCK_NOITEM: {          weaponname = "weapon_gnome"; }              // giving gnome for 'nothing' instead, so player can shove
@@ -2505,32 +2587,7 @@ ChangeSurvivorSetup(index, client)
         }
     }
     
-    // add secondary (if required)
-    type = g_iArStorageSurvSec[index];
-    
-    if (type != _:PCK_NOITEM)
-    {
-        weaponname = "";
-        
-        switch (type)
-        {
-            case PCK_DUALS: {           weaponname = "weapon_pistol"; }
-            case PCK_PISTOL_MAGNUM: {   weaponname = "weapon_pistol_magnum"; }
-            case PCK_MELEE: {
-                // special case
-                PrintDebug("[rand] Handed melee weapon (%s) to %N.", g_sMeleeClass[(g_iArStorageSurvMelee[index])], client);
-                GiveItemMelee(client, g_sMeleeClass[(g_iArStorageSurvMelee[index])]);
-                weaponname = "";
-            }
-        }
-        
-        if (strlen(weaponname))
-        {
-            // debug reporting
-            PrintDebug("[rand] Handed %s to %N.", weaponname, client);
-            GiveItem(client, weaponname, ammo, ammoOffset);
-        }
-    }
+
 }
 
 
@@ -2698,7 +2755,7 @@ RANDOM_DoGiftEffect(client, entity)
     
     new bool: inSaferoom = (IsEntityInSaferoom(entity, false, false) || IsEntityInSaferoom(client, true, false));
     
-    if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarGiftPositiveChance))
+    if ( GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarGiftPositiveChance) && _:g_iSpecialEvent != EVT_BADSANTA )
     {
         // positive effect
         
@@ -2976,6 +3033,13 @@ RANDOM_DoGiftEffect(client, entity)
     
     // block player use function for a short while to avoid spam
     g_fGiftUseTimeout[client] = GetEngineTime();
+    
+    // give bonus points if event
+    if (_:g_iSpecialEvent == EVT_BADSANTA)
+    {
+        PBONUS_AddRoundBonus( EVENT_BADSANTA_BONUS );
+        PrintToChatAll("\x01[\x05r\x01] %N unwrapped a bad gift for \x04%i\x01 points.", client, EVENT_BADSANTA_BONUS);
+    }
 }
 
 
@@ -3084,8 +3148,7 @@ DetermineSpawnClass(any:client, any:iClass)
         if (g_iClassTimeout[iClass] > 0)
         {
             new dMode = GetConVarInt(g_hCvarDeathOrderMode);
-            
-            PrintDebug("[rand] classtimeout: for %i : %i (mode %i)", iClass, g_iClassTimeout[iClass], dMode);
+            //PrintDebug("[rand] classtimeout: for %i : %i (mode %i) (playing odds for re-pick)", iClass, g_iClassTimeout[iClass], dMode);
             
             if (dMode == 1) {
                 if (GetRandomFloat(0.001,1.0) <= (float(g_iClassTimeout[iClass]) / 3.0) * 0.5) {
@@ -3099,9 +3162,6 @@ DetermineSpawnClass(any:client, any:iClass)
                     iClass = g_iArSpawnWeightedChoices[randomIndex];
                 }
             }
-            
-            PrintDebug("[rand] classtimeout calc mode 1: %.2f)", (float(g_iClassTimeout[iClass]) / 3.0) * 0.5);
-            
         }
         
         //PrintDebug("[rand si] random pick. (%N = %i)", client, iClass);
@@ -3114,18 +3174,36 @@ DetermineSpawnClass(any:client, any:iClass)
         return;
     }
     
-    // no spitters during tank
+    // what choices are acceptable this point:
+    new acceptClasses[7];
+    new acceptCount = 0;
+    
+    if (g_iSpecialEvent != _:EVT_QUADS && !GetConVarBool(g_hCvarNoSupportSI))
+    {
+        AddSpawnClass(acceptClasses, acceptCount, ZC_BOOMER);
+        
+        if (g_iSpecialEvent != _:EVT_L4D1 && (!g_bIsTankInPlay || !GetConVarBool(g_hCvarNoSpitterDuringTank))) {
+            AddSpawnClass(acceptClasses, acceptCount, ZC_SPITTER);
+        }
+    }
+    if (g_iSpecialEvent  != _:EVT_WOMEN)
+    {
+        AddSpawnClass(acceptClasses, acceptCount, ZC_SMOKER);
+        AddSpawnClass(acceptClasses, acceptCount, ZC_HUNTER);
+        AddSpawnClass(acceptClasses, acceptCount, ZC_JOCKEY);
+        AddSpawnClass(acceptClasses, acceptCount, ZC_CHARGER);
+    }
+    
     if (g_bIsTankInPlay && iClass == ZC_SPITTER && GetConVarBool(g_hCvarNoSpitterDuringTank))
     {
-        // either boomer, or cappers:
-        if (g_iSpecialEvent != _:EVT_QUADS && !GetConVarBool(g_hCvarNoSupportSI) && GetRandomInt(0,4) == 0) {
+        // either boomer, or cappers
+        //  this is just a prepick - still need to check if accepted below
+        if (GetRandomInt(0,3) == 0) {
             iClass = ZC_BOOMER;
-        }
-        else {
+        } else {
             new randomIndex = GetRandomInt( g_iSpawnWeightedChoicesStartCappers, g_iSpawnWeightedChoicesTotal - 1);
             iClass = g_iArSpawnWeightedChoices[randomIndex];
         }
-        
     }
     
     // sack protection
@@ -3152,11 +3230,9 @@ DetermineSpawnClass(any:client, any:iClass)
         }
         
         // bestSaved = the best spawn held on to (-1 = no sacks)
-        // if there is a saved spawn: prevent charger stacking, prevent smoker stacking and prevent quads
+        //  if there is a saved spawn: prevent charger stacking, prevent smoker stacking and prevent quads
         if (bestSaved != -1)
         {
-            new preChangeClass = iClass;
-            
             // just prevent chargers, if player got a charger
             // and prevent > 2 smokers
             new chargers = CountInfectedClass(ZC_CHARGER, client);
@@ -3165,53 +3241,21 @@ DetermineSpawnClass(any:client, any:iClass)
             new support = CountInfectedClass(ZC_BOOMER, client) + CountInfectedClass(ZC_SPITTER, client);
             
             // a. force max 1 charger
-            if ( iClass == ZC_CHARGER && chargers > 0 ) {
-                iClass = GetRandomInt(ZC_SMOKER, ZC_JOCKEY);
-                if ( (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) && (iClass == ZC_BOOMER || iClass == ZC_SPITTER) ) {
-                    switch (GetRandomInt(0,2)) {
-                        case 0: { iClass = ZC_SMOKER; }
-                        case 1: { iClass = ZC_HUNTER; }
-                        case 2: { iClass = ZC_JOCKEY; }
-                    }
-                }
-            }
-            
-            // b. force max 2 smokers and 2 hunters
-            if ( iClass == ZC_SMOKER ) {
-                if (smokers > 1) {
-                    iClass = GetRandomInt(ZC_BOOMER, (_:g_iSpecialEvent == EVT_L4D1) ? ZC_HUNTER : ZC_JOCKEY );
-                    if ( (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) && (iClass == ZC_BOOMER || iClass == ZC_SPITTER) ) {
-                        switch (GetRandomInt(0,1)) {
-                            case 0: { iClass = ZC_HUNTER; }
-                            case 1: { iClass = ZC_JOCKEY; }
-                        }
-                    }
-                }
-            }
-            
-            if ( iClass == ZC_HUNTER && _:g_iSpecialEvent != EVT_L4D1 ) {
-                if (hunters > 1) {
-                    // give anything but a hunter (or more than 1 smoker)
-                    if ( g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI) ) {
-                        switch ( GetRandomInt((smokers > 0) ? 1 : 0, 1) ) {
-                            case 0: { iClass = ZC_SMOKER; }
-                            case 1: { iClass = ZC_JOCKEY; }
-                        }
-                    } else {
-                        iClass = GetRandomInt( (smokers > 0) ? ZC_BOOMER : ZC_SMOKER, ZC_HUNTER );
-                    }
-                    if (iClass == ZC_HUNTER) { iClass = ZC_JOCKEY; }
-                }
-            }
-            
-            // c. force non-quad (can override previous after-sackdetect-pick)
-            if ( support == 0 && g_iSpecialEvent != _:EVT_QUADS && !GetConVarBool(g_hCvarNoSupportSI) ) {
-                if (_:g_iSpecialEvent == EVT_L4D1) {
-                    iClass = ZC_BOOMER;
-                } else {
-                    new randomIndex = GetRandomInt(0, g_iSpawnWeightedChoicesStartCappers - 1);
-                    iClass = g_iArSpawnWeightedChoices[randomIndex];
-                }
+            if (chargers) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_CHARGER); }
+            // b. force max 2 smokers
+            if (smokers > 1) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_SMOKER); }
+            // c. force max 2 hunters
+            if (hunters > 1 && _:g_iSpecialEvent != EVT_L4D1) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_HUNTER); }
+            // d. force non-quad (can override previous after-sackdetect-pick)
+            if (support == 0 && g_iSpecialEvent != _:EVT_QUADS && !GetConVarBool(g_hCvarNoSupportSI)) {
+                // still need to check if pick is acceptable. remove all cappers from choice list
+                new randomIndex = GetRandomInt(0, g_iSpawnWeightedChoicesStartCappers - 1);
+                iClass = g_iArSpawnWeightedChoices[randomIndex];
+                
+                RemoveSpawnClass(acceptClasses, acceptCount, ZC_CHARGER);
+                RemoveSpawnClass(acceptClasses, acceptCount, ZC_JOCKEY);
+                RemoveSpawnClass(acceptClasses, acceptCount, ZC_HUNTER);
+                RemoveSpawnClass(acceptClasses, acceptCount, ZC_SMOKER);
             }
             
             // reporting?
@@ -3222,8 +3266,9 @@ DetermineSpawnClass(any:client, any:iClass)
                 // report to slighted party
                 if (reportMode == 1)
                 {
-                    if (preChangeClass != iClass) {
-                        PrintToChat(client, "\x01[\x05r\x01] sack block: you got a %s (instead of %s) because %N kept their spawn.", g_csSIClassName[iClass], g_csSIClassName[preChangeClass], offendingClient);
+                    if (!IsAcceptedClass(acceptClasses, acceptCount, iClass))
+                    {
+                        PrintToChat(client, "\x01[\x05r\x01] sack block: you did not get a %s because %N kept their spawn.", g_csSIClassName[iClass], offendingClient);
                     }
                 }
                 // report to offending (3 strike type deal too)
@@ -3232,7 +3277,7 @@ DetermineSpawnClass(any:client, any:iClass)
                     PrintToChat(offendingClient, "\x01[\x05r\x01] Holding onto spawns makes your team get less chargers and no quad-caps. (try to attack together)");
                 }
             }
-            PrintDebug("[rand si] sack protection: %N given class %s (punishment for %N keeping class %s). [offenses: %i]", client, g_csSIClassName[iClass], offendingClient, g_csSIClassName[bestSaved], g_iOffences[offendingClient]);
+            PrintDebug("[rand si] sack protection: %N given not given class %s (punishment for %N keeping class %s). [offenses: %i]", client, g_csSIClassName[iClass], offendingClient, g_csSIClassName[bestSaved], g_iOffences[offendingClient]);
         }
     }
     
@@ -3241,17 +3286,20 @@ DetermineSpawnClass(any:client, any:iClass)
     if (_:g_iSpecialEvent == EVT_L4D1) {
         new smokers = CountInfectedClass(ZC_SMOKER, client);
         new boomers = CountInfectedClass(ZC_BOOMER, client);
-        
-        if (iClass == ZC_SMOKER) {
-            if (GetConVarBool(g_hCvarNoSupportSI)) {
-                if (smokers) { iClass = ZC_HUNTER; }
-            } else {
-                if (smokers) { iClass = (boomers) ? ZC_HUNTER : ( (GetRandomInt(0,1)) ? ZC_BOOMER : ZC_HUNTER ); }
-            }
-        } else if (iClass == ZC_BOOMER) {
-            if (boomers) { iClass = (smokers) ? ZC_HUNTER : ( (GetRandomInt(0,1)) ? ZC_SMOKER : ZC_HUNTER ); }
-        }
+        if (smokers) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_SMOKER); }
+        if (boomers) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_BOOMER); }
     }
+    
+    // prevent unwanted picks!
+    //  if (for whatever reason) a class is not accepted, repick
+    if (!IsAcceptedClass(acceptClasses, acceptCount, iClass))
+    {
+        PrintDebug("[rand] spawn repick for %N: accepted picks (%i not accepted):", client, iClass);
+        for (new i=0; i < acceptCount; i++) { PrintDebug("  --> %i", acceptClasses[i]); }
+        
+        iClass = acceptClasses[ GetRandomInt(0, acceptCount - 1) ];
+    }
+    
     
     // handle timeouts
     for (new i=ZC_SMOKER; i <= ZC_CHARGER; i++)
@@ -3774,8 +3822,23 @@ RANDOM_PrepareChoicesEvents()
         //      EVT_ADREN: because most finales are campfests, which doesn't rush well
         //      EVT_MINITANKS: because distance works differently
         //      EVT_AMMO: because of fancy way ammo is handled in finales anyway
+        //      EVT_WITCHES: don't mix it with tanks
         if (    L4D_IsMissionFinalMap()
-            &&  ( i == EVT_ADREN || i == EVT_MINITANKS || i == EVT_AMMO )
+            &&  ( i == EVT_ADREN || i == EVT_MINITANKS || i == EVT_AMMO || i == EVT_WOMEN || i == EVT_WITCHES )
+        ) {
+            continue;
+        }
+        
+        // remove some events if we have fixed tanks
+        if (    g_RI_bNoTank
+            &&  ( i == EVT_ADREN || i == EVT_MINITANKS || i == EVT_WOMEN || i == EVT_WITCHES )
+        ) {
+            continue;
+        }
+        
+        // remove some events if we can't spawn witches
+        if (    g_RI_bNoWitch
+            &&  ( i == EVT_WITCHES )
         ) {
             continue;
         }
@@ -3788,7 +3851,7 @@ RANDOM_PrepareChoicesEvents()
         //      all scoring events, because no score
         if (    g_bCampaignMode
             &&  (   i == EVT_QUADS || i == EVT_L4D1 || i == EVT_FF || i == EVT_MINITANKS
-                ||  i == EVT_PEN_ITEM || i == EVT_PEN_HEALTH || i == EVT_PEN_M2 || i == EVT_PEN_TIME || i == EVT_SKEET )
+                ||  i == EVT_PEN_ITEM || i == EVT_PEN_HEALTH || i == EVT_PEN_M2 || i == EVT_PEN_TIME || i == EVT_SKEET || i == EVT_WITCHES || i == EVT_BADSANTA )
         ) {
             continue;
         }
@@ -4052,7 +4115,7 @@ RANDOM_PrepareChoices()
                 // change count for abundance event:
                 count = RoundFloat(float(count) * EVENT_ABUND_JUNKWGHT);
             }
-            else if ( (_:g_iSpecialEvent == EVT_ITEM || _:g_iSpecialEvent == EVT_GIFTS) && i == g_iSpecialEventExtra) {
+            else if ( (_:g_iSpecialEvent == EVT_ITEM || _:g_iSpecialEvent == EVT_GIFTS || _:g_iSpecialEvent == EVT_BADSANTA) && i == g_iSpecialEventExtra) {
                 count = 0;  // set to 0 for now, insert real value later
             }
             else if (_:g_iSpecialEvent == EVT_DEFIB) {
@@ -4090,6 +4153,15 @@ RANDOM_PrepareChoices()
     // adjust for special event: item type
     if (_:g_iSpecialEvent == EVT_ITEM || _:g_iSpecialEvent == EVT_GIFTS) {
         iSpecialItemWeight = RoundFloat(float(total) * EVENT_ITEM_WEIGHT);
+        for (new j=0; j < iSpecialItemWeight; j++)
+        {
+            g_iArWeightedChoices[total+j] = g_iSpecialEventExtra;
+        }
+        total += iSpecialItemWeight;
+        total_items += iSpecialItemWeight;
+    }
+    else if (_:g_iSpecialEvent == EVT_BADSANTA) {
+        iSpecialItemWeight = RoundFloat(float(total) * EVENT_BADSANTA_WEIGHT);
         for (new j=0; j < iSpecialItemWeight; j++)
         {
             g_iArWeightedChoices[total+j] = g_iSpecialEventExtra;

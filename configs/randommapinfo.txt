@@ -8,7 +8,8 @@
 //
 // no_storm		1 = don't do any storm-related things on this map
 // no_cola		1 = don't spawn cola on this map (or give points for it)
-
+//
+// tank_ban_start/end	flow range in integer % where tanks should not spawn
 
 "RandomMap"
 {
@@ -18,6 +19,8 @@
 		"difficulty"	"0"
 		"doors"		"2"
 		"no_tank_var"	"1"
+		"tank_ban_start"	"45"
+		"tank_ban_end"		"82"
 	}
 	"c1m2_streets"
 	{
@@ -28,6 +31,8 @@
 	{
 		"difficulty"	"1"
 		"doors"		"0"
+		"tank_ban_start"	"64"
+		"tank_ban_end"		"68"
 	}
 	"c1m4_atrium"
 	{
@@ -49,6 +54,8 @@
 		"difficulty"	"3"
 		"doors"		"0"
 		"no_tank_var"	"1"
+		"tank_ban_start"	"55"
+		"tank_ban_end"		"100"
 	}
 	"c2m4_barns"
 	{
@@ -66,6 +73,8 @@
 		"difficulty"	"1"
 		"doors"		"0"
 		"no_tank_var"	"1"
+		"tank_ban_start"	"45"
+		"tank_ban_end"		"60"
 	}
 	"c3m2_swamp"
 	{
@@ -89,17 +98,23 @@
 	{
 		"difficulty"	"2"
 		"doors"		"0"
+		"tank_ban_start"	"80"
+		"tank_ban_end"		"100"
 	}
 	"c4m3_sugarmill_b"
 	{
 		"difficulty"	"3"
 		"no_storm"	"1"
 		"doors"		"0"
+		"tank_ban_start"	"20"
+		"tank_ban_end"		"35"
 	}
 	"c4m4_milltown_b"
 	{
 		"difficulty"	"1"
 		"no_storm"	"1"
+		"tank_ban_start"	"80"
+		"tank_ban_end"		"100"
 	}
 	"c4m5_milltown_escape"
 	{
@@ -109,6 +124,8 @@
 	"c5m1_waterfront"
 	{
 		"intro"		"1"
+		"tank_ban_start"	"0"
+		"tank_ban_end"		"25"
 	}
 	"c5m2_park"
 	{
@@ -119,10 +136,14 @@
 	{
 		"difficulty"	"2"
 		"doors"		"0"
+		"tank_ban_start"	"50"
+		"tank_ban_end"		"70"
 	}
 	"c5m4_quarter"
 	{
 		"difficulty"	"2"
+		"tank_ban_start"	"80"
+		"tank_ban_end"		"100"
 	}
 	"c5m5_bridge"
 	{
@@ -158,11 +179,14 @@
 	"c7m3_port"
 	{
 		"difficulty"	"3"
+		"no_witch"	"1"
 	}
 	"c8m1_apartment"
 	{
 		"intro"		"1"
 		"doors"		"2"
+		"tank_ban_start"	"0"
+		"tank_ban_end"		"54"
 	}
 	"c8m2_subway"
 	{
@@ -199,6 +223,8 @@
 		"intro"		"1"
 		"difficulty"	"1"
 		"doors"		"0"
+		"tank_ban_start"	"0"
+		"tank_ban_end"		"70"
 	}
 	"c10m2_drainage"
 	{
@@ -246,6 +272,8 @@
 		"intro"		"1"
 		"difficulty"	"0"
 		"doors"		"0"
+		"tank_ban_start"	"0"
+		"tank_ban_end"		"57"
 	}
 	"c12m2_traintunnel"
 	{
@@ -254,6 +282,8 @@
 	"c12m3_bridge"
 	{
 		"difficulty"	"2"
+		"tank_ban_start"	"70"
+		"tank_ban_end"		"100"
 	}
 	"c12m4_barn"
 	{
@@ -263,6 +293,8 @@
 	{
 		"difficulty"	"3"
 		"doors"		"1"
+		"tank_ban_start"	"80"
+		"tank_ban_end"		"100"
 	}
 	"c13m1_alpinecreek"
 	{
@@ -289,6 +321,8 @@
 	"c5m1_darkwaterfront"
 	{
 		"intro"		"1"
+		"tank_ban_start"	"0"
+		"tank_ban_end"		"38"
 	}
 	"c5m2_darkpark"
 	{
@@ -299,11 +333,15 @@
 	{
 		"difficulty"	"3"
 		"doors"		"0"
+		"tank_ban_start"	"50"
+		"tank_ban_end"		"70"
 	}
 	"c5m4_darkquarter"
 	{
 		"difficulty"	"3"
 		"doors"		"2"
+		"tank_ban_start"	"80"
+		"tank_ban_end"		"100"
 	}
 	"c5m5_darkbridge"
 	{
@@ -319,13 +357,19 @@
 	}
 	"cdta_03warehouse"
 	{
+		"tank_ban_start"	"55"
+		"tank_ban_end"		"78"
 	}
 	"cdta_04onarail"
 	{
+		"tank_ban_start"	"0"
+		"tank_ban_end"		"28"
 	}
 	"cdta_05finalroad"
 	{
 		"difficulty" 	"1"
+		"tank_ban_start"	"1"
+		"tank_ban_end"		"70"
 	}
 	"l4d_ihm01_forest"
 	{
@@ -375,6 +419,8 @@
 	"cwm2_warehouse"
 	{
 		"difficulty"	"2"
+		"tank_ban_start"	"72"
+		"tank_ban_end"		"99"
 	}
 	"cwm3_drain"
 	{
@@ -388,6 +434,8 @@
 	{
 		"intro"		"1"
 		"difficulty"	"1"
+		"tank_ban_start"	"0"
+		"tank_ban_end"		"45"
 	}
 	"l4d2_stadium2_riverwalk"
 	{
@@ -396,6 +444,8 @@
 	"l4d2_stadium3_city1"
 	{
 		"difficulty"	"3"
+		"tank_ban_start"	"0"
+		"tank_ban_end"		"40"
 	}
 	"l4d2_stadium4_city2"
 	{
@@ -442,10 +492,14 @@
 	{
 		"intro"		"1"
 		"difficulty"	"2"
+		"tank_ban_start"	"1"
+		"tank_ban_end"		"50"
 	}
 	"l4d2_bts02_station"
 	{
 		"difficulty"	"2"
+		"tank_ban_start"	"1"
+		"tank_ban_end"		"40"
 	}
 	"l4d2_bts03_town"
 	{
@@ -467,6 +521,8 @@
 	{
 		"intro"		"1"
 		"difficulty"	"1"
+		"tank_ban_start"	"30"
+		"tank_ban_end"		"50"
 	}
 	"l4d2_diescraper2_streets_33"
 	{
@@ -500,6 +556,8 @@
 	"l4d_dbd2dc_new_dawn"
 	{
 		"difficulty"	"3"
+		"tank_ban_start"	"0"
+		"tank_ban_end"		"70"
 	}
 	// heaven can wait II
 	"AirCrash"
@@ -510,6 +568,8 @@
 	"RiverMotel"
 	{
 		"difficulty"	"2"
+		"tank_ban_start"	"20"
+		"tank_ban_end"		"55"
 	}
 	"OutSkirts"
 	{
@@ -518,6 +578,8 @@
 	"CityHall"
 	{
 		"difficulty"	"2"
+		"tank_ban_start"	"35"
+		"tank_ban_end"		"72"
 	}
 	"BombShelter"
 	{
@@ -526,6 +588,8 @@
 	"l4d_149_1"
 	{
 		"intro"		"1"
+		"tank_ban_start"	"30"
+		"tank_ban_end"		"62"
 	}
 	"l4d_149_2"
 	{
@@ -534,10 +598,14 @@
 	"l4d_149_3"
 	{
 		"difficulty"	"2"
+		"tank_ban_start"	"0"
+		"tank_ban_end"		"75"
 	}
 	"l4d_149_4"
 	{
 		"difficulty"	"2"
+		"tank_ban_start"	"45"
+		"tank_ban_end"		"85"
 	}
 	"l4d_149_5"
 	{
@@ -551,14 +619,20 @@
 	"l4d2_city17_02"
 	{
 		"difficulty"	"2"
+		"tank_ban_start"	"0"
+		"tank_ban_end"		"80"
 	}
 	"l4d2_city17_03"
 	{
 		"difficulty"	"2"
+		"tank_ban_start"	"55"
+		"tank_ban_end"		"68"
 	}
 	"l4d2_city17_04"
 	{
 		"difficulty"	"2"
+		"tank_ban_start"	"25"
+		"tank_ban_end"		"68"
 	}
 	"l4d2_city17_05"
 	{
