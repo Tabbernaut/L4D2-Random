@@ -86,13 +86,13 @@ new     bool:           g_bSpectateDeath        [MAXPLAYERS+1]              = {f
 new                     g_iSpectateGhost        [TEAM_SIZE];                                        // people that spectated while being SI ghosts.. remembered to avoid exploit
 new                     g_iSpectateGhostCount                               = 0;                    // amount of ghosts saved
 
-// Death order effect
-new                     g_iClassTimeout         [7]                         = 0;                    // the 'level' / counter for the timeout
 
-// Sack-exploitation checks
+// Sack-exploitation checks and Death order effect
+new                     g_iClassTimeout         [7]                         = 0;                    // the 'level' / counter for the timeout
 new     Float:          g_fGotGhost             [MAXPLAYERS+1]              = {0.0,...};            // when player got their SI ghost most recently
 new     Float:          g_fDeathAfterGhost      [MAXPLAYERS+1]              = {0.0,...};            // the first SI death of another teammember after player got their ghost
 new                     g_iOffences             [MAXPLAYERS+1]              = {0,...};              // the amount of times a player has done this (since plugin was loaded) - warn at 3 strikes?
+new     Float:          g_fLastOffence          [MAXPLAYERS+1]              = {0.0,...};            // time of last offence by client
 
 // Boomer tracking
 new                     g_iCommonBoomQueue                                  = 0;                    // how many common infected that will spawn are boomer(effect) created
@@ -227,6 +227,7 @@ new     bool:           g_RI_bNoStorm                                       = fa
 new     bool:           g_RI_bNoCola                                        = false;                // block cola spawns
 new                     g_RI_iTankBanStart                                  = 0;                    // block specific tank spawn range
 new                     g_RI_iTankBanEnd                                    = 0;                    // block specific tank spawn range
+new     bool:           g_RI_bWeakHittables                                 = false;                // makes hittables do less damage (like c5m5 normally)
 
 
 // ConVars
@@ -263,6 +264,7 @@ new     Handle:         g_hCvarGnomeFinaleFactor                            = IN
 new     Handle:         g_hCvarGnomeAllowRandom                             = INVALID_HANDLE;       // cvar whether gnomes can drop at random
 new     Handle:         g_hCvarSpecialEventTimeout                          = INVALID_HANDLE;       // cvar how many maps it takes for a special event to be pickable again
 new     Handle:         g_hCvarMiniTankHealth                               = INVALID_HANDLE;       // cvar how much health a minitank has
+new     Handle:         g_hCvarDoubleTankHealth                             = INVALID_HANDLE;       // cvar how much health a tank on a double-tank round has
 new     Handle:         g_hCvarBanTankFlows                                 = INVALID_HANDLE;       // cvar whether to take banned tank flow into account
 new     Handle:         g_hCvarRandomHittables                              = INVALID_HANDLE;       // cvar whether to randomize the hittables
 

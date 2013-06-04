@@ -516,15 +516,16 @@ RANDOM_DetermineRandomStuff()
                     
                     // hittable control: soften the blow
                     if (FindConVar("hc_car_standing_damage") != INVALID_HANDLE) {
-                        SetConVarInt(FindConVar("hc_sflog_standing_damage"), MINITANKS_HITTABLE_DMG);
-                        SetConVarInt(FindConVar("hc_bhlog_standing_damage"), MINITANKS_HITTABLE_DMG);
-                        SetConVarInt(FindConVar("hc_car_standing_damage"), MINITANKS_HITTABLE_DMG);
-                        SetConVarInt(FindConVar("hc_bumpercar_standing_damage"), MINITANKS_HITTABLE_DMG);
-                        SetConVarInt(FindConVar("hc_forklift_standing_damage"), MINITANKS_HITTABLE_DMG);
-                        SetConVarInt(FindConVar("hc_dumpster_standing_damage"), MINITANKS_HITTABLE_DMG);
-                        SetConVarInt(FindConVar("hc_haybale_standing_damage"), MINITANKS_HITTABLE_DMG);
-                        SetConVarInt(FindConVar("hc_baggage_standing_damage"), MINITANKS_HITTABLE_DMG);
-                        SetConVarInt(FindConVar("hc_incap_standard_damage"), MINITANKS_HITTABLE_DMG);
+                        new tmpDmg = (g_RI_bWeakHittables) ? WEAK_HITTABLE_DMG : MINITANKS_HITTABLE_DMG;
+                        SetConVarInt(FindConVar("hc_sflog_standing_damage"), tmpDmg);
+                        SetConVarInt(FindConVar("hc_bhlog_standing_damage"), tmpDmg);
+                        SetConVarInt(FindConVar("hc_car_standing_damage"), tmpDmg);
+                        SetConVarInt(FindConVar("hc_bumpercar_standing_damage"), tmpDmg);
+                        SetConVarInt(FindConVar("hc_forklift_standing_damage"), tmpDmg);
+                        SetConVarInt(FindConVar("hc_dumpster_standing_damage"), tmpDmg);
+                        SetConVarInt(FindConVar("hc_haybale_standing_damage"), tmpDmg);
+                        SetConVarInt(FindConVar("hc_baggage_standing_damage"), tmpDmg);
+                        SetConVarInt(FindConVar("hc_incap_standard_damage"), tmpDmg);
                     }
                     
                     L4D2Direct_SetVSWitchToSpawnThisRound(0, false);
@@ -732,6 +733,8 @@ RANDOM_DetermineRandomStuff()
                 L4D2Direct_SetVSTankFlowPercent(0, g_fTankFlowEarly);
                 L4D2Direct_SetVSTankFlowPercent(1, g_fTankFlowEarly);
                 
+                SetConVarInt(FindConVar("z_tank_health"), GetConVarInt(g_hCvarDoubleTankHealth) );
+                
                 PrintDebug("[rand] Double tank set for this round: %0.f early, %0.f late.", 100.0 * g_fTankFlowEarly, 100.0 * g_fTankFlowLate);
                 
                 g_iDifficultyRating += 2;  // on top of the 2 for tank already
@@ -750,6 +753,9 @@ RANDOM_DetermineRandomStuff()
             L4D2Direct_SetVSTankToSpawnThisRound(1, true);
             L4D2Direct_SetVSTankFlowPercent(0, g_fTankFlowEarly);
             L4D2Direct_SetVSTankFlowPercent(1, g_fTankFlowEarly);
+            
+            SetConVarInt(FindConVar("z_tank_health"), GetConVarInt(g_hCvarDoubleTankHealth) );
+            
             // no witches for doubletank round
             g_bWitchWillSpawn = false;
         }
@@ -982,7 +988,7 @@ RandomizeItems()
                     
                     // taxi's are rotated 90 degrees to the left (+90 on z-ang)
                     if (StrContains(modelname, "taxi_", false) != -1) {
-                        hangles[2] += 90.0;
+                        hangles[1] += 90.0;
                     }
                     
                     g_strArHittableStorage[curHit][hitOrigin_a] = horigin[0];
@@ -1019,7 +1025,7 @@ RandomizeItems()
                         // only color normal cars
                         if (randType == HITTAB_CARTAXI) {
                             g_strArHittableStorage[curHit][hitIsColored] = true;
-                            g_strArHittableStorage[curHit][hitAngles_c] += 90.0;
+                            g_strArHittableStorage[curHit][hitAngles_b] += 90.0;
                             
                             // yellow or white taxi
                             if (GetRandomInt(0,2) == 0) {
@@ -3257,6 +3263,7 @@ RandomizeFirstSpawns()
     
     // if we got the quad event, first attack is a quad too
     if (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) { bFirstQuad = true; }
+    else if (g_iSpecialEvent == _:EVT_WOMEN) { bFirstQuad = false; }
     
     for (new i=0; i < TEAM_SIZE; i++)
     {
@@ -3318,7 +3325,8 @@ DetermineSpawnClass(any:client, any:iClass)
         g_fDeathAfterGhost[client] = 0.0;
     }
     
-    new bool: checkSacking = false;
+    new bool: checkSacking = false;     // check for players keeping strong infected
+    new bool: forcedClass = false;      // skip check for accepted classes
     
     //new valveClass = iClass;
     //PrintDebug("[random spawns] valve ghost pick (%N = %i)", client, valveClass);
@@ -3327,6 +3335,7 @@ DetermineSpawnClass(any:client, any:iClass)
     {
         // build first attack
         iClass = GetClassForFirstAttack(client);
+        forcedClass = true;
         //PrintDebug("[rand si] first attack spawn. (%N = %i)", client, iClass);
     }
     else if (g_iSpectateGhostCount)
@@ -3334,6 +3343,7 @@ DetermineSpawnClass(any:client, any:iClass)
         // someone spectated as a ghost, use the SI they left
         g_iSpectateGhostCount--;
         iClass = g_iSpectateGhost[g_iSpectateGhostCount];
+        forcedClass = true;
         //PrintDebug("[rand si] ghost reset. (%N = %i)", client, iClass);
     }
     else if (GetConVarBool(g_hCvarRandomSpawns))
@@ -3384,12 +3394,16 @@ DetermineSpawnClass(any:client, any:iClass)
             AddSpawnClass(acceptClasses, acceptCount, ZC_SPITTER);
         }
     }
-    if (g_iSpecialEvent  != _:EVT_WOMEN)
+    if (g_iSpecialEvent != _:EVT_WOMEN)
     {
         AddSpawnClass(acceptClasses, acceptCount, ZC_SMOKER);
         AddSpawnClass(acceptClasses, acceptCount, ZC_HUNTER);
-        AddSpawnClass(acceptClasses, acceptCount, ZC_JOCKEY);
-        AddSpawnClass(acceptClasses, acceptCount, ZC_CHARGER);
+        
+        if (g_iSpecialEvent != _:EVT_L4D1)
+        {
+            AddSpawnClass(acceptClasses, acceptCount, ZC_JOCKEY);
+            AddSpawnClass(acceptClasses, acceptCount, ZC_CHARGER);
+        }
     }
     
     if (g_bIsTankInPlay && iClass == ZC_SPITTER && GetConVarBool(g_hCvarNoSpitterDuringTank))
@@ -3457,7 +3471,10 @@ DetermineSpawnClass(any:client, any:iClass)
             }
             
             // reporting?
-            g_iOffences[offendingClient]++;
+            if (GetGameTime() - g_fLastOffence[offendingClient] > SACKPROT_OFFENCE_GRACE) {
+                g_iOffences[offendingClient]++;
+            }
+            
             new reportMode = GetConVarInt(g_hCvarReportSackProt);
             if (reportMode > 0)
             {
@@ -3490,10 +3507,10 @@ DetermineSpawnClass(any:client, any:iClass)
     
     // prevent unwanted picks!
     //  if (for whatever reason) a class is not accepted, repick
-    if (!IsAcceptedClass(acceptClasses, acceptCount, iClass))
+    if (!forcedClass && !IsAcceptedClass(acceptClasses, acceptCount, iClass))
     {
-        PrintDebug("[rand] spawn repick for %N: accepted picks (%i not accepted):", client, iClass);
-        for (new i=0; i < acceptCount; i++) { PrintDebug("  --> %i", acceptClasses[i]); }
+        PrintDebug("[rand] spawn repick for %N: accepted picks (%s not accepted):", client, g_csSIClassName[iClass]);
+        for (new i=0; i < acceptCount; i++) { PrintDebug("  --> %s", g_csSIClassName[ acceptClasses[i] ] ); }
         
         iClass = acceptClasses[ GetRandomInt(0, acceptCount - 1) ];
     }
@@ -4022,10 +4039,12 @@ RANDOM_PrepareChoicesEvents()
         //      EVT_AMMO: because of fancy way ammo is handled in finales anyway
         //      EVT_WITCHES: don't mix it with tanks
         if (    L4D_IsMissionFinalMap()
-            &&  ( i == EVT_ADREN || i == EVT_MINITANKS || i == EVT_AMMO || i == EVT_WOMEN || i == EVT_WITCHES )
+            &&  ( i == EVT_ADREN || i == EVT_MINITANKS || i == EVT_AMMO || i == EVT_WOMEN || i == EVT_WITCHES || i == EVT_PEN_TIME )
         ) {
             continue;
         }
+        
+        
         
         // remove some events if we have fixed tanks
         if (    g_RI_bNoTank

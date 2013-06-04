@@ -212,15 +212,16 @@ EVENT_ResetOtherCvars()
     
     // hittable control
     if (FindConVar("hc_car_standing_damage") != INVALID_HANDLE) {
-        SetConVarInt(FindConVar("hc_sflog_standing_damage"), g_iDefTankHittableDamage);
-        SetConVarInt(FindConVar("hc_bhlog_standing_damage"), g_iDefTankHittableDamage);
-        SetConVarInt(FindConVar("hc_car_standing_damage"), g_iDefTankHittableDamage);
-        SetConVarInt(FindConVar("hc_bumpercar_standing_damage"), g_iDefTankHittableDamage);
-        SetConVarInt(FindConVar("hc_forklift_standing_damage"), g_iDefTankHittableDamage);
-        SetConVarInt(FindConVar("hc_dumpster_standing_damage"), g_iDefTankHittableDamage);
-        SetConVarInt(FindConVar("hc_haybale_standing_damage"), g_iDefTankHittableDamage);
-        SetConVarInt(FindConVar("hc_baggage_standing_damage"), g_iDefTankHittableDamage);
-        SetConVarInt(FindConVar("hc_incap_standard_damage"), g_iDefTankHittableDamage);
+        new tmpDmg = (g_RI_bWeakHittables) ? WEAK_HITTABLE_DMG : g_iDefTankHittableDamage;
+        SetConVarInt(FindConVar("hc_sflog_standing_damage"), tmpDmg);
+        SetConVarInt(FindConVar("hc_bhlog_standing_damage"), tmpDmg);
+        SetConVarInt(FindConVar("hc_car_standing_damage"), tmpDmg);
+        SetConVarInt(FindConVar("hc_bumpercar_standing_damage"), tmpDmg);
+        SetConVarInt(FindConVar("hc_forklift_standing_damage"), tmpDmg);
+        SetConVarInt(FindConVar("hc_dumpster_standing_damage"), tmpDmg);
+        SetConVarInt(FindConVar("hc_haybale_standing_damage"), tmpDmg);
+        SetConVarInt(FindConVar("hc_baggage_standing_damage"), tmpDmg);
+        SetConVarInt(FindConVar("hc_incap_standard_damage"), tmpDmg);
     }
     
     SetConVarInt(FindConVar("sv_force_time_of_day"), -1);
@@ -462,7 +463,7 @@ EVENT_ReportPenalty(client = -1, extraInfo = -1)
             }
         }
         case EVT_PEN_TIME: {
-            PrintToChatAll("\x01[\x05r\x01] Minute passed, \x04%i\x01 point penalty.", EVENT_PENALTY_TIME);
+            PrintToChatAll("\x01[\x05r\x01] Minute \x05%d\x01 passed, \x04%i\x01 point penalty.", g_iBonusCount, EVENT_PENALTY_TIME);
         }
     }
 }
@@ -509,6 +510,22 @@ EVENT_DisplayRoundPenalty(client=-1)
         {
             PrintToChatAll("\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 minute%s cost \x04%i\x01 points so far.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_PENALTY_TIME * g_iBonusCount);
         }
+        case EVT_WITCHES:
+        {
+            if (client != -1) {
+                PrintToChat(client, "\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 witch kill%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_WITCHES_BONUS * g_iBonusCount);
+            } else {
+                PrintToChatAll("\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 witch kill%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_WITCHES_BONUS * g_iBonusCount);
+            }
+        }
+        case EVT_BADSANTA:
+        {
+            if (client != -1) {
+                PrintToChat(client, "\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 gift unwrap%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_BADSANTA_BONUS * g_iBonusCount);
+            } else {
+                PrintToChatAll("\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 gift unwrap%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_BADSANTA_BONUS * g_iBonusCount);
+            }
+        }
     }
 }
 
@@ -519,13 +536,12 @@ EVENT_DisplayRoundPenalty(client=-1)
 public Action: Timer_TimePenalty(Handle:timer)
 {
     // when paused, don't keep ticking
-    if (g_bIsPaused) {
+    if (g_bIsPaused || g_bIsTankInPlay) {
         return Plugin_Continue;
     }
     
     // halt timer on round end
     if (!g_bInRound) {
-        PrintToChatAll("not in round");
         g_hTimePenaltyTimer = INVALID_HANDLE;
         return Plugin_Stop;
     }

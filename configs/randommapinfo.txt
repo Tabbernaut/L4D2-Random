@@ -149,6 +149,7 @@
 	{
 		"difficulty"	"1"
 		"doors"		"0"
+		"weak_hittables" "1"
 	}
 	"c6m1_riverbank"
 	{
@@ -347,6 +348,7 @@
 	{
 		"difficulty"	"1"
 		"doors"		"0"
+		"weak_hittables" "1"
 	}
 	"cdta_01detour"
 	{
@@ -370,6 +372,7 @@
 		"difficulty" 	"1"
 		"tank_ban_start"	"1"
 		"tank_ban_end"		"70"
+		"weak_hittables" "1"
 	}
 	"l4d_ihm01_forest"
 	{

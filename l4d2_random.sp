@@ -31,6 +31,7 @@
         
         randomizes:
             - map items
+            - tank hittables
             - survivor starting items
             - survivor starting health
             - map distance and bonus
@@ -62,15 +63,14 @@
            1024     points / scoring
  
 */
- 
- 
+
 
 public Plugin:myinfo = 
 {
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.26",
+    version = "1.0.27",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -166,7 +166,7 @@ public OnPluginStart()
             if (IsClientInGame(i))
             {
                 SDKHook(i, SDKHook_WeaponEquipPost, OnWeaponEquip);     // hook for penalty item tracking
-                SDKHook(i, SDKHook_OnTakeDamage, OnTakeDamage);         // hook for tank damage mod & protect event
+                SDKHook(i, SDKHook_OnTakeDamage,    OnTakeDamage);      // hook for tank damage mod & protect event
             }
         }
     }

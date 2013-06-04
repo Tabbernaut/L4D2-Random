@@ -13,7 +13,8 @@ L4D2_Random
             - gnome VIP: only one gnome spawns (start saferoom), it must be brought or the end saferoom won't close
                 or: gnome heaven, where the only way to score (many) points is to bring gnomes
                 - for example: given only 1 gnome: distance points are frozen unless gnome is held
-                
+            - greedy healing gnome: healing gnome, but holding the gnome (if it heals) costs points
+            
             rejected
             --------
             - 'pistol round': only pistols (magnums included). No locked doors and easier ci/si. [maybe]
@@ -25,13 +26,19 @@ L4D2_Random
             
     to-do:
     ------  
-            - consider: death-order odds-changer:
-                        - while repicking, also take into account the odds of repicking another class we should be less likely to pick?
+            - make random sprays :)
             
+            - test:     first attacks are not equal anymore?
+
             - medium:   test and include stabby's random map stuff so people can launch random campaigns after loading random
             
+            - tentative idea: - scavenge finales (33% chance): is this possible?
+            
+            - low: death-order odds-changer: while repicking, also take into account the odds of repicking another class we should be less likely to pick?
+            
             - superlow: team randomizer function (!randteams) (use all players currently in teams, or include specs if less than required team size)
-            - superlow: random team going first per round in versus. how? possible? worth the effort?
+            - superlow: random team going first per round in versus. how? possible? worth the effort? no.
+            
             
     minor cleanup / details
     -----------------------
@@ -51,20 +58,9 @@ L4D2_Random
     video:
     ------
         ...
-            
-    harder paths
-    ------------
-    
-        minor changes
-        -------------
-            c1m2        just some spawn cover changes (no harder map pathing, nor is it detected)
-          
-
-        
         
     ideas:
     ------
-        
             - ?     - gift idea: X second slowdown (like EVT_ENCUMBERED)
             - ?     - gift idea: ghost-effect for survivors for X seconds (no outlines for SI) (even if running)
             - ?     - gift idea: see outlines on infected for X seconds ('telepathy')

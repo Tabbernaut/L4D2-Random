@@ -43,6 +43,7 @@ INIT_DefineCVars()
     g_hCvarBanTankFlows = CreateConVar(                     "rand_ban_tanks",                "1",       "Whether tank flow bans will be taken into account.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarRandomHittables = CreateConVar(                  "rand_hittables",                "1",       "Whether hittables should be randomized too.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarMiniTankHealth = CreateConVar(                   "rand_minitankhealth",        "1000",       "How much health minitanks have. This is two-thirds of its versus health (900 = 1350 in versus).", FCVAR_PLUGIN, true, 500.0, false);
+    g_hCvarDoubleTankHealth = CreateConVar(                 "rand_doubletankhealth",      "3000",       "How much health each tank on a double-tank map has. (3000 = 4500 in versus).", FCVAR_PLUGIN, true, 1000.0, false);
     
     g_hCvarNoitemVariance = CreateConVar(                   "rand_noitem_variance",          "0.25",    "Variance of weight for 'no item' in item randomizer.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarSpecialEventChance = CreateConVar(               "rand_event_chance",             "0.65",    "Chances of any map going in 'special event' mode.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -533,6 +534,7 @@ bool: RI_KV_UpdateRandomMapInfo()
     g_RI_bNoWitch = false;      // whether we should block witches
     g_RI_bNoStorm = false;      // whether there shouldn't be storms on the map
     g_RI_bNoCola = false;       // whether we should block cola on the map
+    g_RI_bWeakHittables = false; // map works like c5m5
     
     g_RI_iTankBanStart = -1;    // block some tank spawns
     g_RI_iTankBanEnd = -1;
@@ -553,6 +555,7 @@ bool: RI_KV_UpdateRandomMapInfo()
         g_RI_bNoCola = bool: (KvGetNum(g_kRIData, "no_cola", 0));
         g_RI_iTankBanStart = KvGetNum(g_kRIData, "tank_ban_start", -1);
         g_RI_iTankBanEnd = KvGetNum(g_kRIData, "tank_ban_end", -1);
+        g_RI_bWeakHittables = bool: (KvGetNum(g_kRIData, "weak_hittables", 0));
         
         PrintDebug("[RI] Read data: intro: %i; difficulty: %i; doors; %i; nostorm: %i", g_RI_bIsIntro, g_RI_iDifficulty, g_RI_iDoors, g_RI_bNoStorm);
         

@@ -85,6 +85,7 @@ const Float:    MINITANK_MELEE_DMG      = 200.0;        // damage minitanks take
 const           MINITANK_FRUST_TIME     = 10;           // half normal frustration time
 const           MINITANKS_DAMAGE        = 20;           // minitanks punch does a bit less damage
 const           MINITANKS_HITTABLE_DMG  = 50;           // how much damage hittables do for minitanks
+const           WEAK_HITTABLE_DMG       = 25;           // how much damage hittables do on 'weak hittables maps'
 
 // item balance
 const Float:    ITEM_FACTOR_2V2         = 0.5;          // how many of the items available in #v# game
@@ -122,7 +123,7 @@ const Float:    EVENT_CLOWNS_CHANCE     = 0.7;          // EVT_CLOWNS       plen
 const Float:    EVENT_ABUND_JUNKWGHT    = 0.5;          // EVT_ABUNDANCE    by what factor to change junk amount
 const Float:    EVENT_DEFIB_EXTRA       = 2.5;          // EVT_DEFIB        by what factor to change defib amount
 const Float:    EVENT_DEFIB_PILLS       = 1.5;          // EVT_DEFIB        by what factor to change pills amount
-const Float:    EVENT_ADREN_EXTRA       = 3.5;          // EVT_ADREN        by what factor to change adren amount
+const Float:    EVENT_ADREN_EXTRA       = 4.0;          // EVT_ADREN        by what factor to change adren amount
 const Float:    EVENT_ADREN_LESSER      = 0.5;          // EVT_ADREN        by what factor to change a bunch of other items (less useful in this mode)
 const Float:    EVENT_ADREN_DECAY       = 1.5;          // EVT_ADREN        by what factor to change pill decay rate
 const           EVENT_NOHUD_MASK        = 64;           // EVT_NOHUD        bitmask for what to hide
@@ -189,6 +190,7 @@ const Float:    PIPEDUD_MINTIME         = 2.4;          // how much time minimal
 const Float:    PIPEDUD_ADDTIME         = 2.5;          // how much time to add maximally to mintime
 
 const Float:    SACKPROT_MARGIN         = 3.0;          // seconds margin: after this time, someone dying counts as the attack someone should join in to not be saving
+const Float:    SACKPROT_OFFENCE_GRACE  = 5.0;          // seconds between offences before we add them up (for reporting after 3 strikes)
 
 const           DIFF_RATING_GLOW_THRESH     = 3;        // how high the round difficulty rating must be before we're more likely to keep glows on
 const           DIFF_RATING_INCAP_THRESH    = 3;        // how high before we keep minimum default incaps
@@ -426,8 +428,6 @@ const           ANIM_EVENT_INCAP_PICKUP = 44;
 const           ANIM_EVENT_PLACE_THING  = 50;
 const           ANIM_EVENT_DEPLOY_FLOOR = 52;
 const           ANIM_EVENT_COLA_DELIVER = 55;
-
-
 /*
 const           ANIM_NICK_HEAL_OTHER    = 569;              // healing animation when using medkit on someone else
 const           ANIM_COACH_HEAL_OTHER   = 570;
