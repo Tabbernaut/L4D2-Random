@@ -22,27 +22,30 @@ L4D2_Random
             - clockwork: clockwork timed spawns, deaths, rinse repeat (no tank?)
             - 'fallen survivor hunt'
             - quad damage [stab] -- one player gets special glow / sound => deals 4* damage -- tag-game: SI and survivors get quad, it switches when one hits another
-                
+            
             
     to-do:
     ------  
-            - make random sprays :)
-            
             - test:     first attacks are not equal anymore?
-
-            - medium:   test and include stabby's random map stuff so people can launch random campaigns after loading random
+            - bugfix:   gift result double announce, 1 effect.. (survivor insight..) [DA3] ?    keep eye on
             
-            - tentative idea: - scavenge finales (33% chance): is this possible?
+            - low:      add !help function to get brief lines about what Random is + URL
             
             - low: death-order odds-changer: while repicking, also take into account the odds of repicking another class we should be less likely to pick?
             
+            - low:      tentative idea: - scavenge finales (33% chance): is this possible?
+            - low:      test and include stabby's random map stuff so people can launch random campaigns after loading random
+            
+            - superlow: prevent two ammo piles spawning too close to eachother?
             - superlow: team randomizer function (!randteams) (use all players currently in teams, or include specs if less than required team size)
             - superlow: random team going first per round in versus. how? possible? worth the effort? no.
             
+            - gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
+            - later:    email Chet, see if he likes it... give him site url too.
             
     minor cleanup / details
     -----------------------
-            - bug:      no event on nm5: even with rand_event_chance 1 ?
+            - nitpick:  alarmed cars: remove their alarms if they get punched by tanks / blown away by explosions - note: the alarm is off, its just an aesthetic thing
             - nitpick:  dark carnival 1 gas cans are not randomized..
             - nitpick:  gunswap event: survivors don't start with same weapons
             - glitch:   c10m3 is seen as 'a finale' (check separately?)

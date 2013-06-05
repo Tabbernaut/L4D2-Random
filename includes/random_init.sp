@@ -105,7 +105,7 @@ INIT_DefineCVars()
     g_hArCvarWeight[INDEX_UPGRADE] = CreateConVar(          "rand_weight_upgrade",           "5",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarWeight[INDEX_AMMO] = CreateConVar(             "rand_weight_ammo",              "5",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarWeight[INDEX_JUNK] = CreateConVar(             "rand_weight_junk",             "18",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarWeight[INDEX_SILLY] = CreateConVar(            "rand_weight_silly",             "4",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarWeight[INDEX_SILLY] = CreateConVar(            "rand_weight_silly",             "3",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarWeight[INDEX_GIFT] = CreateConVar(             "rand_weight_gift",              "3",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     g_hArCvarSurvWeight[INDEX_SURV_NOTHING] = CreateConVar( "rand_weight_surv_nothing",      "5",       "Weight for picking survivor starting gear.", FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -229,7 +229,8 @@ INIT_CVarsGetDefault()
 
 INIT_CVarsReset()
 {
-    // reset cvars that we changed here or with Stabby's plugin ([l4d2_]randomstats)
+    // reset cvars that we may have changed
+    SetConVarInt(FindConVar("sv_force_time_of_day"), -1);
     SetConVarInt(FindConVar("sv_disable_glow_survivors"), 0);
     SetConVarInt(FindConVar("survivor_max_incapacitated_count"), INCAP_DEFAULT);
     
@@ -432,6 +433,7 @@ INIT_FillTries()
     SetTrieValue(g_hTrieUseItems, "weapon_cola_bottles",            ITEM_USE_COLA);
     SetTrieValue(g_hTrieUseItems, "prop_physics",                   ITEM_USE_PROP);
     SetTrieValue(g_hTrieUseItems, "weapon_ammo_spawn",              ITEM_USE_AMMO);
+
 }
 
 // SDK Calls
@@ -617,6 +619,7 @@ INIT_GetScriptName( const String:Class[MELEE_CLASS_LENGTH], String:ScriptName[ME
 }
 */
 
+
 // Precaching
 INIT_PrecacheModels(bool: noMapStarted = false)
 {
@@ -680,6 +683,11 @@ INIT_PrecacheModels(bool: noMapStarted = false)
             RemoveEdict(tmpEnt);
         }
     }
+    
+    // Alarmed cars
+    if (!IsModelPrecached("sprites/glow.vmt")) PrecacheModel("sprites/glow.vmt", true);
+    if (!IsModelPrecached("sprites/light_glow03.vmt")) PrecacheModel("sprites/light_glow03.vmt", true);
+    if (!IsModelPrecached("sprites/glow_test02.vmt")) PrecacheModel("sprites/glow_test02.vmt", true);
     
     // Sound
     for (new i=0; i < sizeof(g_csPrefetchSounds); i++)

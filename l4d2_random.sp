@@ -179,12 +179,11 @@ public OnPluginStart()
     RegConsoleCmd("sm_drop",    RandomDrop_Cmd,     "Drop your currently selected weapon or item.");
     
     // Admin and test commands
-    if (DEBUG_MODE == 1) {
-        RegAdminCmd("rand_test_gnomes", TestGnomes_Cmd, ADMFLAG_CHEATS, "...");
-        RegAdminCmd("rand_test_swap",   TestSwap_Cmd,   ADMFLAG_CHEATS, "...");
-        RegAdminCmd("rand_test_ents",   TestEnts_Cmd,   ADMFLAG_CHEATS, "...");
-        RegAdminCmd("rand_test_event",  TestEvent_Cmd,  ADMFLAG_CHEATS, "...");
-    }
+    //  disable when debugging is done
+    RegAdminCmd("rand_test_gnomes", TestGnomes_Cmd, ADMFLAG_CHEATS, "...");
+    RegAdminCmd("rand_test_swap",   TestSwap_Cmd,   ADMFLAG_CHEATS, "...");
+    RegAdminCmd("rand_test_ents",   TestEnts_Cmd,   ADMFLAG_CHEATS, "...");
+    RegAdminCmd("rand_test_event",  TestEvent_Cmd,  ADMFLAG_CHEATS, "...");
     
     /*  Listen for specating */
     RegConsoleCmd("spectate",   Spectate_Cmd,   "...");
@@ -974,12 +973,29 @@ public Action: Event_SoundPlayed(clients[64], &numClients, String:sample[PLATFOR
 
 public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype)
 {
+    if (damage == 0.0 || !IsValidEntity(attacker) || !IsValidEntity(victim)) { return Plugin_Continue; }
+    
+    // chainsaws vs tanks
+    if (    damagetype == DMGTYPE_CHAINSAW
+        &&  IsClientAndInGame(victim) && GetClientTeam(victim) == TEAM_INFECTED
+        &&  GetEntProp(victim, Prop_Send, "m_zombieClass") == ZC_TANK
+        &&  IsValidEntity(inflictor)
+        &&  IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_SURVIVOR
+    ) {
+        // safeguard: is it really the saw?
+        new String: classname[32];
+        GetEdictClassname(inflictor, classname, sizeof(classname));
+        if (StrEqual(classname, "weapon_chainsaw", false))
+        {
+            damage *= CSAW_TANK_DMG_FACTOR;
+            return Plugin_Changed;
+        }
+    }
+    
     if (    _:g_iSpecialEvent != EVT_MINITANKS
         &&  _:g_iSpecialEvent != EVT_PROTECT
         &&  _:g_iSpecialEvent != EVT_WOMEN
         &&  _:g_iSpecialEvent != EVT_WITCHES
-        ||  !IsValidEntity(attacker)
-        ||  damage == 0.0
     ) {
         return Plugin_Continue;
     }
@@ -1039,6 +1055,7 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
         new String: classname[32];
         GetEdictClassname(inflictor, classname, sizeof(classname));
         
+        // does this work well with chainsaw?
         if (StrEqual(classname, "weapon_melee", false))
         {
             damage = MINITANK_MELEE_DMG;
@@ -1750,11 +1767,11 @@ public Action:Timer_CheckPlayerUsing(Handle:timer, any:pack)
         {
             if (GetGameTime() - g_fProgressTime[client] > EVENT_AMMO_PACKTIME)
             {
-                EVENT_RepackAmmo(client, g_iDeployedAmmo);  // could use entity here.. see if we can remove iDeployedAmmo?
                 g_bShowedProgressHint = false;
                 g_iClientUsing[client] = 0;
                 CloseHandle(pack);
                 EndSurvivorAnim(client);
+                EVENT_RepackAmmo(client, g_iDeployedAmmo);  // could use entity here.. see if we can remove iDeployedAmmo?
                 //ShowWeapon(client);
                 return Plugin_Stop;
             }
@@ -1763,11 +1780,11 @@ public Action:Timer_CheckPlayerUsing(Handle:timer, any:pack)
         {
             if (GetGameTime() - g_fProgressTime[client] > USING_TIME_GIFT)
             {
-                RANDOM_DoGiftEffect(client, g_iClientUsing[client]);
                 g_bShowedProgressHint = false;
                 g_iClientUsing[client] = 0;
                 CloseHandle(pack);
                 EndSurvivorAnim(client);
+                RANDOM_DoGiftEffect(client, g_iClientUsing[client]);
                 //ShowWeapon(client);
                 return Plugin_Stop;
             }

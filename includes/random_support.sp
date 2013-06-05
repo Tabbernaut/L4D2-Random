@@ -27,6 +27,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     if (!g_bSecondHalf)
     {
         g_bStripperAltDetected = false;
+        SetConVarInt(FindConVar("sv_force_time_of_day"), -1);
     }
     
     // only reset on first roundhalf or if event's not equal
@@ -64,7 +65,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     ResetGnomes();                      // clear gnome tracking array for bonus scoring
     
     // timer cleanup
-    if (g_hTimePenaltyTimer != INVALID_HANDLE) { KillTimer(g_hTimePenaltyTimer); }
+    //if (g_hTimePenaltyTimer != INVALID_HANDLE) { KillTimer(g_hTimePenaltyTimer); }
     g_hTimePenaltyTimer = INVALID_HANDLE;
     
     // handle the randomization 
@@ -82,7 +83,6 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
         //      because playerteam is not reliably fired for everyone
         CheckSurvivorSetup();
     }
-    
     
     // do post-randomization prep
     RNDBNS_SetExtra(0);                 // clear extra round bonus
@@ -223,8 +223,6 @@ EVENT_ResetOtherCvars()
         SetConVarInt(FindConVar("hc_baggage_standing_damage"), tmpDmg);
         SetConVarInt(FindConVar("hc_incap_standard_damage"), tmpDmg);
     }
-    
-    SetConVarInt(FindConVar("sv_force_time_of_day"), -1);
 }
 
 EVENT_ResetDifficulty()
@@ -541,7 +539,7 @@ public Action: Timer_TimePenalty(Handle:timer)
     }
     
     // halt timer on round end
-    if (!g_bInRound) {
+    if (!g_bInRound || g_hTimePenaltyTimer == INVALID_HANDLE) {
         g_hTimePenaltyTimer = INVALID_HANDLE;
         return Plugin_Stop;
     }
@@ -1154,6 +1152,28 @@ EVENT_PickBoobyTraps()
         
         if (GetRandomFloat(0.001,1.0) <= EVENT_BOOBYTRAP_CHANCE)
         {
+            g_iArBoobyTrap[g_iBoobyTraps] = g_strArStorage[i][entNumber];
+            g_iBoobyTraps++;
+        }
+    }
+    
+    // if we picked 0, go and add a few
+    if (g_iBoobyTraps < EVENT_BOOBYTRAP_MIN)
+    {
+        for (new j=0; j < 1000; j++)
+        {
+            // try to add one until we've got enough:
+            if (g_iBoobyTraps >= EVENT_BOOBYTRAP_MIN) { break; }
+            
+            new i = GetRandomInt(0, g_iStoredEntities - 1);
+            
+            if (g_strArStorage[i][entInStartSaferoom]) { continue; }
+            if (    g_strArStorage[i][entPickedType] == _:PCK_NOITEM
+                ||  g_strArStorage[i][entPickedType] == _:PCK_JUNK
+                ||  g_strArStorage[i][entPickedType] == _:PCK_EXPLOSIVE_BARREL
+                ||  g_strArStorage[i][entPickedType] == _:PCK_SILLY_GIFT
+            ) { continue; }
+            
             g_iArBoobyTrap[g_iBoobyTraps] = g_strArStorage[i][entNumber];
             g_iBoobyTraps++;
         }
@@ -2780,7 +2800,6 @@ SpawnAlarmCar(index)
     }
 
     // create off glass model 
-    // ################################
     glassOffEntity = CreateCarGlass(ALARMCAR_GLASS_OFF, glassOffName, itemOrigin, itemAngles, carName);
     if (glassOffEntity == -1) {
         KillEntity(carEntity);
@@ -2788,8 +2807,7 @@ SpawnAlarmCar(index)
         return;
     }
     
-    // create alarm timer
-    // ################################
+    // create alarm timer`
     alarmTimer = CreateEntityByName("logic_timer");    
     if (alarmTimer == -1) {
         KillEntity(carEntity);
@@ -3027,39 +3045,6 @@ CreateLights(carLights[6], const Float:position[3], const Float:angle[3], const 
     MoveVectorPosition3D(lightPosition, angle, lightDistance); // front right
     carLights[5] = CreateCarHeadLight(lightPosition, angle, headLightName, carName);    
 }
-/*
-CreateCarBlinkLight(const Float:entityPosition[3], const String:targetName[], const String:parentName[]) {
-    new lightEntity = CreateEntityByName("env_sprite");
-    if (lightEntity == -1) {
-        return -1;
-    }    
-    
-    DispatchKeyValue(lightEntity, "targetname", targetName);
-    DispatchKeyValue(lightEntity, "spawnflags", "0");
-    DispatchKeyValue(lightEntity, "scale", "0.4");
-    DispatchKeyValue(lightEntity, "rendermode", "9");
-    DispatchKeyValue(lightEntity, "renderfx", "0");
-    DispatchKeyValue(lightEntity, "rendercolor", COLOR_REDLIGHT);
-    DispatchKeyValue(lightEntity, "renderamt", "255");
-    DispatchKeyValue(lightEntity, "model", "sprites/glow.vmt");
-    DispatchKeyValue(lightEntity, "HDRColorScale", "0.4");
-    DispatchKeyValue(lightEntity, "GlowProxySize", "35");
-    DispatchKeyValue(lightEntity, "framerate", "10.0");
-    DispatchKeyValue(lightEntity, "fadescale", "1");
-    DispatchKeyValue(lightEntity, "fademindist", "-1");
-    DispatchKeyValue(lightEntity, "disablereceiveshadows", "0");
-    
-    TeleportEntity(lightEntity, entityPosition, NULL_VECTOR, NULL_VECTOR);
-    DispatchSpawn(lightEntity);
-    ActivateEntity(lightEntity);
-    
-    SetVariantString(parentName);
-    AcceptEntityInput(lightEntity, "SetParent", lightEntity, lightEntity, 0);
-    
-    return lightEntity;
-}
-*/
-
 CreateCarLight(const Float:entityPosition[3], const String:targetName[], const String:parentName[], const String:renderColor[]) {
     new lightEntity = CreateEntityByName("env_sprite");
     if (lightEntity == -1) {

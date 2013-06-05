@@ -348,6 +348,7 @@ RANDOM_DetermineRandomStuff()
         EVENT_HUDRestoreAll();
         
         new previousEvent = g_iSpecialEvent;
+        g_bUsingPBonus = false;
         
         g_iSpecialEvent = -1;
         g_sSpecialEventExtra = "";
@@ -360,7 +361,8 @@ RANDOM_DetermineRandomStuff()
         if (g_bSecondHalf && g_iSpecialEvent != -1) { fSpecialEventChance = 1.0; }
         
         // force a special event if we haven't had one in a while
-        if (fSpecialEventChance > 0.5 && g_iNoSpecialEventStreak > 2) { fSpecialEventChance = 1.0; }
+        if      (fSpecialEventChance > 0.65 && g_iNoSpecialEventStreak > 1) { fSpecialEventChance = 1.0; }
+        else if (fSpecialEventChance > 0.5 && g_iNoSpecialEventStreak > 2)  { fSpecialEventChance = 1.0; }
         
         if (GetRandomFloat(0.001,1.0) <= fSpecialEventChance || g_iSpecialEventToForce != -1)
         {
@@ -986,8 +988,8 @@ RandomizeItems()
                     GetEntPropVector(i, Prop_Send, "m_vecOrigin", horigin);
                     GetEntPropVector(i, Prop_Send, "m_angRotation", hangles);
                     
-                    // taxi's are rotated 90 degrees to the left (+90 on z-ang)
-                    if (StrContains(modelname, "taxi_", false) != -1) {
+                    // taxi's and police cars are rotated 90 degrees to the left (+90 on z-ang)
+                    if (StrContains(modelname, "taxi_", false) != -1 || StrContains(modelname, "police_", false) != -1) {
                         hangles[1] += 90.0;
                     }
                     
@@ -1005,7 +1007,7 @@ RandomizeItems()
                     if (classnameRoN == HITTABLE_PHYSICS_CAR && randType > HITTAB_LASTCAR)
                     {
                         if (GetRandomFloat(0.001, 1.0) <= HITTABLE_CAR_REPICK) {
-                            randType = GetRandomInt( 0 , HITTAB_LASTCAR);
+                            randType = GetRandomInt(0, HITTAB_LASTCAR);
                         }
                     }
                     
@@ -1016,16 +1018,25 @@ RandomizeItems()
                         g_strArHittableStorage[curHit][hitIsCar] = true;
                         
                         // is it alarmed?
-                        if (GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarAlarmedCarChance))
-                        {
+                        if (GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarAlarmedCarChance)) {
                             g_strArHittableStorage[curHit][hitIsAlarmed] = true;
                             randType = HITTAB_CAR95;
                         }
+                        else {
+                            // if not alarmed, use the HITTAB_CAR95 less often
+                            if (randType == HITTAB_CAR95 && GetRandomInt(0,1)) {
+                                randType = GetRandomInt(0, HITTAB_LASTCAR);
+                            }
+                        }
                         
-                        // only color normal cars
+                        // rotation on police/taxi cars
+                        if (randType == HITTAB_CARTAXI || randType == HITTAB_CARPOLICE) {
+                            g_strArHittableStorage[curHit][hitAngles_b] -= 90.0;
+                        }
+                        
+                        // colors
                         if (randType == HITTAB_CARTAXI) {
                             g_strArHittableStorage[curHit][hitIsColored] = true;
-                            g_strArHittableStorage[curHit][hitAngles_b] += 90.0;
                             
                             // yellow or white taxi
                             if (GetRandomInt(0,2) == 0) {
@@ -2994,7 +3005,6 @@ RANDOM_DoGiftEffect(client, entity)
                     
                     Vocalize_Random(client, "ReactionNegative");
                 }
-                
             }
             case GIFT_POS_HEALTH_T: {   // give all temp health (in addition to whatever you had)
                 new Float:fGameTime = GetGameTime();
@@ -3069,7 +3079,7 @@ RANDOM_DoGiftEffect(client, entity)
                     }
                 }
             }
-            case GIFT_POS_LASER: {   // give laser sight
+            case GIFT_POS_LASER: {  // give laser sight
                 if (GetRandomInt(0, 2) == 0) {
                     // for all
                     PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x05team laser sight\x01.", client);
@@ -3241,8 +3251,9 @@ RANDOM_DoGiftEffect(client, entity)
     // give bonus points if event
     if (_:g_iSpecialEvent == EVT_BADSANTA)
     {
+        g_iBonusCount++;
         PBONUS_AddRoundBonus( EVENT_BADSANTA_BONUS );
-        PrintToChatAll("\x01[\x05r\x01] %N unwrapped a bad gift for \x04%i\x01 points.", client, EVENT_BADSANTA_BONUS);
+        PrintToChatAll("\x01[\x05r\x01] %N unwrapped a lousy gift for \x04%i\x01 points.", client, EVENT_BADSANTA_BONUS);
     }
 }
 
@@ -3278,11 +3289,11 @@ RandomizeFirstSpawns()
             // check if there already is a boomer/smoker, if so, replace it
             if (tmpPick == ZC_SMOKER) {
                 for (new j=0; j < i; j++) {
-                    if (g_iArStorageSpawns[j] == ZC_SMOKER) { tmpPick = ZC_HUNTER; }
+                    if (g_iArStorageSpawns[j] == ZC_SMOKER) { tmpPick = ZC_HUNTER; break; }
                 }
             } else if (tmpPick == ZC_BOOMER) {
                 for (new j=0; j < i; j++) {
-                    if (g_iArStorageSpawns[j] == ZC_BOOMER) { tmpPick = ZC_HUNTER; }
+                    if (g_iArStorageSpawns[j] == ZC_BOOMER) { tmpPick = ZC_HUNTER; break; }
                 }
             }
             g_iArStorageSpawns[i] = tmpPick;
@@ -3298,8 +3309,8 @@ RandomizeFirstSpawns()
         tmpPick = GetRandomInt( 0, g_iSpawnWeightedChoicesStartCappers - 1 );
         tmpPick = g_iArSpawnWeightedChoices[tmpPick];
         
-        if ( tmpPick == ZC_SMOKER) {
-            if (_:g_iSpecialEvent == EVT_L4D1) { tmpPick = ZC_BOOMER; } else { tmpPick = ZC_SPITTER; }
+        if ( tmpPick == ZC_SPITTER ) {
+            if (_:g_iSpecialEvent == EVT_L4D1) { tmpPick = ZC_BOOMER; }
         }
         g_iArStorageSpawns[0] = tmpPick;
     }
@@ -4197,7 +4208,10 @@ RANDOM_PrepareChoicesSpawns()
             if (i == ZC_BOOMER)         { count = 5; }
             else if (i == ZC_SPITTER)   { count = 2; }
             else                        { continue; }
-            
+        }
+        else if (_:g_iSpecialEvent == EVT_HORDE_NONE)
+        {
+            if (i == ZC_BOOMER)         { count -= 2; }
         }
         
         for (new j=0; j < count; j++)

@@ -87,6 +87,8 @@ const           MINITANKS_DAMAGE        = 20;           // minitanks punch does 
 const           MINITANKS_HITTABLE_DMG  = 50;           // how much damage hittables do for minitanks
 const           WEAK_HITTABLE_DMG       = 25;           // how much damage hittables do on 'weak hittables maps'
 
+const Float:    CSAW_TANK_DMG_FACTOR    = 0.33;         // factor by which to change chainsaws doing damage to tanks
+
 // item balance
 const Float:    ITEM_FACTOR_2V2         = 0.5;          // how many of the items available in #v# game
 const Float:    ITEM_FACTOR_3V3         = 0.75;
@@ -144,6 +146,7 @@ const Float:    EVENT_PROTECT_STRONG    = 0.75;         // EVT_PROTECT      fact
 const Float:    EVENT_PROTECT_CIWEAK    = 1.5;
 const Float:    EVENT_PROTECT_CISTRONG  = 0.5;
 const Float:    EVENT_BOOBYTRAP_CHANCE  = 0.1;          // EVT_BOOBYTRAP    odds that an item or door is boobytrapped
+const           EVENT_BOOBYTRAP_MIN     = 5;            //                  minimum amount of traps on a level
 const Float:    EVENT_SKEET_HUNTERS     = 0.8;          // EVT_SKEET        odds that a capping SI is a hunter
 const Float:    EVENT_FIREPOWER_AMMO    = 1.25;         // EVT_FIREPOWER    factor that ammo for T2 weapons is multiplied
 const Float:    EVENT_AMMO_PACKTIME     = 3.0;          // EVT_AMMO         time it takes to repack ammo
@@ -460,6 +463,8 @@ const           WEPID_ADREN             = 23;
 
 const           WITCHES_NIGHT           = 0;            // sv_force_time_of_day value
 const           WITCHES_DAY             = 3;
+
+const           DMGTYPE_CHAINSAW        = (1<<26);
 
 
 // structs, enums
