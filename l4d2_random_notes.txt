@@ -8,6 +8,11 @@ L4D2_Random
             in consideration
             ----------------
             - models-changer: survivors use infected models (test whether this works) and the other way around
+                - test possibilities
+                
+            - self-booming survivor: one survivor (special role) gets boomed automatically every minute
+                    no boomer players, slightly slower spawns
+            
             
             in doubt
             --------
@@ -33,12 +38,6 @@ L4D2_Random
             - low:      add !help function to get brief lines about what Random is + URL
                         - random items, random spawns, random special events, open gifts by holding USE
                         - URL to random website
-            
-            - low:      give a 'skeet' or 'level' hat to players who do so in non-special role rounds?
-                        or.. a dunce cap in penalty rounds for those who caused the most shit? meh.
-            
-            - low:      prevent double smoker in 2v2
-            - low:      make randbasic, without special events, only randomized items
             
             - low:      death-order odds-changer: while repicking, also take into account the odds of repicking another class we should be less likely to pick?
             - low:      tentative idea: - scavenge finales (33% chance): is this possible?

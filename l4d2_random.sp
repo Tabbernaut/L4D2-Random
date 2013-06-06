@@ -70,7 +70,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.28",
+    version = "1.0.29",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -140,7 +140,6 @@ public OnPluginStart()
     HookEvent("ability_use",                Event_AbilityUse,               EventHookMode_Post);
     HookEvent("lunge_pounce",               Event_LungePounce,              EventHookMode_Post);
     HookEvent("witch_killed",               Event_WitchDeath,               EventHookMode_Post);
-    
     
     // default convars
     g_hCvarTeamSize = FindConVar("survivor_limit");
@@ -1108,6 +1107,7 @@ public Action: OnTakeDamage_Witch(victim, &attacker, &inflictor, &Float:damage, 
     return Plugin_Changed;
 }
 
+/*      see note @ hooking car in random_support spawnalarmcar
 public Action: OnTakeDamage_AlarmedCar(victim, &attacker, &inflictor, &Float:damage, &damagetype)
 {
     // alarmed car gets punched
@@ -1115,16 +1115,7 @@ public Action: OnTakeDamage_AlarmedCar(victim, &attacker, &inflictor, &Float:dam
     
     //PrintToChatAll("attacker: %d - inflictor: %d - victim: %i", attacker, inflictor, victim);
     
-    if (IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_INFECTED && IsTank(attacker))
-    {
-        // find car number and kill the lights entities attached to it
-        for (new i=0; i < g_iStoredHittables; i++)
-        {
-            if (!g_strArHittableStorage[i][hitIsAlarmed] || g_strArHittableStorage[i][hitNumber] != victim || g_strArHittableStorage[i][hitAlarmOff]) { continue; }
-            DisableAlarmCar(i);
-        }
-    }
-    else if (attacker == inflictor) {
+    if (attacker == inflictor) {
         // check if one hittable collided with another
         new String: classname[32];
         GetEdictClassname(attacker, classname, sizeof(classname));
@@ -1141,6 +1132,7 @@ public Action: OnTakeDamage_AlarmedCar(victim, &attacker, &inflictor, &Float:dam
     
     return Plugin_Continue;
 }
+*/
 
 /*  Human tracking (join/etc)
     -------------------------- */

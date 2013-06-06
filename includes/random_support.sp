@@ -2815,6 +2815,12 @@ SpawnAlarmCar(index) {
     Format(tempString, 256, "%s,Enable,,0,-1", glassOffName);
     DispatchKeyValue(carEntity, "OnCarAlarmStart", tempString);
     
+    // this works for tank-car interaction
+    Format(tempString, 256, "%s,Kill,,0,-1", carLightsName);
+    DispatchKeyValue(carEntity, "OnHitByTank", tempString);
+    Format(tempString, 256, "%s,Kill,,0,-1", glassName);
+    DispatchKeyValue(carEntity, "OnHitByTank", tempString);
+    
     TeleportEntity(carEntity, itemOrigin, itemAngles, NULL_VECTOR);
     DispatchSpawn(carEntity);
     ActivateEntity(carEntity);
@@ -2921,9 +2927,11 @@ SpawnAlarmCar(index) {
         return;
     }
     
-    
-    // hook car entity for damage, so we can destroy its lights
-    SDKHook(carEntity, SDKHook_OnTakeDamage, OnTakeDamage_AlarmedCar);
+    /*
+        don't hook: leave alarms enabled on cars hitting other cars
+        // hook car entity for damage, so we can destroy its lights (when hit by another hittable)
+        //SDKHook(carEntity, SDKHook_OnTakeDamage, OnTakeDamage_AlarmedCar);
+    */
     
     // allow car moving
     CreateTimer(0.2, Timer_CarMove, carEntity, TIMER_FLAG_NO_MAPCHANGE);
@@ -3222,7 +3230,7 @@ CopyVector(const Float:original[3], Float:copy[3]) {
 }
 
 
-DisableAlarmCar(index) {
+/*  DisableAlarmCar(index) {
     g_strArHittableStorage[index][hitAlarmOff] = true;
     if (IsValidEntity(g_strArHittableStorage[index][hitGlassEntity]))   { AcceptEntityInput(g_strArHittableStorage[index][hitGlassEntity], "Kill"); }
     if (IsValidEntity(g_strArHittableStorage[index][hitLightEntity_a])) { AcceptEntityInput(g_strArHittableStorage[index][hitLightEntity_a], "Kill"); }
@@ -3232,7 +3240,7 @@ DisableAlarmCar(index) {
     if (IsValidEntity(g_strArHittableStorage[index][hitLightEntity_e])) { AcceptEntityInput(g_strArHittableStorage[index][hitLightEntity_e], "Kill"); }
     if (IsValidEntity(g_strArHittableStorage[index][hitLightEntity_f])) { AcceptEntityInput(g_strArHittableStorage[index][hitLightEntity_f], "Kill"); }
 }
-
+*/
 
 /*  L4D2 Hats plugin
     -------------------------- */

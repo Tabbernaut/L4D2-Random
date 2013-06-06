@@ -217,7 +217,6 @@ new     Handle:         g_hWitchSpawnTimer                                  = IN
 
 // Hats
 new                     g_iHatIndex[MAXPLAYERS+1];				// Player hat entity reference
-//new                     g_iSelected[MAXPLAYERS+1];				// The selected hat index (0 to MAX_HATS)
 new                     g_iType[MAXPLAYERS+1];					// Stores selected hat to give players.
 
 // RandomMapInfo keyvalues

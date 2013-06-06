@@ -2161,6 +2161,7 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
     new Float: itemOrigin[3], Float: itemAngles[3];
     new bool: itemCheckOrigin;
     new String: itemStorageMelee[MELEE_CLASS_LENGTH];
+    new bool: forceNonSolid = false;
     
     if (inArray) {
         // get data from index / storage array
@@ -2333,9 +2334,13 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
         }
         
         case PCK_JUNK: {
-            ent = CreateEntityByName("prop_physics");
+            ent = CreateEntityByName("prop_physics_override");
             DispatchKeyValue(ent, "model", g_csJunkModels[itemJunkIndex]);
-            DispatchKeyValue(ent, "Spawnflags", "256");                 // 4 .. might be useful to avoid blockades/abuse
+            /*
+                Solid:      SetEntData(entity, g_offsCollisionGroup, 5, 4, true);    
+                Not solid:  SetEntData(client, g_offsCollisionGroup, 2, 4, true);
+            */
+            if (itemJunkIndex >= JUNK_FIRSTNONSOLID) { forceNonSolid = true; }
             fPlaceHigher = 10.0;
             dontBlind = true;                                           // don't store for blindinfected
         }
@@ -2477,6 +2482,14 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
         
     }
     
+    // force it non-solid?
+    if (forceNonSolid) {
+        //SetEntData(ent, g_iOffsetCollisionGroup, COLLISION_GROUP_DEBRIS, 4, true);
+        //SetEntProp(ent, Prop_Data, "m_usSolidFlags", 152);
+        SetEntProp(ent, Prop_Data, "m_CollisionGroup", 1);
+        SetEntProp(ent, Prop_Data, "m_MoveCollide", 0);
+        //SetEntProp(ent, Prop_Data, "m_nSolidType", 6);
+    }
     
     // store entity number and reset pickup status
     if (inArray && index != -1) {
@@ -2498,7 +2511,6 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
         g_iArCreatedEntities[g_iCreatedEntities] = ent;
         g_iCreatedEntities++;
     }
-    
     
     // gnome/cola scoring support
     if (type == _:PCK_SILLY_GNOME || type == _:PCK_SILLY_COLA)
@@ -3302,6 +3314,21 @@ RandomizeFirstSpawns()
             }
             g_iArStorageSpawns[i] = tmpPick;
         }
+        else if (GetConVarInt(g_hCvarTeamSize) < 3) {
+            // no double smoker in 2v2
+            if (tmpPick == ZC_SMOKER) {
+                for (new j=0; j < i; j++) {
+                    if (g_iArStorageSpawns[j] == ZC_SMOKER) {
+                        switch (GetRandomInt(0,2)) {
+                            case 0: { tmpPick = ZC_HUNTER; }
+                            case 1: { tmpPick = ZC_JOCKEY; }
+                            case 2: { tmpPick = ZC_CHARGER; }
+                        }
+                        break;
+                    }
+                }
+            } 
+        }
         
         if (tmpPick == ZC_BOOMER || tmpPick == ZC_SPITTER) { tmpSupCount++; }
     }
@@ -3518,6 +3545,12 @@ DetermineSpawnClass(any:client, any:iClass)
         new boomers = CountInfectedClass(ZC_BOOMER, client);
         if (smokers) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_SMOKER); }
         if (boomers) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_BOOMER); }
+    }
+    // prevent double smoker in 2v2
+    else if (GetConVarInt(g_hCvarTeamSize) < 3) {
+        if (CountInfectedClass(ZC_SMOKER, client)) {
+            RemoveSpawnClass(acceptClasses, acceptCount, ZC_SMOKER);
+        }
     }
     
     // prevent unwanted picks!

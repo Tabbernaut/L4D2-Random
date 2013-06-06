@@ -704,16 +704,23 @@ new const String: g_csEventText[][] =
     "\x04Lousy Gifts\x01 - All gifts are bad! \x0420\x01 bonus for unwrapping anyway."
 };
 
+new const JUNK_FIRSTNONSOLID = 4;
 new const String: g_csJunkModels[][] =
 {
     "models/props_furniture/cafe_barstool1.mdl",
-    "models/props/cs_office/Fire_Extinguisher.mdl",
-    "models/props_fortifications/orange_cone001_reference.mdl",
-    "models/props_junk/metalbucket01a.mdl",
-    "models/props_urban/plastic_chair001.mdl",
-    "models/props_interiors/tv.mdl",
     "models/props_urban/shopping_cart001.mdl",
-    "models/props_urban/tire001.mdl"
+    "models/props_interiors/tv.mdl",
+    "models/props_urban/plastic_chair001.mdl",
+    "models/props_junk/metalbucket01a.mdl",                         // first nonsolid
+    "models/props_fortifications/orange_cone001_reference.mdl",
+    "models/props_urban/tire001.mdl",
+    //"models/props_junk/cinderblock01a.mdl",
+    //"models/props_junk/cardboard_box05.mdl",
+    //"models/props_interiors/teddy_bear.mdl",
+    //"models/props_fairgrounds/alligator.mdl",
+    //"models/props_fairgrounds/giraffe.mdl",
+    //"models/props_fairgrounds/elephant.mdl",
+    "models/props/cs_office/Fire_Extinguisher.mdl"
 };
 
 new const String: g_csHittableModels[][] =
@@ -822,7 +829,7 @@ new const String: g_csPreCacheModels[][] =
     //"models/w_models/weapons/50cal.mdl",
     
     // hats
-    "models/props_interiors/teddy_bear.mdl",
+    //"models/props_interiors/teddy_bear.mdl",
     "models/props_lighting/light_construction02.mdl",
     "models/props_fortifications/orange_cone001_clientside.mdl",    // not used, but precache for now anyway
     
