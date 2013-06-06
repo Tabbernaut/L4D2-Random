@@ -215,6 +215,11 @@ new     Handle:         g_hTimePenaltyTimer                                 = IN
 new                     g_iTimePenaltyCounter                               = 0;                    // counts seconds for the time penalty
 new     Handle:         g_hWitchSpawnTimer                                  = INVALID_HANDLE;       // crox's multiwitches
 
+// Hats
+new                     g_iHatIndex[MAXPLAYERS+1];				// Player hat entity reference
+//new                     g_iSelected[MAXPLAYERS+1];				// The selected hat index (0 to MAX_HATS)
+new                     g_iType[MAXPLAYERS+1];					// Stores selected hat to give players.
+
 // RandomMapInfo keyvalues
 new     Handle:         g_kRIData                                           = INVALID_HANDLE;       // keyvalues handle for randommapinfo.txt
 new     bool:           g_RI_bIsIntro                                       = false;                // only true for intro maps

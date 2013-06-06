@@ -357,6 +357,9 @@ const           SILENCED_SURV           = 0;            // silent survivors
 const           SILENCED_SI             = 1;
 const           SILENCED_CI             = 2;            // not sure if I want to use this
 
+const           HAT_BABY                = 0;            // g_csHatModels index
+const           HAT_KEYMASTER           = 1;
+
 
 // Third-party and mechanics configuration
 // ---------------------------------------
@@ -569,8 +572,17 @@ enum strHittableData                // everything required to recreate the hitta
     Float:  hitAngles_b,
     Float:  hitAngles_c,
     bool:   hitIsCar,
-    bool:   hitIsColored,              // if true, it also has rendercolors
+    bool:   hitIsColored,               // if true, it also has rendercolors
     bool:   hitIsAlarmed,
+    bool:   hitAlarmOff,                // if true, alarm has already been disabled
+            hitGlassEntity,             // all parts of the alarm car
+            hitGlassOffEntity,
+            hitLightEntity_a,
+            hitLightEntity_b,
+            hitLightEntity_c,
+            hitLightEntity_d,
+            hitLightEntity_e,
+            hitLightEntity_f,
             hitColor_r,
             hitColor_g,
             hitColor_b
@@ -750,6 +762,13 @@ new const String: g_csFemaleCommonModels[][] =
     "models/infected/common_female_tshirt_skirt.mdl"
 };
 
+new const String: g_csHatModels[][] =
+{
+    "models/props_interiors/teddy_bear.mdl",
+    "models/props_lighting/light_construction02.mdl",
+    "models/props_fortifications/orange_cone001_clientside.mdl"
+};
+
 new const String: g_csPreCacheModels[][] =
 {
     // Weapons / spawnables
@@ -801,6 +820,11 @@ new const String: g_csPreCacheModels[][] =
     
     //"models/w_models/weapons/w_minigun.mdl",
     //"models/w_models/weapons/50cal.mdl",
+    
+    // hats
+    "models/props_interiors/teddy_bear.mdl",
+    "models/props_lighting/light_construction02.mdl",
+    "models/props_fortifications/orange_cone001_clientside.mdl",    // not used, but precache for now anyway
     
     // boomette
     "models/infected/boomette.mdl",

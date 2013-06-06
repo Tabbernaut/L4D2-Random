@@ -128,7 +128,7 @@ DoInsightReport(team=-1)
     if (g_bWitchWillSpawn)
     {
         if (g_bMultiWitch && g_iWitchNum > 1) {
-            Format(sReport[iLine], REPLINELENGTH, "There are \x05%d\x01 witches this round. The first is at \x05%d%%\x01, the last at \x05%d%%\x01.", RoundFloat(100.0 * g_fArWitchFlows[0]), RoundFloat(100.0 * g_fArWitchFlows[ g_iWitchNum - 1 ] ) );
+            Format(sReport[iLine], REPLINELENGTH, "There are \x05%d\x01 witches this round. The first is at \x05%d%%\x01, the last at \x05%d%%\x01.", g_iWitchNum, RoundFloat(100.0 * g_fArWitchFlows[0]), RoundFloat(100.0 * g_fArWitchFlows[ g_iWitchNum - 1 ] ) );
         } else {
             Format(sReport[iLine], REPLINELENGTH, "There is a witch this round, at \x05%d%%\x01.", RoundFloat(100.0 * L4D2Direct_GetVSWitchFlowPercent( (g_bSecondHalf) ? 1 : 0 ) ) );
         }
@@ -905,7 +905,7 @@ RANDOM_DetermineRandomStuff()
     // randomize witches standing/sitting (time of day)
     if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
     {
-        if ((g_bMultiWitch && g_bArWitchSitting[0] == false) || GetRandomInt(0, 2) == 0)
+        if ((g_bMultiWitch && g_bArWitchSitting[0] == false) || GetRandomInt(0, 3) == 0)
         { 
             SetConVarInt(FindConVar("sv_force_time_of_day"), WITCHES_DAY);
         } else {
@@ -981,6 +981,7 @@ RandomizeItems()
                     g_strArHittableStorage[curHit][hitIsCar] = false;
                     g_strArHittableStorage[curHit][hitIsColored] = false;
                     g_strArHittableStorage[curHit][hitIsAlarmed] = false;
+                    g_strArHittableStorage[curHit][hitAlarmOff] = false;
                     
                     decl Float: horigin[3];
                     decl Float: hangles[3];
@@ -2965,6 +2966,9 @@ RANDOM_DoGiftEffect(client, entity)
     GetEntPropVector(entity, Prop_Send, "m_vecOrigin", targetPos);
     
     
+    // test: crashing
+    //PrintDebug("pre crash: gift: %N (%i) - gift: %i", client, client, entity);
+    
     // gift is being used
     //PrintDebug("[rand] Gift used: %i", entity);
     
@@ -3315,7 +3319,6 @@ RandomizeFirstSpawns()
         g_iArStorageSpawns[0] = tmpPick;
     }
 
-    
     PrintDebug("[rand] Picked four classes for first attack (%s, %s, %s, %s).",
             g_csSIClassName[g_iArStorageSpawns[0]],
             g_csSIClassName[g_iArStorageSpawns[1]],
@@ -3327,7 +3330,7 @@ RandomizeFirstSpawns()
 DetermineSpawnClass(any:client, any:iClass)
 {
     // pick a desired class, dependent on Cvar settings
-    if (iClass < ZC_SMOKER || iClass > ZC_CHARGER || !IsClientAndInGame(client) || IsTank(client)) { return; }
+    if ( /*iClass < ZC_SMOKER || iClass > ZC_CHARGER || */ !IsClientAndInGame(client) || IsTank(client)) { return; }
     
     // player is given a ghost class, keep track (for sack-exploitation check)
     if (!IsFakeClient(client))
@@ -3342,14 +3345,14 @@ DetermineSpawnClass(any:client, any:iClass)
     //new valveClass = iClass;
     //PrintDebug("[random spawns] valve ghost pick (%N = %i)", client, valveClass);
     
-    if (g_bIsFirstAttack)
+    if (g_bIsFirstAttack && !IsFakeClient(client))
     {
         // build first attack
         iClass = GetClassForFirstAttack(client);
         forcedClass = true;
-        //PrintDebug("[rand si] first attack spawn. (%N = %i)", client, iClass);
+        PrintDebug("[rand si] first attack spawn assigned: %N => %s", client, g_csSIClassName[iClass]);
     }
-    else if (g_iSpectateGhostCount)
+    else if (g_iSpectateGhostCount && !IsFakeClient(client))
     {
         // someone spectated as a ghost, use the SI they left
         g_iSpectateGhostCount--;
@@ -3417,7 +3420,7 @@ DetermineSpawnClass(any:client, any:iClass)
         }
     }
     
-    if (g_bIsTankInPlay && iClass == ZC_SPITTER && GetConVarBool(g_hCvarNoSpitterDuringTank))
+    if (!forcedClass && g_bIsTankInPlay && iClass == ZC_SPITTER && GetConVarBool(g_hCvarNoSpitterDuringTank))
     {
         // either boomer, or cappers
         //  this is just a prepick - still need to check if accepted below
@@ -3430,7 +3433,7 @@ DetermineSpawnClass(any:client, any:iClass)
     }
     
     // sack protection
-    if (checkSacking && GetConVarBool(g_hCvarSackProtection))
+    if (!forcedClass && checkSacking && GetConVarBool(g_hCvarSackProtection))
     {
         // check if anyone is keeping a spawn
         new Float: fSackTime = GetConVarFloat(FindConVar("z_ghost_delay_min")) - 0.1;
@@ -3445,10 +3448,10 @@ DetermineSpawnClass(any:client, any:iClass)
             {
                 classType = GetEntProp(i, Prop_Send, "m_zombieClass");
                 
-                //  for two or more saves... worry about the worst (charger)
+                //  for two or more saves... worry only about the best spawns (charger, smoker (hunter for events))
                 if (classType == ZC_CHARGER && bestSaved != ZC_CHARGER) { bestSaved = ZC_CHARGER; offendingClient = i; }
-                else if (classType == ZC_HUNTER && bestSaved != ZC_CHARGER) { bestSaved = ZC_HUNTER; offendingClient = i; }
-                else if (classType == ZC_SMOKER && bestSaved != ZC_HUNTER && bestSaved != ZC_CHARGER) { bestSaved = ZC_SMOKER; offendingClient = i; }
+                else if (classType == ZC_SMOKER && bestSaved != ZC_CHARGER) { bestSaved = ZC_SMOKER; offendingClient = i; }
+                else if (classType == ZC_HUNTER && bestSaved != ZC_SMOKER && bestSaved != ZC_CHARGER) { bestSaved = ZC_HUNTER; offendingClient = i; }
             }
         }
         
@@ -3483,6 +3486,7 @@ DetermineSpawnClass(any:client, any:iClass)
             
             // reporting?
             if (GetGameTime() - g_fLastOffence[offendingClient] > SACKPROT_OFFENCE_GRACE) {
+                g_fLastOffence[offendingClient] = GetGameTime();
                 g_iOffences[offendingClient]++;
             }
             
@@ -3503,7 +3507,7 @@ DetermineSpawnClass(any:client, any:iClass)
                     PrintToChat(offendingClient, "\x01[\x05r\x01] Holding onto spawns makes your team get less chargers and no quad-caps. (try to attack together)");
                 }
             }
-            PrintDebug("[rand si] sack protection: %N given not given class %s (punishment for %N keeping class %s). [offenses: %i]", client, g_csSIClassName[iClass], offendingClient, g_csSIClassName[bestSaved], g_iOffences[offendingClient]);
+            PrintDebug("[rand si] sack protection: %N (potentially) not given class %s (punishment for %N keeping class %s). [offenses: %i]", client, g_csSIClassName[iClass], offendingClient, g_csSIClassName[bestSaved], g_iOffences[offendingClient]);
         }
     }
     
@@ -3520,10 +3524,9 @@ DetermineSpawnClass(any:client, any:iClass)
     //  if (for whatever reason) a class is not accepted, repick
     if (!forcedClass && !IsAcceptedClass(acceptClasses, acceptCount, iClass))
     {
-        PrintDebug("[rand] spawn repick for %N: accepted picks (%s not accepted):", client, g_csSIClassName[iClass]);
-        for (new i=0; i < acceptCount; i++) { PrintDebug("  --> %s", g_csSIClassName[ acceptClasses[i] ] ); }
-        
+        new oldClass = iClass;
         iClass = acceptClasses[ GetRandomInt(0, acceptCount - 1) ];
+        PrintDebug("[rand si] spawn repick for %N: %s => %s instead.", client, g_csSIClassName[oldClass], g_csSIClassName[iClass]);
     }
     
     

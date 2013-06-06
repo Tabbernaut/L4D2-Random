@@ -7,6 +7,7 @@ L4D2_Random
             
             in consideration
             ----------------
+            - models-changer: survivors use infected models (test whether this works) and the other way around
             
             in doubt
             --------
@@ -26,27 +27,33 @@ L4D2_Random
             
     to-do:
     ------  
-            - test:     first attacks are not equal anymore?
-            - bugfix:   gift result double announce, 1 effect.. (survivor insight..) [DA3] ?    keep eye on
+            - bugfix:   first attacks are not equal anymore?
+                        - do debug sessions (debug print added)
             
             - low:      add !help function to get brief lines about what Random is + URL
+                        - random items, random spawns, random special events, open gifts by holding USE
+                        - URL to random website
             
-            - low: death-order odds-changer: while repicking, also take into account the odds of repicking another class we should be less likely to pick?
+            - low:      give a 'skeet' or 'level' hat to players who do so in non-special role rounds?
+                        or.. a dunce cap in penalty rounds for those who caused the most shit? meh.
             
+            - low:      prevent double smoker in 2v2
+            - low:      make randbasic, without special events, only randomized items
+            
+            - low:      death-order odds-changer: while repicking, also take into account the odds of repicking another class we should be less likely to pick?
             - low:      tentative idea: - scavenge finales (33% chance): is this possible?
             - low:      test and include stabby's random map stuff so people can launch random campaigns after loading random
             
-            - superlow: prevent two ammo piles spawning too close to eachother?
-            - superlow: team randomizer function (!randteams) (use all players currently in teams, or include specs if less than required team size)
-            - superlow: random team going first per round in versus. how? possible? worth the effort? no.
-            
             - gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
-            - later:    email Chet, see if he likes it... give him site url too.
+            - later:    email Chet, see if maybe he likes Random at all...
             
     minor cleanup / details
     -----------------------
-            - nitpick:  alarmed cars: remove their alarms if they get punched by tanks / blown away by explosions - note: the alarm is off, its just an aesthetic thing
-            - nitpick:  dark carnival 1 gas cans are not randomized..
+            - superlow: team randomizer function (!randteams) (use all players currently in teams, or include specs if less than required team size)
+            - superlow: random team going first per round in versus. how? possible? worth the effort? no.
+            - nitpick:  can't see the special role's hat when he's ledged..
+            - nitpick:  prevent two ammo piles spawning too close to eachother?
+            - nitpick:  dark carnival 1 gas cans are not randomized.. (they're a point template, I guess)
             - nitpick:  gunswap event: survivors don't start with same weapons
             - glitch:   c10m3 is seen as 'a finale' (check separately?)
             - reminder: remove sm_voc / sm_voc_this commands for final version

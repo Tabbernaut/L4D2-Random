@@ -43,7 +43,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     g_bIsPaused = false;
     g_fPauseAttemptTime = 0.0;
     
-    g_bIsFirstAttack = true;
+    g_bIsFirstAttack = true;            // set in mapend / roundend... overkill but safeguard
     g_bPlayersLeftStart = false;
     g_bFirstReportDone = false;
     g_iSpectateGhostCount = 0;
@@ -63,6 +63,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     ClearArray(g_hBlockedEntities);     // clear blind infected entities
     ClearBoomerTracking();              // clear arrays for tracking boomer combo's
     ResetGnomes();                      // clear gnome tracking array for bonus scoring
+    HatsRemoveAll();                    // remove hats (set them with EVENT_RoundStartPrep)
     
     // timer cleanup
     //if (g_hTimePenaltyTimer != INVALID_HANDLE) { KillTimer(g_hTimePenaltyTimer); }
@@ -774,7 +775,17 @@ public Action: Timer_CheckSpecialEventRole(Handle:timer, any:pack)
     //  must change if the role is nonexistant, not a survivor, dead or a bot
     if (_:g_iSpecialEvent == EVT_KEYMASTER || _:g_iSpecialEvent == EVT_PROTECT)
     {
-        if ( !IsSurvivor(g_iSpecialEventRole) || !IsPlayerAlive(g_iSpecialEventRole) || IsFakeClient(g_iSpecialEventRole) ) {
+        // are there any humans in the survivor team?
+        new bool: bNoHumanSurvivors = true;
+        for (new i=1; i <= MaxClients; i++) {
+            if (IsSurvivor(i) && !IsFakeClient(i) && IsPlayerAlive(i)) { 
+                bNoHumanSurvivors = false;
+                break;
+            }
+        }
+        
+        // force new role if the current role's survivor is missing, dead or a bot when there's humans available:
+        if ( !IsSurvivor(g_iSpecialEventRole) || !IsPlayerAlive(g_iSpecialEventRole) || ( IsFakeClient(g_iSpecialEventRole) && !bNoHumanSurvivors ) ) {
             g_iSpecialEventRole = 0;
         }
         
@@ -818,6 +829,9 @@ public Action: Timer_CheckSpecialEventRole(Handle:timer, any:pack)
 
 EVENT_PickSpecialEventRole(notClient=-1, bool:notLeftStart=false)
 {
+    // remove hats
+    HatsRemoveAll();
+    
     // survivors
     new count = 0;
     new survivors[TEAM_SIZE];
@@ -849,6 +863,11 @@ EVENT_PickSpecialEventRole(notClient=-1, bool:notLeftStart=false)
     new pick = GetRandomInt(0, count-1);
     
     g_iSpecialEventRole = survivors[pick];
+    
+    // give correct hat to picked survivor
+    new hatType = HAT_BABY;
+    if (_:g_iSpecialEvent == EVT_KEYMASTER) { hatType = HAT_KEYMASTER; }
+    CreateHat(g_iSpecialEventRole, hatType);
     
     // report if it's after the saferoom exit (notLeftStart is for timer calls)
     if (!notLeftStart && g_bPlayersLeftStart) {
@@ -2706,22 +2725,21 @@ Float:MULTIWITCH_GetMaxSurvivorCompletion()
 /*  Alarmed car
     -------------------------- */
 
-#define ALARMCAR_MODEL         "models/props_vehicles/cara_95sedan.mdl"
-#define ALARMCAR_GLASS        "models/props_vehicles/cara_95sedan_glass_alarm.mdl"
-#define ALARMCAR_GLASS_OFF    "models/props_vehicles/cara_95sedan_glass.mdl"
+#define ALARMCAR_MODEL      "models/props_vehicles/cara_95sedan.mdl"
+#define ALARMCAR_GLASS      "models/props_vehicles/cara_95sedan_glass_alarm.mdl"
+#define ALARMCAR_GLASS_OFF  "models/props_vehicles/cara_95sedan_glass.mdl"
 #define COLOR_REDCAR        "222 92 86"
-#define COLOR_REDLIGHT        "255 13 19"
+#define COLOR_REDLIGHT      "255 13 19"
 #define COLOR_WHITELIGHT    "252 243 226"
-#define COLOR_YELLOWLIGHT    "224 162 44"
-#define DISTANCE_BACK        103.0
-#define DISTANCE_FRONT        101.0
-#define DISTANCE_SIDE        27.0
-#define DISTANCE_SIDETURN    34.0
-#define DISTANCE_UPBACK        31.0
+#define COLOR_YELLOWLIGHT   "224 162 44"
+#define DISTANCE_BACK       103.0
+#define DISTANCE_FRONT      101.0
+#define DISTANCE_SIDE       27.0
+#define DISTANCE_SIDETURN   34.0
+#define DISTANCE_UPBACK     31.0
 #define DISTANCE_UPFRONT    29.0
 
-SpawnAlarmCar(index)
-{
+SpawnAlarmCar(index) {
     // init
     new carEntity, glassEntity, glassOffEntity, alarmTimer, chirpSound, alarmSound;
     new carLights[6], gameEventInfo;
@@ -2755,6 +2773,17 @@ SpawnAlarmCar(index)
     if (carEntity == -1) {
         return;
     }
+    
+    // update entity number in array
+    g_strArHittableStorage[index][hitNumber] = carEntity;
+    g_strArHittableStorage[index][hitGlassEntity] = -1;
+    g_strArHittableStorage[index][hitGlassOffEntity] = -1;
+    g_strArHittableStorage[index][hitLightEntity_a] = -1;
+    g_strArHittableStorage[index][hitLightEntity_b] = -1;
+    g_strArHittableStorage[index][hitLightEntity_c] = -1;
+    g_strArHittableStorage[index][hitLightEntity_d] = -1;
+    g_strArHittableStorage[index][hitLightEntity_e] = -1;
+    g_strArHittableStorage[index][hitLightEntity_f] = -1;
     
     DispatchKeyValue(carEntity, "targetname", carName);
     DispatchKeyValue(carEntity, "model", ALARMCAR_MODEL);
@@ -2807,6 +2836,10 @@ SpawnAlarmCar(index)
         return;
     }
     
+    // update entity number in array
+    g_strArHittableStorage[index][hitGlassEntity] = glassEntity;
+    g_strArHittableStorage[index][hitGlassOffEntity] = glassOffEntity;
+    
     // create alarm timer`
     alarmTimer = CreateEntityByName("logic_timer");    
     if (alarmTimer == -1) {
@@ -2858,7 +2891,7 @@ SpawnAlarmCar(index)
     
     // create lights
     new Float:distances[9] = {DISTANCE_FRONT, DISTANCE_SIDETURN, DISTANCE_UPFRONT, DISTANCE_BACK, DISTANCE_SIDE, DISTANCE_UPBACK, DISTANCE_FRONT, DISTANCE_SIDE, DISTANCE_UPFRONT};
-    CreateLights(carLights, itemOrigin, itemAngles, distances, carLightsName, carHeadLightsName, carName);
+    CreateLights(index, carLights, itemOrigin, itemAngles, distances, carLightsName, carHeadLightsName, carName);
 
     // check entities
     decl String:entityName[16];
@@ -2887,6 +2920,10 @@ SpawnAlarmCar(index)
         PrintDebug("[rand] car alarm problem: could not create %s entity!", entityName);
         return;
     }
+    
+    
+    // hook car entity for damage, so we can destroy its lights
+    SDKHook(carEntity, SDKHook_OnTakeDamage, OnTakeDamage_AlarmedCar);
     
     // allow car moving
     CreateTimer(0.2, Timer_CarMove, carEntity, TIMER_FLAG_NO_MAPCHANGE);
@@ -3005,7 +3042,7 @@ CreateCarSound(const Float:entityPosition[3], const String:targetName[], const S
     return soundEntity;
 }
 
-CreateLights(carLights[6], const Float:position[3], const Float:angle[3], const Float:distance[9], const String:lightName[], const String:headLightName[], const String:carName[]) {
+CreateLights(index, carLights[6], const Float:position[3], const Float:angle[3], const Float:distance[9], const String:lightName[], const String:headLightName[], const String:carName[]) {
     decl Float:lightPosition[3], Float:lightDistance[3];
     
     CopyVector(position, lightPosition);
@@ -3043,7 +3080,15 @@ CreateLights(carLights[6], const Float:position[3], const Float:angle[3], const 
     CopyVector(position, lightPosition);
     lightDistance[1] = distance[7];
     MoveVectorPosition3D(lightPosition, angle, lightDistance); // front right
-    carLights[5] = CreateCarHeadLight(lightPosition, angle, headLightName, carName);    
+    carLights[5] = CreateCarHeadLight(lightPosition, angle, headLightName, carName);
+    
+    // update entity numbers in array
+    g_strArHittableStorage[index][hitLightEntity_a] = carLights[0];
+    g_strArHittableStorage[index][hitLightEntity_b] = carLights[1];
+    g_strArHittableStorage[index][hitLightEntity_c] = carLights[2];
+    g_strArHittableStorage[index][hitLightEntity_d] = carLights[3];
+    g_strArHittableStorage[index][hitLightEntity_e] = carLights[4];
+    g_strArHittableStorage[index][hitLightEntity_f] = carLights[5];
 }
 CreateCarLight(const Float:entityPosition[3], const String:targetName[], const String:parentName[], const String:renderColor[]) {
     new lightEntity = CreateEntityByName("env_sprite");
@@ -3109,71 +3154,164 @@ public Action:Timer_CarMove(Handle:timer, any:carEntity) {
 }
 
 stock KillEntity(const entity) {
-	if (entity < 1) return;
-	if (!IsValidEntity(entity)) return;
-	if (AcceptEntityInput(entity, "Kill")) return;
-	
-	RemoveEdict(entity);
+    if (entity < 1) return;
+    if (!IsValidEntity(entity)) return;
+    if (AcceptEntityInput(entity, "Kill")) return;
+    
+    RemoveEdict(entity);
 }
 
 MoveVectorPosition3D(Float:position[3], const Float:constAngles[3], const Float:constDistance[3]) {
-	decl Float:angle[3], Float:dirFw[3], Float:dirRi[3], Float:dirUp[3], Float:distance[3];
-	CopyVector(constDistance, distance);
-	
-	angle[0] = DegToRad(constAngles[0]);
-	angle[1] = DegToRad(constAngles[1]);
-	angle[2] = DegToRad(constAngles[2]);	
-	
-	// roll (rotation over x)
-	dirFw[0] = 1.0;
-	dirFw[1] = 0.0;
-	dirFw[2] = 0.0;
-	dirRi[0] = 0.0;
-	dirRi[1] = Cosine(angle[2]);
-	dirRi[2] = Sine(angle[2])*-1;
-	dirUp[0] = 0.0;
-	dirUp[1] = Sine(angle[2]);
-	dirUp[2] = Cosine(angle[2]);
-	MatrixMulti(dirFw, dirRi, dirUp, distance);
-	
-	// pitch (rotation over y)
-	dirFw[0] = Cosine(angle[0]);
-	dirFw[1] = 0.0;
-	dirFw[2] = Sine(angle[0]);
-	dirRi[0] = 0.0;
-	dirRi[1] = 1.0;
-	dirRi[2] = 0.0;
-	dirUp[0] = Sine(angle[0])*-1;
-	dirUp[1] = 0.0;
-	dirUp[2] = Cosine(angle[0]);
-	MatrixMulti(dirFw, dirRi, dirUp, distance);
+    decl Float:angle[3], Float:dirFw[3], Float:dirRi[3], Float:dirUp[3], Float:distance[3];
+    CopyVector(constDistance, distance);
+    
+    angle[0] = DegToRad(constAngles[0]);
+    angle[1] = DegToRad(constAngles[1]);
+    angle[2] = DegToRad(constAngles[2]);    
+    
+    // roll (rotation over x)
+    dirFw[0] = 1.0;
+    dirFw[1] = 0.0;
+    dirFw[2] = 0.0;
+    dirRi[0] = 0.0;
+    dirRi[1] = Cosine(angle[2]);
+    dirRi[2] = Sine(angle[2])*-1;
+    dirUp[0] = 0.0;
+    dirUp[1] = Sine(angle[2]);
+    dirUp[2] = Cosine(angle[2]);
+    MatrixMulti(dirFw, dirRi, dirUp, distance);
+    
+    // pitch (rotation over y)
+    dirFw[0] = Cosine(angle[0]);
+    dirFw[1] = 0.0;
+    dirFw[2] = Sine(angle[0]);
+    dirRi[0] = 0.0;
+    dirRi[1] = 1.0;
+    dirRi[2] = 0.0;
+    dirUp[0] = Sine(angle[0])*-1;
+    dirUp[1] = 0.0;
+    dirUp[2] = Cosine(angle[0]);
+    MatrixMulti(dirFw, dirRi, dirUp, distance);
 
-	// yaw (rotation over z)
-	dirFw[0] = Cosine(angle[1]);
-	dirFw[1] = Sine(angle[1])*-1;
-	dirFw[2] = 0.0;
-	dirRi[0] = Sine(angle[1]);
-	dirRi[1] = Cosine(angle[1]);
-	dirRi[2] = 0.0;
-	dirUp[0] = 0.0;
-	dirUp[1] = 0.0;
-	dirUp[2] = 1.0;
-	MatrixMulti(dirFw, dirRi, dirUp, distance);
-	
-	// addition
-	for (new i = 0; i < 3; i++) position[i] += distance[i];
+    // yaw (rotation over z)
+    dirFw[0] = Cosine(angle[1]);
+    dirFw[1] = Sine(angle[1])*-1;
+    dirFw[2] = 0.0;
+    dirRi[0] = Sine(angle[1]);
+    dirRi[1] = Cosine(angle[1]);
+    dirRi[2] = 0.0;
+    dirUp[0] = 0.0;
+    dirUp[1] = 0.0;
+    dirUp[2] = 1.0;
+    MatrixMulti(dirFw, dirRi, dirUp, distance);
+    
+    // addition
+    for (new i = 0; i < 3; i++) position[i] += distance[i];
 }
 
 MatrixMulti(const Float:matA[3], const Float:matB[3], const Float:matC[3], Float:vec[3]) {
-	new Float:res[3];
-	for (new i = 0; i < 3; i++) res[0] += matA[i]*vec[i];
-	for (new i = 0; i < 3; i++) res[1] += matB[i]*vec[i];
-	for (new i = 0; i < 3; i++) res[2] += matC[i]*vec[i];	
-	CopyVector(res, vec);
+    new Float:res[3];
+    for (new i = 0; i < 3; i++) res[0] += matA[i]*vec[i];
+    for (new i = 0; i < 3; i++) res[1] += matB[i]*vec[i];
+    for (new i = 0; i < 3; i++) res[2] += matC[i]*vec[i];    
+    CopyVector(res, vec);
 }
 
 CopyVector(const Float:original[3], Float:copy[3]) {
-	for (new i = 0; i < 3; i++) copy[i] = original[i];
+    for (new i = 0; i < 3; i++) copy[i] = original[i];
+}
+
+
+DisableAlarmCar(index) {
+    g_strArHittableStorage[index][hitAlarmOff] = true;
+    if (IsValidEntity(g_strArHittableStorage[index][hitGlassEntity]))   { AcceptEntityInput(g_strArHittableStorage[index][hitGlassEntity], "Kill"); }
+    if (IsValidEntity(g_strArHittableStorage[index][hitLightEntity_a])) { AcceptEntityInput(g_strArHittableStorage[index][hitLightEntity_a], "Kill"); }
+    if (IsValidEntity(g_strArHittableStorage[index][hitLightEntity_b])) { AcceptEntityInput(g_strArHittableStorage[index][hitLightEntity_b], "Kill"); }
+    if (IsValidEntity(g_strArHittableStorage[index][hitLightEntity_c])) { AcceptEntityInput(g_strArHittableStorage[index][hitLightEntity_c], "Kill"); }
+    if (IsValidEntity(g_strArHittableStorage[index][hitLightEntity_d])) { AcceptEntityInput(g_strArHittableStorage[index][hitLightEntity_d], "Kill"); }
+    if (IsValidEntity(g_strArHittableStorage[index][hitLightEntity_e])) { AcceptEntityInput(g_strArHittableStorage[index][hitLightEntity_e], "Kill"); }
+    if (IsValidEntity(g_strArHittableStorage[index][hitLightEntity_f])) { AcceptEntityInput(g_strArHittableStorage[index][hitLightEntity_f], "Kill"); }
+}
+
+
+/*  L4D2 Hats plugin
+    -------------------------- */
+RemoveHat(client) {
+    new entity = g_iHatIndex[client];
+    g_iHatIndex[client] = 0;
+    if( IsValidEntRef(entity) ) { AcceptEntityInput(entity, "kill"); }
+}
+CreateHat(client, index = -1) {
+    if( IsValidEntRef(g_iHatIndex[client]) == true || IsValidClient(client) == false ) { return false; }
+    
+    g_iType[client] = index + 1;
+
+    new Float: vPos[3], Float: vAng[3];
+    
+    switch (index)
+    {
+        case HAT_BABY: {
+            // traffic cone
+            //vPos[0] = -3.0; vPos[1] = 0.0; vPos[2] = 1.0;
+            //vAng[0] = 0.0; vAng[1] = 60.0; vAng[2] = -40.0;
+            // teddy bear
+            vPos[0] = -10.0; vPos[1] = 0.0; vPos[2] = 8.0;
+            vAng[0] = -10.0; vAng[1] = 0.0; vAng[2] = 0.0;
+        }
+        case HAT_KEYMASTER: {
+            // construction light
+            vPos[0] = -7.0; vPos[1] = 0.0; vPos[2] = 9.0;
+            vAng[0] = -200.0; vAng[1] = 0.0; vAng[2] = 0.0;
+        }
+    }
+    
+    new entity = CreateEntityByName("prop_dynamic_override");
+    if (entity != -1)
+    {
+        SetEntityModel(entity, g_csHatModels[index]);
+        DispatchSpawn(entity);
+        //SetEntPropFloat(entity, Prop_Send, "m_flModelScale", g_fSize[index]);
+
+        SetVariantString("!activator");
+        AcceptEntityInput(entity, "SetParent", client);
+        SetVariantString("eyes");
+        AcceptEntityInput(entity, "SetParentAttachment");
+        TeleportEntity(entity, vPos, vAng, NULL_VECTOR);
+        SetEntProp(entity, Prop_Data, "m_iEFlags", 0);
+
+        /*if( g_iCvarOpaq )
+        {
+            SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
+            SetEntityRenderColor(entity, 255, 255, 255, g_iCvarOpaq);
+        }*/
+
+        //g_iSelected[client] = index;
+        g_iHatIndex[client] = EntIndexToEntRef(entity);
+        
+        SDKHook(entity, SDKHook_SetTransmit, Hat_Hook_SetTransmit);
+
+        return true;
+    }
+
+    return false;
+}
+
+HatsRemoveAll() {   
+    for (new i=1; i <= MaxClients; i++)
+    {
+        RemoveHat(i);
+    }
+}
+
+bool:IsValidClient(client) {
+    if( client && IsClientAndInGame(client) && GetClientTeam(client) == TEAM_SURVIVOR && IsPlayerAlive(client) )
+        return true;
+    return false;
+}
+bool:IsValidEntRef(entity) {
+	if( entity && EntRefToEntIndex(entity) != INVALID_ENT_REFERENCE )
+		return true;
+	return false;
 }
 
 

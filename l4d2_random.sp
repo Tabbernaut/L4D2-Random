@@ -70,7 +70,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.27",
+    version = "1.0.28",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -391,6 +391,8 @@ public OnPluginEnd()
     
     // storm plugin
     SUPPORT_StormReset();
+
+    HatsRemoveAll();
 }
 
 
@@ -475,7 +477,11 @@ public Action: TestGnomes_Cmd(client, args)
     
     if (args)
     {
-        L4D2Direct_DoAnimationEvent(setclient, event);
+        //L4D2Direct_DoAnimationEvent(setclient, event);
+        
+        // hat test
+        CreateHat(setclient, event);
+        
         return Plugin_Handled;
     }
     
@@ -486,6 +492,9 @@ public Action: TestGnomes_Cmd(client, args)
     //SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 0.0);
     //SetEntityHealth(client, 100);
     //SetEntProp(client, Prop_Send, "m_bIsOnThirdStrike", 1);
+    
+
+    
     
     
     // test: are we in saferoom?
@@ -825,6 +834,14 @@ public Action:OnTransmit(entity, client)
     return Plugin_Continue;
 }
 
+// for making hats invisible to wearer
+public Action:Hat_Hook_SetTransmit(entity, client)
+{
+	if( EntIndexToEntRef(entity) == g_iHatIndex[client] )
+		return Plugin_Handled;
+	return Plugin_Continue;
+}
+    
 // for detecting when a player uses a gift box:
 public Action:OnPlayerRunCmd(client, &buttons)
 {
@@ -1090,7 +1107,41 @@ public Action: OnTakeDamage_Witch(victim, &attacker, &inflictor, &Float:damage, 
     damage = EVENT_WOMEN_MELEEDMG;
     return Plugin_Changed;
 }
+
+public Action: OnTakeDamage_AlarmedCar(victim, &attacker, &inflictor, &Float:damage, &damagetype)
+{
+    // alarmed car gets punched
+    if (!IsValidEntity(victim) || !IsValidEntity(attacker)) { return Plugin_Continue; }
     
+    //PrintToChatAll("attacker: %d - inflictor: %d - victim: %i", attacker, inflictor, victim);
+    
+    if (IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_INFECTED && IsTank(attacker))
+    {
+        // find car number and kill the lights entities attached to it
+        for (new i=0; i < g_iStoredHittables; i++)
+        {
+            if (!g_strArHittableStorage[i][hitIsAlarmed] || g_strArHittableStorage[i][hitNumber] != victim || g_strArHittableStorage[i][hitAlarmOff]) { continue; }
+            DisableAlarmCar(i);
+        }
+    }
+    else if (attacker == inflictor) {
+        // check if one hittable collided with another
+        new String: classname[32];
+        GetEdictClassname(attacker, classname, sizeof(classname));
+        
+        if (StrEqual(classname, "prop_physics", false) || StrEqual(classname, "prop_car_alarm", false))
+        {
+            for (new i=0; i < g_iStoredHittables; i++)
+            {
+                if (!g_strArHittableStorage[i][hitIsAlarmed] || g_strArHittableStorage[i][hitNumber] != victim || g_strArHittableStorage[i][hitAlarmOff]) { continue; }
+                DisableAlarmCar(i);
+            }
+        }
+    }
+    
+    return Plugin_Continue;
+}
+
 /*  Human tracking (join/etc)
     -------------------------- */
 
@@ -1247,7 +1298,7 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
             remember and reset when a player returns
             no need to remember if it's still first attack (that's handled)
         */
-        if (!g_bIsFirstAttack && g_bHasGhost[client]) {
+        if (!g_bIsFirstAttack && !IsFakeClient(client) && g_bHasGhost[client]) {
             new tmpClass = GetEntProp(client, Prop_Send, "m_zombieClass");
             if (tmpClass >= ZC_SMOKER && tmpClass <= ZC_CHARGER)
             {
@@ -1767,11 +1818,11 @@ public Action:Timer_CheckPlayerUsing(Handle:timer, any:pack)
         {
             if (GetGameTime() - g_fProgressTime[client] > EVENT_AMMO_PACKTIME)
             {
+                EVENT_RepackAmmo(client, g_iDeployedAmmo);  // could use entity here.. see if we can remove iDeployedAmmo?
                 g_bShowedProgressHint = false;
                 g_iClientUsing[client] = 0;
                 CloseHandle(pack);
                 EndSurvivorAnim(client);
-                EVENT_RepackAmmo(client, g_iDeployedAmmo);  // could use entity here.. see if we can remove iDeployedAmmo?
                 //ShowWeapon(client);
                 return Plugin_Stop;
             }
@@ -1780,11 +1831,11 @@ public Action:Timer_CheckPlayerUsing(Handle:timer, any:pack)
         {
             if (GetGameTime() - g_fProgressTime[client] > USING_TIME_GIFT)
             {
+                RANDOM_DoGiftEffect(client, g_iClientUsing[client]);
                 g_bShowedProgressHint = false;
                 g_iClientUsing[client] = 0;
                 CloseHandle(pack);
                 EndSurvivorAnim(client);
-                RANDOM_DoGiftEffect(client, g_iClientUsing[client]);
                 //ShowWeapon(client);
                 return Plugin_Stop;
             }
@@ -2177,6 +2228,8 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
     // -------------------
     if (IsSurvivor(victim))
     {
+        RemoveHat(victim);
+        
         // remove hud if we're in special event
         if (_:g_iSpecialEvent == EVT_NOHUD && !IsFakeClient(victim))
         {
@@ -2664,12 +2717,12 @@ public GetClassForFirstAttack(ignoreClient)
     {
         if (i == ignoreClient) { continue; }                                // so it doesn't count the client's class that it is about to change..
 
-        if (IsClientInGame(i) && GetClientTeam(i) == TEAM_INFECTED) {
-            if (IsValidEntity(i) && IsPlayerAlive(i)) {
-                classType = GetEntProp(i, Prop_Send, "m_zombieClass");
-                if (classType < 0 || classType > ZC_TOTAL - 1) { classType = 0; }  // safeguard
-                classCount[classType]++;
-            }
+        if (IsValidEntity(i) && IsClientInGame(i) && GetClientTeam(i) == TEAM_INFECTED && !IsFakeClient(i) && IsPlayerAlive(i))
+        {
+            classType = GetEntProp(i, Prop_Send, "m_zombieClass");
+            if (classType < 0 || classType > ZC_TOTAL - 1) { classType = 0; }  // safeguard
+            PrintDebug("[rand si] counting current classes: +1 for %s (client %N).", g_csSIClassName[classType], i);
+            classCount[classType]++;
         }
     }
         
@@ -2685,7 +2738,7 @@ public GetClassForFirstAttack(ignoreClient)
     }
     
     // shouldn't happen, but just return hunter
-    PrintDebug("[random spawns] error, no first attack storage entry found. should never happen");
+    PrintDebug("[rand si] ERROR, no first attack storage entry found. should never happen");
     return ZC_HUNTER;
 }
 
