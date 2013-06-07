@@ -160,6 +160,10 @@ const Float:    EVENT_WITCHES_WITCHDMG  = 50.0;         // EVT_WITCHES      how 
 const           EVENT_WITCHES_BONUS     = 25;           // EVT_WITCHES      how many points to give for each witch kill
 const Float:    EVENT_WITCHES_SPAWNFREQ = 40.0;         // EVT_WITCHES      spawn witch every X seconds
 const           EVENT_BADSANTA_BONUS    = 20;           // EVT_BADSANTA     how many points to give for each gift unwrap
+const           EVENT_MEDIC_UNITS_BASE  = 11;           // EVT_MEDIC        how many mediunits to start with (default difficulty) (medkit, pills + 8)
+const           EVENT_MEDIC_UNITS_MIN   = 7;            // EVT_MEDIC        minimum mediunits
+const           EVENT_MEDIC_UNITS_MAX   = 14;           // EVT_MEDIC        maximum mediunits 
+const           EVENT_MEDIC_DIFF_BASE   = 4;            // EVT_MEDIC        use this difficulty for the base value (and scale the rest)
 
 const Float:    EVENT_ENC_W_T1          = 1.5;          // EVT_ENCUMBERED   for determining total player weight
 const Float:    EVENT_ENC_W_T2          = 2.5;
@@ -278,8 +282,9 @@ const           EVT_WOMEN               = 31;
 const           EVT_GUNSWAP             = 32;
 const           EVT_WITCHES             = 33;
 const           EVT_BADSANTA            = 34;
+const           EVT_MEDIC               = 35;
 
-const           EVT_TOTAL               = 35;
+const           EVT_TOTAL               = 36;
     
 const           EVTWOMEN_TYPE_AXE       = 1;            // axe effect
 const           EVTWOMEN_TYPE_ROCK      = 2;            // rockstars
@@ -359,6 +364,7 @@ const           SILENCED_CI             = 2;            // not sure if I want to
 
 const           HAT_BABY                = 0;            // g_csHatModels index
 const           HAT_KEYMASTER           = 1;
+const           HAT_MEDIC               = 2;
 
 
 // Third-party and mechanics configuration
@@ -498,12 +504,20 @@ enum itemPropType               // for use with tries to check if an item is a c
     ITEM_PROP_CANISTER
 }
 
-enum itemUseType               // for use with tries to check if an item is something we check for using
+enum itemUseType                // for use with tries to check if an item is something we check for using
 {
     ITEM_USE_DOOR,
     ITEM_USE_COLA,
     ITEM_USE_PROP,
     ITEM_USE_AMMO
+}
+
+enum itemDropType               // for use with tries
+{
+    ITEM_DROP_COLA,
+    ITEM_DROP_HEALTH,
+    ITEM_DROP_WEAPKIT,
+    ITEM_DROP_WEAPPILLS
 }
 
 enum CreatedEntityType          // for use with tries to determine whether to handle onEntityCreated
@@ -701,7 +715,8 @@ new const String: g_csEventText[][] =
     "[women event]",                                                                            // two variants: Axe Effect and Rock Stars, replace name in report (plus backup variant)
     "\x04Magic Gun Swap\x01 - Empty your clip to get a new weapon.",
     "\x04Witch Hunt\x01 - Kill witches for \x0425\x01 bonus points.",
-    "\x04Lousy Gifts\x01 - All gifts are bad! \x0420\x01 bonus for unwrapping anyway."
+    "\x04Lousy Gifts\x01 - All gifts are bad! \x0420\x01 bonus for unwrapping anyway.",
+    "\x04MEDIC!\x01 - There is one medic with a limited supply of healing items."
 };
 
 new const JUNK_FIRSTNONSOLID = 4;
@@ -773,6 +788,7 @@ new const String: g_csHatModels[][] =
 {
     "models/props_interiors/teddy_bear.mdl",
     "models/props_lighting/light_construction02.mdl",
+    "models/w_models/weapons/w_eq_medkit.mdl",
     "models/props_fortifications/orange_cone001_clientside.mdl"
 };
 
@@ -829,8 +845,9 @@ new const String: g_csPreCacheModels[][] =
     //"models/w_models/weapons/50cal.mdl",
     
     // hats
-    //"models/props_interiors/teddy_bear.mdl",
+    "models/props_interiors/teddy_bear.mdl",
     "models/props_lighting/light_construction02.mdl",
+    "models/w_models/weapons/w_eq_medkit.mdl",
     "models/props_fortifications/orange_cone001_clientside.mdl",    // not used, but precache for now anyway
     
     // boomette

@@ -14,15 +14,16 @@ L4D2_Random
                     no boomer players, slightly slower spawns
             
             
+            - think of some special roles events
+                - unbound m2: one player cannot use m2s (mannequin hand?)
+                    - too hard, technically... unless you're ok with the player not being able to pass pills either...
+            
             in doubt
             --------
-            - gnome VIP: only one gnome spawns (start saferoom), it must be brought or the end saferoom won't close
-                or: gnome heaven, where the only way to score (many) points is to bring gnomes
-                - for example: given only 1 gnome: distance points are frozen unless gnome is held
-            - greedy healing gnome: healing gnome, but holding the gnome (if it heals) costs points
             
             rejected
             --------
+            - gnome vip.. meh
             - 'pistol round': only pistols (magnums included). No locked doors and easier ci/si. [maybe]
             - weird SI: random SI abilities (CRox's code) -- just give every SI a random ability...
             - clockwork: clockwork timed spawns, deaths, rinse repeat (no tank?)
@@ -32,9 +33,6 @@ L4D2_Random
             
     to-do:
     ------  
-            - bugfix:   first attacks are not equal anymore?
-                        - do debug sessions (debug print added)
-            
             - low:      add !help function to get brief lines about what Random is + URL
                         - random items, random spawns, random special events, open gifts by holding USE
                         - URL to random website
@@ -48,8 +46,11 @@ L4D2_Random
             
     minor cleanup / details
     -----------------------
+            - nitpick:  if I ever use g_bNoHealthItems beyond EVT_MEDIC, it will cause probs with PickRandomItem() as it is now.
+            - nitpick:  fire extinguisher objects are stuck in wall - use angles of original item to place it further away (find correct angle and dist)
             - superlow: team randomizer function (!randteams) (use all players currently in teams, or include specs if less than required team size)
             - superlow: random team going first per round in versus. how? possible? worth the effort? no.
+            - bugfix nitpick:   bots all get the same spawn in a vs game without humans - maybe a firstspawns thing?
             - nitpick:  can't see the special role's hat when he's ledged..
             - nitpick:  prevent two ammo piles spawning too close to eachother?
             - nitpick:  dark carnival 1 gas cans are not randomized.. (they're a point template, I guess)

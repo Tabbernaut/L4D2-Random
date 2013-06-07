@@ -952,7 +952,7 @@ public Action: Event_SoundPlayed(clients[64], &numClients, String:sample[PLATFOR
             }
             else if (g_iSpecialEventExtra == SILENCED_SI)
             {
-                if (IsInfected(entity)) {
+                if (IsInfected(entity) && !IsTank(entity)) {
                     // block all
                     return Plugin_Handled;
                 }
@@ -1949,6 +1949,13 @@ public Action:Event_WeaponGiven(Handle:event, const String:name[], bool:dontBroa
     {
         g_bArJustBeenGiven[client] = true;
         //PrintToChatAll("weapon given to %N: %i", client, weapId);
+        
+        // medic event: could be that the medic passed pills, check to be sure
+        if (_:g_iSpecialEvent == EVT_MEDIC && client != g_iSpecialEventRole)
+        {
+            g_bMedicFirstHandout = true;
+            CreateTimer(0.05, EVENT_TimerCheckMedic, _, TIMER_FLAG_NO_MAPCHANGE);
+        }
     }
 }
 
@@ -1966,7 +1973,12 @@ public Action:Event_WeaponDrop(Handle:event, const String:name[], bool:dontBroad
     new String:sItem[32];
     GetEventString(event, "item", sItem, sizeof(sItem));
     
-    if (StrEqual(sItem, "cola_bottles", false))
+    //PrintToChatAll("dropped weapon: ent %s", sItem);
+    
+    new itemDropType: nameDropped;
+    if (!GetTrieValue(g_hTrieDropItems, sItem, nameDropped)) { return; }
+    
+    if (nameDropped == ITEM_DROP_COLA)
     {
         // can we find it by entity?
         new gnomeIndex = -1;
@@ -2008,6 +2020,11 @@ public Action:Event_WeaponDrop(Handle:event, const String:name[], bool:dontBroad
             g_strArGnomes[gnomeIndex][gnomebHeldByPlayer] = false;
             g_strArGnomes[gnomeIndex][gnomeiHoldingClient] = 0;
         }
+    }
+    else if (_:g_iSpecialEvent == EVT_MEDIC && nameDropped == ITEM_DROP_HEALTH)
+    {
+        // find and kill the dropped item(s)
+        CreateTimer(0.05, Timer_DestroyHealthItems, _, TIMER_FLAG_NO_MAPCHANGE);
     }
 }
 
@@ -2054,6 +2071,9 @@ public Action:Event_MedkitUsed(Handle:event, const String:name[], bool:dontBroad
         PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_HEALTH );
         EVENT_ReportPenalty(user);
     }
+    else if (_:g_iSpecialEvent == EVT_MEDIC) {
+        CreateTimer(0.05, EVENT_TimerCheckMedic, _, TIMER_FLAG_NO_MAPCHANGE);
+    }
 }
 
 public Action:Event_PillsUsed(Handle:event, const String:name[], bool:dontBroadcast)
@@ -2064,6 +2084,9 @@ public Action:Event_PillsUsed(Handle:event, const String:name[], bool:dontBroadc
         g_iBonusCount++;
         PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_HEALTH );
         EVENT_ReportPenalty(user);
+    }
+    else if (_:g_iSpecialEvent == EVT_MEDIC && user == g_iSpecialEventRole) {
+        CreateTimer(0.05, EVENT_TimerCheckMedic, _, TIMER_FLAG_NO_MAPCHANGE);
     }
 }
 
@@ -2713,7 +2736,6 @@ public GetClassForFirstAttack(ignoreClient)
         {
             classType = GetEntProp(i, Prop_Send, "m_zombieClass");
             if (classType < 0 || classType > ZC_TOTAL - 1) { classType = 0; }  // safeguard
-            PrintDebug("[rand si] counting current classes: +1 for %s (client %N).", g_csSIClassName[classType], i);
             classCount[classType]++;
         }
     }

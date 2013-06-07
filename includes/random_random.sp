@@ -145,9 +145,10 @@ DoInsightReport(team=-1)
     }
     
     // medkits / defibs
-    Format(sReport[iLine], REPLINELENGTH, "Health items: \x05%d\x01 first aid kit%s and \x05%d\x01 defib%s.", g_iCountItemMedkits, (g_iCountItemMedkits == 1) ? "" : "s", g_iCountItemDefibs, (g_iCountItemDefibs == 1) ? "" : "s" );
-    iLine++;
-    
+    if (!g_bNoHealthItems) {
+        Format(sReport[iLine], REPLINELENGTH, "Health items: \x05%d\x01 first aid kit%s and \x05%d\x01 defib%s.", g_iCountItemMedkits, (g_iCountItemMedkits == 1) ? "" : "s", g_iCountItemDefibs, (g_iCountItemDefibs == 1) ? "" : "s" );
+        iLine++;
+    }
     
     // send the report
     for (new i=0; i < iLine; i++)
@@ -173,10 +174,13 @@ ReportSpecialEventRole(bool:isNew=false, client=0)
     switch (_:g_iSpecialEvent)
     {
         case EVT_KEYMASTER: {
-            Format(sReport, REPLINELENGTH, "%s keymaster: only \x05%N\x01 can open doors.", (isNew) ? "New" : "Current", g_iSpecialEventRole);
+            Format(sReport, REPLINELENGTH, "%s keymaster: only \x05%N\x01 can use doors.", (isNew) ? "New" : "Current", g_iSpecialEventRole);
         }
         case EVT_PROTECT: {
             Format(sReport, REPLINELENGTH, "%s baby: \x05%N\x01 needs protection.", (isNew) ? "New" : "Current", g_iSpecialEventRole);
+        }
+        case EVT_MEDIC: {
+            Format(sReport, REPLINELENGTH, "%s medic: \x05%N\x01.", (isNew) ? "New" : "Current", g_iSpecialEventRole);
         }
         default: { return; }
     }
@@ -188,6 +192,20 @@ ReportSpecialEventRole(bool:isNew=false, client=0)
         } else {
             PrintToChatAll("\x01[\x05r\x01] %s", sReport);
         }
+    }
+    
+    // medics should be told some more stuff
+    if (_:g_iSpecialEvent == EVT_MEDIC)
+    {
+        if ( (!client || client == g_iSpecialEventRole) && IsClientAndInGame(g_iSpecialEventRole))
+        {
+            if (g_iMedicUnits > 0) {
+                PrintToChat(g_iSpecialEventRole, "\x01[\x05r\x01] You have \x03%i\x01 medi-unit%s left. Costs: medkit: \x052\x01, pills: \x051\x01.", g_iMedicUnits, (g_iMedicUnits == 1) ? "" : "s" );
+            } else {
+                PrintToChat(g_iSpecialEventRole, "\x01[\x05r\x01] You have no medical supplies left.");
+            }
+        }
+        
     }
 }
 // Make random stuff happen
@@ -619,6 +637,10 @@ RANDOM_DetermineRandomStuff()
                     g_bUsingPBonus = true;
                     g_iSpecialEventExtra = INDEX_GIFT;
                 }
+                case EVT_MEDIC: {
+                    g_bSpecialEventPlayerCheck = true;
+                    g_bNoHealthItems = true;
+                }
                 
             }
             PrintDebug("[rand] Picked Special Event: %i (%s) [extra, %i, sub: %i, str: %s]", g_iSpecialEvent, g_csEventText[g_iSpecialEvent], g_iSpecialEventExtra, g_iSpecialEventExtraSub, g_sSpecialEventExtra);
@@ -857,7 +879,12 @@ RANDOM_DetermineRandomStuff()
     {
         if (_:g_iSpecialEvent == EVT_DEFIB) {
             g_iIncaps = 0;
-        } else {
+        }
+        else if (_:g_iSpecialEvent == EVT_MEDIC) {
+            // force default for this
+            g_iIncaps = 2;
+        }
+        else {
             g_iIncaps = GetRandomInt(INCAP_MINIMUM, INCAP_MAXIMUM);
             
             // reduce chances of getting only 1 incap?
@@ -1700,6 +1727,13 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
     else if (_:g_iSpecialEvent == EVT_GUNSWAP) {
         if ( randomIndex == INDEX_AMMO || randomIndex == INDEX_UPGRADE ) { randomIndex = (GetRandomInt(0,1)) ? INDEX_THROWABLE : INDEX_PILL; }
     }
+    else if (_:g_iSpecialEvent == EVT_MEDIC) {
+        switch (randomIndex) {
+            case INDEX_KIT: { randomIndex = INDEX_PISTOL; }
+            case INDEX_PILL: { randomIndex = INDEX_THROWABLE; }
+            case INDEX_UPGRADE: { randomIndex = INDEX_MELEE; }
+        }
+    }
     
     switch (randomIndex)
     {
@@ -2010,6 +2044,10 @@ RandomizeSurvivorItems()
             g_iArStorageSurvPills[i] = PCK_PAIN_PILLS;
             iCountPills++;
         }
+        else if (_:g_iSpecialEvent == EVT_MEDIC) {
+            // no pills for anyone (yet)
+            g_iArStorageSurvPills[i] = PCK_NOITEM;
+        }
         else if ( GetRandomFloat(0.001, 1.0) <= fPillsChance || (GetConVarBool(g_hCvarStartBalanceSurv) && GetConVarBool(g_hCvarDifficultyBalance) && g_iDifficultyRating > DIFF_RATING_PILL_THRESH) ) {
             // randomly picked.. or difficulty forced
             randomPick = GetRandomInt(0, RATE_ADREN);
@@ -2243,6 +2281,27 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
             case PCK_UPG_INCENDIARY: { type = PCK_NOITEM; }
         }
     }
+    
+    if (g_bNoHealthItems && !overrideBlocks)
+    {
+        switch (type)
+        {
+            case PCK_FIRST_AID_KIT: { type = PCK_NOITEM; }
+            case PCK_DEFIBRILLATOR: { type = PCK_NOITEM; }
+            case PCK_PAIN_PILLS: { type = PCK_NOITEM; }
+            case PCK_ADRENALINE: { type = PCK_NOITEM; }
+        }
+        
+        if (_:g_iSpecialEvent == EVT_MEDIC) {
+            // no packs either, to simplify slot 4 tricks
+            switch (type)
+            {
+                case PCK_UPG_EXPLOSIVE: { type = PCK_NOITEM; }
+                case PCK_UPG_INCENDIARY: { type = PCK_NOITEM; }
+            }
+        }
+    }
+    
     
     // anything but weapons
     //      set handled to true/false, so we know we've already built the entity
@@ -2641,8 +2700,8 @@ ChangeSurvivorSetup(index, client)
             
             new weaponIndex = GetPlayerWeaponSlot(client, i);
             if (weaponIndex > -1) {
-                new String:classname[STR_MAX_WPCLASSNAME];
-                GetEdictClassname(weaponIndex, classname, sizeof(classname)); 
+                //new String:classname[STR_MAX_WPCLASSNAME];
+                //GetEdictClassname(weaponIndex, classname, sizeof(classname)); 
                 RemovePlayerItem(client, weaponIndex);
             }
         }
@@ -3002,11 +3061,21 @@ RANDOM_DoGiftEffect(client, entity)
                 new curHealth = GetClientHealth(client);
                 new Float:tmpHealth = GetEntPropFloat(client, Prop_Send, "m_healthBuffer");
                 new oldTotal = curHealth + RoundFloat(tmpHealth);
+                new iMaxIncaps = GetConVarInt(FindConVar("survivor_max_incapacitated_count"));
+                if (iMaxIncaps == 0) { iMaxIncaps = 1; }                
                 
                 if (curHealth < 100) {
                     if (curHealth + someHealth < 100) { curHealth += someHealth; } else { someHealth = 100 - curHealth; curHealth = 100; }
                     SetEntityHealth(client, curHealth);
                     PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x05healed %i solid health\x01.", client, someHealth);
+                    
+                    // if black and white, set incaps - 1
+                    if (GetEntProp(client, Prop_Send, "m_currentReviveCount") >= iMaxIncaps) {
+                        SetEntProp(client, Prop_Send, "m_currentReviveCount", (iMaxIncaps - 1));
+                        SetEntProp(client, Prop_Send, "m_bIsOnThirdStrike", 0);
+                        SetEntProp(client, Prop_Send, "m_isGoingToDie", 0);
+                    }
+                    
                     // get rid of temp health buffer?
                     if (oldTotal > curHealth) {
                         SetEntPropFloat(client, Prop_Send, "m_healthBuffer", float(oldTotal - curHealth));
@@ -3377,7 +3446,7 @@ DetermineSpawnClass(any:client, any:iClass)
         // build first attack
         iClass = GetClassForFirstAttack(client);
         forcedClass = true;
-        PrintDebug("[rand si] first attack spawn assigned: %N => %s", client, g_csSIClassName[iClass]);
+        PrintDebug("[rand si] first attack spawn assigned: %8s => %N", g_csSIClassName[iClass], client);
     }
     else if (g_iSpectateGhostCount && !IsFakeClient(client))
     {

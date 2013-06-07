@@ -10,6 +10,7 @@ new     Handle:         g_hTrieBlindable                                    = IN
 new     Handle:         g_hTriePenaltyItems                                 = INVALID_HANDLE;       // trie for recognizing items that carry a penalty on EVT_PEN_ITME
 new     Handle:         g_hTriePropItems                                    = INVALID_HANDLE;       // trie for recognizing prop items that can be carried (for EVT_ENCUMBERED)
 new     Handle:         g_hTrieUseItems                                     = INVALID_HANDLE;       // trie for recognizing usable items
+new     Handle:         g_hTrieDropItems                                    = INVALID_HANDLE;       // trie for recognizing dropped items/weapons
 new                     g_iMeleeClassCount                                  = 0;                    // melee weapons available?
 new     String:         g_sMeleeClass           [MELEE_CLASS_COUNT][MELEE_CLASS_LENGTH];            // available melee class-strings
 
@@ -202,9 +203,10 @@ new                     g_iNoSpecialEventStreak                             = 0;
 new     bool:           g_bSpecialEventPlayerCheck                          = false;                // whether the special event requires player checks on teamswaps, deaths, etc
 new     bool:           g_bSpecialRoleAboutToChange                         = false;                // whether we're already waiting for a timer countdown to do a report (spam prevent)
 new                     g_iArGunAmmoCount       [MAXPLAYERS]                = 0;                    // for gun swap event: how many bullets does the survivor have left?
-new     bool:           g_bNoPriWeapons                                        = false;                // whether to allow primary weapons to spawn at all
-new     bool:           g_bNoSecWeapons                                        = false;                // whether to allow secondary weapons to spawn at all
-new     bool:           g_bNoAmmo                                           = false;                // whether to ammo to spawn at all
+new     bool:           g_bNoPriWeapons                                     = false;                // whether to allow primary weapons to spawn at all
+new     bool:           g_bNoSecWeapons                                     = false;                // whether to allow secondary weapons to spawn at all
+new     bool:           g_bNoAmmo                                           = false;                // whether to spawn ammo at all
+new     bool:           g_bNoHealthItems                                    = false;                // whether to spawn health items / defibs at all
 new                     g_iBoobyTraps                                       = 0;                    // how many boobytrap entries in the aray
 new                     g_iArBoobyTrap          [MAX_BOOBYTRAPS]            = {-1,...};             // entities that are boobytrapped (this round)
 new     Float:          g_fProgressTime         [MAXPLAYERS+1]              = 0.0;                  // for keeping track of progress bar
@@ -214,6 +216,9 @@ new     bool:           g_bShowedProgressHint                               = fa
 new     Handle:         g_hTimePenaltyTimer                                 = INVALID_HANDLE;       // for the EVT_PEN_TIME
 new                     g_iTimePenaltyCounter                               = 0;                    // counts seconds for the time penalty
 new     Handle:         g_hWitchSpawnTimer                                  = INVALID_HANDLE;       // crox's multiwitches
+new                     g_iMedicUnits                                       = 8;                    // the current 'mediunits' available to the medic
+new                     g_iMedicRanOut                                      = 0;                    // so we can prevent over-reporting
+new     bool:           g_bMedicFirstHandout                                = false;                // whether the medic has handed out pills to anyone yet (for removal check)
 
 // Hats
 new                     g_iHatIndex[MAXPLAYERS+1];				// Player hat entity reference

@@ -36,6 +36,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
         g_bNoPriWeapons = false;
         g_bNoSecWeapons = false;
         g_bNoAmmo = false;
+        g_bNoHealthItems = false;
         g_bSpecialEventPlayerCheck = false;
     }
     
@@ -360,6 +361,17 @@ EVENT_RoundStartPreparation()
                 CreateTimer(MULTIWITCH_RESPAWN_FREQ, Timer_WitchRespawn, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
             }
         }
+        
+        case EVT_MEDIC: {
+            // calculate and set medi-units available:
+            new tmpUnits = (g_iDifficultyRating - EVENT_MEDIC_DIFF_BASE) + EVENT_MEDIC_UNITS_BASE;
+            if (tmpUnits < EVENT_MEDIC_UNITS_MIN) { tmpUnits = EVENT_MEDIC_UNITS_MIN; }
+            else if (tmpUnits < EVENT_MEDIC_UNITS_MAX) { tmpUnits = EVENT_MEDIC_UNITS_MAX; }
+            
+            g_iMedicUnits = tmpUnits;
+            g_iMedicRanOut = 0;
+            g_bMedicFirstHandout = false;
+        }
     }
 }
 
@@ -385,12 +397,29 @@ public Action: EVENT_SurvivorsLeftSaferoom(Handle:timer)
         
         case EVT_KEYMASTER: {
             // first time keymaster gets picked with a visible report
-            EVENT_PickSpecialEventRole(-1, false);
+            if (!EVENT_IsSpecialRoleOkay()) {
+                EVENT_PickSpecialEventRole(-1, false);
+            } else {
+                ReportSpecialEventRole();
+            }
         }
         
         case EVT_PROTECT: {
             // first time baby gets picked with a visible report
-            EVENT_PickSpecialEventRole(-1, false);
+            if (!EVENT_IsSpecialRoleOkay()) {
+                EVENT_PickSpecialEventRole(-1, false);
+            } else {
+                ReportSpecialEventRole();
+            }
+        }
+        
+        case EVT_MEDIC: {
+            // first time medic gets picked with a visible report
+            if (!EVENT_IsSpecialRoleOkay()) {
+                EVENT_PickSpecialEventRole(-1, false);
+            } else {
+                ReportSpecialEventRole();
+            }
         }
         
         case EVT_PEN_TIME: {
@@ -771,31 +800,9 @@ public Action: Timer_CheckSpecialEventRole(Handle:timer, any:pack)
     //new client = ReadPackCell(pack);
     CloseHandle(pack);
     
-    // special roles
-    //  must change if the role is nonexistant, not a survivor, dead or a bot
-    if (_:g_iSpecialEvent == EVT_KEYMASTER || _:g_iSpecialEvent == EVT_PROTECT)
-    {
-        // are there any humans in the survivor team?
-        new bool: bNoHumanSurvivors = true;
-        for (new i=1; i <= MaxClients; i++) {
-            if (IsSurvivor(i) && !IsFakeClient(i) && IsPlayerAlive(i)) { 
-                bNoHumanSurvivors = false;
-                break;
-            }
-        }
-        
-        // force new role if the current role's survivor is missing, dead or a bot when there's humans available:
-        if ( !IsSurvivor(g_iSpecialEventRole) || !IsPlayerAlive(g_iSpecialEventRole) || ( IsFakeClient(g_iSpecialEventRole) && !bNoHumanSurvivors ) ) {
-            g_iSpecialEventRole = 0;
-        }
-        
-        if (!g_iSpecialEventRole)
-        {
-            EVENT_PickSpecialEventRole( -1, (leftStart) ? false : true);
-        }
-    }
+
     // check here for other events (whether bots have stuff they shouldn't have)
-    else if (_:g_iSpecialEvent == EVT_AMMO)
+    if (_:g_iSpecialEvent == EVT_AMMO)
     {
         // upgrade kit should not be in possession of bot
         for (new i=1; i <= MaxClients; i++)
@@ -823,6 +830,27 @@ public Action: Timer_CheckSpecialEventRole(Handle:timer, any:pack)
                     }
                 }
             }
+        }
+    }
+    else        // for every other special event role
+    {
+        // are there any humans in the survivor team?
+        new bool: bNoHumanSurvivors = true;
+        for (new i=1; i <= MaxClients; i++) {
+            if (IsSurvivor(i) && !IsFakeClient(i) && IsPlayerAlive(i)) { 
+                bNoHumanSurvivors = false;
+                break;
+            }
+        }
+        
+        // force new role if the current role's survivor is missing, dead or a bot when there's humans available:
+        if ( !IsSurvivor(g_iSpecialEventRole) || !IsPlayerAlive(g_iSpecialEventRole) || ( IsFakeClient(g_iSpecialEventRole) && !bNoHumanSurvivors ) ) {
+            g_iSpecialEventRole = 0;
+        }
+        
+        if (!g_iSpecialEventRole)
+        {
+            EVENT_PickSpecialEventRole( -1, (leftStart) ? false : true);
         }
     }
 }
@@ -865,9 +893,19 @@ EVENT_PickSpecialEventRole(notClient=-1, bool:notLeftStart=false)
     g_iSpecialEventRole = survivors[pick];
     
     // give correct hat to picked survivor
-    new hatType = HAT_BABY;
-    if (_:g_iSpecialEvent == EVT_KEYMASTER) { hatType = HAT_KEYMASTER; }
-    CreateHat(g_iSpecialEventRole, hatType);
+    switch (_:g_iSpecialEvent)
+    {
+        case EVT_PROTECT: { CreateHat(g_iSpecialEventRole, HAT_BABY); }
+        case EVT_KEYMASTER: { CreateHat(g_iSpecialEventRole, HAT_KEYMASTER); }
+        case EVT_MEDIC: { CreateHat(g_iSpecialEventRole, HAT_MEDIC); }
+    }
+    
+    
+    // when picked, do a medic check
+    if (_:g_iSpecialEvent == EVT_MEDIC)
+    {
+        EVENT_CheckMedic(true);
+    }
     
     // report if it's after the saferoom exit (notLeftStart is for timer calls)
     if (!notLeftStart && g_bPlayersLeftStart) {
@@ -875,6 +913,133 @@ EVENT_PickSpecialEventRole(notClient=-1, bool:notLeftStart=false)
     }
 }
 
+bool: EVENT_IsSpecialRoleOkay(bool:allowBots=false)
+{
+    // check if a living survivor has the special role
+    if (g_iSpecialEventRole < 1) { return false; }
+    if (    !IsClientAndInGame(g_iSpecialEventRole)
+        ||  !IsSurvivor(g_iSpecialEventRole)
+        ||  !IsPlayerAlive(g_iSpecialEventRole)
+        ||  ( !allowBots && IsFakeClient(g_iSpecialEventRole) )
+    ) { return false; }
+    
+    return true;
+}
+
+
+
+// medic event
+public Action: EVENT_TimerCheckMedic(Handle:timer)
+{
+    EVENT_CheckMedic();
+}
+
+EVENT_CheckMedic(bool:roleSwitch=false)
+{
+    // see if the medic has the items he needs
+    if (!EVENT_IsSpecialRoleOkay(true)) { return; }
+    
+    // if anyone has kits/pills they shouldn't have, remove them
+    for (new i=1; i <= MaxClients; i++)
+    {
+        if (i == g_iSpecialEventRole) { continue; }
+        
+        if (IsSurvivor(i) && IsPlayerAlive(i))
+        {
+            new tmpKit = GetPlayerWeaponSlot(i, PLAYER_SLOT_KIT);
+            if (IsValidEntity(tmpKit)) { RemovePlayerItem(i, tmpKit); g_iMedicUnits += 2; }
+            
+            if (!g_bMedicFirstHandout) {
+                // only remove pills if medic hasn't started handing stuff out yet
+                new tmpPill = GetPlayerWeaponSlot(i, PLAYER_SLOT_PILL);
+                if (IsValidEntity(tmpPill)) { RemovePlayerItem(i, tmpPill); g_iMedicUnits++; }
+            }
+        }
+    }
+    
+    // if the medic has anything in slot kit/pill, it's always ok
+    new slotKit = GetPlayerWeaponSlot(g_iSpecialEventRole, PLAYER_SLOT_KIT);
+    new slotPill = GetPlayerWeaponSlot(g_iSpecialEventRole, PLAYER_SLOT_PILL);
+    
+    if ( g_iMedicUnits < 1 && (!IsValidEntity(slotKit) || !IsValidEntity(slotPill)) && g_iMedicRanOut < 2 )
+    {
+        g_iMedicRanOut = 2;
+        PrintToChat(g_iSpecialEventRole, "\x01[\x05r\x01] You have run out of medical supplies.");
+        return;
+    }
+    
+    if (!IsValidEntity(slotKit)) {
+        // give kit if units
+        if (g_iMedicUnits > 1) {
+            g_iMedicUnits -= 2;
+            GiveItem(g_iSpecialEventRole, "weapon_first_aid_kit", 0, 0);
+            
+            // only report if not due to roleswitch
+            if (!roleSwitch) {
+                if (g_iMedicUnits) {
+                    PrintToChat(g_iSpecialEventRole, "\x01[\x05r\x01] Replaced medkit. \x03%i\x01 medi-unit%s left.", g_iMedicUnits, (g_iMedicUnits == 1) ? "" : "s");
+                } else {
+                    PrintToChat(g_iSpecialEventRole, "\x01[\x05r\x01] Replaced medkit. You have no medical supplies left.", g_iMedicUnits);
+                }
+            }
+        } else {
+            if (g_iMedicRanOut < 1) {
+                g_iMedicRanOut = 1;
+                PrintToChat(g_iSpecialEventRole, "\x01[\x05r\x01] Not enough medi-units left for new medkit.");
+            }
+        }
+    }
+    
+    if (!IsValidEntity(slotPill)) {
+        // give pills if units
+        if (g_iMedicUnits > 0) {
+            g_iMedicUnits--;
+            GiveItem(g_iSpecialEventRole, "weapon_pain_pills", 0, 0);
+            
+            // only report if not due to roleswitch
+            if (!roleSwitch) {
+                if (g_iMedicUnits) {
+                    PrintToChat(g_iSpecialEventRole, "\x01[\x05r\x01] Replaced pills. \x03%i\x01 medi-unit%s left.", g_iMedicUnits, (g_iMedicUnits == 1) ? "" : "s");
+                } else {
+                    PrintToChat(g_iSpecialEventRole, "\x01[\x05r\x01] Replaced pills. You have no medical supplies left.", g_iMedicUnits);
+                }
+            }
+        }
+    }
+}
+
+public Action: Timer_DestroyHealthItems(Handle:timer)
+{
+    // find any health items not carried by anyone and destroy them
+    // currently: just look for kits
+    
+    new itemDropType: classnameHealth;    
+    new String:classname[64];
+    new entityCount = GetEntityCount();
+    
+    for (new i=0; i < entityCount; i++)
+    {
+        if (IsValidEntity(i))
+        {
+            GetEdictClassname(i, classname, sizeof(classname));
+            if (!GetTrieValue(g_hTrieDropItems, classname, classnameHealth)) { continue; }
+            if (classnameHealth != ITEM_DROP_WEAPKIT) { continue; }
+            
+            // is anyone holding it?
+            new bool: bHeld = false;
+            for (new j=1; j <= MaxClients; j++) {
+                if (IsSurvivor(j) && IsPlayerAlive(j)) {
+                    new tmpKit = GetPlayerWeaponSlot(j, PLAYER_SLOT_KIT);
+                    if (tmpKit == i) { bHeld = true; break; }
+                }
+            }
+            if (bHeld) { continue; }
+            
+            // it's a health item we don't want: destroy it
+            AcceptEntityInput(i, "Kill");
+        }
+    }
+}
 
 // Stabby's multi-witch stuff
 // ===========================================================================
@@ -1372,10 +1537,15 @@ bool: SUPPORT_DropItem(client, bool:dropCurrent, count, bool:throwItem)
     if (dropCurrent)
     {
         new slot = SUPPORT_GetCurrentWeaponSlot(client);
-        if (slot >= 0) {
-            if (_:g_iSpecialEvent != EVT_GUNSWAP || slot != 0) {
+        if (slot >= 0)
+        {
+            if ( _:g_iSpecialEvent == EVT_MEDIC && g_iSpecialEventRole == client && (slot == PLAYER_SLOT_KIT || slot == PLAYER_SLOT_PILL) ) {
+                PrintToChat(client, "\x01[\x05r\x01] A medic cannot drop health items.");
+            }
+            else if ( _:g_iSpecialEvent != EVT_GUNSWAP || slot != PLAYER_SLOT_PRIMARY ) {
                 if ( SUPPORT_DropItemSlot(client, slot, throwItem) ) { dropCount++; } 
             }
+            
         }
     }
     
@@ -1398,8 +1568,9 @@ bool: SUPPORT_DropItem(client, bool:dropCurrent, count, bool:throwItem)
         for (new i=0; i < count && m > 0; i++)
         {
             new r = GetRandomInt(0, m-1);
-            if (_:g_iSpecialEvent != EVT_GUNSWAP || slot[r] != 0)
-            {
+            if (    (_:g_iSpecialEvent != EVT_GUNSWAP || slot[r] != PLAYER_SLOT_PRIMARY)
+                &&  (_:g_iSpecialEvent != EVT_MEDIC || (slot[r] != PLAYER_SLOT_KIT && slot[r] != PLAYER_SLOT_PILL) )
+            ) {
                 if ( SUPPORT_DropItemSlot(client, slot[r], throwItem) ) { dropCount++; }
             }
             slot[r] = slot[m-1];
@@ -1630,8 +1801,7 @@ SUPPORT_GetCurrentWeaponSlot(client)
 
 
 // hide/show survivor weapon
-/*
-HideWeapon(client)
+/* HideWeapon(client)
 {
     // cannot be done
     //  apparently, this only works for weapons on the ground etc, weapons
@@ -1777,8 +1947,7 @@ bool: IsTank(any:client)
 bool:IsHangingFromLedge(client) { return bool:(GetEntProp(client, Prop_Send, "m_isHangingFromLedge") || GetEntProp(client, Prop_Send, "m_isFallingFromLedge")); }
 bool:IsIncapacitated(client) { return bool:GetEntProp(client, Prop_Send, "m_isIncapacitated"); }
 
-/*
-GetTankClient()
+/* GetTankClient()
 {
     if (!g_bIsTankInPlay) return 0;
     new tankclient = g_iTankClient;
@@ -1815,8 +1984,7 @@ bool: IsPlayerGhost(any:client)
 }
 
 
-/*
-bool: IsCommon(entity)
+/* bool: IsCommon(entity)
 {
     if (entity <= 0 || entity > 2048 || !IsValidEdict(entity)) return false;
     
@@ -3254,7 +3422,7 @@ CreateHat(client, index = -1) {
     
     g_iType[client] = index + 1;
 
-    new Float: vPos[3], Float: vAng[3];
+    new Float: vPos[3], Float: vAng[3], Float: fScale;
     
     switch (index)
     {
@@ -3271,6 +3439,11 @@ CreateHat(client, index = -1) {
             vPos[0] = -7.0; vPos[1] = 0.0; vPos[2] = 9.0;
             vAng[0] = -200.0; vAng[1] = 0.0; vAng[2] = 0.0;
         }
+        case HAT_MEDIC: {
+            vPos[0] = -4.0; vPos[1] = -2.75; vPos[2] = 10.0;
+            vAng[0] = -1.0; vAng[1] = 180.0; vAng[2] = 90.0;
+            fScale = 0.75;
+        }
     }
     
     new entity = CreateEntityByName("prop_dynamic_override");
@@ -3278,7 +3451,9 @@ CreateHat(client, index = -1) {
     {
         SetEntityModel(entity, g_csHatModels[index]);
         DispatchSpawn(entity);
-        //SetEntPropFloat(entity, Prop_Send, "m_flModelScale", g_fSize[index]);
+        if (fScale != 0.0) {
+            SetEntPropFloat(entity, Prop_Send, "m_flModelScale", fScale);
+        }
 
         SetVariantString("!activator");
         AcceptEntityInput(entity, "SetParent", client);
