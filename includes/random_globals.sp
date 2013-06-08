@@ -13,12 +13,14 @@ new     Handle:         g_hTrieUseItems                                     = IN
 new     Handle:         g_hTrieDropItems                                    = INVALID_HANDLE;       // trie for recognizing dropped items/weapons
 new                     g_iMeleeClassCount                                  = 0;                    // melee weapons available?
 new     String:         g_sMeleeClass           [MELEE_CLASS_COUNT][MELEE_CLASS_LENGTH];            // available melee class-strings
+new     Handle:         g_hSteamIds                                         = INVALID_HANDLE;       // store players so we know who's already been welcomed
 
 new     bool:           g_bVeryFirstMapLoad                                 = true;                 // for preventing a first-map problem with item randomization
 new     bool:           g_bRestartedOnce                                    = false;                // true once the first real map load is going
 new     bool:           g_bCampaignMode                                     = false;                // are we playing a coop game?
 new                     g_bSecondHalf                                       = false;                // is this the second round-half?
 new     bool:           g_bMapStartDone                                     = false;                // has OnMapStart been executed? (to avoid double roundprep calls)
+new     bool:           g_bFirstMapDone                                     = false;                // set to true after the first round has been played
 new     bool:           g_bInRound                                          = false;                // are we in a live round?
 new     bool:           g_bIsFirstAttack                                    = false;                // is this / will this be the first attack of the round(half)?
 new     bool:           g_bModelsPrecached                                  = false;                // only true if models precached
@@ -59,7 +61,8 @@ new     Float:          g_fTankFlowLate                                     = 0.
 new     Float:          g_fTankDeathLocation[3]                             = {0.0,...};            // last tank death location, for item drops
 new                     g_iMiniTankIndex;				                                            // current minitank in map
 new                     g_iMiniTankNum;				                                                // the number of minitanks to be spawned on the current map
-new     Float:          g_fArMiniTankFlows      [MULTITANK_MAX];                                     // stores flow distances for the current round
+new     Float:          g_fArMiniTankFlows      [MULTITANK_MAX];                                    // stores flow distances for the current round
+new     bool:           g_bTankIsEarly                                      = false;                // for balance changes 
 
 // Witches (Stabby)
 new     bool:           g_bWitchWillSpawn                                   = false;
@@ -250,6 +253,7 @@ new     Handle:         g_hCvarSimplePauseCheck                             = IN
 new     Handle:         g_hCvarStripperMode                                 = INVALID_HANDLE;       // cvar what way to use stripper
 new     Handle:         g_hCvarStripperPath                                 = INVALID_HANDLE;       // cvar stripper cfg path (base)
 new     Handle:         g_hCvarRIKeyValuesPath                              = INVALID_HANDLE;       // cvar dir to randommap.txt
+new     Handle:         g_hCvarWelcomeMode                                  = INVALID_HANDLE;       // cvar which welcome-message mode to use
 
 new     Handle:         g_hCvarEqual                                        = INVALID_HANDLE;       // cvar flags what to equalize between teams
 new     Handle:         g_hCvarDoReport                                     = INVALID_HANDLE;       // cvar whether to report anything at all

@@ -19,6 +19,7 @@ INIT_DefineCVars()
     g_hCvarStripperMode = CreateConVar(                     "rand_stripper_mode",            "2",       "When using Stripper:Source: mode 0 = don't change dir; 1 = toggle standard and _alt (50%); 2 = standard + _alt (33%); 3 = same, but (25%).", FCVAR_PLUGIN, true, 0.0, true, 2.0);
     g_hCvarStripperPath = CreateConVar(                     "rand_stripper_path",            "addons/stripper", "The Stripper:Source directory random uses as its base.", FCVAR_PLUGIN);
     g_hCvarRIKeyValuesPath = CreateConVar(                  "rand_randominfo_path",          "configs/randommapinfo.txt", "The path to the randommap.txt with keyvalues for per-map random settings.", FCVAR_PLUGIN);
+    g_hCvarWelcomeMode = CreateConVar(                      "rand_welcome",                  "3",       "Whether to display welcome messages (1 = only in first round; 2 = always, 3 = each client only once).", FCVAR_PLUGIN, true, 0.0, true, 3.0);
     
     g_hCvarEqual = CreateConVar(                            "rand_equal",                  "2047",      "[Flags] What to keep equal between each team's survivor round (1: items; 2: doors; 4: glows; 8: event; 16: incaps; 32: horde; 64: item weighting; 128: starting health; 256: first attack; 512: tanks; 1024: scoring).", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarDoReport = CreateConVar(                         "rand_report",                   "1",       "Whether to do automatic reports at the start of a round.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );

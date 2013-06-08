@@ -41,6 +41,7 @@ const Float:    DELAY_SECONDHALF        = 1.0;          // how long to wait on s
 const Float:    DELAY_SECONDHALF_REP    = 1.25;         // how long to wait on secondroundhalf before doing the report
 const Float:    DELAY_SURVSETUP         = 0.25;         // how long to wait after team switch/join to set survivor startup (for GetPlayerSlot check)
 const Float:    DELAY_TEAMSWAP          = 0.1;          // how long to wait before applying changes after team swap..
+const Float:    DELAY_WELCOMEMSG        = 10.0;         // wait time between connect & message
 
 const           INCAP_DEFAULT           = 2;
 const           INCAP_MINIMUM           = 1;
@@ -215,6 +216,11 @@ const Float:    HITTABLE_CAR_REPICK     = 0.5;          // the odds that a car w
 
 // Random indexes
 // --------------
+const           WELCOME_NONE            = 0;
+const           WELCOME_FIRSTMAP        = 1;
+const           WELCOME_ALWAYS          = 2;
+const           WELCOME_ONCE            = 3;
+
 const           INDEX_NOITEM            = 0;            // indices for picking random item replacement (must always be lowest!)
 const           INDEX_PISTOL            = 1;
 const           INDEX_T1SMG             = 2;

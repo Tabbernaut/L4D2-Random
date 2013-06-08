@@ -9,6 +9,26 @@
 
 // Report randomness
 // --------------------------
+DoWelcomeMessage(client)
+{
+    if (!IsClientAndInGame(client) || IsFakeClient(client)) { return; }
+    
+    //PrintHintText(client, "%s", "Welcome to \x04Random\x01. For help, type \x03!help\x01 in chat.");
+
+    PrintToChat(client, "\x01[\x05r\x01] \x05Welcome to \x03Random\x05. Type \x03!info\x05 in chat for help.");
+    PrintToChat(client, "\x01[\x05r\x01] \x05Visit: \x03http://www.tabun.nl/random\x05 for more information.");
+}
+
+DoHelpMessage(client)
+{
+    if (!IsClientAndInGame(client) || IsFakeClient(client)) { return; }
+    
+    PrintToChat(client, "\x03Random\x05: Map items are randomized but equal between teams. Special Infected classes are random and unlimited (any combination is possible).");
+    PrintToChat(client, "\x05There may be a 'special event' that lasts one round. Gifts can be opened by holding the USE key.");
+    PrintToChat(client, "\x05Commands you can type in chat: \x04!rand\x05, \x04!damage\x05, \x04!bonus\x05 and \x04!drop\x01. ");
+    PrintToChat(client, "\x05Visit: \x03http://www.tabun.nl/random\x05 for more information.");
+}
+
 DoReport(client=0)
 {
     new String: sReport[MAX_REPORTLINES][REPLINELENGTH];
@@ -212,6 +232,8 @@ ReportSpecialEventRole(bool:isNew=false, client=0)
 // --------------------------
 RANDOM_DetermineRandomStuff()
 {
+    PrintDebug("[rand] Determining Random Stuff (for %s round)", (g_bSecondHalf) ? "second" : "first" );
+    
     new bool: bDoItemRePrep = false;        // true if we need to do PrepareChoices()
     new bool: bBlockTank = false;           // so we can block tank on some event picks
     new bool: bBlockDoubleTank = false;     // so we can block double tank on some event picks
@@ -241,7 +263,7 @@ RANDOM_DetermineRandomStuff()
     {
         g_bStripperAltDetected = SUPPORT_StripperDetectAlt();
         
-        PrintDebug("[rand] Stripper Alternative for this round: %i (harder path: %s).", g_iStripperCurrentAlt, (g_bStripperAltDetected) ? "yes" : "no");
+        PrintDebug("[rand] Stripper alt. for this round: %i (harder path: %s).", g_iStripperCurrentAlt, (g_bStripperAltDetected) ? "yes" : "no");
         
         if (g_bStripperAltDetected)
         {
@@ -665,11 +687,13 @@ RANDOM_DetermineRandomStuff()
         L4D2Direct_SetVSTankToSpawnThisRound(0, false);
         L4D2Direct_SetVSTankToSpawnThisRound(1, false);
         g_bTankWillSpawn = false;
+        g_bTankIsEarly = false;
     }
     else if (!g_bTankWillSpawn && GetConVarFloat(FindConVar("versus_tank_chance")) == 1.0) {
         L4D2Direct_SetVSTankToSpawnThisRound(0, true);
         L4D2Direct_SetVSTankToSpawnThisRound(1, true);
         g_bTankWillSpawn = true;
+        g_bTankIsEarly = false;
     }
     
     if (bBlockWitch || g_RI_bNoWitch) {
@@ -689,14 +713,14 @@ RANDOM_DetermineRandomStuff()
     {
         g_iDifficultyRating += 2;
         
+        new Float: tankFlows[2];
+        L4D2_GetVersusTankFlowPercent(tankFlows);
+        new iTankSpawn = RoundToNearest(tankFlows[0] * 100.0);
+        
         // check tank flow bans:
         if (GetConVarBool(g_hCvarBanTankFlows) && g_RI_iTankBanStart != -1 && g_RI_iTankBanEnd != -1)
         {
             // banned range?
-            new Float: tankFlows[2];
-            L4D2_GetVersusTankFlowPercent(tankFlows);
-            new iTankSpawn = RoundToNearest(tankFlows[0] * 100.0);
-            
             if (iTankSpawn >= g_RI_iTankBanStart && iTankSpawn <= g_RI_iTankBanEnd) {
                 // banned tank
                 
@@ -712,6 +736,12 @@ RANDOM_DetermineRandomStuff()
                 
                 L4D2_SetVersusTankFlowPercent(tankFlows);
             }
+        }
+        
+        // is it an early tank?
+        if (g_RI_bIsIntro && tankFlows[0] < 0.5 || tankFlows[0] < 0.3)
+        {
+            g_bTankIsEarly = true;
         }
         
         // some maps shouldn't have tank flow variation
@@ -765,6 +795,7 @@ RANDOM_DetermineRandomStuff()
                 
                 // no witches for doubletank round
                 g_bWitchWillSpawn = false;
+                g_bTankIsEarly = true;
             }
             else {
                 g_bDoubleTank = false;
@@ -782,6 +813,7 @@ RANDOM_DetermineRandomStuff()
             
             // no witches for doubletank round
             g_bWitchWillSpawn = false;
+            g_bTankIsEarly = true;
         }
     } else {
         // no double tanks in any case
@@ -1894,10 +1926,14 @@ RandomizeSurvivorItems()
     // minimum supplies for higher difficulty rounds
     if (GetConVarBool(g_hCvarStartBalanceSurv))
     {
-        if (GetConVarBool(g_hCvarDifficultyBalance)) {
+        if (GetConVarBool(g_hCvarDifficultyBalance))
+        {
             if (g_iDifficultyRating >= DIFF_RATING_4PRIM_THRESH) {
                 iMinPrimary = 4;
                 iMinSecondary = 4;
+            } else if (g_bTankIsEarly) {                                        // force near full loadout on early tank
+                iMinPrimary = 4;
+                iMinSecondary = 2;
             } else if (g_iDifficultyRating >= DIFF_RATING_3PRIM_THRESH)  {
                 iMinPrimary = 3;
                 iMinSecondary = 2;

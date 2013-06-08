@@ -70,7 +70,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.29",
+    version = "1.0.30",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -151,6 +151,9 @@ public OnPluginStart()
     INIT_FillTries();
     INIT_PrecacheModels(true);
     
+    // prepare client array
+    g_hSteamIds = CreateArray(32);
+    
     // Unset home-grown storm cvar, to be sure
     new Handle: hTmpStormCVar = FindConVar("l4d2_storm_fogmode");
     if (hTmpStormCVar != INVALID_HANDLE) { SetConVarInt(hTmpStormCVar, 0); }
@@ -171,8 +174,10 @@ public OnPluginStart()
     }
 
     // Commands
+    RegConsoleCmd("sm_info",    RandomHelp_Cmd,     "Show some Random help information.");
+    RegConsoleCmd("sm_random",  RandomHelp_Cmd,     "Show some Random help information.");
+    RegConsoleCmd("sm_rnd",     RandomReport_Cmd,   "Report what special randomness is currently active.");
     RegConsoleCmd("sm_rand",    RandomReport_Cmd,   "Report what special randomness is currently active.");
-    RegConsoleCmd("sm_random",  RandomReport_Cmd,   "Report what special randomness is currently active.");
     RegConsoleCmd("sm_bonus",   RandomBonus_Cmd,    "Report the special current round bonus (or penalty).");
     RegConsoleCmd("sm_penalty", RandomBonus_Cmd,    "Report the special current round bonus (or penalty).");
     RegConsoleCmd("sm_drop",    RandomDrop_Cmd,     "Drop your currently selected weapon or item.");
@@ -430,6 +435,21 @@ public OnClientPostAdminCheck(client)
     // prevent weapon equip calls from counting after bot-join
     g_bArBlockPickupCall[client] = true;
     CreateTimer(0.01, Timer_UnblockWeaponPickupCall, client, TIMER_FLAG_NO_MAPCHANGE);
+    
+    // message
+    new mode = GetConVarInt(g_hCvarWelcomeMode);
+    if (mode == WELCOME_NONE || (mode == WELCOME_FIRSTMAP && g_bFirstMapDone)) { return;  }
+    if (mode == WELCOME_ONCE) {
+        // remember client
+        new String: SteamId[32];
+        if (GetClientAuthString(client, SteamId, sizeof(SteamId)))
+        {
+            if (FindStringInArray(g_hSteamIds, SteamId) != -1) { return; }  // already welcomed once
+            PushArrayString(g_hSteamIds, SteamId);
+        }
+    }
+    
+    CreateTimer(DELAY_WELCOMEMSG, Timer_DoWelcomeMessage, client, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public Action: Timer_ClientPostAdminCheck_Delayed(Handle:timer, any:client)
@@ -449,6 +469,12 @@ public Action: Timer_ClientPostAdminCheck_Delayed(Handle:timer, any:client)
 
 
 
+
+
+public Action: Timer_DoWelcomeMessage(Handle:timer, any:client)
+{
+    DoWelcomeMessage(client);
+}
 
 public Action: Timer_UnblockWeaponPickupCall(Handle:timer, any:client)
 {
@@ -491,9 +517,6 @@ public Action: TestGnomes_Cmd(client, args)
     //SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 0.0);
     //SetEntityHealth(client, 100);
     //SetEntProp(client, Prop_Send, "m_bIsOnThirdStrike", 1);
-    
-
-    
     
     
     // test: are we in saferoom?
@@ -579,12 +602,16 @@ public Action: TestEvent_Cmd(client, args)
 /*
     Commands
     -------------------------- */
+public Action: RandomHelp_Cmd(client, args)
+{
+    DoHelpMessage(client);
+    return Plugin_Handled;
+}
 public Action: RandomReport_Cmd(client, args)
 {
     DoReport(client);
     return Plugin_Handled;
 }
-
 public Action: RandomBonus_Cmd(client, args)
 {
     if (g_bUsingPBonus) {
@@ -631,10 +658,12 @@ public Action: Say_Cmd(client, args)
         GetCmdArg(1, sMessage, sizeof(sMessage));
 
         if (StrEqual(sMessage, "!rand")) return Plugin_Handled;
+        else if (StrEqual(sMessage, "!rnd")) return Plugin_Handled;
         else if (StrEqual(sMessage, "!random")) return Plugin_Handled;
         else if (StrEqual (sMessage, "!drop")) return Plugin_Handled;
         else if (StrEqual (sMessage, "!bonus")) return Plugin_Handled;
         else if (StrEqual (sMessage, "!penalty")) return Plugin_Handled;
+        else if (StrEqual (sMessage, "!info")) return Plugin_Handled;
     }
     
     return Plugin_Continue;
@@ -741,18 +770,11 @@ public OnMapStart()
         RI_KV_Load();                   // get RandomMap info (cvar now set to right dir)
         
         g_bVeryFirstMapLoad = false;
-        
-        //CreateTimer(DELAY_FIRSTMAPLOAD, SUPPORT_RoundPreparation, _, TIMER_FLAG_NO_MAPCHANGE);
-    } else {
-        // removed from here
-        // see below
     }
     
     // get this map's random-related info
     RI_KV_UpdateRandomMapInfo();
     
-    // try this now (the problem might have been the double_execution on timer)
-    //  if it doesn't work right, just replace to above and use DELAY_FIRSTMAPLOAD again
     CreateTimer(0.1, SUPPORT_RoundPreparation, _, TIMER_FLAG_NO_MAPCHANGE);
     
     // Start checking for humans loading in...
@@ -774,6 +796,11 @@ public OnMapEnd()
     g_bMapStartDone = false;
     g_bIsFirstAttack = true;
     g_bModelsPrecached = false;
+    
+    if (!g_bVeryFirstMapLoad)
+    {
+        g_bFirstMapDone = true;
+    }
 }
 
 public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
@@ -2105,11 +2132,12 @@ public Action:Event_ShovedPlayer(Handle:event, const String:name[], bool:dontBro
     {
         // only on cappers (except charger)
         new classType = GetEntProp(victim, Prop_Send, "m_zombieClass");
-        if (classType == ZC_CHARGER || classType == ZC_BOOMER || classType == ZC_SPITTER) { return; }
-        
-        g_iBonusCount++;
-        PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_M2_SI );
-        EVENT_ReportPenalty(client, classType);
+        if (classType == ZC_JOCKEY || classType == ZC_HUNTER || classType == ZC_SMOKER)
+        {
+            g_iBonusCount++;
+            PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_M2_SI );
+            EVENT_ReportPenalty(client, classType);
+        }
     }
 }
 

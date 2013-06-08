@@ -32,10 +32,11 @@ L4D2_Random
             
             
     to-do:
-    ------  
-            - low:      add !help function to get brief lines about what Random is + URL
-                        - random items, random spawns, random special events, open gifts by holding USE
-                        - URL to random website
+    ------ 
+            - bugfix:   defib penalty bonus thing didn't work? counts correctly, correctly on screen,
+                        but doesn't really work? weird.
+            
+            - low:      test whether replacing survivor models works well
             
             - low:      death-order odds-changer: while repicking, also take into account the odds of repicking another class we should be less likely to pick?
             - low:      tentative idea: - scavenge finales (33% chance): is this possible?
