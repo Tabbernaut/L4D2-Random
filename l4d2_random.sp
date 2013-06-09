@@ -70,7 +70,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.30",
+    version = "1.0.31",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -505,10 +505,18 @@ public Action: TestGnomes_Cmd(client, args)
         //L4D2Direct_DoAnimationEvent(setclient, event);
         
         // hat test
-        CreateHat(setclient, event);
+        if (event) {
+            CreateHat(setclient, event);
+        }
+        else {
+            PlayerDoVomit(setclient);
+        }
         
         return Plugin_Handled;
     }
+    
+    // test vomit
+    //PlayerDoVomit(client);
     
     // test models
     /*
@@ -2636,6 +2644,8 @@ public OnEntityCreated(entity, const String:classname[])
     }
     else if (_:g_iSpecialEvent == EVT_AMMO && classnameOEC == CREATED_AMMO_DEPLOYED)
     {
+        SetEntityModel(entity, "models/props/terror/ammo_stack.mdl");
+        
         // create an ammo pile instead
         CreateTimer(0.01, EVENT_DeployAmmo, entity, TIMER_FLAG_NO_MAPCHANGE);
     }

@@ -67,8 +67,8 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     HatsRemoveAll();                    // remove hats (set them with EVENT_RoundStartPrep)
     
     // timer cleanup
-    //if (g_hTimePenaltyTimer != INVALID_HANDLE) { KillTimer(g_hTimePenaltyTimer); }
     g_hTimePenaltyTimer = INVALID_HANDLE;
+    g_hBoomFluTimer = INVALID_HANDLE;
     
     // handle the randomization 
     RANDOM_DetermineRandomStuff();
@@ -162,6 +162,7 @@ SUPPORT_CleanArrays()
         
         g_iClientUsing[i] = 0;
         g_bClientHoldingUse[i] = false;
+        g_bAlreadyVomitedUpon[i] = false;
         
         // skeet tracking
         ResetHunter(i);
@@ -375,6 +376,12 @@ EVENT_RoundStartPreparation()
             g_iMedicRanOut = 0;
             g_bMedicFirstHandout = false;
         }
+        
+        case EVT_BOOMFLU: {
+            // start timer
+            g_iBoomFluCounter = 0;
+            g_hBoomFluTimer = CreateTimer( 1.0 , Timer_BoomFlu, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+        }
     }
 }
 
@@ -429,6 +436,18 @@ public Action: EVENT_SurvivorsLeftSaferoom(Handle:timer)
             // start timer
             g_iTimePenaltyCounter = 0;
             g_hTimePenaltyTimer = CreateTimer( 1.0 , Timer_TimePenalty, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+        }
+        
+        case EVT_BOOMFLU: {
+            // timer is started earlier, so we get some sounds before
+            // reset so we don't instantly vomit
+            g_iBoomFluCounter = 0;
+            
+            if (!EVENT_IsSpecialRoleOkay()) {
+                EVENT_PickSpecialEventRole(-1, false);
+            } else {
+                ReportSpecialEventRole();
+            }
         }
         
     }
@@ -567,7 +586,7 @@ EVENT_DisplayRoundPenalty(client=-1)
 public Action: Timer_TimePenalty(Handle:timer)
 {
     // when paused, don't keep ticking
-    if (g_bIsPaused || g_bIsTankInPlay) {
+    if (g_bIsPaused || g_bIsTankInPlay || !g_bPlayersLeftStart) {
         return Plugin_Continue;
     }
     
@@ -590,6 +609,78 @@ public Action: Timer_TimePenalty(Handle:timer)
     
     return Plugin_Continue;
 }
+
+// boomer flu timer
+public Action: Timer_BoomFlu(Handle:timer)
+{
+    // when paused, don't keep ticking
+    if (g_bIsPaused) {
+        return Plugin_Continue;
+    }
+    
+    // halt timer on round end
+    if (!g_bInRound || g_hBoomFluTimer == INVALID_HANDLE) {
+        g_hBoomFluTimer = INVALID_HANDLE;
+        return Plugin_Stop;
+    }
+    
+    g_iBoomFluCounter++;
+    
+    if (g_iBoomFluCounter >= g_iBoomFluActivate)
+    {
+        g_iBoomFluActivate = GetRandomInt(EVENT_BOOMFLU_MININT, EVENT_BOOMFLU_MAXINT);
+        g_iBoomFluCounter = 1;
+        
+        // only boom after we really got going
+        if (g_bPlayersLeftStart)
+        {
+            if (EVENT_IsSpecialRoleOkay(true))
+            {
+                PlayerDoVomit(g_iSpecialEventRole);
+            }
+        }
+    }
+    else if (g_iBoomFluCounter >= g_iBoomFluActivate - 4)
+    {
+        // you might get some burping sounds before
+        new Float:location[3];
+        GetClientEyePosition(g_iSpecialEventRole, location);
+        location[2] -= 2;
+
+        if (g_iBoomFluCounter == g_iBoomFluActivate - 1)
+        {
+            // imminent
+            if (GetRandomInt(0, 4) > 0)
+            {
+                new pickSound = GetRandomInt(VOMIT_SOUND_FIRSTIMMINENT, sizeof(g_csPreVomitSounds) - 1);
+                EmitSoundToAll( g_csPreVomitSounds[ pickSound ] , 0, SNDCHAN_WEAPON, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, location, NULL_VECTOR, false, 0.0);
+            }
+        } else {
+            if (GetRandomInt(0, 3) == 0)
+            {
+                new pickSound = GetRandomInt(0, VOMIT_SOUND_FIRSTIMMINENT - 1);
+                EmitSoundToAll( g_csPreVomitSounds[ pickSound ] , 0, SNDCHAN_WEAPON, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, location, NULL_VECTOR, false, 0.0);
+            }
+        }
+    }
+    else if (g_iBoomFluCounter == 6)
+    {
+        if (GetRandomInt(0, 2) == 0) {
+            Vocalize_Random(g_iSpecialEventRole, "Sorry");
+        }
+    }
+    else if (g_iBoomFluCounter > 10)
+    {
+        // cough every once in a while
+        if (GetRandomInt(0, 9) == 0) {
+            Vocalize_Random(g_iSpecialEventRole, "Cough");
+        }
+    }
+    
+    
+    return Plugin_Continue;
+}
+
 
 EVENT_ReportBoobytrap(client=-1)
 {
@@ -901,6 +992,7 @@ EVENT_PickSpecialEventRole(notClient=-1, bool:notLeftStart=false)
         case EVT_PROTECT: { CreateHat(g_iSpecialEventRole, HAT_BABY); }
         case EVT_KEYMASTER: { CreateHat(g_iSpecialEventRole, HAT_KEYMASTER); }
         case EVT_MEDIC: { CreateHat(g_iSpecialEventRole, HAT_MEDIC); }
+        case EVT_BOOMFLU: { CreateHat(g_iSpecialEventRole, HAT_BOOMFLU); }
     }
     
     
@@ -3447,6 +3539,9 @@ CreateHat(client, index = -1) {
             vAng[0] = -1.0; vAng[1] = 180.0; vAng[2] = 90.0;
             fScale = 0.75;
         }
+        case HAT_BOOMFLU: {
+            vPos[0] = -3.0; vPos[1] = 0.0; vPos[2] = 10.0;
+        }
     }
     
     new entity = CreateEntityByName("prop_dynamic_override");
@@ -3458,10 +3553,22 @@ CreateHat(client, index = -1) {
         DispatchKeyValue(entity, "glowstate", "3");
         DispatchKeyValue(entity, "glowrange", "32000");
         */
+        /*
+        if (index == HAT_BOOMFLU)
+        {
+            // color / transparency
+            SetEntityRenderColor(entity, 10, 230, 50, 210);
+            SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
+            //SetEntityRenderFx(entity, RENDERFX_GLOWSHELL);
+        }
+        */
+        
         DispatchSpawn(entity);
         if (fScale != 0.0) {
             SetEntPropFloat(entity, Prop_Send, "m_flModelScale", fScale);
         }
+        
+        
 
         SetVariantString("!activator");
         AcceptEntityInput(entity, "SetParent", client);
@@ -3505,6 +3612,265 @@ bool:IsValidEntRef(entity) {
 	return false;
 }
 
+
+
+/*  Vomiting */
+
+PlayerGetVomitedOn(client, attacker = -1)
+{
+    if (!IsClientAndInGame(client)) { return; }
+    if (attacker == -1) { attacker = client; }
+    
+    if (GetClientTeam(client) == TEAM_SURVIVOR)
+    {
+        SDKCall(g_CallVomitSurvivor, client, attacker, true);
+        
+        if (!g_bAlreadyVomitedUpon[client])
+        {
+            g_bAlreadyVomitedUpon[client] = true;
+            
+            new Handle:pack = CreateDataPack();
+            WritePackCell(pack, client);
+            WritePackString(pack, "boomerreaction");
+            CreateTimer(0.35, Timer_Vocalize_Random, pack, TIMER_FLAG_NO_MAPCHANGE);
+            
+            CreateTimer(5.0, Timer_VomitedUponTimeout, client, TIMER_FLAG_NO_MAPCHANGE);
+        }
+    }
+    else if (GetClientTeam(client) == TEAM_INFECTED)
+    {
+        SDKCall(g_CallBileJarPlayer, client, attacker, true);
+        
+        if (!g_bAlreadyVomitedUpon[client])
+        {
+            g_bAlreadyVomitedUpon[client] = true;
+            CreateTimer(5.0, Timer_VomitedUponTimeout, client, TIMER_FLAG_NO_MAPCHANGE);
+        }
+    }
+}
+
+PlayerDoVomit(client)
+{
+    new Float:x[3];
+    new Float:z[3];
+    new Float:j[3];
+    new String:tName[32];
+    
+    new particle = CreateEntityByName("info_particle_system");
+
+    DispatchKeyValue(particle, "effect_name", "boomer_vomit");
+
+    DispatchSpawn(particle);
+    ActivateEntity(particle);
+    AcceptEntityInput(particle, "Start");
+    Format(tName, sizeof(tName), "part%d", client);
+    DispatchKeyValue(client, "targetname", tName);
+    SetVariantString(tName);
+    AcceptEntityInput(particle, "SetParent", particle, particle, 0);
+    SetVariantString("eyes");
+    AcceptEntityInput(particle, "SetParentAttachment");
+    
+    j[0] = j[0] - 30;
+    j[1] = j[1] + 12;
+    x[1] = x[1] + 3;
+
+    TeleportEntity(particle, x, j, NULL_VECTOR);
+    GetClientEyePosition(client, z);
+    
+    z[2] = z[2] - 2;
+    
+    // do a vomit sound (per survivor diff.)
+    PlayerDoVomitSound(client, z);
+    
+    if (g_hVomitTraceAttack[client] == INVALID_HANDLE)
+    {
+        g_hVomitTraceAttack[client] = CreateTimer(0.1, Timer_VomitTraceAttack, client, TIMER_REPEAT);
+    }
+    else
+    {
+        CloseHandle(g_hVomitTraceAttack[client]);
+        g_hVomitTraceAttack[client] = INVALID_HANDLE;
+        g_hVomitTraceAttack[client] = CreateTimer(0.1, Timer_VomitTraceAttack, client, TIMER_REPEAT);
+    }
+    
+    CreateTimer(5.0, Timer_VomitDeleteParticles, EntIndexToEntRef(particle));
+    CreateTimer(VOMIT_STREAMTIME, Timer_VomitStopTimer, client);
+}
+
+PlayerDoVomitSound(client, Float:location[3] )
+{
+    new String: vomitSound[64] = "player/boomer/vomit/attack/bv1.wav";
+    
+    // pick sound based on the character (you can just do a vocalize for l4d2 survivors, though)
+    if (IsClientAndInGame(client))
+    {
+        EmitSoundToAll(vomitSound, 0, SNDCHAN_WEAPON, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, location, NULL_VECTOR, false, 0.0);
+    }
+}
+
+public Action: Timer_VomitTraceAttack(Handle:timer, any:client)
+{
+	VomitTraceAttack(client, true);
+}
+
+public bool:ExcludeSelf_Filter(entity, contentsMask, any:client)
+{
+	if( entity == client ) { return false; }
+	return true;
+}
+
+VomitTraceAttack(client, bool:bHullTrace)
+{
+	decl Float:vPos[3], Float:vAng[3], Float:vEnd[3];
+
+	GetClientEyePosition(client, vPos);
+	GetClientEyeAngles(client, vAng);
+
+	new Handle:trace = TR_TraceRayFilterEx(vPos, vAng, MASK_SHOT, RayType_Infinite, ExcludeSelf_Filter, client);
+	if ( TR_DidHit(trace) ) {
+		TR_GetEndPosition(vEnd, trace);
+	}
+	else {
+		CloseHandle(trace);
+		return;
+	}
+
+	if ( bHullTrace ) {
+		CloseHandle(trace);
+		decl Float:vMins[3], Float:vMaxs[3];
+		vMins = Float: { -15.0, -15.0, -15.0 };
+		vMaxs = Float: { 15.0, 15.0, 15.0 };
+		trace = TR_TraceHullFilterEx(vPos, vEnd, vMins, vMaxs, MASK_SHOT, ExcludeSelf_Filter, client);
+		
+		if ( !TR_DidHit(trace) ) {
+			CloseHandle(trace);
+			return;
+		}
+	}
+
+	TR_GetEndPosition(vEnd, trace);
+	if ( GetVectorDistance(vPos, vEnd) > VOMIT_RANGE ) {
+		CloseHandle(trace);
+		return;
+	}
+
+	new entity = TR_GetEntityIndex(trace);
+	CloseHandle(trace);
+
+	if ( IsClientAndInGame(entity) && !g_bAlreadyVomitedUpon[entity])
+    {
+        if (GetClientTeam(entity) == TEAM_INFECTED && VOMIT_ON_TYPE & VOMIT_TYPE_SI)
+        {
+            if (!IsPlayerGhost(entity) && IsPlayerAlive(entity)) {
+                PlayerGetVomitedOn(entity, client);
+            }
+        }
+        else if (GetClientTeam(entity) == TEAM_SURVIVOR && VOMIT_ON_TYPE & VOMIT_TYPE_SUR)
+        {
+            if (IsPlayerAlive(entity)) {
+                PlayerGetVomitedOn(entity, client);
+            }
+        }
+	}
+	else
+    {
+		if (IsValidEntity(entity) && VOMIT_ON_TYPE & VOMIT_TYPE_CI)
+        {
+			decl String:classname[16];
+			GetEdictClassname(entity, classname, sizeof(classname));
+			if( strcmp(classname, "infected") == 0 || strcmp(classname, "witch") == 0 )
+			{
+				VomitEntity(entity);
+			}
+		}
+	}
+}
+
+VomitEntity(entity)
+{
+	decl i_InfoEnt, String:s_TargetName[32];
+	i_InfoEnt = CreateEntityByName("info_goal_infected_chase");
+	if (IsValidEdict(i_InfoEnt))
+	{
+		new Float:f_Origin[3];
+		GetEntPropVector(entity, Prop_Data, "m_vecOrigin", f_Origin);
+		f_Origin[2] += 20.0;
+		DispatchKeyValueVector(i_InfoEnt, "origin", f_Origin);
+		FormatEx(s_TargetName, sizeof(s_TargetName), "goal_infected%d", entity);
+		DispatchKeyValue(i_InfoEnt, "targetname", s_TargetName);
+		GetEntPropString(entity, Prop_Data, "m_iName", s_TargetName, sizeof(s_TargetName));
+		DispatchKeyValue(i_InfoEnt, "parentname", s_TargetName);
+		DispatchSpawn(i_InfoEnt);
+		SetVariantString(s_TargetName);
+		AcceptEntityInput(i_InfoEnt, "SetParent", i_InfoEnt, i_InfoEnt, 0);
+		ActivateEntity(i_InfoEnt);
+		AcceptEntityInput(i_InfoEnt, "Enable");
+	}
+
+	SetEntProp(entity, Prop_Send, "m_iGlowType", 3);
+	SetEntProp(entity, Prop_Send, "m_glowColorOverride", -4713783);
+	SetEntProp(entity, Prop_Send, "m_glowColorOverride", -4713783);
+	CreateTimer(15.0, Timer_VomitDisableGlow, entity);
+	CreateTimer(5.0, Timer_VomitDisableChase, i_InfoEnt);
+}
+
+public Action:Timer_VomitDeleteParticles(Handle:timer, any:particle)
+{
+	if (EntRefToEntIndex(particle) != INVALID_ENT_REFERENCE)
+	{
+		if (IsValidEntity(particle) || IsValidEdict(particle))
+		{
+			new String:classname[64];
+			GetEdictClassname(particle, classname, sizeof(classname));
+			if (StrEqual(classname, "info_particle_system", false))
+			{
+				AcceptEntityInput(particle, "stop");
+				AcceptEntityInput(particle, "kill");
+			}
+		}
+	}
+}
+
+public Action:Timer_VomitStopTimer(Handle:timer, any:client)
+{
+	if (g_hVomitTraceAttack[client] != INVALID_HANDLE)
+	{
+		CloseHandle(g_hVomitTraceAttack[client]);
+		g_hVomitTraceAttack[client] = INVALID_HANDLE;
+	}
+}
+
+public Action:Timer_VomitedUponTimeout(Handle:timer, any:client)
+{
+    g_bAlreadyVomitedUpon[client] = false;
+}
+
+
+public Action:Timer_VomitDisableGlow(Handle:h_Timer, any:i_Ent)
+{
+	decl String:s_ModelName[64];
+	
+	if (!IsValidEdict(i_Ent) || !IsValidEntity(i_Ent))
+	return Plugin_Handled;
+	
+	GetEntPropString(i_Ent, Prop_Data, "m_ModelName", s_ModelName, sizeof(s_ModelName));
+
+	if (StrContains(s_ModelName, "infected") != -1)
+	{
+		SetEntProp(i_Ent, Prop_Send, "m_iGlowType", 0);
+		SetEntProp(i_Ent, Prop_Send, "m_glowColorOverride", 0);
+	}
+	
+	return Plugin_Continue;
+}
+public Action:Timer_VomitDisableChase(Handle:h_Timer, any:i_Ent)
+{
+	if (IsValidEntity(i_Ent))
+	{
+		AcceptEntityInput(i_Ent, "kill");
+	}
+	return Plugin_Continue;
+}
 
 /*  L4D2 Storm plugin
     -------------------------- */

@@ -78,7 +78,8 @@ new     Handle:         g_setClass                                          = IN
 new     Handle:         g_createAbility                                     = INVALID_HANDLE;
 new                     g_oAbility                                          = 0;
 new     Handle:         g_CallPushPlayer                                    = INVALID_HANDLE;       // for CreateExplosion() push
-new     Handle:         g_CallBileJarPlayer                                 = INVALID_HANDLE;       // for biling players at will
+new     Handle:         g_CallBileJarPlayer                                 = INVALID_HANDLE;       // for biling infected at will
+new     Handle:         g_CallVomitSurvivor                                 = INVALID_HANDLE;       // for biling survivors at will
 
 
 new     Handle:         g_hSpawnGhostTimer      [MAXPLAYERS+1]              = {INVALID_HANDLE,...};
@@ -222,6 +223,14 @@ new     Handle:         g_hWitchSpawnTimer                                  = IN
 new                     g_iMedicUnits                                       = 8;                    // the current 'mediunits' available to the medic
 new                     g_iMedicRanOut                                      = 0;                    // so we can prevent over-reporting
 new     bool:           g_bMedicFirstHandout                                = false;                // whether the medic has handed out pills to anyone yet (for removal check)
+
+new     Handle:         g_hBoomFluTimer                                     = INVALID_HANDLE;       // for the EVT_BOOMFLU
+new                     g_iBoomFluCounter                                   = 0;                    // counts seconds for the boom flu
+new                     g_iBoomFluActivate                                  = 0;                    // after how many seconds the boomer flu should activate (again)
+
+// Vomiting
+new     Handle:         g_hVomitTraceAttack     [MAXPLAYERS+1]              = INVALID_HANDLE;       // for tracking who a player vomits upon
+new     bool:           g_bAlreadyVomitedUpon   [MAXPLAYERS+1]              = false;                // so we can just do things once per vomit-covering
 
 // Hats
 new                     g_iHatIndex[MAXPLAYERS+1];				// Player hat entity reference

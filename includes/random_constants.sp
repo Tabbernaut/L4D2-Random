@@ -165,6 +165,8 @@ const           EVENT_MEDIC_UNITS_BASE  = 11;           // EVT_MEDIC        how 
 const           EVENT_MEDIC_UNITS_MIN   = 7;            // EVT_MEDIC        minimum mediunits
 const           EVENT_MEDIC_UNITS_MAX   = 14;           // EVT_MEDIC        maximum mediunits 
 const           EVENT_MEDIC_DIFF_BASE   = 4;            // EVT_MEDIC        use this difficulty for the base value (and scale the rest)
+const           EVENT_BOOMFLU_MININT    = 20;           // EVT_BOOMFLU      minimum interval between vomits
+const           EVENT_BOOMFLU_MAXINT    = 55;           // EVT_BOOMFLU
 
 const Float:    EVENT_ENC_W_T1          = 1.5;          // EVT_ENCUMBERED   for determining total player weight
 const Float:    EVENT_ENC_W_T2          = 2.5;
@@ -289,8 +291,9 @@ const           EVT_GUNSWAP             = 32;
 const           EVT_WITCHES             = 33;
 const           EVT_BADSANTA            = 34;
 const           EVT_MEDIC               = 35;
+const           EVT_BOOMFLU             = 36;
 
-const           EVT_TOTAL               = 36;
+const           EVT_TOTAL               = 37;
     
 const           EVTWOMEN_TYPE_AXE       = 1;            // axe effect
 const           EVTWOMEN_TYPE_ROCK      = 2;            // rockstars
@@ -309,16 +312,17 @@ const           HITTAB_CART             = 9;
 const           HITTAB_TREE             = 10;
 const           HITTAB_DUMPSTER         = 11;            // smaller
 const           HITTAB_DUMPSTER_ALT     = 12;
-const           HITTAB_TREETRUNK        = 13;
-const           HITTAB_BUMPERCAR        = 14;
-const           HITTAB_HAYBAIL          = 15;
-const           HITTAB_HANDTRUCK        = 16;
-const           HITTAB_TABLE            = 17;
+const           HITTAB_GENERATOR        = 13;
+const           HITTAB_TREETRUNK        = 14;
+const           HITTAB_BUMPERCAR        = 15;
+const           HITTAB_HAYBAIL          = 16;
+const           HITTAB_HANDTRUCK        = 17;
+const           HITTAB_TABLE            = 18;
 
 const           HITTAB_LASTADDON        = 7;
 const           HITTAB_LASTCAR          = 7;
 const           HITTAB_FIRSTSMALL       = 10;
-const           HITTAB_TOTAL            = 18;
+const           HITTAB_TOTAL            = 19;
 
 const           EQ_ITEMS                = 1;            // flags for rand_equal cvar
 const           EQ_DOORS                = 2;
@@ -371,6 +375,7 @@ const           SILENCED_CI             = 2;            // not sure if I want to
 const           HAT_BABY                = 0;            // g_csHatModels index
 const           HAT_KEYMASTER           = 1;
 const           HAT_MEDIC               = 2;
+const           HAT_BOOMFLU             = 3;
 
 
 // Third-party and mechanics configuration
@@ -399,6 +404,13 @@ const Float:    TIMER_POUNCE            = 0.1;          // repeat timer to check
 
 const Float:    MULTIWITCH_EXTRA_FLOW   = 3000.0;
 const Float:    MULTIWITCH_RESPAWN_FREQ = 5.0;
+
+const Float:    VOMIT_RANGE             = 100.0;
+const           VOMIT_ON_TYPE           = 7;            // 1 = survivors; 2 = special infected; 4 = common infected [ flags ]
+const           VOMIT_TYPE_SUR          = 1;
+const           VOMIT_TYPE_SI           = 2;
+const           VOMIT_TYPE_CI           = 4;
+const Float:    VOMIT_STREAMTIME        = 3.75;
 
 
 // Resources
@@ -722,7 +734,8 @@ new const String: g_csEventText[][] =
     "\x04Magic Gun Swap\x01 - Empty your clip to get a new weapon.",
     "\x04Witch Hunt\x01 - Kill witches for \x0425\x01 bonus points.",
     "\x04Lousy Gifts\x01 - All gifts are bad! \x0420\x01 bonus for unwrapping anyway.",
-    "\x04MEDIC!\x01 - There is one medic with a limited supply of healing items."
+    "\x04MEDIC!\x01 - There is one medic with a limited supply of healing items.",
+    "\x04Boomer Flu\x01 - One survivor caught the boomer flu and is prone to vomit."
 };
 
 new const JUNK_FIRSTNONSOLID = 4;
@@ -759,6 +772,7 @@ new const String: g_csHittableModels[][] =
     "models/props_foliage/swamp_fallentree01_bare.mdl",
     "models/props_junk/dumpster.mdl",
     "models/props_junk/dumpster_2.mdl",
+    "models/props_vehicles/generatortrailer01.mdl",
     "models/props_foliage/tree_trunk_fallen.mdl",
     "models/props_fairgrounds/bumpercar.mdl",               // "props_fairgrounds/bumper_car01.mdl" ?
     "models/props_unique/haybails_single.mdl",
@@ -795,6 +809,7 @@ new const String: g_csHatModels[][] =
     "models/props_interiors/teddy_bear.mdl",
     "models/props_lighting/light_construction02.mdl",
     "models/w_models/weapons/w_eq_medkit.mdl",
+    "models/infected/limbs/exploded_boomer_head.mdl",
     "models/props_fortifications/orange_cone001_clientside.mdl"
 };
 
@@ -854,6 +869,7 @@ new const String: g_csPreCacheModels[][] =
     "models/props_interiors/teddy_bear.mdl",
     "models/props_lighting/light_construction02.mdl",
     "models/w_models/weapons/w_eq_medkit.mdl",
+    "models/infected/limbs/exploded_boomer_head.mdl",
     "models/props_fortifications/orange_cone001_clientside.mdl",    // not used, but precache for now anyway
     
     // boomette
@@ -870,6 +886,12 @@ new const String: g_csPrefetchSounds[][] =
     "ambient/explosions/explode_3.wav",
     "animation/van_inside_debris.wav",
     "player/boomer/voice/vomit/male_boomer_vomit_03.wav",
+    "player/boomer/vomit/attack/bv1.wav",
+    "player/boomer/voice/pain/male_boomer_painshort_05.wav",
+    "player/boomer/voice/pain/male_boomer_painshort_06.wav",
+    "player/boomer/voice/pain/male_boomer_painshort_07.wav",
+    "player/boomer/voice/alert/male_boomer_alert_04.wav",
+    "player/boomer/voice/alert/male_boomer_alert_07.wav",
     "ambient/alarms/klaxon1.wav"
     /*
     // gift lines
@@ -878,6 +900,16 @@ new const String: g_csPrefetchSounds[][] =
     "player/mechanic/worldc2m3b15.wav",
     "player/mechanic/worldc2m3b16.wav"
     */
+};
+
+new const VOMIT_SOUND_FIRSTIMMINENT = 3;
+new const String: g_csPreVomitSounds[][] =
+{
+    "player/boomer/voice/pain/male_boomer_painshort_05.wav",
+    "player/boomer/voice/pain/male_boomer_painshort_06.wav",
+    "player/boomer/voice/pain/male_boomer_painshort_07.wav",
+    "player/boomer/voice/alert/male_boomer_alert_04.wav",
+    "player/boomer/voice/alert/male_boomer_alert_07.wav"
 };
 
 new const String: g_csCSSWeapons[][] =

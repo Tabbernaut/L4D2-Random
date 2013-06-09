@@ -212,6 +212,9 @@ ReportSpecialEventRole(bool:isNew=false, client=0)
         case EVT_MEDIC: {
             Format(sReport, REPLINELENGTH, "%s medic: \x05%N\x01.", (isNew) ? "New" : "Current", g_iSpecialEventRole);
         }
+        case EVT_BOOMFLU: {
+            Format(sReport, REPLINELENGTH, "\x05%N\x01 %s the boomer flu!", g_iSpecialEventRole, (isNew) ? "caught" : "has");
+        }
         default: { return; }
     }
     
@@ -224,18 +227,19 @@ ReportSpecialEventRole(bool:isNew=false, client=0)
         }
     }
     
-    // medics should be told some more stuff
-    if (_:g_iSpecialEvent == EVT_MEDIC)
+    if ( (!client || client == g_iSpecialEventRole) && IsClientAndInGame(g_iSpecialEventRole))
     {
-        if ( (!client || client == g_iSpecialEventRole) && IsClientAndInGame(g_iSpecialEventRole))
-        {
+        // medics should be told some more stuff
+        if (_:g_iSpecialEvent == EVT_MEDIC) {
             if (g_iMedicUnits > 0) {
                 PrintToChat(g_iSpecialEventRole, "\x01[\x05r\x01] You have \x03%i\x01 medi-unit%s left. Costs: medkit: \x052\x01, pills: \x051\x01.", g_iMedicUnits, (g_iMedicUnits == 1) ? "" : "s" );
             } else {
                 PrintToChat(g_iSpecialEventRole, "\x01[\x05r\x01] You have no medical supplies left.");
             }
         }
-        
+        else if (_:g_iSpecialEvent == EVT_BOOMFLU) {
+            PrintToChat(g_iSpecialEventRole, "\x01[\x05r\x01] Try not to vomit on your teammates...");
+        }
     }
 }
 // Make random stuff happen
@@ -629,6 +633,8 @@ RANDOM_DetermineRandomStuff()
                     SetConVarInt(FindConVar("ammo_sniperrifle_max"), RoundFloat( float(g_iDefAmmoSniper) * EVENT_MAXAMMO_FACTOR) );
                     SetConVarInt(FindConVar("ammo_assaultrifle_max"), RoundFloat( float(g_iDefAmmoRifle) * EVENT_MAXAMMO_FACTOR) );
                     SetConVarInt(FindConVar("ammo_autoshotgun_max"), RoundFloat( float(g_iDefAmmoAutoShotgun) * EVENT_MAXAMMO_FACTOR) );
+                    
+                    g_iDifficultyRating++;
                 }
                 case EVT_WOMEN: {
                     g_bNoPriWeapons = true;
@@ -683,7 +689,10 @@ RANDOM_DetermineRandomStuff()
                     g_bSpecialEventPlayerCheck = true;
                     g_bNoHealthItems = true;
                 }
-                
+                case EVT_BOOMFLU: {
+                    g_bSpecialEventPlayerCheck = true;
+                    g_iDifficultyRating++;
+                }
             }
             PrintDebug("[rand] Picked Special Event: %i (%s) [extra, %i, sub: %i, str: %s]", g_iSpecialEvent, g_csEventText[g_iSpecialEvent], g_iSpecialEventExtra, g_iSpecialEventExtraSub, g_sSpecialEventExtra);
         }
@@ -3294,13 +3303,8 @@ RANDOM_DoGiftEffect(client, entity)
             }
             case GIFT_NEG_VOMIT: {   // boom box-opener
                 PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04vomit surprise\x01!", client);
-                SDKCall(g_CallBileJarPlayer, client, client);
                 EmitSoundToAll(BOOMGIFT_SOUND, client);
-                
-                new Handle:pack = CreateDataPack();
-                WritePackCell(pack, client);
-                WritePackString(pack, "boomerreaction");
-                CreateTimer(0.5, Timer_Vocalize_Random, pack, TIMER_FLAG_NO_MAPCHANGE);
+                PlayerGetVomitedOn(client);
             }
             case GIFT_NEG_ALLDROP: {   // everone drops everything
                 PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04magic slippery fingers\x01!", client);
@@ -3684,6 +3688,24 @@ DetermineSpawnClass(any:client, any:iClass)
     {
         new oldClass = iClass;
         iClass = acceptClasses[ GetRandomInt(0, acceptCount - 1) ];
+        
+        // repicks for death order
+        if (g_iClassTimeout[iClass] > 0)
+        {
+            new dMode = GetConVarInt(g_hCvarDeathOrderMode);
+            
+            if (dMode == 1) {
+                if (GetRandomFloat(0.001,1.0) <= (float(g_iClassTimeout[iClass]) / 3.0) * 0.5) {
+                    iClass = acceptClasses[ GetRandomInt(0, acceptCount - 1) ];
+                }
+            }
+            else if (dMode == 2) {
+                if (GetRandomFloat(0.001,1.0) <= (float(g_iClassTimeout[iClass]) / 4.0) * 1.0) {
+                    iClass = acceptClasses[ GetRandomInt(0, acceptCount - 1) ];
+                }
+            }
+        }
+        
         PrintDebug("[rand si] spawn repick for %N: %s => %s instead.", client, g_csSIClassName[oldClass], g_csSIClassName[iClass]);
     }
     

@@ -9,6 +9,8 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
+#define VOMIT_PARTICLE          "boomer_vomit"
+
 
 INIT_DefineCVars()
 {
@@ -153,6 +155,7 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_WITCHES] = CreateConVar(         "rand_weight_evt_witches",       "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_BADSANTA] = CreateConVar(        "rand_weight_evt_badgifts",      "4",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_MEDIC] = CreateConVar(           "rand_weight_evt_medic",         "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_BOOMFLU] = CreateConVar(         "rand_weight_evt_boomerflu",     "6",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     g_hArCvarGiftWeight[GIFT_POS_HEALTH] = CreateConVar(    "rand_weight_gift_health",       "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_POS_HEALTH_T] = CreateConVar(  "rand_weight_gift_temphealth",   "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -357,6 +360,7 @@ INIT_FillTries()
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/taxi_city.mdl",                HITTABLE_PHYSICS_CAR);  // share city_glass
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/taxi_rural.mdl",               HITTABLE_PHYSICS_CAR);  // share city_glass
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/taxi_city_glass.mdl",          HITTABLE_PHYSICS_ADDON);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/generatortrailer01.mdl",       HITTABLE_PHYSICS_SMALL);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/dumpster.mdl",                     HITTABLE_PHYSICS_SMALL);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/dumpster_2.mdl",                   HITTABLE_PHYSICS_SMALL);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props/cs_assault/forklift.mdl",               HITTABLE_PHYSICS);
@@ -492,20 +496,16 @@ INIT_PrepareAllSDKCalls()
     g_CallBileJarPlayer = EndPrepSDKCall();
     
     if (g_CallBileJarPlayer == INVALID_HANDLE)
-        ThrowError("Unable to find the \"CTerrorPlayer_OnHitByVomitJar\" signature.");
+            ThrowError("Unable to find the \"CTerrorPlayer_OnHitByVomitJar\" signature.");
     
-    /*
     // vomit tracking
     StartPrepSDKCall(SDKCall_Player);
-	PrepSDKCall_SetFromConf(g_hGameConf, SDKConf_Signature, "CTerrorPlayer_OnVomitedUpon");
-	PrepSDKCall_AddParameter(SDKType_CBasePlayer, SDKPass_Pointer);
-	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-	g_CallVomitSurvivor = EndPrepSDKCall();
-	if(g_CallVomitSurvivor == INVALID_HANDLE)
-	{
-		SetFailState("Unable to find the \"CTerrorPlayer_OnVomitedUpon\" signature, check the file version!");
-	}
-    */
+    PrepSDKCall_SetFromConf(g_confRaw, SDKConf_Signature, "CTerrorPlayer_OnVomitedUpon");
+    PrepSDKCall_AddParameter(SDKType_CBasePlayer, SDKPass_Pointer);
+    PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+    g_CallVomitSurvivor = EndPrepSDKCall();
+    if (g_CallVomitSurvivor == INVALID_HANDLE)
+            SetFailState("Unable to find the \"CTerrorPlayer_OnVomitedUpon\" signature.");
     
     CloseHandle(g_confRaw);
 }
@@ -723,6 +723,7 @@ INIT_PrecacheParticles()
     INIT_PrecacheParticle(EXPLOSION_PARTICLE2);
     INIT_PrecacheParticle(EXPLOSION_PARTICLE3);
     INIT_PrecacheParticle(BURN_IGNITE_PARTICLE);
+    INIT_PrecacheParticle(VOMIT_PARTICLE);
 }
 
 INIT_PrecacheParticle(String:ParticleName[])
