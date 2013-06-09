@@ -240,6 +240,8 @@ new     bool:           g_RI_bNoCola                                        = fa
 new                     g_RI_iTankBanStart                                  = 0;                    // block specific tank spawn range
 new                     g_RI_iTankBanEnd                                    = 0;                    // block specific tank spawn range
 new     bool:           g_RI_bWeakHittables                                 = false;                // makes hittables do less damage (like c5m5 normally)
+new                     g_RI_iDistance                                      = 0;                    // normal max map distance points
+new                     g_RI_iDistanceHard                                  = 0;                    // hard-path max map distance points
 
 
 // ConVars
@@ -368,3 +370,6 @@ new     Float:          g_fDefTankFlowVariation                             = 0.
 
 new                     g_iDefVomitInterval                                 = 30;
 new                     g_iDefSpitInterval                                  = 20;
+
+//new     Float:          g_fDefCedaBileProb                                  = 0.1;
+new     Float:          g_fDefRiotTonfaProb                                 = 0.15;

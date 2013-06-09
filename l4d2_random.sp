@@ -510,6 +510,17 @@ public Action: TestGnomes_Cmd(client, args)
         return Plugin_Handled;
     }
     
+    // test models
+    /*
+    for (new i=1; i <= MaxClients; i++)
+    {
+        if (IsSurvivor(i)) {
+            SetEntityModel(i, "models/survivors/survivor_coach.mdl");
+            //SetEntityModel(i, "models/infected/boomer.mdl");
+        }
+    }
+    */
+    
     // test messing around with health
     //SetEntityHealth(client, 1);
     //SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 99.0);
@@ -2348,7 +2359,8 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
         g_fGotGhost[victim] = 0.0;
         g_fDeathAfterGhost[victim] = 0.0;
         
-        if (!g_bIsFirstAttack)        // just a safeguard against false detections
+        // do we need to !g_bIsFirstAttack block this? try with leftstart only
+        if (g_bPlayersLeftStart)
         {
             for (new i=0; i <= MaxClients; i++) {
                 if (i == victim) { continue; }

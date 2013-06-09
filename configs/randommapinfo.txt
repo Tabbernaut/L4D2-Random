@@ -33,6 +33,8 @@
 		"doors"		"0"
 		"tank_ban_start"	"64"
 		"tank_ban_end"		"68"
+		"distance"	"600"
+		"distance_hard"	"700"
 	}
 	"c1m4_atrium"
 	{
@@ -115,6 +117,8 @@
 		"no_storm"	"1"
 		"tank_ban_start"	"80"
 		"tank_ban_end"		"100"
+		"distance"	"500"
+		"distance_hard"	"700"
 	}
 	"c4m5_milltown_escape"
 	{
@@ -126,6 +130,8 @@
 		"intro"		"1"
 		"tank_ban_start"	"0"
 		"tank_ban_end"		"40"
+		"distance"	"300"
+		"distance_hard"	"400"
 	}
 	"c5m2_park"
 	{
@@ -138,6 +144,8 @@
 		"doors"		"0"
 		"tank_ban_start"	"50"
 		"tank_ban_end"		"70"
+		"distance"	"600"
+		"distance_hard"	"700"
 	}
 	"c5m4_quarter"
 	{
@@ -188,6 +196,8 @@
 		"doors"		"2"
 		"tank_ban_start"	"0"
 		"tank_ban_end"		"54"
+		"distance"	"400"
+		"distance_hard"	"500"
 	}
 	"c8m2_subway"
 	{
@@ -202,6 +212,8 @@
 		"difficulty"	"1"
 		"doors"		"2"
 		"no_tank_var"	"1"
+		"distance"	"600"
+		"distance_hard"	"700"
 	}
 	"c8m5_rooftop"
 	{
@@ -290,6 +302,8 @@
 	{
 		"difficulty"	"1"
 		"doors"		"0"
+		"distance"	"600"
+		"distance_hard"	"700"
 	}
 	"c12m5_cornfield"
 	{

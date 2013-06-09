@@ -224,6 +224,10 @@ INIT_CVarsGetDefault()
     g_iDefVomitInterval =       GetConVarInt(FindConVar("z_vomit_interval"));
     g_iDefSpitInterval =        GetConVarInt(FindConVar("z_spit_interval"));
     
+    //g_fDefCedaBileProb =        GetConVarFloat(FindConVar("sv_infected_ceda_vomitjar_probability"));
+    g_fDefRiotTonfaProb =       GetConVarFloat(FindConVar("sv_infected_riot_control_tonfa_probability"));
+    
+    
     if (FindConVar("hc_car_standing_damage") != INVALID_HANDLE) {
         g_iDefTankHittableDamage =  GetConVarInt(FindConVar("hc_car_standing_damage"));
     }
@@ -536,17 +540,19 @@ RI_KV_Load()
 
 bool: RI_KV_UpdateRandomMapInfo()
 {
-    g_RI_bIsIntro = false;      // whether the map is the first of campaign
-    g_RI_iDifficulty = 0;       // difficulty offset for map
-    g_RI_iDoors = 1;            // normal doors amount (2 = many, 0 = no doors)
-    g_RI_bNoTank = false;       // whether we should block tanks
-    g_RI_bNoTankVar = false;    // whether we should set tank variation to 0
-    g_RI_bNoWitch = false;      // whether we should block witches
-    g_RI_bNoStorm = false;      // whether there shouldn't be storms on the map
-    g_RI_bNoCola = false;       // whether we should block cola on the map
-    g_RI_bWeakHittables = false; // map works like c5m5
+    g_RI_bIsIntro = false;          // whether the map is the first of campaign
+    g_RI_iDifficulty = 0;           // difficulty offset for map
+    g_RI_iDoors = 1;                // normal doors amount (2 = many, 0 = no doors)
+    g_RI_bNoTank = false;           // whether we should block tanks
+    g_RI_bNoTankVar = false;        // whether we should set tank variation to 0
+    g_RI_bNoWitch = false;          // whether we should block witches
+    g_RI_bNoStorm = false;          // whether there shouldn't be storms on the map
+    g_RI_bNoCola = false;           // whether we should block cola on the map
+    g_RI_bWeakHittables = false;    // map works like c5m5
+    g_RI_iDistance = 0;             // if > 0, the map's normal distance
+    g_RI_iDistanceHard = 0;         // if > 0, the map's hard-path distance
     
-    g_RI_iTankBanStart = -1;    // block some tank spawns
+    g_RI_iTankBanStart = -1;        // block some tank spawns
     g_RI_iTankBanEnd = -1;
     
     new String: mapname[64];
@@ -566,6 +572,8 @@ bool: RI_KV_UpdateRandomMapInfo()
         g_RI_iTankBanStart = KvGetNum(g_kRIData, "tank_ban_start", -1);
         g_RI_iTankBanEnd = KvGetNum(g_kRIData, "tank_ban_end", -1);
         g_RI_bWeakHittables = bool: (KvGetNum(g_kRIData, "weak_hittables", 0));
+        g_RI_iDistance = KvGetNum(g_kRIData, "distance", g_RI_iDistance);
+        g_RI_iDistanceHard = KvGetNum(g_kRIData, "distance_hard", g_RI_iDistanceHard);
         
         PrintDebug("[RI] Read data: intro: %i; difficulty: %i; doors; %i; nostorm: %i", g_RI_bIsIntro, g_RI_iDifficulty, g_RI_iDoors, g_RI_bNoStorm);
         

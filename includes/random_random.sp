@@ -23,8 +23,18 @@ DoHelpMessage(client)
 {
     if (!IsClientAndInGame(client) || IsFakeClient(client)) { return; }
     
-    PrintToChat(client, "\x03Random\x05: Map items are randomized but equal between teams. Special Infected classes are random and unlimited (any combination is possible).");
-    PrintToChat(client, "\x05There may be a 'special event' that lasts one round. Gifts can be opened by holding the USE key.");
+    
+    PrintToChat(client, "\x03Random\x05: Map items are randomized%s.%s",
+            (GetConVarInt(g_hCvarEqual) & EQ_ITEMS) ? " but equal between teams" : " and will be different for each team",
+            (GetConVarBool(g_hCvarRandomSpawns)) ? " Special Infected classes are random and unlimited (any combination is possible)." : ""
+        );
+    
+    if (GetConVarFloat(g_hCvarSpecialEventChance) > 0.0) {
+        PrintToChat(client, "\x05There may be a 'special event' that lasts one round.%s", (GetConVarInt(g_hArCvarWeight[INDEX_GIFT]) > 0) ? " Gifts can be opened by holding the USE key." : "" );
+    } else if (GetConVarInt(g_hArCvarWeight[INDEX_GIFT]) > 0)  {
+        PrintToChat(client, "\x05You can find Random gifts that can be opened by holding the USE key.");
+    }
+    
     PrintToChat(client, "\x05Commands you can type in chat: \x04!rand\x05, \x04!damage\x05, \x04!bonus\x05 and \x04!drop\x01. ");
     PrintToChat(client, "\x05Visit: \x03http://www.tabun.nl/random\x05 for more information.");
 }
@@ -289,6 +299,10 @@ RANDOM_DetermineRandomStuff()
         }
         new distNew = g_iDefaultDistance;
         
+        // replace with RI data if we have it:
+        if (g_bStripperAltDetected && g_RI_iDistanceHard > 0) { distNew = g_RI_iDistanceHard; }
+        else if (g_RI_iDistance > 0) { distNew = g_RI_iDistance; }
+        
         if (distMode != 0 && !g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_POINTS))
         {
             if (distMode == 1)
@@ -511,6 +525,9 @@ RANDOM_DetermineRandomStuff()
                     SetConVarInt(FindConVar("z_spitter_limit"), 0);
                     SetConVarInt(FindConVar("z_jockey_limit"), 0);
                     SetConVarInt(FindConVar("z_charger_limit"), 0);
+                    
+                    // no tonfa's
+                    SetConVarFloat(FindConVar("sv_infected_riot_control_tonfa_probability"), 0.0);
                 }
                 case EVT_FF: {
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_EASY);
@@ -629,6 +646,9 @@ RANDOM_DetermineRandomStuff()
                     
                     SetConVarInt(FindConVar("z_vomit_interval"), 15);
                     SetConVarInt(FindConVar("z_spit_interval"), 15);
+                    
+                    // no tonfa's
+                    SetConVarFloat(FindConVar("sv_infected_riot_control_tonfa_probability"), 0.0);
                     
                     // which melee is available? this determines the event type
                     new bool: bAxe = IsMeleeAvailable("fireaxe");

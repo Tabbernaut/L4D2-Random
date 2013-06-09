@@ -212,6 +212,9 @@ EVENT_ResetOtherCvars()
     SetConVarInt(FindConVar("z_vomit_interval"), g_iDefVomitInterval);
     SetConVarInt(FindConVar("z_spit_interval"), g_iDefSpitInterval);
     
+    //SetConVarFloat(FindConVar("sv_infected_ceda_vomitjar_probability"), g_fDefCedaBileProb);
+    SetConVarFloat(FindConVar("sv_infected_riot_control_tonfa_probability"), g_fDefRiotTonfaProb);
+    
     // hittable control
     if (FindConVar("hc_car_standing_damage") != INVALID_HANDLE) {
         new tmpDmg = (g_RI_bWeakHittables) ? WEAK_HITTABLE_DMG : g_iDefTankHittableDamage;
@@ -3450,6 +3453,11 @@ CreateHat(client, index = -1) {
     if (entity != -1)
     {
         SetEntityModel(entity, g_csHatModels[index]);
+        /*
+        DispatchKeyValue(entity, "glowcolor", "255 128 0");
+        DispatchKeyValue(entity, "glowstate", "3");
+        DispatchKeyValue(entity, "glowrange", "32000");
+        */
         DispatchSpawn(entity);
         if (fScale != 0.0) {
             SetEntPropFloat(entity, Prop_Send, "m_flModelScale", fScale);
