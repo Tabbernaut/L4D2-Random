@@ -114,7 +114,7 @@ public OnPluginStart()
     HookEvent("player_team",                Event_PlayerTeam,               EventHookMode_Post);
     HookEvent("player_left_start_area",     Event_PlayerLeftStartArea,      EventHookMode_PostNoCopy);
     
-    HookEvent("player_hurt",                Event_PlayerHurt,               EventHookMode_Pre);
+    //HookEvent("player_hurt",                Event_PlayerHurt,               EventHookMode_Pre);
     HookEvent("player_death",               Event_PlayerDeath,              EventHookMode_Pre);
     HookEvent("player_spawn",               Event_PlayerSpawn,              EventHookMode_Post);
     HookEvent("ghost_spawn_time",           Event_GhostSpawnTime,           EventHookMode_Post);
@@ -1054,16 +1054,34 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
         }
     }
     
-    if (    _:g_iSpecialEvent != EVT_MINITANKS
-        &&  _:g_iSpecialEvent != EVT_PROTECT
-        &&  _:g_iSpecialEvent != EVT_WOMEN
-        &&  _:g_iSpecialEvent != EVT_WITCHES
-    ) {
-        return Plugin_Continue;
+    // skeets, where skeeted hunters should give points
+    if (g_iSpecialEvent == EVT_SKEET)
+    {
+        if (    !IsClientAndInGame(victim) || !IsClientAndInGame(attacker) || GetClientTeam(attacker) != TEAM_SURVIVOR || GetClientTeam(victim) != TEAM_INFECTED
+            ||  GetEntProp(victim, Prop_Send, "m_zombieClass") != ZC_HUNTER
+        ) { return Plugin_Continue; }
+        
+        // handle old shotgun blast, if there was one
+        if (iHunterShotDmg[victim][attacker] > 0 && FloatSub(GetGameTime(), fHunterShotStart[victim][attacker]) > SHOTGUN_BLAST_TIME) {
+            fHunterShotStart[victim][attacker] = 0.0;
+        }
+            
+        // handle new hit (only shotgun), and only on pouncing hunters
+        if (GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce") && damagetype & DMG_BUCKSHOT) {
+            
+            // first pellet hit?
+            if (fHunterShotStart[victim][attacker] == 0.0)
+            {
+                // new shotgun blast
+                fHunterShotStart[victim][attacker] = GetGameTime();
+                iHunterShotDmg[victim][attacker] = 0;
+            }
+            iHunterShotDmg[victim][attacker] += RoundToFloor(damage);
+            iHunterShotDmgTeam[victim] += RoundToFloor(damage);
+        }
     }
-    
     // women, where the witch should die more easily to melee swings
-    if ( _:g_iSpecialEvent == EVT_WOMEN || _:g_iSpecialEvent == EVT_WITCHES )
+    else if ( _:g_iSpecialEvent == EVT_WOMEN || _:g_iSpecialEvent == EVT_WITCHES )
     {
         if (!IsClientAndInGame(attacker))
         {
@@ -1075,12 +1093,11 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
             return Plugin_Changed;
         }
     }
-    
-    if ( !IsClientAndInGame(victim) ) { return Plugin_Continue; }
-    
     // protect, baby player takes more damage (the others less)
-    if (_:g_iSpecialEvent == EVT_PROTECT)
+    else if (_:g_iSpecialEvent == EVT_PROTECT)
     {
+        if ( !IsClientAndInGame(victim) ) { return Plugin_Continue; }
+        
         if ( GetClientTeam(victim) != TEAM_SURVIVOR ) { return Plugin_Continue; }
         
         new String: classname[32];
@@ -1106,12 +1123,12 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
             return Plugin_Changed;
         }
     }
-    
-    if ( !IsClientAndInGame(attacker) ) { return Plugin_Continue; }
-    
     // set a fixed damage amount for melee weaps on tank
-    if (_:g_iSpecialEvent == EVT_MINITANKS)
+    else if (_:g_iSpecialEvent == EVT_MINITANKS)
     {
+        if ( !IsClientAndInGame(victim) ) { return Plugin_Continue; }
+        if ( !IsClientAndInGame(attacker) ) { return Plugin_Continue; }
+        
         if ( GetClientTeam(attacker) != TEAM_SURVIVOR || GetClientTeam(victim) != TEAM_INFECTED || !IsTank(victim) || !IsValidEdict(inflictor) ) { return Plugin_Continue; }
     
         new String: classname[32];
@@ -1564,49 +1581,6 @@ stock ClearBoomerTracking()
     }
 }
 
-
-
-
-// tracking hunter skeets
-public Event_PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
-{    
-    if (_:g_iSpecialEvent != EVT_SKEET) { return; }
-    
-    new victim = GetClientOfUserId(GetEventInt(event, "userid"));
-    new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
-    
-    if (!IsClientAndInGame(attacker) || GetClientTeam(attacker) != TEAM_SURVIVOR || !IsClientAndInGame(victim) || GetClientTeam(victim) != TEAM_INFECTED) { return; }
-    
-    new damage =        GetEventInt(event, "dmg_health");
-    new damagetype =    GetEventInt(event, "type");
-    
-    new zombieClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
-    
-    // track damage (per hit)
-    if (zombieClass != ZC_HUNTER) { return; }
-    
-    // handle old shotgun blast, if there was one
-    if (iHunterShotDmg[victim][attacker] > 0 && FloatSub(GetGameTime(), fHunterShotStart[victim][attacker]) > SHOTGUN_BLAST_TIME) {
-        fHunterShotStart[victim][attacker] = 0.0;
-    }
-        
-    // handle new hit (only shotgun), and only on pouncing hunters
-    if (GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce") && damagetype & DMG_BUCKSHOT) {
-        
-        // first pellet hit?
-        if (fHunterShotStart[victim][attacker] == 0.0)
-        {
-            // new shotgun blast
-            fHunterShotStart[victim][attacker] = GetGameTime();
-            iHunterShotDmg[victim][attacker] = damage;
-        } else {
-            // add to current shotgun blast
-            iHunterShotDmg[victim][attacker] += damage;
-        }
-        iHunterShotDmgTeam[victim] += damage;
-    }
-}
-
 public Event_LungePounce(Handle:event, const String:name[], bool:dontBroadcast)
 {
     if (_:g_iSpecialEvent != EVT_SKEET) { return; }
@@ -1631,7 +1605,7 @@ public Event_AbilityUse(Handle:event, const String:name[], bool:dontBroadcast)
     if (IsClientAndInGame(client) && strcmp(abilityName, "ability_lunge", false) == 0)
     {
         // hunter started a pounce
-        iHunterShotDmgTeam[client] = 0; // reset team damage for each pounce
+        ResetHunter(client);
     }
 }
 
@@ -2356,10 +2330,15 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
         {
             new dMode = GetConVarInt(g_hCvarDeathOrderMode);
             
-            if (dMode == 1) {
-                g_iClassTimeout[zClass] = 3;
-            } else {
-                g_iClassTimeout[zClass] = 4;
+            // no timeouts for some special event classes
+            if (    ( (_:g_iSpecialEvent != EVT_SKEET || _:g_iSpecialEvent != EVT_L4D1) || zClass != ZC_HUNTER)
+                &&  (_:g_iSpecialEvent != EVT_WOMEN || (zClass != ZC_BOOMER && zClass != ZC_SPITTER) )
+            ) {
+                if (dMode == 1) {
+                    g_iClassTimeout[zClass] = 3;
+                } else {
+                    g_iClassTimeout[zClass] = 4;
+                }
             }
         }
         
@@ -2602,6 +2581,28 @@ public OnEntityCreated(entity, const String:classname[])
                     SetEntityModel(entity, g_csUncommonModels[g_iSpecialEventExtra]);
                 }
             }
+        }
+        else if (g_iSpecialEvent == _:EVT_L4D1)
+        {
+            // fix weird intense colors..
+            if (GetRandomInt(0, CISKIN_L4D1_LESSER_RATE) == 0) {
+                // less common skins
+                if (GetRandomInt(0, CISKIN_L4D1_LEAST_RATE) == 0) {
+                    SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(L4D1_CI_FIRSTLOWERCHANCE, L4D1_CI_FIRSTLOWESTCHANCE - 1)] );
+                } else {
+                    SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(L4D1_CI_FIRSTLOWESTCHANCE, sizeof(g_csL4D1CommonModels) - 1)] );
+                }
+            } else {
+                // commonest
+                SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(0, L4D1_CI_FIRSTLOWERCHANCE - 1)]);
+            }
+            
+            //SetEntityRenderColor(entity, 0, 0, 0, 0);
+            //SetEntityRenderMode(entity, RENDER_NORMAL);
+        }
+        else if (GetRandomInt(0, CISKIN_EXTRA_RATE) == 0) {
+            // it's still a common now, but it has a small chance of getting a sweet model
+            SetEntityModel(entity, g_csExtraCommonModels[GetRandomInt(0, sizeof(g_csExtraCommonModels) - 1)]);
         }
         
         // check boom queue

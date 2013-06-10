@@ -24,15 +24,16 @@ DoHelpMessage(client)
     if (!IsClientAndInGame(client) || IsFakeClient(client)) { return; }
     
     
-    PrintToChat(client, "\x03Random\x05: Map items are randomized%s.%s",
-            (GetConVarInt(g_hCvarEqual) & EQ_ITEMS) ? " but equal between teams" : " and will be different for each team",
-            (GetConVarBool(g_hCvarRandomSpawns)) ? " Special Infected classes are random and unlimited (any combination is possible)." : ""
-        );
+    PrintToChat(client, "\x03Random\x05: Map items are randomized%s.", (GetConVarInt(g_hCvarEqual) & EQ_ITEMS) ? " but equal between teams" : " and will be different for each team" );
     
+    if (GetConVarBool(g_hCvarRandomSpawns)) {
+        PrintToChat(client, "\x05Special Infected classes are random and unlimited (any combination is possible).");
+    }
     if (GetConVarFloat(g_hCvarSpecialEventChance) > 0.0) {
-        PrintToChat(client, "\x05There may be a 'special event' that lasts one round.%s", (GetConVarInt(g_hArCvarWeight[INDEX_GIFT]) > 0) ? " Gifts can be opened by holding the USE key." : "" );
-    } else if (GetConVarInt(g_hArCvarWeight[INDEX_GIFT]) > 0)  {
-        PrintToChat(client, "\x05You can find Random gifts that can be opened by holding the USE key.");
+        PrintToChat(client, "\x05There may be a 'special event' that lasts one round.");
+    }
+    if (GetConVarInt(g_hArCvarWeight[INDEX_GIFT]) > 0)  {
+        PrintToChat(client, "\x05You can find Random gifts that may be opened by holding the USE key.");
     }
     
     PrintToChat(client, "\x05Commands you can type in chat: \x04!rand\x05, \x04!damage\x05, \x04!bonus\x05 and \x04!drop\x01. ");
@@ -1051,8 +1052,11 @@ RandomizeItems()
                 if (!GetTrieValue(g_hTrieRandomizablePropPhysicsModel, modelname, classnameRoN)) { continue; }          // if it's not one of the prop_physics models we want to randomize, don't worry about it
                 
                 // hittables
-                if ((classnameRoN == HITTABLE_PHYSICS || classnameRoN == HITTABLE_PHYSICS_SMALL || classnameRoN == HITTABLE_PHYSICS_CAR || classnameRoN == HITTABLE_PHYSICS_ADDON))
-                {
+                if (        classnameRoN == HITTABLE_PHYSICS        ||  classnameRoN == HITTABLE_PHYSICS_TURNED
+                        ||  classnameRoN == HITTABLE_PHYSICS_SMALL  ||  classnameRoN == HITTABLE_PHYSICS_SMALL_TURNED
+                        ||  classnameRoN == HITTABLE_PHYSICS_CAR    ||  classnameRoN == HITTABLE_PHYSICS_CAR_TURNED
+                        ||  classnameRoN == HITTABLE_PHYSICS_ADDON
+                ) {
                     if (!GetConVarBool(g_hCvarRandomHittables)) { continue; }
                     
                     if (classnameRoN == HITTABLE_PHYSICS_ADDON) {
@@ -1078,7 +1082,8 @@ RandomizeItems()
                     GetEntPropVector(i, Prop_Send, "m_angRotation", hangles);
                     
                     // taxi's and police cars are rotated 90 degrees to the left (+90 on z-ang)
-                    if (StrContains(modelname, "taxi_", false) != -1 || StrContains(modelname, "police_", false) != -1) {
+                    if (classnameRoN == HITTABLE_PHYSICS_CAR_TURNED || classnameRoN == HITTABLE_PHYSICS_SMALL_TURNED || classnameRoN == HITTABLE_PHYSICS_TURNED)
+                    {
                         hangles[1] += 90.0;
                     }
                     
@@ -1090,10 +1095,10 @@ RandomizeItems()
                     g_strArHittableStorage[curHit][hitAngles_c] = hangles[2];
                     
                     
-                    new randType = GetRandomInt( (classnameRoN == HITTABLE_PHYSICS_SMALL) ? HITTAB_FIRSTSMALL : 0 , HITTAB_TOTAL - 1);
+                    new randType = GetRandomInt( (classnameRoN == HITTABLE_PHYSICS_SMALL || classnameRoN == HITTABLE_PHYSICS_SMALL_TURNED) ? HITTAB_FIRSTSMALL : 0 , HITTAB_TOTAL - 1);
                     
                     // for car: different odds (repicking?)
-                    if (classnameRoN == HITTABLE_PHYSICS_CAR && randType > HITTAB_LASTCAR)
+                    if ( (classnameRoN == HITTABLE_PHYSICS_CAR || classnameRoN == HITTABLE_PHYSICS_CAR_TURNED) && randType > HITTAB_LASTCAR)
                     {
                         if (GetRandomFloat(0.001, 1.0) <= HITTABLE_CAR_REPICK) {
                             randType = GetRandomInt(0, HITTAB_LASTCAR);
@@ -1119,7 +1124,8 @@ RandomizeItems()
                         }
                         
                         // rotation on police/taxi cars
-                        if (randType == HITTAB_CARTAXI || randType == HITTAB_CARPOLICE) {
+                        if (randType == HITTAB_CARTAXI || randType == HITTAB_CARPOLICE)
+                        {
                             g_strArHittableStorage[curHit][hitAngles_b] -= 90.0;
                         }
                         
@@ -1145,6 +1151,14 @@ RandomizeItems()
                             g_strArHittableStorage[curHit][hitColor_r] = GetRandomInt(1,254);
                             g_strArHittableStorage[curHit][hitColor_g] = GetRandomInt(1,254);
                             g_strArHittableStorage[curHit][hitColor_b] = GetRandomInt(1,254);
+                        }
+                    }
+                    else
+                    {
+                        // rotation on some objects
+                        if (g_cbHittableTurned[randType])
+                        {
+                            g_strArHittableStorage[curHit][hitAngles_b] -= 90.0;
                         }
                     }
                     
@@ -1736,16 +1750,26 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
     //  save in temporary struct
     
     new randomPick = PCK_NOITEM;
-    new randomIndex;
+    new randomIndex = INDEX_NOITEM;
     
     // if we're doing weapons, we're still not doing NOITEM, so start at pistol (1)
     // otherwise, start at first non-weapon item
     // then limit to either total or last useful
     
-    if (onlyUseful) {
-        randomIndex = GetRandomInt( (noWeapons) ? g_iWeightedChoicesStartNonWeapons : INDEX_PISTOL, INDEX_LAST_USEFUL);
-    } else {
-        randomIndex = GetRandomInt( (noWeapons) ? g_iWeightedChoicesStartNonWeapons : INDEX_PISTOL, INDEX_TOTAL - 1);
+    new count = 0;
+    while (randomIndex == INDEX_NOITEM && count < 1000)
+    {
+        if (onlyUseful) {
+            randomIndex = GetRandomInt( (noWeapons) ? INDEX_CANISTER : INDEX_PISTOL, INDEX_LAST_USEFUL);
+        } else {
+            randomIndex = GetRandomInt( (noWeapons) ? INDEX_CANISTER : INDEX_PISTOL, INDEX_TOTAL - 1);
+        }
+        
+        // don't pick something with 0 weight
+        count++;
+        if (GetConVarInt(g_hArCvarWeight[randomIndex]) == 0) {
+            randomIndex = INDEX_NOITEM;
+        }
     }
     
     new Float: fAmmoVarMore = 1.0 + GetConVarFloat(g_hCvarAmmoVarianceMore);
@@ -3709,6 +3733,16 @@ DetermineSpawnClass(any:client, any:iClass)
         PrintDebug("[rand si] spawn repick for %N: %s => %s instead.", client, g_csSIClassName[oldClass], g_csSIClassName[iClass]);
     }
     
+    // special case for skeet event: always 2 hunters in the attack at least
+    if (_:g_iSpecialEvent == EVT_SKEET)
+    {
+        new hunters = CountInfectedClass(ZC_HUNTER, -1);
+        
+        if (hunters < 2) {
+            iClass = ZC_HUNTER;
+            PrintDebug("[rand si] forcing hunter for skeet event (%N).", client);
+        }
+    }
     
     // handle timeouts
     for (new i=ZC_SMOKER; i <= ZC_CHARGER; i++)
@@ -4558,7 +4592,7 @@ RANDOM_PrepareChoices()
         
         // set start/end of useful
         if (i == INDEX_NOITEM) { g_iWeightedChoicesStartUseful = total; }
-        else if (i == INDEX_CANISTER) { g_iWeightedChoicesStartNonWeapons = total - count; }
+        //else if (i == INDEX_CANISTER) { g_iWeightedChoicesStartNonWeapons = total - count; }
         else if (i == INDEX_JUNK) { g_iWeightedChoicesEndUseful = total - count; }
         
         //PrintDebug("[rand] choices weighted for: %i = %i", i, count);

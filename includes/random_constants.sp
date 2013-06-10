@@ -106,6 +106,10 @@ const           RATE_CAN_GAS            = 4;            // 1 in [#] = gas can (v
 const           RATE_UPG_LASER          = 5;            // 1 in [#] = lasersights (vs incendiary/explosives)
 const           RATE_UPG_EXPLOSIVE      = 10;           // 1 in [#] = explosives (vs incendiary)
 
+const           CISKIN_EXTRA_RATE       = 8;            // 1 in [#]+1 = extra common type
+const           CISKIN_L4D1_LESSER_RATE = 2;            // 1 in [#]+1 = extra common type
+const           CISKIN_L4D1_LEAST_RATE  = 2;            // 1 in [#]+1 = extra common type
+
 // difficulty scaling
 const Float:    EVENT_VERYHARD_SITIME   = 0.5;          // more difficult, SI-wise
 const Float:    EVENT_HARD_SITIME       = 0.75;
@@ -134,7 +138,7 @@ const           EVENT_PENALTY_ITEM      = 5;            // EVT_PEN_ITEM     how 
 const           EVENT_PENALTY_HEALTH    = 15;           // EVT_PEN_HEALTH   how many points to deduct
 const bool:     EVENT_PENALTY_CI        = false;        // EVT_PEN_M2       whether there are penalties for common-shoves
 const           EVENT_PENALTY_M2_CI     = 2;            // EVT_PEN_M2       how many points to deduct for shoving
-const           EVENT_PENALTY_M2_SI     = 15;           // EVT_PEN_M2       how many points to deduct for shoving
+const           EVENT_PENALTY_M2_SI     = 10;           // EVT_PEN_M2       how many points to deduct for shoving
 const           EVENT_PENALTY_TIME      = 25;           // EVT_PEN_TIME     how many points to deduct for 1 minute
 const           EVENT_SKEET_BONUS       = 15;           // EVT_SKEET        how many points to add per (real) skeet
 const           EVENT_SKEET_BONUS_TEAM  = 15;           // EVT_SKEET        for a team-skeet (the same for now?)
@@ -307,21 +311,21 @@ const           HITTAB_CARPOLICE        = 4;
 const           HITTAB_CARTAXI          = 5;
 const           HITTAB_CAR82WRECK       = 6;            // cars without addons
 const           HITTAB_CAR95WRECK       = 7;
-const           HITTAB_FORKLIFT         = 8;
+const           HITTAB_FORKLIFT         = 8;            //          turned
 const           HITTAB_CART             = 9;
-const           HITTAB_TREE             = 10;
-const           HITTAB_DUMPSTER         = 11;            // smaller
-const           HITTAB_DUMPSTER_ALT     = 12;
+const           HITTAB_TREE             = 10;           //          turned
+const           HITTAB_DUMPSTER         = 11;           // smaller  turned
+const           HITTAB_DUMPSTER_ALT     = 12;           //          turned
 const           HITTAB_GENERATOR        = 13;
-const           HITTAB_TREETRUNK        = 14;
+const           HITTAB_TREETRUNK        = 14;           //          turned?
 const           HITTAB_BUMPERCAR        = 15;
-const           HITTAB_HAYBAIL          = 16;
+const           HITTAB_HAYBAIL          = 16;           //          turned
 const           HITTAB_HANDTRUCK        = 17;
 const           HITTAB_TABLE            = 18;
 
 const           HITTAB_LASTADDON        = 7;
 const           HITTAB_LASTCAR          = 7;
-const           HITTAB_FIRSTSMALL       = 10;
+const           HITTAB_FIRSTSMALL       = 11;
 const           HITTAB_TOTAL            = 19;
 
 const           EQ_ITEMS                = 1;            // flags for rand_equal cvar
@@ -405,7 +409,7 @@ const Float:    TIMER_POUNCE            = 0.1;          // repeat timer to check
 const Float:    MULTIWITCH_EXTRA_FLOW   = 3000.0;
 const Float:    MULTIWITCH_RESPAWN_FREQ = 5.0;
 
-const Float:    VOMIT_RANGE             = 100.0;
+const Float:    VOMIT_RANGE             = 150.0;
 const           VOMIT_ON_TYPE           = 7;            // 1 = survivors; 2 = special infected; 4 = common infected [ flags ]
 const           VOMIT_TYPE_SUR          = 1;
 const           VOMIT_TYPE_SI           = 2;
@@ -553,8 +557,11 @@ enum RandomizableOrNot          // for use with tries to determine ent's random-
     RANDOMIZABLE_PHYSICS,
     RANDOMIZABLE_ITEM_AMMO,
     HITTABLE_PHYSICS,
+    HITTABLE_PHYSICS_TURNED,        // all _TURNED are 90 degree turned from 'normal' car position
     HITTABLE_PHYSICS_SMALL,         // dumpsters and smaller
+    HITTABLE_PHYSICS_SMALL_TURNED,
     HITTABLE_PHYSICS_CAR,           // only cars
+    HITTABLE_PHYSICS_CAR_TURNED,
     HITTABLE_PHYSICS_ADDON          // the glass on cars
 }
 
@@ -719,7 +726,7 @@ new const String: g_csEventText[][] =
     "\x04Hush\x01 - silent ",
     "\x04Pickup Penalty\x01 - Any item pickup costs \x045\x01 points.",
     "\x04Health Penalty\x01 - Using any health item costs \x0415\x01 points.",
-    "\x04Shove Penalty\x01 - Using m2 on special infected costs \x0415\x01 points.",
+    "\x04Shove Penalty\x01 - Using m2 on special infected costs \x0410\x01 points.",
     "\x04Time Penalty\x01 - Every minute spent costs \x0425\x01 points.",
     "\x04Mini-Tanks\x01 - Many small tanks will spawn.",
     "\x04Keymaster\x01 - Only one player can use doors.",
@@ -727,7 +734,7 @@ new const String: g_csEventText[][] =
     "\x04Babysitting\x01 - The 'baby' takes double damage from SI (the others 3/4th).",
     "\x04Encumbered\x01 - Carrying more stuff makes you slower. (try '!drop')",
     "\x04Booby Traps\x01 - Doors and items may be wired with explosives.",
-    "\x04Skeet Shoot\x01 - Skeet hunters for \x0415\x01 bonus points.",
+    "\x04Skeet Shoot\x01 - Skeet hunters for \x0415\x01 bonus points. Only shotguns count.",
     "\x04Firepower\x01 - Tier 2 weapons everywhere.",
     "\x04Ammo Shortage\x01 - Deploy and repack your team's ammo.",
     "[women event]",                                                                            // two variants: Axe Effect and Rock Stars, replace name in report (plus backup variant)
@@ -789,6 +796,30 @@ new const String: g_csHittableModels[][] =
     "models/props_vehicles/cara_95sedan_glass_alarm.mdl"    // alarmed sedan only
 };
 
+// whether a hittable is turned 90 degrees as opposed to a car's normal positioning
+new const bool: g_cbHittableTurned[] =
+{
+    false,
+    false,
+    false,
+    false,
+    true,       // police
+    true,       // taxi
+    false,
+    false,
+    true,       // forklift
+    true,       // baggage cart
+    true,       // tree
+    true,       // dumpster
+    true,       // dumpster alt
+    false,
+    true,       // trunk
+    false,
+    true,       // haybail
+    false,
+    false
+};
+
 new const String: g_csUncommonModels[][] =
 {
     "models/infected/common_male_riot.mdl",
@@ -801,7 +832,33 @@ new const String: g_csUncommonModels[][] =
 new const String: g_csFemaleCommonModels[][] =
 {
     "models/infected/common_female_tankTop_jeans.mdl",
-    "models/infected/common_female_tshirt_skirt.mdl"
+    "models/infected/common_female_tshirt_skirt.mdl",
+    "models/infected/common_female_formal.mdl"
+};
+
+new const L4D1_CI_FIRSTLOWERCHANCE = 4;     // less common
+new const L4D1_CI_FIRSTLOWESTCHANCE = 8;    // even less common
+new const String: g_csL4D1CommonModels[][] =
+{
+    "models/infected/common_male01.mdl",
+    "models/infected/common_female01.mdl",
+    "models/infected/common_male_rural01.mdl",
+    "models/infected/common_female_rural01.mdl",
+    "models/infected/common_male_suit.mdl",
+    "models/infected/common_worker_male01.mdl",
+    "models/infected/common_military_male01.mdl",
+    "models/infected/common_police_male01.mdl",
+    "models/infected/common_surgeon_male01.mdl",
+    "models/infected/common_female_nurse01.mdl",
+    "models/infected/common_male_pilot.mdl",
+    "models/infected/common_male_baggagehandler_01.mdl"
+};
+
+new const String: g_csExtraCommonModels[][] =
+{
+    "models/infected/common_male_formal.mdl",
+    "models/infected/common_female_formal.mdl",
+    "models/infected/common_male_biker.mdl"
 };
 
 new const String: g_csHatModels[][] =
@@ -831,6 +888,11 @@ new const String: g_csPreCacheModels[][] =
     "models/props_industrial/barrel_fuel.mdl",
     "models/props_industrial/barrel_fuel_partb.mdl",
     "models/props_industrial/barrel_fuel_parta.mdl",
+    
+    // commons
+    "models/infected/common_male_formal.mdl",
+    "models/infected/common_female_formal.mdl",
+    "models/infected/common_male_biker.mdl",
     
     // Special
     "models/props_unique/spawn_apartment/coffeeammo.mdl",

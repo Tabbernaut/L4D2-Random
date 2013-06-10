@@ -73,7 +73,7 @@ INIT_DefineCVars()
     g_hCvarPipeDudChance = CreateConVar(                    "rand_pipedud_chance",           "0.35",    "Chances of a pipebomb being a dud.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarAvoidIncapsChance = CreateConVar(                "rand_moreincaps_chance",        "0.35",    "If the incap count is only 1 (33%), odds that it gets set to 2 anyway.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarFinaleAmmoChance = CreateConVar(                 "rand_finale_ammo",              "0.0",     "Chances of finale ammo piles being randomized.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    g_hCvarAlarmedCarChance = CreateConVar(                 "rand_caralarm_chance",          "0.33",    "Chances of a car being alarmed.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarAlarmedCarChance = CreateConVar(                 "rand_caralarm_chance",          "0.25",    "Chances of a car being alarmed.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     
     g_hCvarFinaleItemUseful =  CreateConVar(                "rand_item_finale_useful",       "0.25",    "Factor by which non-useful items are adjusted for finale maps (lower = easier map).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarStartItemNoJunk =  CreateConVar(                 "rand_item_start_nojunk",        "0.25",    "Chances items in start saferoom will be converted to something useful.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -354,22 +354,23 @@ INIT_FillTries()
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/cara_95sedan_glass.mdl",       HITTABLE_PHYSICS_ADDON);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/cara_82hatchback_wrecked.mdl", HITTABLE_PHYSICS_CAR);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/cara_95sedan_wrecked.mdl",     HITTABLE_PHYSICS_CAR);
-    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/police_car_city.mdl",          HITTABLE_PHYSICS_CAR);  // share city_glass
-    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/police_car_rural.mdl",         HITTABLE_PHYSICS_CAR);  // share city_glass
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/police_car_city.mdl",          HITTABLE_PHYSICS_CAR_TURNED);  // share city_glass
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/police_car_rural.mdl",         HITTABLE_PHYSICS_CAR_TURNED);  // share city_glass
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/police_car_city_glass.mdl",    HITTABLE_PHYSICS_ADDON);
-    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/taxi_city.mdl",                HITTABLE_PHYSICS_CAR);  // share city_glass
-    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/taxi_rural.mdl",               HITTABLE_PHYSICS_CAR);  // share city_glass
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/taxi_city.mdl",                HITTABLE_PHYSICS_CAR_TURNED);  // share city_glass
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/taxi_rural.mdl",               HITTABLE_PHYSICS_CAR_TURNED);  // share city_glass
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/taxi_city_glass.mdl",          HITTABLE_PHYSICS_ADDON);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props/cs_assault/forklift.mdl",               HITTABLE_PHYSICS_TURNED);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/airport_baggage_cart2.mdl",    HITTABLE_PHYSICS_TURNED);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_foliage/swamp_fallentree01_bare.mdl",   HITTABLE_PHYSICS_SMALL_TURNED);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_foliage/tree_trunk_fallen.mdl",         HITTABLE_PHYSICS_SMALL_TURNED);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/generatortrailer01.mdl",       HITTABLE_PHYSICS_SMALL);
-    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/dumpster.mdl",                     HITTABLE_PHYSICS_SMALL);
-    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/dumpster_2.mdl",                   HITTABLE_PHYSICS_SMALL);
-    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props/cs_assault/forklift.mdl",               HITTABLE_PHYSICS);
-    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_foliage/swamp_fallentree01_bare.mdl",   HITTABLE_PHYSICS_SMALL);
-    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_foliage/tree_trunk_fallen.mdl",         HITTABLE_PHYSICS_SMALL);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/dumpster.mdl",                     HITTABLE_PHYSICS_SMALL_TURNED);
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/dumpster_2.mdl",                   HITTABLE_PHYSICS_SMALL_TURNED);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_fairgrounds/bumpercar.mdl",             HITTABLE_PHYSICS_SMALL);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_fairgrounds/bumpercar_pole.mdl",        HITTABLE_PHYSICS_ADDON);
-    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/airport_baggage_cart2.mdl",    HITTABLE_PHYSICS);
-    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_unique/haybails_single.mdl",            HITTABLE_PHYSICS_SMALL);
+    
+    SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_unique/haybails_single.mdl",            HITTABLE_PHYSICS_SMALL_TURNED);
     
     
     g_hTrieMeleeType = CreateTrie();                                                                                                // classname trie for finding 'normal' melees
@@ -671,6 +672,12 @@ INIT_PrecacheModels(bool: noMapStarted = false)
     {
         if (!IsModelPrecached(g_csFemaleCommonModels[i])) {
             PrecacheModel(g_csFemaleCommonModels[i], true);
+        }
+    }
+    for (new i=0; i < sizeof(g_csL4D1CommonModels); i++)
+    {
+        if (!IsModelPrecached(g_csL4D1CommonModels[i])) {
+            PrecacheModel(g_csL4D1CommonModels[i], true);
         }
     }
     

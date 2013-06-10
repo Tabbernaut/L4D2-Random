@@ -124,7 +124,7 @@ new                     g_iArWeightedChoices        [STORED_MAX_COUNT];         
 new                     g_iWeightedChoicesTotal;                                                    // total of WeightedChoices 'hat' filled
 new                     g_iWeightedChoicesStartUseful;                                              // where the useful choices start (skipping no-item)
 new                     g_iWeightedChoicesEndUseful;                                                // where the useful choices end (before junk)
-new                     g_iWeightedChoicesStartNonWeapons;                                          // where the non-weapon items begin (canister)
+//new                     g_iWeightedChoicesStartNonWeapons;                                          // where the non-weapon items begin (canister)
 new                     g_iArSurvWeightedChoices    [STORED_SURV_MAX_COUNT];                        // all the choices (every category * its weight) for survivor start
 new                     g_iSurvWeightedChoicesStartSecondary;                                       // where the useful secondary choices start
 new                     g_iSurvWeightedChoicesEndSecondary;                                         // where the useful secondary choices end (before magnum)
