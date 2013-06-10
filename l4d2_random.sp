@@ -70,7 +70,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.31",
+    version = "1.0.32",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -182,7 +182,11 @@ public OnPluginStart()
     RegConsoleCmd("sm_penalty", RandomBonus_Cmd,    "Report the special current round bonus (or penalty).");
     RegConsoleCmd("sm_drop",    RandomDrop_Cmd,     "Drop your currently selected weapon or item.");
     
+    
+    
+    
     // Admin and test commands
+    RegAdminCmd("rand_teamshuffle", RandomTeamShuffle_Cmd, ADMFLAG_CHEATS, "Shuffle the teams!");
     //  disable when debugging is done
     RegAdminCmd("rand_test_gnomes", TestGnomes_Cmd, ADMFLAG_CHEATS, "...");
     RegAdminCmd("rand_test_swap",   TestSwap_Cmd,   ADMFLAG_CHEATS, "...");
@@ -504,6 +508,21 @@ public Action: TestGnomes_Cmd(client, args)
     {
         //L4D2Direct_DoAnimationEvent(setclient, event);
         
+        /*
+        SetEntProp(setclient, Prop_Send, "m_nSequence", event);
+        SetEntProp(setclient, Prop_Send, "m_NetGestureActivity", 579);      // for idle things?
+        SetEntProp(setclient, Prop_Send, "m_NetGestureSequence", 550);
+        
+        
+        //SetEntPropFloat(setclient, Prop_Send, "m_flCycle ", 0.0);
+        
+            549 
+            550 shrug shoulders
+            551
+        
+
+        */
+        /*
         // hat test
         if (event) {
             CreateHat(setclient, event);
@@ -511,7 +530,7 @@ public Action: TestGnomes_Cmd(client, args)
         else {
             PlayerDoVomit(setclient);
         }
-        
+        */
         return Plugin_Handled;
     }
     
@@ -653,6 +672,13 @@ public Action: RandomDrop_Cmd(client, args)
     return Plugin_Handled;
 }
 
+public Action: RandomTeamShuffle_Cmd(client, args)
+{
+    if (!g_bCampaignMode)
+    {
+        SUPPORT_ShuffleTeams();
+    }
+}
 public Action: Spectate_Cmd(client, args)
 {
     if (g_bHasGhost[client]) { g_bSpectateDeath[client] = true; }
@@ -2542,16 +2568,13 @@ public OnEntityCreated(entity, const String:classname[])
         // for women special event... make them female, no uncommon
         if (_:g_iSpecialEvent == EVT_WOMEN)
         {
-            if(entity > 0 && IsValidEntity(entity) && IsValidEdict(entity))
+            if (entity > 0 && IsValidEntity(entity) && IsValidEdict(entity))
             {
-                if (StrEqual(classname, "infected", false))
-                {
-                    SDKHook(entity, SDKHook_SpawnPost, OnCommonInfectedSpawned);
-                }
+                SDKHook(entity, SDKHook_SpawnPost, OnCommonInfectedSpawned);
             }
         }
         
-        
+        new iBlockL4D1 = GetConVarInt(g_hCvarBlockL4D1Common);
         new Float: fChance = GetConVarFloat(g_hCvarUncommonChance);
         new bool: isUncommon = false;
         
@@ -2582,27 +2605,39 @@ public OnEntityCreated(entity, const String:classname[])
                 }
             }
         }
-        else if (g_iSpecialEvent == _:EVT_L4D1)
+        else if (g_iSpecialEvent == _:EVT_L4D1 && iBlockL4D1 != 1 && iBlockL4D1 != 2)
         {
-            // fix weird intense colors..
-            if (GetRandomInt(0, CISKIN_L4D1_LESSER_RATE) == 0) {
-                // less common skins
-                if (GetRandomInt(0, CISKIN_L4D1_LEAST_RATE) == 0) {
-                    SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(L4D1_CI_FIRSTLOWERCHANCE, L4D1_CI_FIRSTLOWESTCHANCE - 1)] );
-                } else {
-                    SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(L4D1_CI_FIRSTLOWESTCHANCE, sizeof(g_csL4D1CommonModels) - 1)] );
-                }
-            } else {
-                // commonest
-                SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(0, L4D1_CI_FIRSTLOWERCHANCE - 1)]);
+            if (iBlockL4D1 == 3) 
+            {
+                // only pick non-problematic skins
+                SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(L4D1_CI_FIRSTLOWERCHANCE + 1, sizeof(g_csL4D1CommonModels) - 1)] );
             }
-            
+            else {
+                if (GetRandomInt(0, CISKIN_L4D1_LESSER_RATE) == 0) {
+                    // less common skins
+                    if (GetRandomInt(0, CISKIN_L4D1_LEAST_RATE) == 0) {
+                        SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(L4D1_CI_FIRSTLOWERCHANCE, L4D1_CI_FIRSTLOWESTCHANCE - 1)] );
+                    } else {
+                        SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(L4D1_CI_FIRSTLOWESTCHANCE, sizeof(g_csL4D1CommonModels) - 1)] );
+                    }
+                } else {
+                    // commonest
+                    SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(0, L4D1_CI_FIRSTLOWERCHANCE - 1)]);
+                }
+            }
             //SetEntityRenderColor(entity, 0, 0, 0, 0);
             //SetEntityRenderMode(entity, RENDER_NORMAL);
         }
         else if (GetRandomInt(0, CISKIN_EXTRA_RATE) == 0) {
             // it's still a common now, but it has a small chance of getting a sweet model
             SetEntityModel(entity, g_csExtraCommonModels[GetRandomInt(0, sizeof(g_csExtraCommonModels) - 1)]);
+        }
+        else if (iBlockL4D1 > 1) {
+            // block all normally appearing l4d1 commons
+            if (entity > 0 && IsValidEntity(entity) && IsValidEdict(entity))
+            {
+                SDKHook(entity, SDKHook_SpawnPost, OnL4D1CommonInfectedSpawned);
+            }
         }
         
         // check boom queue
@@ -2769,6 +2804,37 @@ public OnCommonInfectedSpawned(entity)
         SetEntityModel(entity, g_csFemaleCommonModels[ GetRandomInt(0, sizeof(g_csFemaleCommonModels) - 1) ]);
     }
 }
+
+public OnL4D1CommonInfectedSpawned(entity)
+{
+    // only proceed if it is really a pipe
+    if (!IsValidEntity(entity)) { return; }
+    
+    new iBlockL4D1 = GetConVarInt(g_hCvarBlockL4D1Common);
+    new String:model[64];
+    GetEntPropString(entity, Prop_Data, "m_ModelName", model, sizeof(model));
+    
+    new commonL4D1Type: modelCommon;
+    if (!GetTrieValue(g_hTrieL4D1Common, model, modelCommon)) { return; }
+    
+    if ( iBlockL4D1 == 2 || iBlockL4D1 == 3 && modelCommon == COMMON_L4D1_PROBSKIN )
+    {
+        if (GetRandomInt(0,1)) {
+            SetEntityModel(entity, g_csMaleCommonModels[ GetRandomInt(0, sizeof(g_csMaleCommonModels) - 1) ] );
+        } else {
+            SetEntityModel(entity, g_csFemaleCommonModels[ GetRandomInt(0, sizeof(g_csFemaleCommonModels) - 1) ] );
+        }
+        //SetEntityRenderColor(entity, GetRandomInt(10,160), GetRandomInt(10,160), GetRandomInt(10,160), 255);
+    }
+    
+    // m_clrRender has no effect. So...
+    // "red + (green * 2 ^ 8) + (blue * 2 ^ 16) + (alpha * 2 ^ 24)"
+    // new tmpColor = GetEntProp(entity, Prop_Send, "m_clrRender");
+    
+    //SetEntProp(entity, Prop_Send, "m_clrRender", -1);
+    SetEntProp(entity, Prop_Send, "m_nSkin", (GetRandomInt(0,1)) ? 1 : 4 );
+}
+
 /*
     SI Spawning
     -------------------------- */

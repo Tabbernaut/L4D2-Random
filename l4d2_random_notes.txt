@@ -19,32 +19,22 @@ L4D2_Random
             
             
     to-do:
-    ------ 
-            - fix readyup -- make sausage commands and remove ad-text
+    ------  
+            - wait:     test and include stabby's random map stuff so people can launch random campaigns after loading random
             
-            - bugfix:   spitter during tank -- on pass
-            
-            - bugfix:   weird intense colors on l4d1 common (valve bug?)
-                        - there are NO l4d1 common without some sourcemod plugins...
-                        - make cvar to enable/disable l4d1 common (just for l4d1 event)
-            
-            - low:      tentative idea: - scavenge finales (33% chance): is this possible?
-            - low:      test and include stabby's random map stuff so people can launch random campaigns after loading random
-            
-            - maybe:    make commands for doing survivor anims (like nick scratching his nose)
+            - superlow: team randomizer function (!randteams) (use all players currently in teams, or include specs if less than required team size)
             
             - gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
             - later:    email Chet, see if maybe he likes Random at all...
             
     minor cleanup / details
     -----------------------
+            - glitch:   spitter during tank -- on pass.. happens VERY rarely.. why?
             - detail:   try different glow for hats (so they're easier to see) (but mustn't break outline workings) - try glowrangemin / glowrange combo
             - nitpick:  if I ever use g_bNoHealthItems beyond EVT_MEDIC, it will cause probs with PickRandomItem() as it is now.
             - nitpick:  fire extinguisher objects are stuck in wall - use angles of original item to place it further away (find correct angle and dist)
-            - superlow: team randomizer function (!randteams) (use all players currently in teams, or include specs if less than required team size)
             - superlow: random team going first per round in versus. how? possible? worth the effort? no.
-            - bugfix nitpick:   bots all get the same spawn in a vs game without humans - maybe a firstspawns thing?
-            - nitpick:  can't see the special role's hat when he's ledged..
+            - nitpick:  can't see the special role's hat when he's ledged (himself)
             - nitpick:  prevent two ammo piles spawning too close to eachother?
             - nitpick:  dark carnival 1 gas cans are not randomized.. (they're a point template, I guess)
             - nitpick:  gunswap event: survivors don't start with same weapons
@@ -219,6 +209,8 @@ L4D2_DoAnimationEvent() event list
 5   shell in shotgun
 6   cock shotgun
 
+8   drop impact
+
 11  tank death 1
 
 21  surv idle?
@@ -255,6 +247,8 @@ L4D2_DoAnimationEvent() event list
 78  charger getup
 80  charger getup - against wall
 81  surv flying (tank punch? charger hit?)
+86  getup (charger against wall like?)
+96  "
 
 
  

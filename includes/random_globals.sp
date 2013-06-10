@@ -11,6 +11,7 @@ new     Handle:         g_hTriePenaltyItems                                 = IN
 new     Handle:         g_hTriePropItems                                    = INVALID_HANDLE;       // trie for recognizing prop items that can be carried (for EVT_ENCUMBERED)
 new     Handle:         g_hTrieUseItems                                     = INVALID_HANDLE;       // trie for recognizing usable items
 new     Handle:         g_hTrieDropItems                                    = INVALID_HANDLE;       // trie for recognizing dropped items/weapons
+new     Handle:         g_hTrieL4D1Common                                   = INVALID_HANDLE;       // trie for recognizing l4d1 commons
 new                     g_iMeleeClassCount                                  = 0;                    // melee weapons available?
 new     String:         g_sMeleeClass           [MELEE_CLASS_COUNT][MELEE_CLASS_LENGTH];            // available melee class-strings
 new     Handle:         g_hSteamIds                                         = INVALID_HANDLE;       // store players so we know who's already been welcomed
@@ -73,13 +74,17 @@ new     Float:          g_fArWitchFlows         [MULTIWITCH_MAX];               
 new     bool:           g_bArWitchSitting       [MULTIWITCH_MAX]            = {true,...};           // stores whether each witch is sitting or walking
 
 // SI Spawning / ghosts
-new     Handle:         g_confRaw                                           = INVALID_HANDLE;
 new     Handle:         g_setClass                                          = INVALID_HANDLE;
 new     Handle:         g_createAbility                                     = INVALID_HANDLE;
 new                     g_oAbility                                          = 0;
+
+// SDK Calls
+new     Handle:         g_confRaw                                           = INVALID_HANDLE;
 new     Handle:         g_CallPushPlayer                                    = INVALID_HANDLE;       // for CreateExplosion() push
 new     Handle:         g_CallBileJarPlayer                                 = INVALID_HANDLE;       // for biling infected at will
 new     Handle:         g_CallVomitSurvivor                                 = INVALID_HANDLE;       // for biling survivors at will
+new     Handle:         g_CallSHS                                           = INVALID_HANDLE;       // infected
+new     Handle:         g_CallTOB                                           = INVALID_HANDLE;       // survivor
 
 
 new     Handle:         g_hSpawnGhostTimer      [MAXPLAYERS+1]              = {INVALID_HANDLE,...};
@@ -265,6 +270,7 @@ new     Handle:         g_hCvarStripperMode                                 = IN
 new     Handle:         g_hCvarStripperPath                                 = INVALID_HANDLE;       // cvar stripper cfg path (base)
 new     Handle:         g_hCvarRIKeyValuesPath                              = INVALID_HANDLE;       // cvar dir to randommap.txt
 new     Handle:         g_hCvarWelcomeMode                                  = INVALID_HANDLE;       // cvar which welcome-message mode to use
+new     Handle:         g_hCvarBlockL4D1Common                              = INVALID_HANDLE;       // cvar whether block l4d1 common and not use them for l4d1 event
 
 new     Handle:         g_hCvarEqual                                        = INVALID_HANDLE;       // cvar flags what to equalize between teams
 new     Handle:         g_hCvarDoReport                                     = INVALID_HANDLE;       // cvar whether to report anything at all

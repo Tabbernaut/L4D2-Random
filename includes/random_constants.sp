@@ -462,6 +462,10 @@ const           ANIM_EVENT_INCAP_PICKUP = 44;
 const           ANIM_EVENT_PLACE_THING  = 50;
 const           ANIM_EVENT_DEPLOY_FLOOR = 52;
 const           ANIM_EVENT_COLA_DELIVER = 55;
+
+//const           ANIM_EVENT_KICKDOWN     = 37;               // zombie-like kick downwards
+//const           ANIM_EVENT_PUSHBUTTON   = 64;               // simple quick button push
+
 /*
 const           ANIM_NICK_HEAL_OTHER    = 569;              // healing animation when using medkit on someone else
 const           ANIM_COACH_HEAL_OTHER   = 570;
@@ -540,6 +544,12 @@ enum itemDropType               // for use with tries
     ITEM_DROP_HEALTH,
     ITEM_DROP_WEAPKIT,
     ITEM_DROP_WEAPPILLS
+}
+
+enum commonL4D1Type             // for detecting l4d1 commons
+{
+    COMMON_L4D1,
+    COMMON_L4D1_PROBSKIN
 }
 
 enum CreatedEntityType          // for use with tries to determine whether to handle onEntityCreated
@@ -829,10 +839,25 @@ new const String: g_csUncommonModels[][] =
     "models/infected/common_male_roadcrew.mdl"
 };
 
+new const String: g_csMaleCommonModels[][] =
+{
+    "models/infected/common_male_dressshirt_jeans.mdl",
+    "models/infected/common_male_polo_jeans.mdl",
+    "models/infected/common_male_tanktop_jeans.mdl",
+    //"models/infected/common_male_tanktop_jeans_rain.mdl",
+    "models/infected/common_male_tanktop_jeans_swamp.mdl",
+    "models/infected/common_male_tanktop_overalls.mdl",
+    "models/infected/common_male_tshirt_cargos.mdl",
+    "models/infected/common_male_tshirt_cargos_swamp.mdl"
+};
+
 new const String: g_csFemaleCommonModels[][] =
 {
-    "models/infected/common_female_tankTop_jeans.mdl",
+    "models/infected/common_female_tanktop_jeans.mdl",
+    //"models/infected/common_female_tanktop_jeans_rain.mdl",
+    //"models/infected/common_female_tanktop_jeans_swamp.mdl",
     "models/infected/common_female_tshirt_skirt.mdl",
+    "models/infected/common_female_tshirt_skirt_swamp.mdl",
     "models/infected/common_female_formal.mdl"
 };
 
@@ -851,7 +876,8 @@ new const String: g_csL4D1CommonModels[][] =
     "models/infected/common_surgeon_male01.mdl",
     "models/infected/common_female_nurse01.mdl",
     "models/infected/common_male_pilot.mdl",
-    "models/infected/common_male_baggagehandler_01.mdl"
+    "models/infected/common_male_baggagehandler_01.mdl",
+    "models/infected/common_patient_male01_l4d2.mdl"
 };
 
 new const String: g_csExtraCommonModels[][] =
@@ -890,6 +916,18 @@ new const String: g_csPreCacheModels[][] =
     "models/props_industrial/barrel_fuel_parta.mdl",
     
     // commons
+    "models/infected/common_female_tanktop_jeans.mdl",
+    "models/infected/common_female_tanktop_jeans_rain.mdl",
+    //"models/infected/common_female_tanktop_jeans_swamp.mdl",
+    "models/infected/common_female_tshirt_skirt.mdl",
+    "models/infected/common_female_tshirt_skirt_swamp.mdl",
+    "models/infected/common_male_dressshirt_jeans.mdl",
+    "models/infected/common_male_polo_jeans.mdl",
+    "models/infected/common_male_tanktop_jeans.mdl",
+    "models/infected/common_male_tanktop_jeans_swamp.mdl",
+    "models/infected/common_male_tanktop_overalls.mdl",
+    "models/infected/common_male_tshirt_cargos.mdl",
+    "models/infected/common_male_tshirt_cargos_swamp.mdl",
     "models/infected/common_male_formal.mdl",
     "models/infected/common_female_formal.mdl",
     "models/infected/common_male_biker.mdl",

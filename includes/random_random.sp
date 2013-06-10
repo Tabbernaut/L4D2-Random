@@ -531,6 +531,9 @@ RANDOM_DetermineRandomStuff()
                     SetConVarInt(FindConVar("z_jockey_limit"), 0);
                     SetConVarInt(FindConVar("z_charger_limit"), 0);
                     
+                    SetConVarInt(FindConVar("z_smoker_limit"), 1);
+                    SetConVarInt(FindConVar("z_boomer_limit"), 1);
+                    
                     // no tonfa's
                     SetConVarFloat(FindConVar("sv_infected_riot_control_tonfa_probability"), 0.0);
                 }
@@ -3530,7 +3533,7 @@ DetermineSpawnClass(any:client, any:iClass)
         // build first attack
         iClass = GetClassForFirstAttack(client);
         forcedClass = true;
-        PrintDebug("[rand si] first attack spawn assigned: %8s => %N", g_csSIClassName[iClass], client);
+        //PrintDebug("[rand si] first attack spawn assigned: %8s => %N", g_csSIClassName[iClass], client);
     }
     else if (g_iSpectateGhostCount && !IsFakeClient(client))
     {
@@ -3538,7 +3541,7 @@ DetermineSpawnClass(any:client, any:iClass)
         g_iSpectateGhostCount--;
         iClass = g_iSpectateGhost[g_iSpectateGhostCount];
         forcedClass = true;
-        //PrintDebug("[rand si] ghost reset. (%N = %i)", client, iClass);
+        PrintDebug("[rand si] spectate ghost reset: %s => %N", g_csSIClassName[iClass], client);
     }
     else if (GetConVarBool(g_hCvarRandomSpawns))
     {
@@ -3565,6 +3568,8 @@ DetermineSpawnClass(any:client, any:iClass)
                 }
             }
         }
+        
+        //PrintDebug("[rand si] picked class: %s => %N", g_csSIClassName[iClass], client);
         
         //PrintDebug("[rand si] random pick. (%N = %i)", client, iClass);
         checkSacking = true;
@@ -3687,7 +3692,7 @@ DetermineSpawnClass(any:client, any:iClass)
                     PrintToChat(offendingClient, "\x01[\x05r\x01] Holding onto spawns makes your team get less chargers and no quad-caps. (try to attack together)");
                 }
             }
-            PrintDebug("[rand si] sack protection: %N (potentially) not given class %s (punishment for %N keeping class %s). [offenses: %i]", client, g_csSIClassName[iClass], offendingClient, g_csSIClassName[bestSaved], g_iOffences[offendingClient]);
+            PrintDebug("[rand si] sack prot.: %N (potentially) not given class %s (punishment for %N keeping class %s). [offenses: %i]", client, g_csSIClassName[iClass], offendingClient, g_csSIClassName[bestSaved], g_iOffences[offendingClient]);
         }
     }
     

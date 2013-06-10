@@ -2881,6 +2881,141 @@ bool: NoSurvivorInSaferoom()
     return true;
 }
 
+
+/*  Team changes
+    ------------ */
+
+SUPPORT_ShuffleTeams()
+{
+    new specCount = 0;
+    new survCount = 0;
+    new infCount = 0;
+    
+    
+    new teamSize = GetConVarInt(g_hCvarTeamSize);
+    
+    for (new i=1; i <= MaxClients; i++) {
+        if (!IsClientInGame(i) || IsFakeClient(i)) { continue; }
+        
+        switch (GetClientTeam(i)) {
+            case TEAM_SPECTATOR: { specCount++; }
+            case TEAM_SURVIVOR: { survCount++; }
+            case TEAM_INFECTED: { infCount++; }
+        }
+    }
+    
+    new iPlayerCount = 0;
+    new arPlayerPool[MaxClients+1];
+    new arRandomPlayers[ (teamSize * 2) ];
+    
+    // if teams are full, shuffle only the players in there
+    // if not, take spectators into account
+    if (survCount + infCount ==  teamSize * 2) {
+        for (new i=1; i <= MaxClients; i++) {
+            if (!IsClientInGame(i) || IsFakeClient(i)) { continue; }
+            switch (GetClientTeam(i)) {
+                case TEAM_SURVIVOR, TEAM_INFECTED: { arPlayerPool[iPlayerCount] = i; }
+            }
+            iPlayerCount++;
+        }
+    } else {
+        for (new i=1; i <= MaxClients; i++) {
+            if (!IsClientInGame(i) || IsFakeClient(i)) { continue; }
+            arPlayerPool[iPlayerCount] = i;
+            iPlayerCount++;
+        }
+    }
+    
+    // safeguard
+    if (!iPlayerCount) { return; }
+    
+    // pick random players for pool
+    for (new i=0; i < teamSize * 2; i++)
+    {
+        if (i >= iPlayerCount) { break; }
+        
+        new tmpPick = -1;
+        for (new z=0; z < 1000; z++)
+        {
+            tmpPick = arPlayerPool[ GetRandomInt(0, iPlayerCount -1) ];
+            for (new j=0; j < i; j++) {
+                if (arRandomPlayers[j] == tmpPick) { tmpPick = -1; }
+            }
+            if (tmpPick != -1) { break; }
+        }
+
+        arRandomPlayers[i] = tmpPick;
+    }
+    
+    // set all players to spec
+    for (new i=1; i <= MaxClients; i++) {
+        if (!IsClientInGame(i) || IsFakeClient(i)) { continue; }
+        
+        //ChangeClientTeam(i, TEAM_SPECTATOR);
+        ChangePlayerTeam(i, TEAM_SPECTATOR );
+    }
+        
+    // randomly pick one for each until no players left or teams full
+    new bool: bSurvTeam = true;
+    for (new i=0; i < teamSize * 2; i++)
+    {
+        if (i >= iPlayerCount) { break; }
+        
+        // alternate between teams to pick
+        //PrintToChatAll("Put %N in team %s.", arRandomPlayers[i], (bSurvTeam) ? "survivor" : "infected");
+        //ChangeClientTeam(arRandomPlayers[i], (bSurvTeam) ? TEAM_SURVIVOR : TEAM_INFECTED );
+        ChangePlayerTeam(arRandomPlayers[i], (bSurvTeam) ? TEAM_SURVIVOR : TEAM_INFECTED );
+        
+        bSurvTeam = !bSurvTeam;
+    }
+    
+    PrintToChatAll("\x01[\x05r\x01] Teams were shuffled.");
+}
+
+stock bool:ChangePlayerTeam(client, team)
+{
+    if (GetClientTeam(client) == team) return true;
+    
+    if (team != TEAM_SURVIVOR)
+    {
+        //we can always swap to infected or spectator, it has no actual limit
+        ChangeClientTeam(client, team);
+        return true;
+    }
+    
+    /*
+    if (GetTeamHumanCount(team) == GetTeamMaxHumans(team))
+    {
+        return false;
+    }
+    */
+    
+    //for survivors its more tricky
+    new bot;
+    
+    for (bot = 1; 
+        bot < MaxClients+1 && (!IsClientInGame(bot) || !IsFakeClient(bot) || (GetClientTeam(bot) != TEAM_SURVIVOR));
+        bot++) {}
+    
+    if (bot == MaxClients+1)
+    {
+        decl String:command[] = "sb_add";
+        new flags = GetCommandFlags(command);
+        SetCommandFlags(command, flags & ~FCVAR_CHEAT);
+        
+        ServerCommand("sb_add");
+        SetCommandFlags(command, flags);
+        
+        return false;
+    }
+
+    //have to do this to give control of a survivor bot
+    SDKCall(g_CallSHS, bot, client);
+    SDKCall(g_CallTOB, client, true);
+    
+    return true;
+}
+
 /*  CRox multiwitch plugin
     ---------------------- */
 public Action:Timer_WitchSpawn(Handle:timer)

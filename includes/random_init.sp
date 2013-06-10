@@ -22,6 +22,7 @@ INIT_DefineCVars()
     g_hCvarStripperPath = CreateConVar(                     "rand_stripper_path",            "addons/stripper", "The Stripper:Source directory random uses as its base.", FCVAR_PLUGIN);
     g_hCvarRIKeyValuesPath = CreateConVar(                  "rand_randominfo_path",          "configs/randommapinfo.txt", "The path to the randommap.txt with keyvalues for per-map random settings.", FCVAR_PLUGIN);
     g_hCvarWelcomeMode = CreateConVar(                      "rand_welcome",                  "3",       "Whether to display welcome messages (1 = only in first round; 2 = always, 3 = each client only once).", FCVAR_PLUGIN, true, 0.0, true, 3.0);
+    g_hCvarBlockL4D1Common = CreateConVar(                  "rand_no_l4d1_common",           "0",       "Whether to block L4D1 common. (2 = block all appearing l4d1 common; 3 = block only problematic skins)", FCVAR_PLUGIN, true, 0.0, true, 3.0);
     
     g_hCvarEqual = CreateConVar(                            "rand_equal",                  "2047",      "[Flags] What to keep equal between each team's survivor round (1: items; 2: doors; 4: glows; 8: event; 16: incaps; 32: horde; 64: item weighting; 128: starting health; 256: first attack; 512: tanks; 1024: scoring).", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarDoReport = CreateConVar(                         "rand_report",                   "1",       "Whether to do automatic reports at the start of a round.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
@@ -94,13 +95,13 @@ INIT_DefineCVars()
     
     g_hArCvarWeight[INDEX_NOITEM] = CreateConVar(           "rand_weight_nothing",          "25",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarWeight[INDEX_PISTOL] = CreateConVar(           "rand_weight_pistol",           "13",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarWeight[INDEX_T1SMG] = CreateConVar(            "rand_weight_t1smg",            "13",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarWeight[INDEX_T1SHOTGUN] = CreateConVar(        "rand_weight_t1shotgun",        "13",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarWeight[INDEX_T2RIFLE] = CreateConVar(          "rand_weight_t2rifle",           "5",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarWeight[INDEX_T2SHOTGUN] = CreateConVar(        "rand_weight_t2shotgun",         "5",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarWeight[INDEX_SNIPER] = CreateConVar(           "rand_weight_sniper",            "8",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarWeight[INDEX_MELEE] = CreateConVar(            "rand_weight_melee",            "13",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarWeight[INDEX_T3] = CreateConVar(               "rand_weight_t3",                "4",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarWeight[INDEX_T1SMG] = CreateConVar(            "rand_weight_t1smg",            "16",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarWeight[INDEX_T1SHOTGUN] = CreateConVar(        "rand_weight_t1shotgun",        "16",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarWeight[INDEX_T2RIFLE] = CreateConVar(          "rand_weight_t2rifle",           "3",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarWeight[INDEX_T2SHOTGUN] = CreateConVar(        "rand_weight_t2shotgun",         "3",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarWeight[INDEX_SNIPER] = CreateConVar(           "rand_weight_sniper",            "6",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarWeight[INDEX_MELEE] = CreateConVar(            "rand_weight_melee",            "14",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarWeight[INDEX_T3] = CreateConVar(               "rand_weight_t3",                "3",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarWeight[INDEX_CANISTER] = CreateConVar(         "rand_weight_canister",         "18",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarWeight[INDEX_PILL] = CreateConVar(             "rand_weight_pill",             "16",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarWeight[INDEX_THROWABLE] = CreateConVar(        "rand_weight_throwable",         "8",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -451,6 +452,20 @@ INIT_FillTries()
     SetTrieValue(g_hTrieDropItems, "first_aid_kit",                 ITEM_DROP_HEALTH);
     SetTrieValue(g_hTrieDropItems, "weapon_pain_pills",             ITEM_DROP_WEAPPILLS);
     SetTrieValue(g_hTrieDropItems, "weapon_first_aid_kit",          ITEM_DROP_WEAPKIT);
+    
+    g_hTrieL4D1Common = CreateTrie();
+    SetTrieValue(g_hTrieL4D1Common, "models/infected/common_male01.mdl",            COMMON_L4D1_PROBSKIN);
+    SetTrieValue(g_hTrieL4D1Common, "models/infected/common_female01.mdl",          COMMON_L4D1_PROBSKIN);
+    SetTrieValue(g_hTrieL4D1Common, "models/infected/common_male_rural01.mdl",      COMMON_L4D1_PROBSKIN);
+    SetTrieValue(g_hTrieL4D1Common, "models/infected/common_female_rural01.mdl",    COMMON_L4D1_PROBSKIN);
+    SetTrieValue(g_hTrieL4D1Common, "models/infected/common_male_suit.mdl",         COMMON_L4D1_PROBSKIN);
+    SetTrieValue(g_hTrieL4D1Common, "models/infected/common_worker_male01.mdl",     COMMON_L4D1);
+    SetTrieValue(g_hTrieL4D1Common, "models/infected/common_military_male01.mdl",   COMMON_L4D1);
+    SetTrieValue(g_hTrieL4D1Common, "models/infected/common_police_male01.mdl",     COMMON_L4D1);
+    SetTrieValue(g_hTrieL4D1Common, "models/infected/common_surgeon_male01.mdl",    COMMON_L4D1);
+    SetTrieValue(g_hTrieL4D1Common, "models/infected/common_female_nurse01.mdl",    COMMON_L4D1);
+    SetTrieValue(g_hTrieL4D1Common, "models/infected/common_male_pilot.mdl",        COMMON_L4D1);
+    SetTrieValue(g_hTrieL4D1Common, "models/infected/common_male_baggagehandler_01.mdl", COMMON_L4D1);
 }
 
 // SDK Calls
@@ -508,7 +523,21 @@ INIT_PrepareAllSDKCalls()
     if (g_CallVomitSurvivor == INVALID_HANDLE)
             SetFailState("Unable to find the \"CTerrorPlayer_OnVomitedUpon\" signature.");
     
+    
+    new Handle: confRaw_b = LoadGameConfigFile("left4downtown.l4d2");
+    StartPrepSDKCall(SDKCall_Player);
+    PrepSDKCall_SetFromConf(confRaw_b, SDKConf_Signature, "SetHumanSpec");
+    PrepSDKCall_AddParameter(SDKType_CBasePlayer, SDKPass_Pointer);
+    g_CallSHS = EndPrepSDKCall();
+    
+    StartPrepSDKCall(SDKCall_Player);
+    PrepSDKCall_SetFromConf(confRaw_b, SDKConf_Signature, "TakeOverBot");
+    PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
+    g_CallTOB = EndPrepSDKCall();
+
+    
     CloseHandle(g_confRaw);
+    CloseHandle(confRaw_b);
 }
 
 
