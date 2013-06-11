@@ -22,14 +22,18 @@ L4D2_Random
     ------  
             - wait:     test and include stabby's random map stuff so people can launch random campaigns after loading random
             
-            - superlow: team randomizer function (!randteams) (use all players currently in teams, or include specs if less than required team size)
+            - test:     detect and prevent double-pass?
+            
+            - low:      sack protection warning can display twice in a row (because offenses don't count up..)
+            
+            
             
             - gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
             - later:    email Chet, see if maybe he likes Random at all...
             
     minor cleanup / details
     -----------------------
-            - glitch:   spitter during tank -- on pass.. happens VERY rarely.. why?
+            - glitch:   spitter during tank -- on pass.. happens VERY rarely.. why? only for double passes?
             - detail:   try different glow for hats (so they're easier to see) (but mustn't break outline workings) - try glowrangemin / glowrange combo
             - nitpick:  if I ever use g_bNoHealthItems beyond EVT_MEDIC, it will cause probs with PickRandomItem() as it is now.
             - nitpick:  fire extinguisher objects are stuck in wall - use angles of original item to place it further away (find correct angle and dist)

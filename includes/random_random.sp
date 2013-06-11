@@ -1225,12 +1225,22 @@ RandomizeItems()
             {
                 // noitem chance for start saferoom?
                 if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarStartSafeItem)) {
+                    
                     if (randomPick == INDEX_NOITEM) {
                         while (randomPick == INDEX_NOITEM) {
                             randomIndex = GetRandomInt(randomIndex + 1, (g_iWeightedChoicesTotal-1));
                             randomPick = g_iArWeightedChoices[randomIndex];
                         }
                     }
+                    
+                    // t2 in saferoom?
+                    if ( (randomPick == INDEX_T2SHOTGUN || randomPick == INDEX_T2RIFLE) && GetRandomFloat(0.001,1.0) > GetConVarFloat(g_hCvarT2StartChance)) {
+                        switch (randomPick) {
+                            case INDEX_T2SHOTGUN: { randomPick = INDEX_T1SHOTGUN; }
+                            case INDEX_T2RIFLE: { randomPick = INDEX_T1SMG; }
+                        }
+                    }
+                    
                 } else {
                     randomPick = INDEX_NOITEM;
                 }
@@ -1654,6 +1664,8 @@ RandomizeItems()
     
     // testing: did the item drop underneath the map?
     CreateTimer(TESTENTITY_TIMER, Timer_TestEntityLocation);
+    
+    g_bItemsFullyRandomized = true;
 }
 
 
@@ -1744,6 +1756,8 @@ RestoreItems()
     
     // testing: did the item drop underneath the map?
     CreateTimer(TESTENTITY_TIMER, Timer_TestEntityLocation);
+    
+    g_bItemsFullyRandomized = true;
 }
 
 PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapons = false)
@@ -3570,8 +3584,6 @@ DetermineSpawnClass(any:client, any:iClass)
         }
         
         //PrintDebug("[rand si] picked class: %s => %N", g_csSIClassName[iClass], client);
-        
-        //PrintDebug("[rand si] random pick. (%N = %i)", client, iClass);
         checkSacking = true;
     }
     else
@@ -3670,14 +3682,18 @@ DetermineSpawnClass(any:client, any:iClass)
             }
             
             // reporting?
+            new reportMode = GetConVarInt(g_hCvarReportSackProt);
+            
             if (GetGameTime() - g_fLastOffence[offendingClient] > SACKPROT_OFFENCE_GRACE) {
                 g_fLastOffence[offendingClient] = GetGameTime();
                 g_iOffences[offendingClient]++;
-            }
-            
-            new reportMode = GetConVarInt(g_hCvarReportSackProt);
-            if (reportMode > 0)
-            {
+                
+                // report to offending client
+                if (reportMode == 1 || ( reportMode == 2 && g_iOffences[offendingClient] == 3) )
+                {
+                    PrintToChat(offendingClient, "\x01[\x05r\x01] Holding onto spawns makes your team get less chargers and no quad-caps. (try to attack together)");
+                }
+                
                 // report to slighted party
                 if (reportMode == 1)
                 {
@@ -3686,12 +3702,8 @@ DetermineSpawnClass(any:client, any:iClass)
                         PrintToChat(client, "\x01[\x05r\x01] sack block: you did not get a %s because %N kept their spawn.", g_csSIClassName[iClass], offendingClient);
                     }
                 }
-                // report to offending (3 strike type deal too)
-                if (reportMode == 1 || g_iOffences[offendingClient] == 3)
-                {
-                    PrintToChat(offendingClient, "\x01[\x05r\x01] Holding onto spawns makes your team get less chargers and no quad-caps. (try to attack together)");
-                }
             }
+            
             PrintDebug("[rand si] sack prot.: %N (potentially) not given class %s (punishment for %N keeping class %s). [offenses: %i]", client, g_csSIClassName[iClass], offendingClient, g_csSIClassName[bestSaved], g_iOffences[offendingClient]);
         }
     }
@@ -3736,6 +3748,12 @@ DetermineSpawnClass(any:client, any:iClass)
         }
         
         PrintDebug("[rand si] spawn repick for %N: %s => %s instead.", client, g_csSIClassName[oldClass], g_csSIClassName[iClass]);
+    }
+    
+    // debug report for forced spawns
+    if (forcedClass)
+    {
+        PrintDebug("[rand si] forced class pick: %s => %N", g_csSIClassName[iClass], client);
     }
     
     // special case for skeet event: always 2 hunters in the attack at least

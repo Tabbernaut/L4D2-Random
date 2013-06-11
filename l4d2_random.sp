@@ -139,6 +139,9 @@ public OnPluginStart()
     
     HookEvent("ability_use",                Event_AbilityUse,               EventHookMode_Post);
     HookEvent("lunge_pounce",               Event_LungePounce,              EventHookMode_Post);
+    
+    HookEvent("witch_spawn",                Event_WitchSpawn,               EventHookMode_Post);
+    HookEvent("witch_harasser_set",         Event_WitchHarasserSet,         EventHookMode_Post);
     HookEvent("witch_killed",               Event_WitchDeath,               EventHookMode_Post);
     
     // default convars
@@ -186,7 +189,9 @@ public OnPluginStart()
     
     
     // Admin and test commands
-    RegAdminCmd("rand_teamshuffle", RandomTeamShuffle_Cmd, ADMFLAG_CHEATS, "Shuffle the teams!");
+    RegAdminCmd("randteams", RandomTeamShuffle_Cmd, ADMFLAG_CHEATS, "Shuffle the teams! Only works during readyup.");
+    RegAdminCmd("rand_teamshuffle", RandomTeamShuffle_Cmd, ADMFLAG_CHEATS, "Shuffle the teams! Only works during readyup.");
+    
     //  disable when debugging is done
     RegAdminCmd("rand_test_gnomes", TestGnomes_Cmd, ADMFLAG_CHEATS, "...");
     RegAdminCmd("rand_test_swap",   TestSwap_Cmd,   ADMFLAG_CHEATS, "...");
@@ -791,6 +796,7 @@ public OnMapStart()
     new String:tmpStr[16];
     GetConVarString(FindConVar("mp_gamemode"), tmpStr, sizeof(tmpStr));
     if (StrEqual(tmpStr, "coop", false)) { g_bCampaignMode = true; } else { g_bCampaignMode = false; }
+    g_bItemsFullyRandomized = false;
     
     INIT_PrecacheModels();
     INIT_PrecacheParticles();
@@ -800,6 +806,7 @@ public OnMapStart()
     if (GetConVarBool(g_hCvarConfogl) && !g_bRestartedOnce)
     {
         g_bRestartedOnce = true;
+        g_bItemsFullyRandomized = true;
         PrintDebug("[rand] First OnMapStart, starting randomization on the next.");
         return;
     }
@@ -865,6 +872,7 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
     // this is only called once in versus games, so we know which round we're in
     g_bSecondHalf = true;
     g_bIsFirstAttack = true;
+    g_bItemsFullyRandomized = false;
     
     if (g_bInRound && g_bUsingPBonus)   // only display once, and only when using pbonus
     {
@@ -920,8 +928,37 @@ public Action:OnPlayerRunCmd(client, &buttons)
 
     if ((buttons & IN_USE))
     {
+        // block all use button use before items are ready
+        if (!g_bItemsFullyRandomized) { return Plugin_Handled; }
+        
+        // handle item use on gifts
         new check = RANDOM_CheckPlayerGiftUse(client);
         if (!check) { return Plugin_Handled; }
+    }
+    // crox's glow code for EVT_WITCHES
+    else if (_:g_iSpecialEvent == EVT_WITCHES)
+    {
+        if (IsPlayerAlive(client) && GetClientTeam(client) == TEAM_SURVIVOR)
+        {
+            new psychonic = GetEntityCount();
+            decl Float:clientOrigin[3];
+            GetClientAbsOrigin(client, clientOrigin);
+            decl Float:witchOrigin[3];
+            decl String:buffer[32];
+            for (new entity = MaxClients + 1; entity < psychonic; entity++)
+            {
+                if (IsValidEntity(entity)
+                && GetEntityClassname(entity, buffer, sizeof(buffer))
+                && StrEqual(buffer, "witch"))
+                {
+                    GetEntPropVector(entity, Prop_Send, "m_vecOrigin", witchOrigin);
+                    if (GetVectorDistance(clientOrigin, witchOrigin, true) < EVENT_WITCHES_RANGE)
+                    {
+                        SetEntProp(entity, Prop_Send, "m_iGlowType", 0);
+                    }
+                }
+            }
+        }
     }
     
     return Plugin_Continue;
@@ -930,8 +967,45 @@ public Action:OnPlayerRunCmd(client, &buttons)
 // tank randomization
 public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
 {
-    // if you don't do this.. double-passes
-    if (!IsFakeClient(tank_index)) {
+    PrintDebug("[rand] debug tank pass: %N -- prev. pass was %.2fs ago.", tank_index, GetGameTime() - g_fTankPreviousPass);
+    
+    // passing when a player passes it...
+    if (!IsFakeClient(tank_index))
+    {
+        // 25% chance of keeping tank
+        if (GetRandomInt(0, GetConVarInt(g_hCvarTeamSize) - 1) == 0)
+        {
+            for (new i=1; i <= MaxClients; i++) {
+                if (!IsClientInGame(i))
+                    continue;
+            
+                if (!IsInfected(i))
+                    continue;
+
+                PrintHintText(i, "%N gets to keep the tank. Rage Meter Refilled", tank_index);
+                PrintToChat(i, "\x01[\x05r\x01] %N gets to keep the tank. Rage Meter Refilled.", tank_index);
+            }
+            
+            SetEntProp(tank_index, Prop_Send, "m_frustration", 0);
+            L4D2Direct_SetTankPassedCount(L4D2Direct_GetTankPassedCount() + 1);
+            
+            g_fTankPreviousPass = GetGameTime();
+            return Plugin_Handled;
+        }
+        
+        // check if it's a double pass
+        if (g_fTankPreviousPass != 0.0 && GetGameTime() - g_fTankPreviousPass < DOUBLE_PASS_CHECK_TIME)
+        {
+            PrintDebug("[rand] Preventing double pass on tank. Previous pass was %.2f seconds ago.", GetGameTime() - g_fTankPreviousPass);
+            
+            SetEntProp(tank_index, Prop_Send, "m_frustration", 0);
+            L4D2Direct_SetTankPassedCount(L4D2Direct_GetTankPassedCount() + 1);
+            
+            g_fTankPreviousPass = GetGameTime();
+            return Plugin_Handled;
+        }
+        
+        g_fTankPreviousPass = GetGameTime();
         return Plugin_Continue;
     }
     
@@ -939,6 +1013,7 @@ public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
     {
         ForceTankPlayer();
     }
+    g_fTankPreviousPass = GetGameTime();
 
     return Plugin_Continue;
 }
@@ -2538,6 +2613,26 @@ public Action:Timer_CheckTankDeath(Handle:hTimer, any:client_oldTank)
     }
     
     return Plugin_Continue;
+}
+
+
+/* Witch events */
+
+public Event_WitchSpawn(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    if (_:g_iSpecialEvent != EVT_WITCHES) { return; }
+    
+    new witch = GetEventInt(event, "witchid");
+    SetEntProp(witch, Prop_Send, "m_iGlowType", 3);
+    SetEntProp(witch, Prop_Send, "m_glowColorOverride", 0xFFFFFF);
+}
+
+public Event_WitchHarasserSet(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    if (_:g_iSpecialEvent != EVT_WITCHES) { return; }
+    
+    new witch = GetEventInt(event, "witchid");
+    SetEntProp(witch, Prop_Send, "m_iGlowType", 0);
 }
 
 /*

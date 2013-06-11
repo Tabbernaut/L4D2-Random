@@ -61,7 +61,7 @@ const Float:    GIFT_EXPLODE_DELAY      = 0.25;         // time between opening 
 const Float:    GIFTUSE_TIMEOUT         = 0.25;         // how long after playerUse command to wait (avoid spamming use)
 const Float:    GIFTREPORT_TIMEOUT      = 1.0;          // how long after playerUse command to wait (avoid spamming messages)
 
-
+const Float:    DOUBLE_PASS_CHECK_TIME  = 8.0;         // fewer than this amount of seconds is considered a double pass
 
 // multi/mini tanks and witches
 const Float:    MULTITANK_EARLY         = 0.35;         // for 2-tank-rounds: where to spawn early tank
@@ -164,6 +164,7 @@ const Float:    EVENT_WOMEN_WITCHDMG    = 25.0;         // EVT_WOMEN        how 
 const Float:    EVENT_WITCHES_WITCHDMG  = 50.0;         // EVT_WITCHES      how much damage a witch does against an upright survivor
 const           EVENT_WITCHES_BONUS     = 25;           // EVT_WITCHES      how many points to give for each witch kill
 const Float:    EVENT_WITCHES_SPAWNFREQ = 40.0;         // EVT_WITCHES      spawn witch every X seconds
+const Float:    EVENT_WITCHES_RANGE     = 500.0;        //                  range for glow removal/addition
 const           EVENT_BADSANTA_BONUS    = 20;           // EVT_BADSANTA     how many points to give for each gift unwrap
 const           EVENT_MEDIC_UNITS_BASE  = 11;           // EVT_MEDIC        how many mediunits to start with (default difficulty) (medkit, pills + 8)
 const           EVENT_MEDIC_UNITS_MIN   = 7;            // EVT_MEDIC        minimum mediunits

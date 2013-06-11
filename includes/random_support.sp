@@ -52,8 +52,10 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     g_bInsightSurvDone = false;         // so we only get the insight effect from a gift once per roundhalf
     g_bInsightInfDone = false;
     
+    
     g_bFirstTankSpawned = false;
     g_bIsTankInPlay = false;
+    g_fTankPreviousPass = 0.0;
     g_iTankClient = 0;
     
     g_iBonusCount = 0;
@@ -2887,10 +2889,15 @@ bool: NoSurvivorInSaferoom()
 
 SUPPORT_ShuffleTeams()
 {
+    if (!SUPPORT_IsInReady() && g_hCvarReadyUp != INVALID_HANDLE && GetConVarBool(g_hCvarReadyUp))
+    {
+        PrintToChatAll("\x01[\x05r\x01] Team shuffles are only allowed before a round is live.");
+        return;
+    }
+    
     new specCount = 0;
     new survCount = 0;
     new infCount = 0;
-    
     
     new teamSize = GetConVarInt(g_hCvarTeamSize);
     
