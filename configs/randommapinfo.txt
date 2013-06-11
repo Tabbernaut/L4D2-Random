@@ -8,6 +8,7 @@
 //
 // no_storm		1 = don't do any storm-related things on this map
 // no_cola		1 = don't spawn cola on this map (or give points for it)
+// no_finale		1 = even if the game reports otherwise, this is NOT a finale
 //
 // tank_ban_start/end	flow range in integer % where tanks should not spawn
 
@@ -247,6 +248,7 @@
 	"c10m3_ranchhouse"
 	{
 		"difficulty"	"2"
+		"no_finale"	"1"
 	}
 	"c10m4_mainstreet"
 	{

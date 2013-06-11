@@ -247,7 +247,7 @@ ReportSpecialEventRole(bool:isNew=false, client=0)
 // --------------------------
 RANDOM_DetermineRandomStuff()
 {
-    PrintDebug("[rand] Determining Random Stuff (for %s round)", (g_bSecondHalf) ? "second" : "first" );
+    PrintDebug(0, "[rand] Determining Random Stuff (for %s round).", (g_bSecondHalf) ? "second" : "first" );
     
     new bool: bDoItemRePrep = false;        // true if we need to do PrepareChoices()
     new bool: bBlockTank = false;           // so we can block tank on some event picks
@@ -266,7 +266,7 @@ RANDOM_DetermineRandomStuff()
         g_iDifficultyRating = g_RI_iDifficulty;
         
         // finales are harder, intros easier
-        if (L4D_IsMissionFinalMap()) {
+        if (g_RI_bIsFinale) {
             g_iDifficultyRating += 4;
         } else if (g_RI_bIsIntro) {
             g_iDifficultyRating--;
@@ -278,7 +278,7 @@ RANDOM_DetermineRandomStuff()
     {
         g_bStripperAltDetected = SUPPORT_StripperDetectAlt();
         
-        PrintDebug("[rand] Stripper alt. for this round: %i (harder path: %s).", g_iStripperCurrentAlt, (g_bStripperAltDetected) ? "yes" : "no");
+        PrintDebug(1, "[rand] Stripper alt. for this round: %i (harder path: %s).", g_iStripperCurrentAlt, (g_bStripperAltDetected) ? "yes" : "no");
         
         if (g_bStripperAltDetected)
         {
@@ -329,7 +329,7 @@ RANDOM_DetermineRandomStuff()
             distNew = RoundFloat(float(distNew) / 4.0) * 4;
             
             L4D_SetVersusMaxCompletionScore(distNew);
-            PrintDebug("[rand] Distance for this round: %i.", distNew);
+            PrintDebug(2, "[rand] Distance for this round: %i.", distNew);
             
         }
         
@@ -388,7 +388,7 @@ RANDOM_DetermineRandomStuff()
             // update damage bonus plugin
             RNDBNS_SetBonus(bonusNew);
             
-            PrintDebug("[rand] Bonus for this round: %i.", bonusNew);
+            PrintDebug(2, "[rand] Bonus for this round: %i.", bonusNew);
         }
     }
     
@@ -680,6 +680,7 @@ RANDOM_DetermineRandomStuff()
                 case EVT_WITCHES: {
                     g_bUsingPBonus = true;
                     bBlockTank = true;
+                    //bBlockWitch = true; // block the normal witch so they're all consistent
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
                     
                     // set half the distance
@@ -698,12 +699,12 @@ RANDOM_DetermineRandomStuff()
                     g_iDifficultyRating++;
                 }
             }
-            PrintDebug("[rand] Picked Special Event: %i (%s) [extra, %i, sub: %i, str: %s]", g_iSpecialEvent, g_csEventText[g_iSpecialEvent], g_iSpecialEventExtra, g_iSpecialEventExtraSub, g_sSpecialEventExtra);
+            PrintDebug(1, "[rand] Picked Special Event: %i (%s) [extra, %i, sub: %i, str: %s]", g_iSpecialEvent, g_csEventText[g_iSpecialEvent], g_iSpecialEventExtra, g_iSpecialEventExtraSub, g_sSpecialEventExtra);
         }
         else
         {
             g_iSpecialEvent = -1;
-            PrintDebug("[rand] No Special Event.");
+            PrintDebug(1, "[rand] No Special Event.");
         }
         
         // reset storm after weather event (but only if the event is not a storm this round)`
@@ -784,7 +785,7 @@ RANDOM_DetermineRandomStuff()
         }
     }
     
-    PrintDebug("[rand] Boss spawns: Tank: %i (%.2f) / Witch: %i (%.2f)", g_bTankWillSpawn, L4D2Direct_GetVSTankFlowPercent( (g_bSecondHalf) ? 1 : 0 ), g_bWitchWillSpawn, L4D2Direct_GetVSWitchFlowPercent( (g_bSecondHalf) ? 1 : 0 ));
+    PrintDebug(1, "[rand] Boss spawns: Tank: %i (%.2f) / Witch: %i (%.2f)", g_bTankWillSpawn, L4D2Direct_GetVSTankFlowPercent( (g_bSecondHalf) ? 1 : 0 ), g_bWitchWillSpawn, L4D2Direct_GetVSWitchFlowPercent( (g_bSecondHalf) ? 1 : 0 ));
     
     // multi-tanks? if so, set first tank to spawn early and last tank to spawn late
     // only determine if tanks will spawn at all
@@ -794,7 +795,7 @@ RANDOM_DetermineRandomStuff()
     {
         if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
         {
-            if (!g_RI_bIsIntro && !L4D_IsMissionFinalMap() && GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarDoubleTankChance)
+            if (!g_RI_bIsIntro && !g_RI_bIsFinale && GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarDoubleTankChance)
                 &&  (       !GetConVarBool(g_hCvarBanTankFlows)
                         ||  g_RI_iTankBanStart == -1
                         ||  g_RI_iTankBanEnd == -1
@@ -822,7 +823,7 @@ RANDOM_DetermineRandomStuff()
                 
                 SetConVarInt(FindConVar("z_tank_health"), GetConVarInt(g_hCvarDoubleTankHealth) );
                 
-                PrintDebug("[rand] Double tank set for this round: %0.f early, %0.f late.", 100.0 * g_fTankFlowEarly, 100.0 * g_fTankFlowLate);
+                PrintDebug(1, "[rand] Double tank set for this round: %0.f early, %0.f late.", 100.0 * g_fTankFlowEarly, 100.0 * g_fTankFlowLate);
                 
                 g_iDifficultyRating += 2;  // on top of the 2 for tank already
                 
@@ -862,7 +863,7 @@ RANDOM_DetermineRandomStuff()
     }
     
     // multi-witches?
-    if (g_bWitchWillSpawn && !L4D_IsMissionFinalMap() && (MULTIWITCH_ALLOW_TANK || !g_bTankWillSpawn) && _:g_iSpecialEvent != EVT_MINITANKS )
+    if (g_bWitchWillSpawn && !g_RI_bIsFinale && (MULTIWITCH_ALLOW_TANK || !g_bTankWillSpawn) && _:g_iSpecialEvent != EVT_MINITANKS )
     {
         if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
         {
@@ -927,13 +928,13 @@ RANDOM_DetermineRandomStuff()
                     SetConVarInt(FindConVar("sv_disable_glow_survivors"), 0);
                     g_bGlows = true;
                     
-                    PrintDebug("[rand] Survivor glows enabled because of difficulty rating (%i > %i).", g_iDifficultyRating, DIFF_RATING_GLOW_THRESH);
+                    PrintDebug(1, "[rand] Survivor glows enabled because of difficulty rating (%i > %i).", g_iDifficultyRating, DIFF_RATING_GLOW_THRESH);
                 } else {
                     SetConVarInt(FindConVar("sv_disable_glow_survivors"), 1);
                     g_bGlows = false;
                     g_iDifficultyRating += 3;
                     
-                    PrintDebug("[rand] Survivor glows off.");
+                    PrintDebug(1, "[rand] Survivor glows off.");
                 }
             }
         }
@@ -962,7 +963,7 @@ RANDOM_DetermineRandomStuff()
             {
                 if ( GetConVarBool(g_hCvarDifficultyBalance) && g_iDifficultyRating > DIFF_RATING_INCAP_THRESH) {
                     g_iIncaps = GetRandomInt(2, INCAP_MAXIMUM);
-                    PrintDebug("[rand] Survivor incaps increased because of difficulty rating (%i > %i).", g_iDifficultyRating, DIFF_RATING_INCAP_THRESH);
+                    PrintDebug(1, "[rand] Survivor incaps increased because of difficulty rating (%i > %i).", g_iDifficultyRating, DIFF_RATING_INCAP_THRESH);
                 } else {
                     g_iDifficultyRating++;
                 }
@@ -997,7 +998,7 @@ RANDOM_DetermineRandomStuff()
     // randomize witches standing/sitting (time of day)
     if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
     {
-        if ((g_bMultiWitch && g_bArWitchSitting[0] == false) || GetRandomInt(0, 3) == 0)
+        if (_:g_iSpecialEvent != EVT_WITCHES && ( (g_bMultiWitch && g_bArWitchSitting[0] == false) || GetRandomInt(0, 3) == 0 ) )
         { 
             SetConVarInt(FindConVar("sv_force_time_of_day"), WITCHES_DAY);
         } else {
@@ -1008,7 +1009,7 @@ RANDOM_DetermineRandomStuff()
     // debug report difficulty rating (only display on first roundhalf or if something's changed)
     if (!g_bSecondHalf || GetConVarInt(g_hCvarEqual) < EQ_EVERYTHING)
     {
-        PrintDebug("[rand] Round difficulty rating: %i", g_iDifficultyRating);
+        PrintDebug(1, "[rand] Round difficulty rating: %i", g_iDifficultyRating);
     }
 }
 
@@ -1029,6 +1030,7 @@ RandomizeItems()
     new iCountFinaleAmmo = 0;               // how many forced finale ammo piles (also decreased on re-rolls)
     new iCountStartAmmo = 0;                // how many starting ammo piles?
     new bool: bForceFinaleAmmo;
+    new bool: bIsFireExtinguisher;
     
     new String:classname[128];
     new curEnt;                             // the entity we're currently storing data for
@@ -1041,6 +1043,7 @@ RandomizeItems()
     for (new i=0; i < entityCount; i++)
     {
         bForceFinaleAmmo = false;
+        bIsFireExtinguisher = false;
         
         if (IsValidEntity(i)) {
         
@@ -1168,15 +1171,21 @@ RandomizeItems()
                     AcceptEntityInput(i, "Kill");
                     continue;
                 }
+                
+                // fire extinguisher
+                if (StrContains(modelname, "fire_extinguisher", false) != -1)
+                {
+                    bIsFireExtinguisher = true;
+                }
             }
-            else if (L4D_IsMissionFinalMap() && classnameRoN == RANDOMIZABLE_ITEM_AMMO && GetRandomFloat(0.001,1.0) > GetConVarFloat(g_hCvarFinaleAmmoChance) && !g_bNoAmmo)
+            else if (g_RI_bIsFinale && classnameRoN == RANDOMIZABLE_ITEM_AMMO && GetRandomFloat(0.001,1.0) > GetConVarFloat(g_hCvarFinaleAmmoChance) && !g_bNoAmmo)
             {
                 // don't touch ammo piles on finales
                 iCountFinaleAmmo++;
                 bForceFinaleAmmo = true;
             }
             
-            //PrintDebug("[rand] Entity %d is randomizable: %s.", i, classname);
+            //PrintDebug(1, "[rand] Entity %d is randomizable: %s.", i, classname);
             
             /*
                 The entity is randomize-material
@@ -1547,25 +1556,45 @@ RandomizeItems()
                 case INDEX_GIFT:
                 {
                     g_strArStorage[curEnt][entPickedType] = PCK_SILLY_GIFT;
+                    g_strArStorage[curEnt][entCheckOrigin] = true;
                 }
             }
             
             // TEST
-            //PrintDebug("[rand] Picked ent %i: type = %i =pick=> %i", g_iStoredEntities, randomPick, g_strArStorage[curEnt][entPickedType]);
+            //PrintDebug(3, "[rand] Picked ent %i: type = %i =pick=> %i", g_iStoredEntities, randomPick, g_strArStorage[curEnt][entPickedType]);
 
             // lookup position
             decl Float: origin[3];
             decl Float: angles[3];
             
             GetEntPropVector(i, Prop_Send, "m_vecOrigin", origin);
+            GetEntPropVector(i, Prop_Send, "m_angRotation", angles);
+            
+            // handle fire extinguisher reposition
+            if (bIsFireExtinguisher)
+            {
+                //PrintDebug(3, "fireext: angle: %.f[origin now: %.1f %.1f]", angles[1], origin[0], origin[1]);
+                switch (RoundToFloor(angles[1]))
+                {
+                    case 90:            { origin[1] += FIREEXT_POS_OFFSET; }
+                    case -90, 270:      { origin[1] -= FIREEXT_POS_OFFSET; }
+                    case 0:             { origin[0] += FIREEXT_POS_OFFSET; }
+                    case -180, 180:     { origin[0] -= FIREEXT_POS_OFFSET; }
+                }
+                //PrintDebug(3, "fireext: [origin new: %.1f %.1f]", origin[0], origin[1]);
+                
+                // also move it down a bit if it's upright
+                if (RoundToFloor(angles[0]) == 0 && RoundToFloor(angles[2]) == 0)
+                {
+                    origin[2] -= FIREEXT_POS_OFFSET_Z;
+                }
+            }
             
             //      if ammo spawn, ignore original angles
             if (    randomPick == INDEX_AMMO
                 ||  randomPick == INDEX_UPGRADE
             ) {
                     angles[0] = 0.0; angles[1] = 0.0; angles[2] = 0.0;
-            } else {
-                GetEntPropVector(i, Prop_Send, "m_angRotation", angles);
             }
             
             g_strArStorage[curEnt][entOrigin_a] = origin[0];
@@ -1574,6 +1603,11 @@ RandomizeItems()
             g_strArStorage[curEnt][entAngles_a] = angles[0];
             g_strArStorage[curEnt][entAngles_b] = angles[1];
             g_strArStorage[curEnt][entAngles_c] = angles[2];
+
+            
+            // angle 90 = +in y direction
+            
+            
             
             // copy spawnflags
             if (!(GetEntProp(i, Prop_Data, "m_spawnflags") & 1)) {
@@ -1583,9 +1617,9 @@ RandomizeItems()
             /*
             // debug:
             if (g_strArStorage[curEnt][entInStartSaferoom]) {
-                PrintDebug("start saferoom item: %i: %s (became %i (%s)).", i, classname, g_strArStorage[curEnt][entPickedType], g_csItemTypeText[randomPick]);
+                PrintDebug(2, "start saferoom item: %i: %s (became %i (%s)).", i, classname, g_strArStorage[curEnt][entPickedType], g_csItemTypeText[randomPick]);
             } else if (g_strArStorage[curEnt][entInEndSaferoom]) {
-                PrintDebug("end saferoom item: %i: %s (became %i (%s)).", i, classname, g_strArStorage[curEnt][entPickedType], g_csItemTypeText[randomPick]);
+                PrintDebug(2, "end saferoom item: %i: %s (became %i (%s)).", i, classname, g_strArStorage[curEnt][entPickedType], g_csItemTypeText[randomPick]);
             }
             */
             
@@ -1963,6 +1997,8 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
         }
     }
     
+    //PrintDebug(3, "[rand] PickRandomItem: pick index: %i - item %i", randomIndex, randomPick);
+    
     g_strTempItemSingle[entPickedType] = randomPick;
     
     return randomPick;
@@ -2182,7 +2218,7 @@ RandomizeSurvivorItems()
     {
         if (g_iSpecialEvent == _:EVT_DOORS && iCountMelee < EVENT_DOORS_MINMELEE)
         {
-            PrintDebug("[rand] Adding melees to deal with special event.");
+            PrintDebug(2, "[rand] Adding melees to deal with special event.");
             for (new i=0; i < TEAM_SIZE; i++)
             {
                 if (g_iArStorageSurv[i] != _:PCK_MELEE && g_iArStorageSurvSec[i] != _:PCK_MELEE) {
@@ -2201,7 +2237,7 @@ RandomizeSurvivorItems()
         // do a similar check if there are early door locks
         else if (g_bEarlyLock && iCountMelee < EARLY_DOORS_MINMELEE && _:g_iSpecialEvent != EVT_BADCOMBO)
         {
-            PrintDebug("[rand] Adding melees to deal with early locks.");
+            PrintDebug(2, "[rand] Adding melees to deal with early locks.");
             for (new i=0; i < TEAM_SIZE; i++)
             {
                 if (g_iArStorageSurv[i] != _:PCK_MELEE && g_iArStorageSurvSec[i] != _:PCK_MELEE) {
@@ -2231,7 +2267,7 @@ RandomizeSurvivorItems()
     */
     
     // done
-    PrintDebug("[rand] Randomized and stored %i survivor setups (%i primaries, %i secondaries, %i strips).", TEAM_SIZE, iCountPrimary, iCountSecondary, iCountStrip);
+    PrintDebug(1, "[rand] Randomized and stored %i survivor setups (%i primaries, %i secondaries, %i strips).", TEAM_SIZE, iCountPrimary, iCountSecondary, iCountStrip);
     
     // enable handouts on team switch/join
     g_iSurvHandled = 0;
@@ -2259,7 +2295,7 @@ RandomizeSurvivorHealth()
     }
     
     // done
-    PrintDebug("[rand] Randomized and stored %i survivor health setups.", TEAM_SIZE);
+    PrintDebug(1, "[rand] Randomized and stored %i survivor health setups.", TEAM_SIZE);
 }
 
 // restore saved starting setup
@@ -2565,7 +2601,7 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
     if (!IsValidEntity(ent) || ent == 0)
     {
         g_strArStorage[index][entNumber] = 0;
-        PrintDebug("[rand] Random pick resulted in invalid entity! (index: %d, ent: %d, type: %d).", index, ent, type);
+        PrintDebug(0, "[rand] Random pick resulted in invalid entity! (index: %d, ent: %d, type: %d).", index, ent, type);
         return -1;
     }
     
@@ -2640,7 +2676,7 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
             TeleportEntity(ent, origin, NULL_VECTOR, NULL_VECTOR);
             
             /*  TEST
-                //PrintDebug("[rand] Checked origin for item: %i (ent %i) - distance %.1f - origin:  setpos %.1f %.1f %.1f ", index, ent, fDist, origin[0], origin[1], origin[2]);
+                //PrintDebug(2, "[rand] Checked origin for item: %i (ent %i) - distance %.1f - origin:  setpos %.1f %.1f %.1f ", index, ent, fDist, origin[0], origin[1], origin[2]);
                 if (FloatAbs(fDist) > 0.0) { SetEntityRenderColor(ent, 80,40,40, 100); }
             }*/
         }
@@ -2696,11 +2732,11 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
     
     /*
     // debugging?
-    PrintDebug("[rand] Created entity %i (index %i, type: %i).", ent, index, type);
+    PrintDebug(3, "[rand] Created entity %i (index %i, type: %i).", ent, index, type);
     */
     /*
     if (!inArray) {
-        PrintDebug("[rand] Spawned entity %i (type: %i).", ent, type);
+        PrintDebug(3, "[rand] Spawned entity %i (type: %i).", ent, type);
     }
     */
     
@@ -2759,7 +2795,7 @@ CreateHittable(index)
     
     if (!IsValidEntity(ent) || ent == 0) {
         g_strArHittableStorage[index][hitNumber] = 0;
-        PrintDebug("[rand] Random pick resulted in invalid hittable entity! (index: %d, ent: %d, type: %d).", index, ent, type);
+        PrintDebug(0, "[rand] Random pick resulted in invalid hittable entity! (index: %d, ent: %d, type: %d).", index, ent, type);
         return -1;
     }
     
@@ -2884,7 +2920,7 @@ ChangeSurvivorSetup(index, client)
             case PCK_PISTOL_MAGNUM: {   weaponname = "weapon_pistol_magnum"; }
             case PCK_MELEE: {
                 // special case
-                PrintDebug("[rand] Handed melee weapon (%s) to %N.", g_sMeleeClass[(g_iArStorageSurvMelee[index])], client);
+                PrintDebug(2, "[rand] Handed melee weapon (%s) to %N.", g_sMeleeClass[(g_iArStorageSurvMelee[index])], client);
                 GiveItemMelee(client, g_sMeleeClass[(g_iArStorageSurvMelee[index])]);
                 weaponname = "";
             }
@@ -2893,7 +2929,7 @@ ChangeSurvivorSetup(index, client)
         if (strlen(weaponname))
         {
             // debug reporting
-            PrintDebug("[rand] Handed %s to %N.", weaponname, client);
+            PrintDebug(2, "[rand] Handed %s to %N.", weaponname, client);
             GiveItem(client, weaponname, ammo, ammoOffset);
         }
     }
@@ -2914,7 +2950,7 @@ ChangeSurvivorSetup(index, client)
         
         case PCK_MELEE: {
             // special case
-            PrintDebug("[rand] Handed melee weapon (%s) to %N.", g_sMeleeClass[(g_iArStorageSurvMelee[index])], client);
+            PrintDebug(2, "[rand] Handed melee weapon (%s) to %N.", g_sMeleeClass[(g_iArStorageSurvMelee[index])], client);
             
             if (_:g_iSpecialEvent == EVT_WOMEN) {
                 // don't use stored, use whatever the event requires
@@ -2970,7 +3006,7 @@ ChangeSurvivorSetup(index, client)
     if (strlen(weaponname))
     {
         // debug reporting
-        PrintDebug("[rand] Handed %s to %N (ammo: %i).", weaponname, client, ammo);
+        PrintDebug(2, "[rand] Handed %s to %N (ammo: %i).", weaponname, client, ammo);
         GiveItem(client, weaponname, ammo, ammoOffset);
         
         // if we've given the gnome, make sure the gnome has a value!
@@ -3142,12 +3178,8 @@ RANDOM_DoGiftEffect(client, entity)
     GetClientAbsOrigin(client, playerPos);
     GetEntPropVector(entity, Prop_Send, "m_vecOrigin", targetPos);
     
-    
-    // test: crashing
-    //PrintDebug("pre crash: gift: %N (%i) - gift: %i", client, client, entity);
-    
     // gift is being used
-    //PrintDebug("[rand] Gift used: %i", entity);
+    PrintDebug(2, "[rand] Gift unwrapped by %N (entity: %i)", client, entity);
     
     new bool: inSaferoom = (IsEntityInSaferoom(entity, false, false) || IsEntityInSaferoom(client, true, false));
     
@@ -3223,6 +3255,8 @@ RANDOM_DoGiftEffect(client, entity)
                 
                 new itemCount = GetRandomInt(GIFT_MIN_ITEMS, GIFT_MAX_ITEMS);
                 new bool: noWeapons = false;
+                
+                PrintDebug(3, "[rand] Gift items to spawn: %i", itemCount);
                 
                 if (_:g_iSpecialEvent == EVT_GUNSWAP && inSaferoom) { noWeapons = true; }   // no weapons if we're starting with GLs/CSs and it's in saferoom
                 
@@ -3516,7 +3550,7 @@ RandomizeFirstSpawns()
         g_iArStorageSpawns[0] = tmpPick;
     }
 
-    PrintDebug("[rand] Picked four classes for first attack (%s, %s, %s, %s).",
+    PrintDebug(1, "[rand] Picked four classes for first attack (%s, %s, %s, %s).",
             g_csSIClassName[g_iArStorageSpawns[0]],
             g_csSIClassName[g_iArStorageSpawns[1]],
             g_csSIClassName[g_iArStorageSpawns[2]],
@@ -3540,14 +3574,14 @@ DetermineSpawnClass(any:client, any:iClass)
     new bool: forcedClass = false;      // skip check for accepted classes
     
     //new valveClass = iClass;
-    //PrintDebug("[random spawns] valve ghost pick (%N = %i)", client, valveClass);
+    //PrintDebug(2, "[random spawns] valve ghost pick (%N = %i)", client, valveClass);
     
     if (g_bIsFirstAttack && !IsFakeClient(client))
     {
         // build first attack
         iClass = GetClassForFirstAttack(client);
         forcedClass = true;
-        //PrintDebug("[rand si] first attack spawn assigned: %8s => %N", g_csSIClassName[iClass], client);
+        PrintDebug(2, "[rand si] first attack spawn assigned: %8s => %N", g_csSIClassName[iClass], client);
     }
     else if (g_iSpectateGhostCount && !IsFakeClient(client))
     {
@@ -3555,7 +3589,7 @@ DetermineSpawnClass(any:client, any:iClass)
         g_iSpectateGhostCount--;
         iClass = g_iSpectateGhost[g_iSpectateGhostCount];
         forcedClass = true;
-        PrintDebug("[rand si] spectate ghost reset: %s => %N", g_csSIClassName[iClass], client);
+        PrintDebug(2, "[rand si] spectate ghost reset: %s => %N", g_csSIClassName[iClass], client);
     }
     else if (GetConVarBool(g_hCvarRandomSpawns))
     {
@@ -3583,13 +3617,13 @@ DetermineSpawnClass(any:client, any:iClass)
             }
         }
         
-        //PrintDebug("[rand si] picked class: %s => %N", g_csSIClassName[iClass], client);
+        PrintDebug(2, "[rand si] picked class: %s => %N", g_csSIClassName[iClass], client);
         checkSacking = true;
     }
     else
     {
         // nothing changed, return
-        //PrintDebug("[rand si] valve pick. (%N = %i)", client, iClass);
+        PrintDebug(2, "[rand si] valve pick. (%N = %i)", client, iClass);
         return;
     }
     
@@ -3704,7 +3738,7 @@ DetermineSpawnClass(any:client, any:iClass)
                 }
             }
             
-            PrintDebug("[rand si] sack prot.: %N (potentially) not given class %s (punishment for %N keeping class %s). [offenses: %i]", client, g_csSIClassName[iClass], offendingClient, g_csSIClassName[bestSaved], g_iOffences[offendingClient]);
+            PrintDebug(1, "[rand si] sack prot.: %N (potentially) not given class %s (punishment for %N keeping class %s). [offenses: %i]", client, g_csSIClassName[iClass], offendingClient, g_csSIClassName[bestSaved], g_iOffences[offendingClient]);
         }
     }
     
@@ -3747,13 +3781,13 @@ DetermineSpawnClass(any:client, any:iClass)
             }
         }
         
-        PrintDebug("[rand si] spawn repick for %N: %s => %s instead.", client, g_csSIClassName[oldClass], g_csSIClassName[iClass]);
+        PrintDebug(2, "[rand si] spawn repick for %N: %s => %s instead.", client, g_csSIClassName[oldClass], g_csSIClassName[iClass]);
     }
     
     // debug report for forced spawns
     if (forcedClass)
     {
-        PrintDebug("[rand si] forced class pick: %s => %N", g_csSIClassName[iClass], client);
+        PrintDebug(2, "[rand si] forced class pick: %s => %N", g_csSIClassName[iClass], client);
     }
     
     // special case for skeet event: always 2 hunters in the attack at least
@@ -3763,7 +3797,7 @@ DetermineSpawnClass(any:client, any:iClass)
         
         if (hunters < 2) {
             iClass = ZC_HUNTER;
-            PrintDebug("[rand si] forcing hunter for skeet event (%N).", client);
+            PrintDebug(2, "[rand si] forcing hunter for skeet event (%N).", client);
         }
     }
     
@@ -3883,7 +3917,7 @@ SpawnCommonItem(Float:loc[3], Float:vel[3])
     
     if (!IsValidEntity(ent) || ent == 0)
     {
-        PrintDebug("[rand] Common drop resulted in invalid entity! (pick: %i)", randomPick);
+        PrintDebug(0, "[rand] Common drop resulted in invalid entity! (pick: %i)", randomPick);
         return;
     }
     
@@ -3960,7 +3994,7 @@ RandomizeDoors()
             total++;
             
             // TEST:
-            //PrintDebug("Locked: %i (Location: %.1f %.1f %.1f)", i, g_fStorageDoors[total-1][0], g_fStorageDoors[total-1][1], g_fStorageDoors[total-1][2]);
+            //PrintDebug(3, "Locked: %i (Location: %.1f %.1f %.1f)", i, g_fStorageDoors[total-1][0], g_fStorageDoors[total-1][1], g_fStorageDoors[total-1][2]);
         } else {
             // add to array so we can check doubledoorness
             fDoubleOrigin[totalNot][0] = origin[0];  fDoubleOrigin[totalNot][1] = origin[1];  fDoubleOrigin[totalNot][2] = origin[2];
@@ -4034,12 +4068,12 @@ RandomizeDoors()
                 g_iDoorsLocked[total] = iDoubleDoorCheck[tmpHit];
                 total++;
                 // TEST
-                //PrintDebug("Locked for double doors: %i (Location: %.1f %.1f %.1f)", iDoubleDoorCheck[tmpHit], g_fStorageDoors[total-1][0], g_fStorageDoors[total-1][1], g_fStorageDoors[total-1][2]);
+                //PrintDebug(3, "Locked for double doors: %i (Location: %.1f %.1f %.1f)", iDoubleDoorCheck[tmpHit], g_fStorageDoors[total-1][0], g_fStorageDoors[total-1][1], g_fStorageDoors[total-1][2]);
             }
         }
     }
     
-    PrintDebug("[rand] Locked %i doors randomly (of which %i for double door pairing).", total, total - g_iDoorsLockedTotal);
+    PrintDebug(1, "[rand] Locked %i doors randomly (of which %i for double door pairing).", total, total - g_iDoorsLockedTotal);
     g_iDoorsLockedTotal = total;
     
     // check for early locks
@@ -4192,7 +4226,7 @@ RandomizeDoors()
         }
         
         if (g_bEarlyLock) {
-            PrintDebug("[rand] Early locked door(s) in map detected.");
+            PrintDebug(2, "[rand] Early locked door(s) in map detected.");
         }
     }
     
@@ -4242,7 +4276,7 @@ RestoreDoors()
         total++;
     }
     
-    PrintDebug("[rand] Re-locked %i same doors.", total);
+    PrintDebug(1, "[rand] Re-locked %i same doors.", total);
     
     LockDoors();
 }
@@ -4289,7 +4323,7 @@ RANDOM_PrepareChoicesEvents()
         //      EVT_MINITANKS: because distance works differently
         //      EVT_AMMO: because of fancy way ammo is handled in finales anyway
         //      EVT_WITCHES: don't mix it with tanks
-        if (    L4D_IsMissionFinalMap()
+        if (    g_RI_bIsFinale
             &&  ( i == EVT_ADREN || i == EVT_MINITANKS || i == EVT_AMMO || i == EVT_WOMEN || i == EVT_WITCHES || i == EVT_PEN_TIME )
         ) {
             continue;
@@ -4351,7 +4385,7 @@ RANDOM_PrepareChoicesEvents()
     }
     g_iEventWeightedChoicesTotal = total;
     
-    PrintDebug("[rand] Prepared special event weight array: %i total weight over %i events.", total, EVT_TOTAL);
+    PrintDebug(0, "[rand] Prepared special event weight array: %i total weight over %i events.", total, EVT_TOTAL);
 }
 
 // preparation of choice-hat (gift effects)
@@ -4402,7 +4436,7 @@ RANDOM_PrepareChoicesGiftEffects()
 
     g_iGiftWeightedChoicesTotal = total;
     
-    PrintDebug("[rand] Prepared gift weight array: %i total weight over %i events.", total, GIFT_TOTAL);
+    PrintDebug(1, "[rand] Prepared gift weight array: %i total weight over %i events.", total, GIFT_TOTAL);
 }
 
 // preparation of choice-hat (SI spawns)
@@ -4463,11 +4497,10 @@ RANDOM_PrepareChoicesSpawns()
         // set start/end of secondary choices
         if (i == ZC_BOOMER) { g_iSpawnWeightedChoicesStartCappers = total; }
         
-        //PrintDebug("[rand] choices weighted for: %i = %i", i, count);
     }
     g_iSpawnWeightedChoicesTotal = total;
 
-    //PrintDebug("[rand] Prepared spawn classes weight array: %i total weight over %i categories.", total, ZC_CHARGER);
+    //PrintDebug(2, "[rand] Prepared spawn classes weight array: %i total weight over %i categories.", total, ZC_CHARGER);
 }
 
 // preparation of choice-hat (items etc)
@@ -4491,7 +4524,7 @@ RANDOM_PrepareChoices()
     // special case: abundance event = no 'no item' category
     if (_:g_iSpecialEvent == EVT_ABUNDANCE) {
         fNoitemVariance = 0.0;
-        PrintDebug("[rand] No-Item Variation set to 0 (for abundance).");
+        PrintDebug(1, "[rand] No-Item Variation set to 0 (for abundance).");
     } else {
         if (fNoitemVariance) {
             
@@ -4526,7 +4559,7 @@ RANDOM_PrepareChoices()
                     } else {
                         // scale tmp noitem variance according to difficulty within range (reverse because higher difficulty => lower noitem variance)
                         fVarianceTmp = DIFF_RATING_NOITEM_LOW + ( (DIFF_RATING_NOITEM_HIGH - DIFF_RATING_NOITEM_LOW) * ( 1.0 - ( (float(g_iDifficultyRating) - DIFF_RATING_NOITEM_DIF_LOW) / DIFF_RATING_NOITEM_DIF_HIGH ) ) );
-                        //PrintDebug("[rand] Var calc: LOW: %.2f - HIGH-LOW: %.2f - scale: %.2f ", DIFF_RATING_NOITEM_LOW, DIFF_RATING_NOITEM_HIGH - DIFF_RATING_NOITEM_LOW, 1.0 - ( (float(g_iDifficultyRating) - DIFF_RATING_NOITEM_DIF_LOW) / DIFF_RATING_NOITEM_DIF_HIGH ));
+                        //PrintDebug(3, "[rand] Var calc: LOW: %.2f - HIGH-LOW: %.2f - scale: %.2f ", DIFF_RATING_NOITEM_LOW, DIFF_RATING_NOITEM_HIGH - DIFF_RATING_NOITEM_LOW, 1.0 - ( (float(g_iDifficultyRating) - DIFF_RATING_NOITEM_DIF_LOW) / DIFF_RATING_NOITEM_DIF_HIGH ));
                     }
                 }
                 
@@ -4534,9 +4567,9 @@ RANDOM_PrepareChoices()
                     // take average of 2* difficulty-rating variance + 1* random variance
                     fNoitemVariance = ( (2.0 * fNoitemVariance) + (3.0 * fVarianceTmp) ) / 5;
                     
-                    PrintDebug("[rand] No-Item Variation: %.1f (scaled towards: %.1f for difficulty).", fNoitemVariance, fVarianceTmp);
+                    PrintDebug(1, "[rand] No-Item Variation: %.1f (scaled towards: %.1f for difficulty).", fNoitemVariance, fVarianceTmp);
                 } else {
-                    PrintDebug("[rand] No-Item Variation: %.1f (not scaled according to difficulty).", fNoitemVariance);
+                    PrintDebug(1, "[rand] No-Item Variation: %.1f (not scaled according to difficulty).", fNoitemVariance);
                 }
                 
                 
@@ -4559,7 +4592,7 @@ RANDOM_PrepareChoices()
             new iNoItemExtra = RoundFloat(float(total) / ( ((iSurvivorLimit == 2) ? ITEM_FACTOR_2V2 : ITEM_FACTOR_3V3) * (float(total_items) / float(total)) )) - total;
             if (iNoItemExtra < 0) { iNoItemExtra = 0; }
             
-            PrintDebug("[rand] Adding %i to no-item weight for %i-survivor balance.", iNoItemExtra, iSurvivorLimit);
+            PrintDebug(2, "[rand] Adding %i to no-item weight for %i-survivor balance.", iNoItemExtra, iSurvivorLimit);
 
             for (new j=0; j < iNoItemExtra; j++) {
                 g_iArWeightedChoices[total+j] = INDEX_NOITEM;
@@ -4575,7 +4608,7 @@ RANDOM_PrepareChoices()
         count = GetConVarInt(g_hArCvarWeight[i]);
         
         // descrease non-useful items / noitems for finales (by a factor)
-        if (L4D_IsMissionFinalMap() && (i == INDEX_JUNK || INDEX_NOITEM) && GetConVarFloat(g_hCvarFinaleItemUseful) > 0.0) {
+        if (g_RI_bIsFinale && (i == INDEX_JUNK || INDEX_NOITEM) && GetConVarFloat(g_hCvarFinaleItemUseful) > 0.0) {
             count = RoundToCeil( float(count) * GetConVarFloat(g_hCvarFinaleItemUseful) );
         }
         
@@ -4618,7 +4651,7 @@ RANDOM_PrepareChoices()
         //else if (i == INDEX_CANISTER) { g_iWeightedChoicesStartNonWeapons = total - count; }
         else if (i == INDEX_JUNK) { g_iWeightedChoicesEndUseful = total - count; }
         
-        //PrintDebug("[rand] choices weighted for: %i = %i", i, count);
+        //PrintDebug(2, "[rand] choices weighted for: %i = %i", i, count);
     }
     
     // adjust for special event: item type
@@ -4644,7 +4677,7 @@ RANDOM_PrepareChoices()
     // store total items in weight array
     g_iWeightedChoicesTotal = total;
     
-    PrintDebug("[rand] Prepared item weight array: %i total weight over %i categories.", total, INDEX_TOTAL);
+    PrintDebug(0, "[rand] Prepared item weight array: %i total weight over %i categories.", total, INDEX_TOTAL);
     
     
     // survivor start items
@@ -4675,8 +4708,5 @@ RANDOM_PrepareChoices()
     }
     g_iSurvWeightedChoicesTotal = total;
     
-    PrintDebug("[rand] Prepared survivor item weight array: %i total weight over %i categories.", total, INDEX_SURV_TOTAL);
-    
-    
-
+    PrintDebug(1, "[rand] Prepared survivor item weight array: %i total weight over %i categories.", total, INDEX_SURV_TOTAL);
 }

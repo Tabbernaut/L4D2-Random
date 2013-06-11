@@ -2,7 +2,6 @@
 
 const           DEBUG_MODE              = 1;
 
-
 // Random global size config
 // -------------------------
 
@@ -164,7 +163,7 @@ const Float:    EVENT_WOMEN_WITCHDMG    = 25.0;         // EVT_WOMEN        how 
 const Float:    EVENT_WITCHES_WITCHDMG  = 50.0;         // EVT_WITCHES      how much damage a witch does against an upright survivor
 const           EVENT_WITCHES_BONUS     = 25;           // EVT_WITCHES      how many points to give for each witch kill
 const Float:    EVENT_WITCHES_SPAWNFREQ = 40.0;         // EVT_WITCHES      spawn witch every X seconds
-const Float:    EVENT_WITCHES_RANGE     = 500.0;        //                  range for glow removal/addition
+const Float:    EVENT_WITCHES_RANGE     = 250000.0;     //                  range for glow removal/addition
 const           EVENT_BADSANTA_BONUS    = 20;           // EVT_BADSANTA     how many points to give for each gift unwrap
 const           EVENT_MEDIC_UNITS_BASE  = 11;           // EVT_MEDIC        how many mediunits to start with (default difficulty) (medkit, pills + 8)
 const           EVENT_MEDIC_UNITS_MIN   = 7;            // EVT_MEDIC        minimum mediunits
@@ -219,6 +218,9 @@ const           DIFF_RATING_NOITEM_DIF_HIGH = 8;        // when to force towards
 const           DIFF_RATING_NOITEM_DIF_LOW  = 0;        // when to force towards the highest noitem value
 
 const Float:    HITTABLE_CAR_REPICK     = 0.5;          // the odds that a car will be repicked as a (different) car
+
+const Float:    FIREEXT_POS_OFFSET      = 12.0;         // by how much to offset a fire-extinguisher replacement item from a wall
+const Float:    FIREEXT_POS_OFFSET_Z    = 30.0;
 
 
 // Random indexes

@@ -16,6 +16,7 @@ INIT_DefineCVars()
 {
     // ConVars
     
+    g_hCvarDebug = CreateConVar(                            "rand_debug",                    "2",       "Random debug mode. (0: only error reporting, -1: disable all reports, 1+: set debug report level)", FCVAR_PLUGIN, true, -1.0, true, 5.0);
     g_hCvarConfogl = CreateConVar(                          "rand_confogl",                  "1",       "Whether random is loaded as a confogl matchmode (changes the way cvar defaults are read).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarSimplePauseCheck = CreateConVar(                 "rand_simplepausecheck",         "1",       "Uses sv_pausable for a simple pause check.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarStripperMode = CreateConVar(                     "rand_stripper_mode",            "2",       "When using Stripper:Source: mode 0 = don't change dir; 1 = toggle standard and _alt (50%); 2 = standard + _alt (33%); 3 = same, but (25%).", FCVAR_PLUGIN, true, 0.0, true, 2.0);
@@ -572,6 +573,7 @@ RI_KV_Load()
 bool: RI_KV_UpdateRandomMapInfo()
 {
     g_RI_bIsIntro = false;          // whether the map is the first of campaign
+    g_RI_bIsFinale = false;         // whether map is finale of campaign
     g_RI_iDifficulty = 0;           // difficulty offset for map
     g_RI_iDoors = 1;                // normal doors amount (2 = many, 0 = no doors)
     g_RI_bNoTank = false;           // whether we should block tanks
@@ -588,6 +590,8 @@ bool: RI_KV_UpdateRandomMapInfo()
     
     new String: mapname[64];
     GetCurrentMap(mapname, sizeof(mapname));
+    
+    if (L4D_IsMissionFinalMap()) { g_RI_bIsFinale = true; }
     
     // get keyvalues
     if (KvJumpToKey(g_kRIData, mapname))
@@ -606,7 +610,9 @@ bool: RI_KV_UpdateRandomMapInfo()
         g_RI_iDistance = KvGetNum(g_kRIData, "distance", g_RI_iDistance);
         g_RI_iDistanceHard = KvGetNum(g_kRIData, "distance_hard", g_RI_iDistanceHard);
         
-        PrintDebug("[RI] Read data: intro: %i; difficulty: %i; doors; %i; nostorm: %i", g_RI_bIsIntro, g_RI_iDifficulty, g_RI_iDoors, g_RI_bNoStorm);
+        if (KvGetNum(g_kRIData, "no_finale", 0)) { g_RI_bIsFinale = false; }
+        
+        PrintDebug(1, "[RI] Read data: intro: %i; difficulty: %i; doors; %i; nostorm: %i", g_RI_bIsIntro, g_RI_iDifficulty, g_RI_iDoors, g_RI_bNoStorm);
         
         return true;
     }
@@ -615,7 +621,7 @@ bool: RI_KV_UpdateRandomMapInfo()
     LogMessage("[RI] RandomMapInfo for '%s' is missing.", mapname);
     
     // if no data found, set default stuff we should assume
-    if (L4D_IsMissionFinalMap())
+    if (g_RI_bIsFinale)
     {
         g_RI_iDifficulty = 2;
         g_RI_iDoors = 0;
@@ -649,7 +655,7 @@ INIT_GetMeleeClasses()
         }
     }
     
-    PrintDebug("[rand] Read %i melee classes.", g_iMeleeClassCount);
+    PrintDebug(2, "[rand] Read %i melee classes.", g_iMeleeClassCount);
 }
 
 /*

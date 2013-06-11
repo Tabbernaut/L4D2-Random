@@ -2,56 +2,35 @@
 L4D2_Random
 ===========
 
-    event ideas:
-    ------------
-            
-            in consideration
-            ----------------
-            - random sound replacements for SI? meh.
-            
-            in doubt
-            --------
-            
-            rejected
-            --------
-            - 'pistol round': only pistols (magnums included). No locked doors and easier ci/si. [maybe]
-            - weird SI: random SI abilities (CRox's code) -- just give every SI a random ability...
-            
-            
+
     to-do:
     ------  
             - wait:     test and include stabby's random map stuff so people can launch random campaigns after loading random
+            - gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
             
             - test:     detect and prevent double-pass?
+            - test:     spitter during tank -- on pass.. happens VERY rarely.. why? only for double passes?
             
-            - low:      sack protection warning can display twice in a row (because offenses don't count up..)
-            
-            
-            
-            - gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
+            - later:    set debug mode to 0 for release; set cvar debug to 0 for release
             - later:    email Chet, see if maybe he likes Random at all...
+            
             
     minor cleanup / details
     -----------------------
-            - glitch:   spitter during tank -- on pass.. happens VERY rarely.. why? only for double passes?
-            - detail:   try different glow for hats (so they're easier to see) (but mustn't break outline workings) - try glowrangemin / glowrange combo
+            - nitpick:  boomer vomit doesn't really appear convincingly from the survivor's mouth
             - nitpick:  if I ever use g_bNoHealthItems beyond EVT_MEDIC, it will cause probs with PickRandomItem() as it is now.
-            - nitpick:  fire extinguisher objects are stuck in wall - use angles of original item to place it further away (find correct angle and dist)
             - superlow: random team going first per round in versus. how? possible? worth the effort? no.
             - nitpick:  can't see the special role's hat when he's ledged (himself)
             - nitpick:  prevent two ammo piles spawning too close to eachother?
             - nitpick:  dark carnival 1 gas cans are not randomized.. (they're a point template, I guess)
             - nitpick:  gunswap event: survivors don't start with same weapons
-            - glitch:   c10m3 is seen as 'a finale' (check separately?)
-            - reminder: remove sm_voc / sm_voc_this commands for final version
             - code:     Clean up the l4d_drop copied code some more.
             - code:     "The SetEntProp functions have a parameter for the array index, use it instead of doing manual lookups and computing offsets."
     
     notes:
     ------
-            - replacing models with SetEntityModel with survivors doesn't work well - animations are too important.
-            - I tried the modelscale netprop, which worked sometimes. most of the time it glitched
-              a LOT of things. It made some players practically immune to damage and so on. horrid.
+            - Replacing models with SetEntityModel with survivors doesn't work well - animations are too important.
+            - I tried the modelscale netprop, which worked sometimes. most of the time it glitched a LOT of things. It made some players practically immune to damage and so on. horrid.
     
     video:
     ------
@@ -59,37 +38,16 @@ L4D2_Random
         
     ideas:
     ------
-            cvars?
-                    sv_bounce
-                    sv_glowenable       ?
+            - cvar  - sv_bounce
     
-            - ?     - gift idea: X second slowdown (like EVT_ENCUMBERED)
-            - ?     - gift idea: ghost-effect for survivors for X seconds (no outlines for SI) (even if running)
-            - ?     - gift idea: see outlines on infected for X seconds ('telepathy')
+            - gift  - gift idea: X second slowdown (like EVT_ENCUMBERED)
+            - gift  - gift idea: ghost-effect for survivors for X seconds (no outlines for SI) (even if running)
+            - gift  - gift idea: see outlines on infected for X seconds ('telepathy')
+            - gift  - steal weapon / ammo (on condition of not breaking event)
             
-            - MAYBE - mini-scavenge for specific rounds (decide per map)
-                        do the research (how well possible? how much work? has anyone done it already?)
+            - MAYBE - mini-scavenge for specific rounds (decide per map) / do the research (how well possible? how much work? has anyone done it already?)
             - MAYBE - when cars are done (a minimal amount of) damage, they have a chance to explode
-            - MAYBE - random car alarms & randomly going off when survivors are near?
-            - MAYBE - play merry go round music for CLOWNS event
             - MAYBE - add 'rerandom' function, working on live round [ for testing / bad starts ]
-            
-            - STAB  - related cvars -- randumb?
-            
-            - NO    - for random glows: decide /per survivor/ whether they have glows...
-            - NO    - memorize horde timers, repeat same hordes for second roundhalf
-            - NO    - random event speeds/times & random event horde size/duration
-            
-        event ideas:
-            survivors have a random change to set things they shoot on fire
-            15:38 - stabby: infected have a random change to create an inferno around them when they die
-            15:38 - stabby: increased chance of ceda uncommons
-            15:39 - stabby: everyone gets a fire axe
-            15:39 - stabby: which also has a chance of setting things on fire
-
-		19:51 - stabby: event idea: stalkers
-		19:51 - stabby: hunters only
-		19:51 - stabby: if the hunters are more than X units from a survivor, they are invisible to him
 
             
             

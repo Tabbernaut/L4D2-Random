@@ -12,8 +12,9 @@
 #include "includes/random_constants.sp"
 #include "includes/random_globals.sp"
 #include "includes/random_init.sp"
-#include "includes/random_support.sp"
 #include "includes/random_random.sp"
+#include "includes/random_support.sp"
+#include "includes/random_thirdparty.sp"
 
 
 // note: these must also be defined in includes/random_init
@@ -70,7 +71,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.32",
+    version = "1.0.33",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -185,18 +186,20 @@ public OnPluginStart()
     RegConsoleCmd("sm_penalty", RandomBonus_Cmd,    "Report the special current round bonus (or penalty).");
     RegConsoleCmd("sm_drop",    RandomDrop_Cmd,     "Drop your currently selected weapon or item.");
     
-    
-    
-    
     // Admin and test commands
     RegAdminCmd("randteams", RandomTeamShuffle_Cmd, ADMFLAG_CHEATS, "Shuffle the teams! Only works during readyup.");
     RegAdminCmd("rand_teamshuffle", RandomTeamShuffle_Cmd, ADMFLAG_CHEATS, "Shuffle the teams! Only works during readyup.");
     
     //  disable when debugging is done
-    RegAdminCmd("rand_test_gnomes", TestGnomes_Cmd, ADMFLAG_CHEATS, "...");
-    RegAdminCmd("rand_test_swap",   TestSwap_Cmd,   ADMFLAG_CHEATS, "...");
-    RegAdminCmd("rand_test_ents",   TestEnts_Cmd,   ADMFLAG_CHEATS, "...");
-    RegAdminCmd("rand_test_event",  TestEvent_Cmd,  ADMFLAG_CHEATS, "...");
+    #if DEBUG_MODE > 1
+        RegAdminCmd("rand_test_gnomes", TestGnomes_Cmd, ADMFLAG_CHEATS, "...");
+        RegAdminCmd("rand_test_swap",   TestSwap_Cmd,   ADMFLAG_CHEATS, "...");
+        RegAdminCmd("rand_test_ents",   TestEnts_Cmd,   ADMFLAG_CHEATS, "...");
+        RegAdminCmd("rand_test_event",  TestEvent_Cmd,  ADMFLAG_CHEATS, "...");
+        // vocalize test
+        RegAdminCmd("sm_voc", Cmd_Vocalize_Random, ADMFLAG_CHEATS, "...");
+        RegAdminCmd("sm_voc_this", Cmd_Vocalize_Specified, ADMFLAG_CHEATS, "...");
+    #endif
     
     /*  Listen for specating */
     RegConsoleCmd("spectate",   Spectate_Cmd,   "...");
@@ -214,9 +217,7 @@ public OnPluginStart()
     CreateTimer(BLND_ENT_CHECK_INTERVAL, Timer_EntCheck, _, TIMER_REPEAT);
     
     
-    // vocalize test
-    RegAdminCmd("sm_voc", Cmd_Vocalize_Random, ADMFLAG_CHEATS, "...");
-    RegAdminCmd("sm_voc_this", Cmd_Vocalize_Specified, ADMFLAG_CHEATS, "...");
+
     
     
     // Do first randomization to prevent errors
@@ -224,12 +225,12 @@ public OnPluginStart()
     RANDOM_PrepareChoicesGiftEffects();
 }
 
+#if DEBUG_MODE
 /*
     START TEST
 
     Testing vocalize stuff AtomicStryker
 */
-
 public Action:Cmd_Vocalize_Random(client, args)
 {
     if (!client || !args || !IsClientInGame(client))
@@ -393,9 +394,11 @@ public Action:Cmd_Vocalize_Specified(client, args)
 
     return Plugin_Handled;
 }
+
 /*
     END TEST
 */
+#endif
 
 public OnPluginEnd()
 {
@@ -491,6 +494,7 @@ public Action: Timer_UnblockWeaponPickupCall(Handle:timer, any:client)
 }
 
 // test
+#if DEBUG_MODE
 public Action: TestSwap_Cmd(client, args)
 {
     EVENT_SwapSurvivorGun(client);
@@ -524,18 +528,18 @@ public Action: TestGnomes_Cmd(client, args)
             549 
             550 shrug shoulders
             551
-        
-
         */
-        /*
+        
         // hat test
         if (event) {
             CreateHat(setclient, event);
         }
         else {
-            PlayerDoVomit(setclient);
+            if (IsClientAndInGame(setclient)) {
+                PlayerDoVomit(setclient);
+            }
         }
-        */
+
         return Plugin_Handled;
     }
     
@@ -642,6 +646,7 @@ public Action: TestEvent_Cmd(client, args)
     return Plugin_Handled;
 }
 
+#endif
 /*
     Commands
     -------------------------- */
@@ -729,7 +734,7 @@ public Action:Listener_Pause(client, const String:command[], argc)
     {
         g_fPauseAttemptTime = 0.0;
         g_bIsPaused = true;
-        PrintDebug("[rand] PAUSED.");
+        PrintDebug(0, "[rand] PAUSED.");
     }
     else
     {
@@ -765,7 +770,7 @@ public OnCvarPausableChanged(Handle:cvar, const String:oldVal[], const String:ne
         {
             g_fPauseAttemptTime = 0.0;
             g_bIsPaused = true;
-            PrintDebug("[rand] PAUSED.");
+            PrintDebug(0, "[rand] PAUSED.");
         }
     }
 }
@@ -776,7 +781,7 @@ public Action: Unpause_Cmd(client, args)
     if (GetConVarBool(FindConVar("sv_pausable")))
     {
         g_bIsPaused = false;
-        PrintDebug("[rand] Unpaused...");
+        PrintDebug(0, "[rand] Unpaused...");
     }
     return Plugin_Continue;
 }
@@ -807,7 +812,7 @@ public OnMapStart()
     {
         g_bRestartedOnce = true;
         g_bItemsFullyRandomized = true;
-        PrintDebug("[rand] First OnMapStart, starting randomization on the next.");
+        PrintDebug(0, "[rand] First OnMapStart, starting randomization on the next.");
         return;
     }
     
@@ -967,7 +972,7 @@ public Action:OnPlayerRunCmd(client, &buttons)
 // tank randomization
 public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
 {
-    PrintDebug("[rand] debug tank pass: %N -- prev. pass was %.2fs ago.", tank_index, GetGameTime() - g_fTankPreviousPass);
+    PrintDebug(2, "[rand] debug tank pass: %N -- prev. pass was %.2fs ago.", tank_index, GetGameTime() - g_fTankPreviousPass);
     
     // passing when a player passes it...
     if (!IsFakeClient(tank_index))
@@ -975,7 +980,8 @@ public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
         // 25% chance of keeping tank
         if (GetRandomInt(0, GetConVarInt(g_hCvarTeamSize) - 1) == 0)
         {
-            for (new i=1; i <= MaxClients; i++) {
+            for (new i=1; i <= MaxClients; i++)
+            {
                 if (!IsClientInGame(i))
                     continue;
             
@@ -996,7 +1002,7 @@ public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
         // check if it's a double pass
         if (g_fTankPreviousPass != 0.0 && GetGameTime() - g_fTankPreviousPass < DOUBLE_PASS_CHECK_TIME)
         {
-            PrintDebug("[rand] Preventing double pass on tank. Previous pass was %.2f seconds ago.", GetGameTime() - g_fTankPreviousPass);
+            PrintDebug(2, "[rand] Preventing double pass on tank. Previous pass was %.2f seconds ago.", GetGameTime() - g_fTankPreviousPass);
             
             SetEntProp(tank_index, Prop_Send, "m_frustration", 0);
             L4D2Direct_SetTankPassedCount(L4D2Direct_GetTankPassedCount() + 1);
@@ -1623,7 +1629,7 @@ public DoBoomerComboReward(combo, victim)
         victim = GetSpawningClient();
     }
     if (victim == 0) {
-        PrintDebug("[rand] Couldn't reward %i-way boom combo (no spawning client available).", combo);
+        PrintDebug(2, "[rand] Couldn't reward %i-way boom combo (no spawning client available).", combo);
         return;
     }
     
@@ -1834,7 +1840,7 @@ public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadc
                 {
                     // manage held gnomes array
                     g_iGnomesHeld++;
-                    if (g_iGnomesHeld > TEAM_SIZE) { g_iGnomesHeld = 1; PrintDebug("[rand] Excessive 'held gnome/cola' count!"); }
+                    if (g_iGnomesHeld > TEAM_SIZE) { g_iGnomesHeld = 1; PrintDebug(0, "[rand] Excessive 'held gnome/cola' count!"); }
                     g_iArGnomesHeld[g_iGnomesHeld-1] = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
                     
                     if (!g_strArGnomes[gnomeIndex][gnomebFirstPickup])
@@ -2964,7 +2970,7 @@ public GetClassForFirstAttack(ignoreClient)
     }
     
     // shouldn't happen, but just return hunter
-    PrintDebug("[rand si] ERROR, no first attack storage entry found. should never happen");
+    PrintDebug(0, "[rand si] ERROR, no first attack storage entry found. should never happen");
     return ZC_HUNTER;
 }
 
@@ -3119,7 +3125,7 @@ GetGnomeValue(Float:distance)
     distance = FloatAbs(distance);
     new Float: fBonus = GetConVarFloat(g_hCvarGnomeBonus);
     
-    if (L4D_IsMissionFinalMap())
+    if (g_RI_bIsFinale)
     {
         fBonus = fBonus * GetConVarFloat(g_hCvarGnomeFinaleFactor);
         

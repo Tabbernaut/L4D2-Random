@@ -246,6 +246,7 @@ new                     g_iType[MAXPLAYERS+1];					// Stores selected hat to giv
 // RandomMapInfo keyvalues
 new     Handle:         g_kRIData                                           = INVALID_HANDLE;       // keyvalues handle for randommapinfo.txt
 new     bool:           g_RI_bIsIntro                                       = false;                // only true for intro maps
+new     bool:           g_RI_bIsFinale                                      = false;                // only true for finale maps
 new                     g_RI_iDifficulty                                    = 0;                    // difficulty offset for this specific map
 new                     g_RI_iDoors                                         = 1;                    // 0 = no doors on map, 1 = normal, 2 = many doors
 new     bool:           g_RI_bNoTank                                        = false;                // block tank spawns
@@ -266,6 +267,7 @@ new     Handle:         g_hArCvarSurvWeight     [INDEX_SURV_TOTAL];             
 new     Handle:         g_hArCvarEvtWeight      [EVT_TOTAL];                                        // cvar, per randomize-type, that sets an integer weight -- for picking events
 new     Handle:         g_hArCvarGiftWeight     [GIFT_TOTAL];                                       // cvar, per randomize-type, that sets an integer weight -- for picking gift effects
 
+new     Handle:         g_hCvarDebug                                        = INVALID_HANDLE;       // cvar debug mode
 new     Handle:         g_hCvarConfogl                                      = INVALID_HANDLE;       // cvar whether to wait one map-restart before reading default cvar values
 new     Handle:         g_hCvarSimplePauseCheck                             = INVALID_HANDLE;       // cvar whether we should do a very simple pause check
 new     Handle:         g_hCvarStripperMode                                 = INVALID_HANDLE;       // cvar what way to use stripper
