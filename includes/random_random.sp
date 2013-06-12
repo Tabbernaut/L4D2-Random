@@ -146,23 +146,23 @@ DoInsightReport(team=-1)
     // whether tank will spawn
     if (g_bTankWillSpawn)
     {
+        new Float: tankFlows[2];
+        L4D2_GetVersusTankFlowPercent(tankFlows);
+        
         if (g_bDoubleTank) {
             Format(sReport[iLine], REPLINELENGTH, "There are \x05two\x01 tanks this round, at \x05%d%%\x01 and \x05%d%%\x01.", RoundFloat(100.0 * g_fTankFlowEarly), RoundFloat(100.0 * g_fTankFlowLate));
         } else {
-            Format(sReport[iLine], REPLINELENGTH, "There is tank this round, at \x05%d%%\x01.", RoundFloat(100.0 * L4D2Direct_GetVSTankFlowPercent( (g_bSecondHalf) ? 1 : 0 ) ) );
+            Format(sReport[iLine], REPLINELENGTH, "There is tank this round, at \x05%d%%\x01.", RoundFloat(100.0 * tankFlows[ (g_bSecondHalf) ? 1 : 0 ]) );
         }
     } else {
         Format(sReport[iLine], REPLINELENGTH, "No tank this round.");
     }
     iLine++;
     
-    if (g_bWitchWillSpawn)
-    {
-        if (g_bMultiWitch && g_iWitchNum > 1) {
-            Format(sReport[iLine], REPLINELENGTH, "There are \x05%d\x01 witches this round. The first is at \x05%d%%\x01, the last at \x05%d%%\x01.", g_iWitchNum, RoundFloat(100.0 * g_fArWitchFlows[0]), RoundFloat(100.0 * g_fArWitchFlows[ g_iWitchNum - 1 ] ) );
-        } else {
-            Format(sReport[iLine], REPLINELENGTH, "There is a witch this round, at \x05%d%%\x01.", RoundFloat(100.0 * L4D2Direct_GetVSWitchFlowPercent( (g_bSecondHalf) ? 1 : 0 ) ) );
-        }
+    if (g_bMultiWitch && g_iWitchNum > 1) {
+        Format(sReport[iLine], REPLINELENGTH, "There are \x05%d\x01 witches this round. The first is at \x05%d%%\x01, the last at \x05%d%%\x01.", g_iWitchNum, RoundFloat(100.0 * g_fArWitchFlows[0]), RoundFloat(100.0 * g_fArWitchFlows[ g_iWitchNum - 1 ] ) );
+    } else if (g_bWitchWillSpawn) {
+        Format(sReport[iLine], REPLINELENGTH, "There is a witch this round, at \x05%d%%\x01.", RoundFloat(100.0 * L4D2Direct_GetVSWitchFlowPercent( (g_bSecondHalf) ? 1 : 0 ) ) );
     } else {
         Format(sReport[iLine], REPLINELENGTH, "No witch this round.");
     }
@@ -534,7 +534,8 @@ RANDOM_DetermineRandomStuff()
                     SetConVarInt(FindConVar("z_smoker_limit"), 1);
                     SetConVarInt(FindConVar("z_boomer_limit"), 1);
                     
-                    // no tonfa's
+                    // no tonfa's or biles
+                    SetConVarFloat(FindConVar("sv_infected_ceda_vomitjar_probability"), 0.0);
                     SetConVarFloat(FindConVar("sv_infected_riot_control_tonfa_probability"), 0.0);
                 }
                 case EVT_FF: {
@@ -747,33 +748,44 @@ RANDOM_DetermineRandomStuff()
     {
         g_iDifficultyRating += 2;
         
-        new Float: tankFlows[2];
-        L4D2_GetVersusTankFlowPercent(tankFlows);
-        new iTankSpawn = RoundToNearest(tankFlows[0] * 100.0);
+        new Float: fTankFlow = L4D2Direct_GetVSTankFlowPercent( (g_bSecondHalf) ? 1 : 0 );
+        new iTankSpawn = RoundToNearest(fTankFlow * 100.0);
+        
+        // safeguard against weird values
+        if (fTankFlow > 1.0 || fTankFlow < 0.0) {
+            PrintDebug(2, "[rand] Boss spawns -- Found freaky flow value (%.2f), picking random normal value.", fTankFlow);
+            fTankFlow = GetRandomFloat(0.16, 0.84);
+            L4D2Direct_SetVSTankFlowPercent(0, fTankFlow);
+            L4D2Direct_SetVSTankFlowPercent(1, fTankFlow);
+        }
         
         // check tank flow bans:
         if (GetConVarBool(g_hCvarBanTankFlows) && g_RI_iTankBanStart != -1 && g_RI_iTankBanEnd != -1)
         {
             // banned range?
-            if (iTankSpawn >= g_RI_iTankBanStart && iTankSpawn <= g_RI_iTankBanEnd) {
+            if (iTankSpawn >= g_RI_iTankBanStart && iTankSpawn <= g_RI_iTankBanEnd)
+            {
                 // banned tank
+                new oldSpawn = iTankSpawn;
                 
-                new minFlow = (minFlow < 15) ? 15 : minFlow;
-                new maxFlow = (maxFlow > 85) ? 85 : maxFlow;
+                new minFlow = (g_RI_iTankBanStart < 15) ? 15 : g_RI_iTankBanStart;
+                new maxFlow = (g_RI_iTankBanEnd > 85)   ? 85 : g_RI_iTankBanEnd;
                 
                 new range = maxFlow - minFlow;
-                new r     = 15 + GetRandomInt(0, 70-range);
-                iTankSpawn = r >= minFlow ? r + range : r;
+                new r = 15 + GetRandomInt(0, 70 - range);
+                iTankSpawn = (r >= minFlow) ? r + range : r;
                 
-                tankFlows[0] = float(iTankSpawn) / 100.0;
-                tankFlows[1] = tankFlows[0];
+                fTankFlow = float(iTankSpawn) / 100.0;
                 
-                L4D2_SetVersusTankFlowPercent(tankFlows);
+                PrintDebug(2, "[rand] Boss spawns -- Found banned tank (@ %i), changing to %.f.", oldSpawn, iTankSpawn);
+                
+                L4D2Direct_SetVSTankFlowPercent(0, fTankFlow);
+                L4D2Direct_SetVSTankFlowPercent(1, fTankFlow);
             }
         }
         
         // is it an early tank?
-        if (g_RI_bIsIntro && tankFlows[0] < 0.5 || tankFlows[0] < 0.3)
+        if (g_RI_bIsIntro && fTankFlow < 0.6 || fTankFlow < 0.4)
         {
             g_bTankIsEarly = true;
         }
@@ -877,7 +889,7 @@ RANDOM_DetermineRandomStuff()
             }
         }
     } else {
-        // no double tanks in any case
+        // no double witches in any case
         g_bMultiWitch = false;
     }
     

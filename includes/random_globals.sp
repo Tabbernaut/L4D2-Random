@@ -391,5 +391,5 @@ new     Float:          g_fDefTankFlowVariation                             = 0.
 new                     g_iDefVomitInterval                                 = 30;
 new                     g_iDefSpitInterval                                  = 20;
 
-//new     Float:          g_fDefCedaBileProb                                  = 0.1;
+new     Float:          g_fDefCedaBileProb                                  = 0.1;
 new     Float:          g_fDefRiotTonfaProb                                 = 0.15;

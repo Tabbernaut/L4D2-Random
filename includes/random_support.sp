@@ -168,6 +168,7 @@ SUPPORT_CleanArrays()
 EVENT_ResetOtherCvars()
 {
     // for defib event
+    PrintDebug(3, "[rand] DEFIB PENALTY RESET (to: %i)", g_iDefDefibPenalty);
     SetConVarInt(FindConVar("vs_defib_penalty"), g_iDefDefibPenalty);
     PBONUS_SetDefibPenalty(g_iDefDefibPenalty);
     
@@ -197,7 +198,7 @@ EVENT_ResetOtherCvars()
     SetConVarInt(FindConVar("z_vomit_interval"), g_iDefVomitInterval);
     SetConVarInt(FindConVar("z_spit_interval"), g_iDefSpitInterval);
     
-    //SetConVarFloat(FindConVar("sv_infected_ceda_vomitjar_probability"), g_fDefCedaBileProb);
+    SetConVarFloat(FindConVar("sv_infected_ceda_vomitjar_probability"), g_fDefCedaBileProb);
     SetConVarFloat(FindConVar("sv_infected_riot_control_tonfa_probability"), g_fDefRiotTonfaProb);
     
     // hittable control
@@ -2042,6 +2043,8 @@ PickTankPlayer()
     pick = GetRandomInt(0, pickCount - 1);
     pick = pickArray[pick];
     
+    PrintDebug(3, "[rand tank] Randomly picking tank player %i (%N) (had %i tanks before).", pick, pick, g_iHadTanks[pick]);
+    
     return pick;
 }
 
@@ -2049,6 +2052,8 @@ ForceTankPlayer()
 {
     // randomly pick a tank player
     new tank = PickTankPlayer();
+    
+    PrintDebug(3, "[rand tank] Forcing tank player %i (%N).", tank, tank);
     
     if (tank == 0) { return; }
     

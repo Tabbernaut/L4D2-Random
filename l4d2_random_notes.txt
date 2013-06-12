@@ -9,10 +9,23 @@ L4D2_Random
             - gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
             
             - test:     detect and prevent double-pass?
-            - test:     spitter during tank -- on pass.. happens VERY rarely.. why? only for double passes?
+            
+            - low:      firext stuff particle effect? see how it's done.
             
             - later:    set debug mode to 0 for release; set cvar debug to 0 for release
             - later:    email Chet, see if maybe he likes Random at all...
+            
+            - bugfix:   teamswap gets swapped back.. do a check on every other round?
+                        use sm_swapto if it's there!
+            - bugfix:   defib penalty still not reset correctly after a sudden death round
+            
+            - tweak:    make defib event easier for survivors: give more pills at start
+            - tweak:    remove uncommons from l4d1 mode (no boomer combo's there anyway)
+            - tweak:    less ammo for HR/milsnip (not other snipers); drop ammo for AK too (separately)
+            
+            
+            
+            
             
             
     minor cleanup / details

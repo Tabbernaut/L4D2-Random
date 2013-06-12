@@ -216,10 +216,6 @@ public OnPluginStart()
     g_hBlockedEntities = CreateArray(_:EntInfo);
     CreateTimer(BLND_ENT_CHECK_INTERVAL, Timer_EntCheck, _, TIMER_REPEAT);
     
-    
-
-    
-    
     // Do first randomization to prevent errors
     RANDOM_PrepareChoicesSpawns();
     RANDOM_PrepareChoicesGiftEffects();

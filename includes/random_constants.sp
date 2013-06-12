@@ -164,7 +164,7 @@ const Float:    EVENT_WITCHES_WITCHDMG  = 50.0;         // EVT_WITCHES      how 
 const           EVENT_WITCHES_BONUS     = 25;           // EVT_WITCHES      how many points to give for each witch kill
 const Float:    EVENT_WITCHES_SPAWNFREQ = 40.0;         // EVT_WITCHES      spawn witch every X seconds
 const Float:    EVENT_WITCHES_RANGE     = 250000.0;     //                  range for glow removal/addition
-const           EVENT_BADSANTA_BONUS    = 20;           // EVT_BADSANTA     how many points to give for each gift unwrap
+const           EVENT_BADSANTA_BONUS    = 15;           // EVT_BADSANTA     how many points to give for each gift unwrap
 const           EVENT_MEDIC_UNITS_BASE  = 11;           // EVT_MEDIC        how many mediunits to start with (default difficulty) (medkit, pills + 8)
 const           EVENT_MEDIC_UNITS_MIN   = 7;            // EVT_MEDIC        minimum mediunits
 const           EVENT_MEDIC_UNITS_MAX   = 14;           // EVT_MEDIC        maximum mediunits 
@@ -753,7 +753,7 @@ new const String: g_csEventText[][] =
     "[women event]",                                                                            // two variants: Axe Effect and Rock Stars, replace name in report (plus backup variant)
     "\x04Magic Gun Swap\x01 - Empty your clip to get a new weapon.",
     "\x04Witch Hunt\x01 - Kill witches for \x0425\x01 bonus points.",
-    "\x04Lousy Gifts\x01 - All gifts are bad! \x0420\x01 bonus for unwrapping anyway.",
+    "\x04Lousy Gifts\x01 - All gifts are bad! \x0415\x01 bonus for unwrapping anyway.",
     "\x04MEDIC!\x01 - There is one medic with a limited supply of healing items.",
     "\x04Boomer Flu\x01 - One survivor caught the boomer flu and is prone to vomit."
 };

@@ -287,16 +287,19 @@
 		"intro"		"1"
 		"difficulty"	"0"
 		"doors"		"0"
+		"no_storm"	"1"
 		"tank_ban_start"	"0"
 		"tank_ban_end"		"57"
 	}
 	"c12m2_traintunnel"
 	{
 		"difficulty"	"1"
+		"no_storm"	"1"
 	}
 	"c12m3_bridge"
 	{
 		"difficulty"	"2"
+		"no_storm"	"1"
 		"tank_ban_start"	"70"
 		"tank_ban_end"		"100"
 	}
@@ -304,6 +307,7 @@
 	{
 		"difficulty"	"1"
 		"doors"		"0"
+		"no_storm"	"1"
 		"distance"	"600"
 		"distance_hard"	"700"
 	}
@@ -311,6 +315,7 @@
 	{
 		"difficulty"	"3"
 		"doors"		"1"
+		"no_storm"	"1"
 		"tank_ban_start"	"80"
 		"tank_ban_end"		"100"
 	}

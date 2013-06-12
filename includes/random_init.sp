@@ -201,6 +201,8 @@ INIT_CVarsGetDefault()
     g_iDefHordeSizeMax =        GetConVarInt(FindConVar("z_mob_spawn_max_size"));
     
     g_iDefDefibPenalty =        GetConVarInt(FindConVar("vs_defib_penalty"));
+    PrintDebug(3, "[rand] DEFIB PENALTY SAVED (= %i)", g_iDefDefibPenalty);
+    
     g_iDefDefibDuration =       GetConVarInt(FindConVar("defibrillator_use_duration"));
     g_fDefPillDecayRate =       GetConVarFloat(FindConVar("pain_pills_decay_rate"));
     
@@ -230,7 +232,7 @@ INIT_CVarsGetDefault()
     g_iDefVomitInterval =       GetConVarInt(FindConVar("z_vomit_interval"));
     g_iDefSpitInterval =        GetConVarInt(FindConVar("z_spit_interval"));
     
-    //g_fDefCedaBileProb =        GetConVarFloat(FindConVar("sv_infected_ceda_vomitjar_probability"));
+    g_fDefCedaBileProb =        GetConVarFloat(FindConVar("sv_infected_ceda_vomitjar_probability"));
     g_fDefRiotTonfaProb =       GetConVarFloat(FindConVar("sv_infected_riot_control_tonfa_probability"));
     
     
