@@ -10,7 +10,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 #define VOMIT_PARTICLE          "boomer_vomit"
-
+#define FIRE_EXT_SPRAY          "extinguisher_spray"
 
 INIT_DefineCVars()
 {
@@ -94,6 +94,10 @@ INIT_DefineCVars()
     g_hCvarRandBonusVar = CreateConVar(                     "rand_bonus_var",                "0.2",     "For bonus variance: how much it can deviate from normal value.", FCVAR_PLUGIN, true, 0.1, true, 0.9);
     g_hCvarRandBonusMin = CreateConVar(                     "rand_bonus_min",               "200",      "For fully random bonus: the minimum.", FCVAR_PLUGIN, true, 50.0, true, 900.0);
     g_hCvarRandBonusMax = CreateConVar(                     "rand_bonus_max",               "800",      "For fully random bonus: the maximum.", FCVAR_PLUGIN, true, 100.0, true, 4000.0);
+    
+    g_hCvarAmmoAk = CreateConVar(                           "rand_ammo_ak",                 "250",      "Ammo for the AK47 in Random.", FCVAR_PLUGIN, true, 0.0, false);
+    g_hCvarAmmoScout = CreateConVar(                        "rand_ammo_scout",              "150",      "Ammo for the Scout rifle in Random.", FCVAR_PLUGIN, true, 0.0, false);
+    g_hCvarAmmoAWP = CreateConVar(                          "rand_ammo_awp",                 "90",      "Ammo for the AWP rifle in Random.", FCVAR_PLUGIN, true, 0.0, false);
     
     g_hArCvarWeight[INDEX_NOITEM] = CreateConVar(           "rand_weight_nothing",          "25",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarWeight[INDEX_PISTOL] = CreateConVar(           "rand_weight_pistol",           "13",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -202,6 +206,7 @@ INIT_CVarsGetDefault()
     
     g_iDefDefibPenalty =        GetConVarInt(FindConVar("vs_defib_penalty"));
     PrintDebug(3, "[rand] DEFIB PENALTY SAVED (= %i)", g_iDefDefibPenalty);
+    //PBONUS_SetDefibPenalty(g_iDefDefibPenalty);
     
     g_iDefDefibDuration =       GetConVarInt(FindConVar("defibrillator_use_duration"));
     g_fDefPillDecayRate =       GetConVarFloat(FindConVar("pain_pills_decay_rate"));
@@ -769,6 +774,7 @@ INIT_PrecacheParticles()
     INIT_PrecacheParticle(EXPLOSION_PARTICLE3);
     INIT_PrecacheParticle(BURN_IGNITE_PARTICLE);
     INIT_PrecacheParticle(VOMIT_PARTICLE);
+    INIT_PrecacheParticle(FIRE_EXT_SPRAY);
 }
 
 INIT_PrecacheParticle(String:ParticleName[])

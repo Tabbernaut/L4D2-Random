@@ -759,6 +759,7 @@ new const String: g_csEventText[][] =
 };
 
 new const JUNK_FIRSTNONSOLID = 4;
+//new const JUNK_FIREEXT = 7;
 new const String: g_csJunkModels[][] =
 {
     "models/props_furniture/cafe_barstool1.mdl",
@@ -768,12 +769,6 @@ new const String: g_csJunkModels[][] =
     "models/props_junk/metalbucket01a.mdl",                         // first nonsolid
     "models/props_fortifications/orange_cone001_reference.mdl",
     "models/props_urban/tire001.mdl",
-    //"models/props_junk/cinderblock01a.mdl",
-    //"models/props_junk/cardboard_box05.mdl",
-    //"models/props_interiors/teddy_bear.mdl",
-    //"models/props_fairgrounds/alligator.mdl",
-    //"models/props_fairgrounds/giraffe.mdl",
-    //"models/props_fairgrounds/elephant.mdl",
     "models/props/cs_office/Fire_Extinguisher.mdl"
 };
 

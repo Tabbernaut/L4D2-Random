@@ -188,6 +188,9 @@ EVENT_ResetOtherCvars()
     SetConVarInt(FindConVar("ammo_sniperrifle_max"), g_iDefAmmoSniper);
     SetConVarInt(FindConVar("ammo_assaultrifle_max"), g_iDefAmmoRifle);
     SetConVarInt(FindConVar("ammo_autoshotgun_max"), g_iDefAmmoAutoShotgun);
+    g_iActiveAmmoAk = GetConVarInt(g_hCvarAmmoAk);
+    g_iActiveAmmoScout = GetConVarInt(g_hCvarAmmoScout);
+    g_iActiveAmmoAWP = GetConVarInt(g_hCvarAmmoAWP);
     
     SetConVarFloat(FindConVar("survivor_friendly_fire_factor_normal"), g_fDefFFFactor);
     SetConVarInt(FindConVar("z_tank_health"), g_iDefTankHealth);

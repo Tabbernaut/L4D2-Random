@@ -1,6 +1,9 @@
 #pragma semicolon 1
 #include <sourcemod>
 
+
+#define FIRE_EXT_SPRAY          "extinguisher_spray"
+
 /*
     All the super-interesting random stuff goes in here
     (for easier finding / editing
@@ -491,6 +494,9 @@ RANDOM_DetermineRandomStuff()
                 case EVT_SNIPER: {
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
                     g_iDifficultyRating++;
+                    
+                    g_iActiveAmmoScout = RoundFloat( GetConVarFloat(g_hCvarAmmoScout) * EVENT_FIREPOWER_AMMO);
+                    g_iActiveAmmoAWP = RoundFloat( GetConVarFloat(g_hCvarAmmoAWP) * EVENT_FIREPOWER_AMMO);
                 }
                 case EVT_WEATHER: {
                     new Handle: hTmp = FindConVar("l4d2_storm_fogmode");
@@ -627,6 +633,9 @@ RANDOM_DetermineRandomStuff()
                     
                     SetConVarInt(FindConVar("ammo_assaultrifle_max"), RoundFloat( GetConVarFloat(FindConVar("ammo_assaultrifle_max")) * EVENT_FIREPOWER_AMMO) );
                     SetConVarInt(FindConVar("ammo_autoshotgun_max"), RoundFloat( GetConVarFloat(FindConVar("ammo_autoshotgun_max")) * EVENT_FIREPOWER_AMMO) );
+                    g_iActiveAmmoAk = RoundFloat( GetConVarFloat(g_hCvarAmmoAk) * EVENT_FIREPOWER_AMMO);
+                    g_iActiveAmmoScout = RoundFloat( GetConVarFloat(g_hCvarAmmoScout) * EVENT_FIREPOWER_AMMO);
+                    g_iActiveAmmoAWP = RoundFloat( GetConVarFloat(g_hCvarAmmoAWP) * EVENT_FIREPOWER_AMMO);
                 }
                 case EVT_AMMO: {
                     g_bNoAmmo = true;
@@ -638,6 +647,9 @@ RANDOM_DetermineRandomStuff()
                     SetConVarInt(FindConVar("ammo_sniperrifle_max"), RoundFloat( float(g_iDefAmmoSniper) * EVENT_MAXAMMO_FACTOR) );
                     SetConVarInt(FindConVar("ammo_assaultrifle_max"), RoundFloat( float(g_iDefAmmoRifle) * EVENT_MAXAMMO_FACTOR) );
                     SetConVarInt(FindConVar("ammo_autoshotgun_max"), RoundFloat( float(g_iDefAmmoAutoShotgun) * EVENT_MAXAMMO_FACTOR) );
+                    g_iActiveAmmoAk = RoundFloat( GetConVarFloat(g_hCvarAmmoAk) * EVENT_MAXAMMO_FACTOR);
+                    g_iActiveAmmoScout = RoundFloat( GetConVarFloat(g_hCvarAmmoScout) * EVENT_MAXAMMO_FACTOR);
+                    g_iActiveAmmoAWP = RoundFloat( GetConVarFloat(g_hCvarAmmoAWP) * EVENT_MAXAMMO_FACTOR);
                     
                     g_iDifficultyRating++;
                 }
@@ -1405,7 +1417,12 @@ RandomizeItems()
                             }
                         }
                     }
-                    g_strArStorage[curEnt][entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_assaultrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
+                    
+                    if (g_strArStorage[curEnt][entPickedType] == _:PCK_RIFLE_AK47) {
+                        g_strArStorage[curEnt][entAmmoMax] = RoundFloat(float(g_iActiveAmmoAk) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
+                    } else {
+                        g_strArStorage[curEnt][entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_assaultrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
+                    }
                 }
                 
                 case INDEX_T2SHOTGUN:
@@ -1427,10 +1444,11 @@ RandomizeItems()
                     else if (_:g_iSpecialEvent == EVT_SNIPER || GetRandomInt(0, RATE_CSS_SNIPER - 1) == 0) {
                         if (GetRandomInt(0, 1) == 0) {
                             g_strArStorage[curEnt][entPickedType] = PCK_SNIPER_SCOUT;
+                            g_strArStorage[curEnt][entAmmoMax] = RoundFloat(float(g_iActiveAmmoScout) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
                         } else {
                             g_strArStorage[curEnt][entPickedType] = PCK_SNIPER_AWP;
+                            g_strArStorage[curEnt][entAmmoMax] = RoundFloat(float(g_iActiveAmmoAWP) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
                         }
-                        g_strArStorage[curEnt][entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_sniperrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
                     }
                     else {
                         if (GetRandomInt(0, 1) == 0) {
@@ -1460,11 +1478,11 @@ RandomizeItems()
                         }
                         case 1: {
                             g_strArStorage[curEnt][entPickedType] = PCK_GRENADE_LAUNCHER;
-                            g_strArStorage[curEnt][entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_grenadelauncher_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
+                            g_strArStorage[curEnt][entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_grenadelauncher_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore));
                         }
                         case 2: {
                             g_strArStorage[curEnt][entPickedType] = PCK_RIFLE_M60;
-                            g_strArStorage[curEnt][entAmmoMax] = RoundFloat(GetConVarFloat(g_hCvarM60Ammo) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
+                            g_strArStorage[curEnt][entAmmoMax] = RoundFloat(GetConVarFloat(g_hCvarM60Ammo) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore));
                             
                         }
                     }
@@ -1814,6 +1832,7 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
     
     new randomPick = PCK_NOITEM;
     new randomIndex = INDEX_NOITEM;
+    new Float: fAmmoFactor = (_:g_iSpecialEvent == EVT_AMMO) ? EVENT_AMMO_FACTOR : 1.0;
     
     // if we're doing weapons, we're still not doing NOITEM, so start at pistol (1)
     // otherwise, start at first non-weapon item
@@ -1897,12 +1916,12 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
                 case 1: { randomPick = PCK_SMG; }
                 case 2: { randomPick = PCK_SMG_SILENCED; }
             }
-            g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_smg_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore));
+            g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_smg_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
         }
         
         case INDEX_T1SHOTGUN: {
             if (GetRandomInt(0, 1) == 0 || _:g_iSpecialEvent == EVT_L4D1) { randomPick = PCK_PUMPSHOTGUN; } else { randomPick = PCK_SHOTGUN_CHROME; }
-            g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_shotgun_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore));
+            g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_shotgun_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
         }
         
         case INDEX_T2RIFLE: {
@@ -1914,12 +1933,17 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
                 case 2: { randomPick = PCK_RIFLE_AK47; }
                 case 3: { randomPick = PCK_RIFLE_DESERT; }
             }
-            g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_assaultrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore));
+            
+            if (randomPick == _:PCK_RIFLE_AK47) {
+                g_strTempItemSingle[entAmmoMax] = RoundFloat(float(g_iActiveAmmoAk) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
+            } else {
+                g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_assaultrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
+            }
         }
         
         case INDEX_T2SHOTGUN: {
             if (GetRandomInt(0, 1) == 0 || _:g_iSpecialEvent == EVT_L4D1) { randomPick = PCK_AUTOSHOTGUN; } else { randomPick = PCK_SHOTGUN_SPAS; }
-            g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_autoshotgun_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore));
+            g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_autoshotgun_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
         }
         
         case INDEX_SNIPER: {
@@ -1927,13 +1951,13 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
             if (_:g_iSpecialEvent == EVT_L4D1) { tmpRnd = 2; }
             switch (tmpRnd)  {
                 case 0: { randomPick = PCK_SNIPER_SCOUT;
-                          g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_sniperrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore)); }
+                          g_strTempItemSingle[entAmmoMax] = RoundFloat(float(g_iActiveAmmoScout) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor); }
                 case 1: { randomPick = PCK_SNIPER_AWP;
-                          g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_sniperrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore)); }
+                          g_strTempItemSingle[entAmmoMax] = RoundFloat(float(g_iActiveAmmoAWP) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor); }
                 case 2: { randomPick = PCK_HUNTING_RIFLE;
-                          g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_huntingrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore)); }
+                          g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_huntingrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor); }
                 case 3: { randomPick = PCK_SNIPER_MILITARY;
-                          g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_sniperrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore)); }
+                          g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_sniperrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor); }
             }
         }
         
@@ -2549,13 +2573,40 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
         case PCK_JUNK: {
             ent = CreateEntityByName("prop_physics_override");
             DispatchKeyValue(ent, "model", g_csJunkModels[itemJunkIndex]);
-            /*
-                Solid:      SetEntData(entity, g_offsCollisionGroup, 5, 4, true);    
-                Not solid:  SetEntData(client, g_offsCollisionGroup, 2, 4, true);
-            */
             if (itemJunkIndex >= JUNK_FIRSTNONSOLID) { forceNonSolid = true; }
             fPlaceHigher = 10.0;
             dontBlind = true;                                           // don't store for blindinfected
+            
+            // add fire extinguisher effects
+            /*
+                meh, leave it for now. not worth the hassle
+            if (itemJunkIndex == JUNK_FIREEXT)
+            {
+                new particle = CreateEntityByName("info_particle_system");
+                new String: tmpName[64], String:tmpCmd[256];
+                Format(tmpName, sizeof(tmpName), "rand_%d_fireext_prt", index);
+                
+                Format(tmpCmd, sizeof(tmpCmd), "rand_%d_fireext_prt,Start,,0,1", index);
+                DispatchKeyValue(ent, "OnHealthChanged", tmpCmd);
+                
+                //Format(tmpCmd, sizeof(tmpCmd), "rand_%d_fireext_prt,Start,,0,1", index);
+                //"OnHealthChanged" "InstanceAuto38-steamsound8PlaySound01"
+                //"OnHealthChanged" "InstanceAuto38-steamsound8FadeOut361"
+                
+                DispatchKeyValue(particle, "targetname", tmpName);
+                DispatchKeyValue(particle, "effect_name", FIRE_EXT_SPRAY);
+                
+                DispatchSpawn(particle);
+                //ActivateEntity(particle);
+            
+                Format(tmpName, sizeof(tmpName), "rand_%d_fireext_base", index);
+                DispatchKeyValue(ent, "targetname", tmpName);
+                SetVariantString(tmpName);
+                AcceptEntityInput(particle, "SetParent", particle, particle, 0);
+                
+                TeleportEntity(particle, itemOrigin, itemAngles, NULL_VECTOR);
+            }
+            */
         }
         
         default: {
@@ -2667,7 +2718,8 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
     } */
     
     // if a weapon, do this to prevent it having only 1 clip:
-    if (itemAmmoMax) {
+    if (itemAmmoMax)
+    {
         if (type == _:PCK_RIFLE_M60) {
             SetEntProp(ent, Prop_Send, "m_iClip1", itemAmmoMax, 4);
         } else {
@@ -2989,7 +3041,7 @@ ChangeSurvivorSetup(index, client)
         new Float: fAmmoVarLess = 1.0 - GetConVarFloat(g_hCvarAmmoVarianceLess);
         
         weaponname = "weapon_sniper_scout";
-        ammo = RoundFloat(GetConVarFloat(FindConVar("ammo_huntingrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore));
+        ammo = RoundFloat(float(g_iActiveAmmoScout) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore));
         ammoOffset = MILITARY_SNIPER_OFFSET_IAMMO;
     }
     // special event: magic gun swap == you don't get a primary
@@ -3007,7 +3059,7 @@ ChangeSurvivorSetup(index, client)
     {
         switch (_:type)
         {
-            case PCK_SMG_MP5: {         weaponname = "weapon_rifle_ak47";   ammo = g_iArStorageSurvAmmo[index]; ammoOffset = ASSAULT_RIFLE_OFFSET_IAMMO; }
+            case PCK_SMG_MP5: {         weaponname = "weapon_rifle_ak47";   ammo = g_iActiveAmmoAk; ammoOffset = ASSAULT_RIFLE_OFFSET_IAMMO; }
             case PCK_SMG: {             weaponname = "weapon_rifle";        ammo = g_iArStorageSurvAmmo[index]; ammoOffset = ASSAULT_RIFLE_OFFSET_IAMMO; }
             case PCK_SMG_SILENCED: {    weaponname = "weapon_rifle_desert"; ammo = g_iArStorageSurvAmmo[index]; ammoOffset = ASSAULT_RIFLE_OFFSET_IAMMO; }
             case PCK_PUMPSHOTGUN: {     weaponname = "weapon_autoshotgun";  ammo = g_iArStorageSurvAmmo[index]; ammoOffset = AUTO_SHOTGUN_OFFSET_IAMMO; }
@@ -3573,7 +3625,7 @@ RandomizeFirstSpawns()
 DetermineSpawnClass(any:client, any:iClass)
 {
     // pick a desired class, dependent on Cvar settings
-    if ( /*iClass < ZC_SMOKER || iClass > ZC_CHARGER || */ !IsClientAndInGame(client) || IsTank(client)) { return; }
+    if ( iClass < ZC_SMOKER || iClass > ZC_CHARGER || !IsClientAndInGame(client) || IsTank(client)) { return; }
     
     // player is given a ghost class, keep track (for sack-exploitation check)
     if (!IsFakeClient(client))

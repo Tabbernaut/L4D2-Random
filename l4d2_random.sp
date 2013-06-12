@@ -71,7 +71,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.33",
+    version = "1.0.34",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -118,9 +118,7 @@ public OnPluginStart()
     //HookEvent("player_hurt",                Event_PlayerHurt,               EventHookMode_Pre);
     HookEvent("player_death",               Event_PlayerDeath,              EventHookMode_Pre);
     HookEvent("player_spawn",               Event_PlayerSpawn,              EventHookMode_Post);
-    HookEvent("ghost_spawn_time",           Event_GhostSpawnTime,           EventHookMode_Post);
     HookEvent("tank_spawn",                 Event_TankSpawned,              EventHookMode_Post);
-    HookEvent("tank_frustrated",            Event_TankFrustrated,           EventHookMode_Post);
     
     HookEvent("player_now_it",              Event_PlayerBoomed,             EventHookMode_Post);
     HookEvent("player_no_longer_it",        Event_PlayerUnboomed,           EventHookMode_Post);
@@ -1441,22 +1439,16 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
         CreateTimer(DELAY_TEAMSWAP, Timer_TeamSwapDelayed, pack, TIMER_FLAG_NO_MAPCHANGE);
     }
     
-    // ghost spawns:
-    if (newTeam == TEAM_INFECTED)
-    {
-        g_bHasMaterialised[client] = false;
-        g_bHasSpawned[client] = false;
-        
-        CreateTimer(ZC_TIMERCHECKGHOST, Timer_CheckPlayerGhostDelayed, client, TIMER_FLAG_NO_MAPCHANGE);
-    }
-    else if (newTeam == TEAM_SPECTATOR && oldTeam == TEAM_INFECTED)
+    // spectate check / ghost check
+    if (newTeam == TEAM_SPECTATOR && oldTeam == TEAM_INFECTED)
     {
         /*
             if they were a ghost (didn't spawn, didn't get tank and didn't die),
             remember and reset when a player returns
             no need to remember if it's still first attack (that's handled)
         */
-        if (!g_bIsFirstAttack && !IsFakeClient(client) && g_bHasGhost[client]) {
+        if (!g_bIsFirstAttack && !IsFakeClient(client) && g_bHasGhost[client])
+        {
             new tmpClass = GetEntProp(client, Prop_Send, "m_zombieClass");
             if (tmpClass >= ZC_SMOKER && tmpClass <= ZC_CHARGER)
             {
@@ -2308,6 +2300,17 @@ public Event_WitchDeath(Handle:event, const String:name[], bool:dontBroadcast)
     Ghosts and spawning events
     -------------------------- */
 
+// l4downtown forward (that might replace the whole shebang?)
+public L4D_OnEnterGhostState(client)
+{
+    if (IsClientAndInGame(client) && IsPlayerGhost(client))
+    {
+        PrintDebug(4, "[rand si] %N became ghost: %s", client, g_csSIClassName[ GetEntProp(client, Prop_Send, "m_zombieClass") ] );
+        
+        DetermineSpawnClass(client, GetEntProp(client, Prop_Send, "m_zombieClass"));
+    }
+}
+
 public Action:Event_PlayerSpawn(Handle:hEvent, const String:name[], bool:dontBroadcast)
 {
     new client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
@@ -2327,8 +2330,6 @@ public Action:Event_PlayerSpawn(Handle:hEvent, const String:name[], bool:dontBro
     
     if (IsFakeClient(client)) { return Plugin_Continue; }
     
-    if (!g_bHasSpawned[client]) { ClearSpawnGhostTimer(client); }
-    g_bHasSpawned[client] = true;
     g_bHasGhost[client] = false;
 
     return Plugin_Continue;
@@ -2462,9 +2463,6 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
             }
         }
         
-        g_bHasMaterialised[victim] = false;
-        g_bHasSpawned[victim] = false;
-        
         /*
             this is also called when a player spectates
             so we have to distinguish between an actual death and a 'spectate death'
@@ -2522,54 +2520,16 @@ public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBro
     return Plugin_Continue;
 }
 
-// this breaks all sorts of things, let's not do it
+
 /*
-public Action:Timer_SetTankMiniScale(Handle:hTimer, any:client)
-{
-    if (IsClientAndInGame(client)) {
-        // set model size
-        SetEntPropFloat(client, Prop_Send,"m_flModelScale", MINITANKS_SCALE);
-    }
-}
-*/
-
-public Action:Event_TankFrustrated(Handle:hEvent, const String:name[], bool:dontBroadcast)
-{
-    new client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
-
-    g_bHasMaterialised[client] = false;
-    g_bHasSpawned[client] = false;
-    g_bHasGhost[client] = false;
-    
-    g_hSpawnGhostTimer[client] = CreateTimer(ZC_TIMERAFTERTANK, Timer_SpawnGhostClass, client, TIMER_FLAG_NO_MAPCHANGE);
-
-    return Plugin_Continue;
-}
-public Action:Event_GhostSpawnTime(Handle:hEvent, const String:name[], bool:dontBroadcast)
-{
-    new client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
-
-    if (!IsClientAndInGame(client) || IsFakeClient(client)) { return Plugin_Continue; }
-    if (IsPlayerAlive(client)) { return Plugin_Continue; }
-
-    new Float: fSpawnTime = GetEventFloat(hEvent, "spawntime");
-    
-    if (g_hSpawnGhostTimer[client] == INVALID_HANDLE) {
-        g_hSpawnGhostTimer[client] = CreateTimer(fSpawnTime - ZC_TIMEROFFSET, Timer_SpawnGhostClass, client, TIMER_FLAG_NO_MAPCHANGE);
-    }
-
-    g_bHasMaterialised[client] = false;
-    g_bHasSpawned[client] = false;
-
-    return Plugin_Continue;
-}
-
+    old hat, not required anymore
 public Action:Timer_CheckPlayerGhostDelayed(Handle:hTimer, any:client)
 {
     if (IsClientAndInGame(client) && IsValidEntity(client) && IsPlayerGhost(client)) {
         DetermineSpawnClass(client, GetEntProp(client, Prop_Send, "m_zombieClass"));
     }
 }
+
 
 public Action:Timer_SpawnGhostClass(Handle:hTimer, any:client)
 {
@@ -2594,6 +2554,7 @@ public ClearSpawnGhostTimer(any:client)
         g_hSpawnGhostTimer[client] = INVALID_HANDLE;
     }
 }
+*/
 
 public Action:Timer_CheckTankDeath(Handle:hTimer, any:client_oldTank)
 {
@@ -2669,6 +2630,15 @@ public OnEntityCreated(entity, const String:classname[])
             {
                 SDKHook(entity, SDKHook_SpawnPost, OnCommonInfectedSpawned);
             }
+            return;
+        }
+        else if (_:g_iSpecialEvent == EVT_L4D1)
+        {
+            if (entity > 0 && IsValidEntity(entity) && IsValidEdict(entity))
+            {
+                SDKHook(entity, SDKHook_SpawnPost, OnL4D1CommonInfectedSpawned);
+            }
+            return;
         }
         
         new iBlockL4D1 = GetConVarInt(g_hCvarBlockL4D1Common);
@@ -2701,29 +2671,6 @@ public OnEntityCreated(entity, const String:classname[])
                     SetEntityModel(entity, g_csUncommonModels[g_iSpecialEventExtra]);
                 }
             }
-        }
-        else if (g_iSpecialEvent == _:EVT_L4D1 && iBlockL4D1 != 1 && iBlockL4D1 != 2)
-        {
-            if (iBlockL4D1 == 3) 
-            {
-                // only pick non-problematic skins
-                SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(L4D1_CI_FIRSTLOWERCHANCE + 1, sizeof(g_csL4D1CommonModels) - 1)] );
-            }
-            else {
-                if (GetRandomInt(0, CISKIN_L4D1_LESSER_RATE) == 0) {
-                    // less common skins
-                    if (GetRandomInt(0, CISKIN_L4D1_LEAST_RATE) == 0) {
-                        SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(L4D1_CI_FIRSTLOWERCHANCE, L4D1_CI_FIRSTLOWESTCHANCE - 1)] );
-                    } else {
-                        SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(L4D1_CI_FIRSTLOWESTCHANCE, sizeof(g_csL4D1CommonModels) - 1)] );
-                    }
-                } else {
-                    // commonest
-                    SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(0, L4D1_CI_FIRSTLOWERCHANCE - 1)]);
-                }
-            }
-            //SetEntityRenderColor(entity, 0, 0, 0, 0);
-            //SetEntityRenderMode(entity, RENDER_NORMAL);
         }
         else if (GetRandomInt(0, CISKIN_EXTRA_RATE) == 0) {
             // it's still a common now, but it has a small chance of getting a sweet model
@@ -2912,24 +2859,65 @@ public OnL4D1CommonInfectedSpawned(entity)
     GetEntPropString(entity, Prop_Data, "m_ModelName", model, sizeof(model));
     
     new commonL4D1Type: modelCommon;
+    
+    // block uncommon infected, if it's the event
+    if (_:g_iSpecialEvent == EVT_L4D1)
+    {
+        if (    StrContains(model, "_ceda") != -1
+            ||  StrContains(model, "_clown") != -1
+            ||  StrContains(model, "_mud") != -1
+            ||  StrContains(model, "_riot") != -1
+            ||  StrContains(model, "_roadcrew") != -1
+        ) {
+            // uncommon: block
+            
+            new Float: location[3];
+            GetEntPropVector(entity, Prop_Send, "m_vecOrigin", location);
+            
+            AcceptEntityInput(entity, "Kill");
+            
+            SpawnCommonLocation(location, true);
+            return;
+        }
+        else if (iBlockL4D1 == 3)
+        {
+            // common: replace with l4d1 common (safe)
+            // only pick non-problematic skins
+            SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(L4D1_CI_FIRSTLOWERCHANCE + 1, sizeof(g_csL4D1CommonModels) - 1)] );
+        }
+        else if (iBlockL4D1 == 0)
+        {
+            // common: replace with l4d1 common
+            if (GetRandomInt(0, CISKIN_L4D1_LESSER_RATE) == 0) {
+                // less common skins
+                if (GetRandomInt(0, CISKIN_L4D1_LEAST_RATE) == 0) {
+                    SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(L4D1_CI_FIRSTLOWERCHANCE, L4D1_CI_FIRSTLOWESTCHANCE - 1)] );
+                } else {
+                    SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(L4D1_CI_FIRSTLOWESTCHANCE, sizeof(g_csL4D1CommonModels) - 1)] );
+                }
+            } else {
+                // commonest
+                SetEntityModel(entity, g_csL4D1CommonModels[GetRandomInt(0, L4D1_CI_FIRSTLOWERCHANCE - 1)]);
+            }
+        }
+        
+        return;
+    }
+    
+    // replace l4d1 commons with l4d2 common (only gets called on blockmode 1)
     if (!GetTrieValue(g_hTrieL4D1Common, model, modelCommon)) { return; }
     
     if ( iBlockL4D1 == 2 || iBlockL4D1 == 3 && modelCommon == COMMON_L4D1_PROBSKIN )
     {
+        // l4d2 common
         if (GetRandomInt(0,1)) {
             SetEntityModel(entity, g_csMaleCommonModels[ GetRandomInt(0, sizeof(g_csMaleCommonModels) - 1) ] );
         } else {
             SetEntityModel(entity, g_csFemaleCommonModels[ GetRandomInt(0, sizeof(g_csFemaleCommonModels) - 1) ] );
         }
-        //SetEntityRenderColor(entity, GetRandomInt(10,160), GetRandomInt(10,160), GetRandomInt(10,160), 255);
+        
+        SetEntProp(entity, Prop_Send, "m_nSkin", (GetRandomInt(0,1)) ? 1 : 4 );
     }
-    
-    // m_clrRender has no effect. So...
-    // "red + (green * 2 ^ 8) + (blue * 2 ^ 16) + (alpha * 2 ^ 24)"
-    // new tmpColor = GetEntProp(entity, Prop_Send, "m_clrRender");
-    
-    //SetEntProp(entity, Prop_Send, "m_clrRender", -1);
-    SetEntProp(entity, Prop_Send, "m_nSkin", (GetRandomInt(0,1)) ? 1 : 4 );
 }
 
 /*
@@ -2973,12 +2961,10 @@ public GetClassForFirstAttack(ignoreClient)
 
 public InitSpawnArrays()
 {
-    for (new i=1; i <= MaxClients; i++) {
-        g_bHasMaterialised[i] = false;
-        g_bHasSpawned[i] = false;
+    for (new i=1; i <= MaxClients; i++)
+    {
         g_bHasGhost[i] = false;
         g_bSpectateDeath[i] = false;
-        g_hSpawnGhostTimer[i] = INVALID_HANDLE;
     }
 }
 

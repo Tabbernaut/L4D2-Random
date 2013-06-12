@@ -88,10 +88,6 @@ new     Handle:         g_CallVomitSurvivor                                 = IN
 new     Handle:         g_CallSHS                                           = INVALID_HANDLE;       // infected
 new     Handle:         g_CallTOB                                           = INVALID_HANDLE;       // survivor
 
-
-new     Handle:         g_hSpawnGhostTimer      [MAXPLAYERS+1]              = {INVALID_HANDLE,...};
-new     bool:           g_bHasMaterialised      [MAXPLAYERS+1]              = {false,...};
-new     bool:           g_bHasSpawned           [MAXPLAYERS+1]              = {false,...};          // whether player X was spawned
 new     bool:           g_bHasGhost             [MAXPLAYERS+1]              = {false,...};          // whether player X currently holds a ghost
 new     bool:           g_bSpectateDeath        [MAXPLAYERS+1]              = {false,...};          // whether player X (if he 'died') died because of going spec
 
@@ -347,6 +343,10 @@ new     Handle:         g_hCvarRandBonusVar                                 = IN
 new     Handle:         g_hCvarRandBonusMin                                 = INVALID_HANDLE;       // cvar the minimum random distance points for a map
 new     Handle:         g_hCvarRandBonusMax                                 = INVALID_HANDLE;       // cvar the maximum random distance
 
+new     Handle:         g_hCvarAmmoAk                                       = INVALID_HANDLE;       // cvar how much ammo in AK47s
+new     Handle:         g_hCvarAmmoScout                                    = INVALID_HANDLE;       // cvar how much ammo in Scout rifle
+new     Handle:         g_hCvarAmmoAWP                                      = INVALID_HANDLE;       // cvar how much ammo in AWP rifle
+
 // Default convars
 new     Handle:         g_hCvarReadyUp                                      = INVALID_HANDLE;       // cvar handle for readyup checking
 new     Handle:         g_hCvarPausable                                     = INVALID_HANDLE;       // cvar handle for pausable/pausing checking
@@ -393,3 +393,7 @@ new                     g_iDefSpitInterval                                  = 20
 
 new     Float:          g_fDefCedaBileProb                                  = 0.1;
 new     Float:          g_fDefRiotTonfaProb                                 = 0.15;
+
+new                     g_iActiveAmmoAk                                     = 250;
+new                     g_iActiveAmmoScout                                  = 90;
+new                     g_iActiveAmmoAWP                                    = 45;
