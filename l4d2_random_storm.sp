@@ -184,7 +184,7 @@ public OnPluginStart()
 	AutoExecConfig(true,				"l4d2_storm_random");
     
     // Tabun added:
-    g_hCvarFogMode = CreateConVar(      "l4d2_storm_fogmode",       "0",            "Tabun-added for 'random' config; if enabled, gives fog instead of storm", CVAR_FLAGS);
+    g_hCvarFogMode = CreateConVar(      "l4d2_storm_fogmode",       "0",            "Tabun-added for 'random' config; if enabled, gives fog instead of storm (2 for no-rain mode)", CVAR_FLAGS);
 
 	g_hCvarGameMode = FindConVar("mp_gamemode");
 	HookConVarChange(g_hCvarGameMode,		ConVarChanged_Allow);
@@ -2246,9 +2246,13 @@ ConfigJumpA(Handle:hFile, String:sMap[64])
             file and replace it with the "random_fog" value...
          */
         
-        if (GetConVarBool(g_hCvarFogMode))
+        if (GetConVarInt(g_hCvarFogMode) == 1)
         {
             sJump = "random_fog";
+        }
+        else if (GetConVarInt(g_hCvarFogMode) == 2)
+        {
+            sJump = "random_norain";
         }
         
 		if( strcmp(sJump, "") )
