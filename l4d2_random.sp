@@ -71,7 +71,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.34",
+    version = "1.0.35",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -184,12 +184,15 @@ public OnPluginStart()
     RegConsoleCmd("sm_penalty", RandomBonus_Cmd,    "Report the special current round bonus (or penalty).");
     RegConsoleCmd("sm_drop",    RandomDrop_Cmd,     "Drop your currently selected weapon or item.");
     
+    RegConsoleCmd("sm_randteams",   RandomTeamShuffle_Cmd, "Vote for a team shuffle. Only works during readyup.");
+    RegConsoleCmd("sm_teamshuffle", RandomTeamShuffle_Cmd, "Vote for a team shuffle. Only works during readyup.");
+    
     // Admin and test commands
-    RegAdminCmd("randteams", RandomTeamShuffle_Cmd, ADMFLAG_CHEATS, "Shuffle the teams! Only works during readyup.");
-    RegAdminCmd("rand_teamshuffle", RandomTeamShuffle_Cmd, ADMFLAG_CHEATS, "Shuffle the teams! Only works during readyup.");
+    RegAdminCmd("sm_forceteamshuffle", RandomForceTeamShuffle_Cmd, ADMFLAG_CHEATS, "Shuffle the teams! Only works during readyup. Admins only.");
+
     
     //  disable when debugging is done
-    #if DEBUG_MODE > 1
+    #if DEBUG_MODE
         RegAdminCmd("rand_test_gnomes", TestGnomes_Cmd, ADMFLAG_CHEATS, "...");
         RegAdminCmd("rand_test_swap",   TestSwap_Cmd,   ADMFLAG_CHEATS, "...");
         RegAdminCmd("rand_test_ents",   TestEnts_Cmd,   ADMFLAG_CHEATS, "...");
@@ -680,8 +683,17 @@ public Action: RandomTeamShuffle_Cmd(client, args)
 {
     if (!g_bCampaignMode)
     {
-        SUPPORT_ShuffleTeams();
+        SUPPORT_VoteShuffleTeams(client);
     }
+    return Plugin_Handled;
+}
+public Action: RandomForceTeamShuffle_Cmd(client, args)
+{
+    if (!g_bCampaignMode)
+    {
+        SUPPORT_ShuffleTeams(client);
+    }
+    return Plugin_Handled;
 }
 public Action: Spectate_Cmd(client, args)
 {
@@ -691,28 +703,29 @@ public Action: Spectate_Cmd(client, args)
 }
 public Action: Say_Cmd(client, args)
 {
-    // get the string, determine whether it's a legit !spectate command
     new String: full[11];
     GetCmdArgString(full, sizeof(full));
     StripQuotes(full);
     TrimString(full);
     
-    if (StrEqual(full, "!spectate")) {
-        if (g_bHasGhost[client]) { g_bSpectateDeath[client] = true; }
-    }
-    
-    if (IsChatTrigger())
+    new randomCommands: commandTyped;
+    if (!GetTrieValue(g_hTrieCommands, full, commandTyped))
     {
         decl String:sMessage[MAX_NAME_LENGTH];
         GetCmdArg(1, sMessage, sizeof(sMessage));
-
-        if (StrEqual(sMessage, "!rand")) return Plugin_Handled;
-        else if (StrEqual(sMessage, "!rnd")) return Plugin_Handled;
-        else if (StrEqual(sMessage, "!random")) return Plugin_Handled;
-        else if (StrEqual (sMessage, "!drop")) return Plugin_Handled;
-        else if (StrEqual (sMessage, "!bonus")) return Plugin_Handled;
-        else if (StrEqual (sMessage, "!penalty")) return Plugin_Handled;
-        else if (StrEqual (sMessage, "!info")) return Plugin_Handled;
+        
+        GetTrieValue(g_hTrieCommands, sMessage, commandTyped);
+    }
+    
+    // if !spectate command
+    if (commandTyped == RANDOM_COMMAND_SPECTATE) {
+        if (g_bHasGhost[client]) { g_bSpectateDeath[client] = true; }
+    }
+    
+    // hide commands typed
+    if (IsChatTrigger() && commandTyped == RANDOM_COMMAND)
+    {
+        return Plugin_Handled;
     }
     
     return Plugin_Continue;
@@ -963,60 +976,6 @@ public Action:OnPlayerRunCmd(client, &buttons)
     return Plugin_Continue;
 }
 
-// tank randomization
-public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
-{
-    PrintDebug(2, "[rand] debug tank pass: %N -- prev. pass was %.2fs ago.", tank_index, GetGameTime() - g_fTankPreviousPass);
-    
-    // passing when a player passes it...
-    if (!IsFakeClient(tank_index))
-    {
-        // 25% chance of keeping tank
-        if (GetRandomInt(0, GetConVarInt(g_hCvarTeamSize) - 1) == 0)
-        {
-            for (new i=1; i <= MaxClients; i++)
-            {
-                if (!IsClientInGame(i))
-                    continue;
-            
-                if (!IsInfected(i))
-                    continue;
-
-                PrintHintText(i, "%N gets to keep the tank. Rage Meter Refilled", tank_index);
-                PrintToChat(i, "\x01[\x05r\x01] %N gets to keep the tank. Rage Meter Refilled.", tank_index);
-            }
-            
-            SetEntProp(tank_index, Prop_Send, "m_frustration", 0);
-            L4D2Direct_SetTankPassedCount(L4D2Direct_GetTankPassedCount() + 1);
-            
-            g_fTankPreviousPass = GetGameTime();
-            return Plugin_Handled;
-        }
-        
-        // check if it's a double pass
-        if (g_fTankPreviousPass != 0.0 && GetGameTime() - g_fTankPreviousPass < DOUBLE_PASS_CHECK_TIME)
-        {
-            PrintDebug(2, "[rand] Preventing double pass on tank. Previous pass was %.2f seconds ago.", GetGameTime() - g_fTankPreviousPass);
-            
-            SetEntProp(tank_index, Prop_Send, "m_frustration", 0);
-            L4D2Direct_SetTankPassedCount(L4D2Direct_GetTankPassedCount() + 1);
-            
-            g_fTankPreviousPass = GetGameTime();
-            return Plugin_Handled;
-        }
-        
-        g_fTankPreviousPass = GetGameTime();
-        return Plugin_Continue;
-    }
-    
-    if (GetConVarBool(g_hCvarRandomTank))
-    {
-        ForceTankPlayer();
-    }
-    g_fTankPreviousPass = GetGameTime();
-
-    return Plugin_Continue;
-}
 
 // for encumbered mode
 public Action:L4D_OnGetRunTopSpeed(target, &Float:retVal)
@@ -1463,6 +1422,7 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
     
     if (oldTeam == TEAM_INFECTED) {
         g_bHasGhost[client] = false;
+        g_bHasSpawned[client] = false;
     }
     
     return Plugin_Continue;
@@ -2300,15 +2260,113 @@ public Event_WitchDeath(Handle:event, const String:name[], bool:dontBroadcast)
     Ghosts and spawning events
     -------------------------- */
 
-// l4downtown forward (that might replace the whole shebang?)
+// l4downtown forward - players getting ghosts
 public L4D_OnEnterGhostState(client)
 {
-    if (IsClientAndInGame(client) && IsPlayerGhost(client))
+    PrintDebug(4, "[rand si] %N entered ghost state (class %s).%s", client, g_csSIClassName[ GetEntProp(client, Prop_Send, "m_zombieClass") ], (g_bHasSpawned[client]) ? " Was spawned before." : "");
+    
+    if (IsClientAndInGame(client) && IsPlayerGhost(client) && !g_bHasSpawned[client])
     {
-        PrintDebug(4, "[rand si] %N became ghost: %s", client, g_csSIClassName[ GetEntProp(client, Prop_Send, "m_zombieClass") ] );
-        
         DetermineSpawnClass(client, GetEntProp(client, Prop_Send, "m_zombieClass"));
     }
+}
+
+// l4downtown forward - tank selection
+public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
+{
+    // debug output
+    new String: tmpPass[32];
+    if (g_fTankPreviousPass != 0.0) {
+        Format(tmpPass, sizeof(tmpPass), "previous pass: %.1fs ago", GetGameTime() - g_fTankPreviousPass);
+    } else {
+        Format(tmpPass, sizeof(tmpPass), "start of first pass");
+    }
+    if (IsClientAndInGame(g_iTankClient)) {
+        PrintDebug(2, "[rand] debug tank pass: %N (bot: %i) -- iTankClient: %i (%N) (%s) - pass: %i / %i.",
+                tank_index,
+                IsFakeClient(tank_index),
+                g_iTankClient,
+                g_iTankClient,
+                tmpPass,
+                g_iTankPass,
+                L4D2Direct_GetTankPassedCount()
+            );
+    }
+    else {
+        PrintDebug(2, "[rand] debug tank pass: %N (bot: %i) -- iTankClient: (none) (%s) - pass: %i / %i.",
+                tank_index,
+                IsFakeClient(tank_index),
+                tmpPass,
+                g_iTankPass,
+                L4D2Direct_GetTankPassedCount()
+            );
+    }
+    
+    /*
+        note: if tank_index is always the bot, even on real passes,
+        switch to g_iTankClient, if that IS reliable, for the next bit:
+    */
+    
+    // passing when a player passes it...
+    if (!IsFakeClient(tank_index) || g_fTankPreviousPass != 0.0)
+    {
+        // check if it's a double pass
+        if (g_fTankPreviousPass != 0.0 && GetGameTime() - g_fTankPreviousPass < DOUBLE_PASS_CHECK_TIME)
+        {
+            PrintDebug(2, "[rand] Preventing double pass on tank. Previous pass was %.2f seconds ago.", GetGameTime() - g_fTankPreviousPass);
+            
+            SetEntProp(tank_index, Prop_Send, "m_frustration", 0);
+            //L4D2Direct_SetTankPassedCount(L4D2Direct_GetTankPassedCount() + 1);
+            
+            g_fTankPreviousPass = GetGameTime();
+            return Plugin_Handled;
+        }
+        // 25% chance of keeping tank
+        else if (GetRandomInt(0, GetConVarInt(g_hCvarTeamSize) - 1) == 0)
+        {
+            for (new i=1; i <= MaxClients; i++)
+            {
+                if (!IsClientInGame(i))
+                    continue;
+            
+                if (!IsInfected(i))
+                    continue;
+                
+                if (i == g_iTankClient) {
+                    PrintHintText(i, "You get to keep the tank. Rage Meter Refilled");
+                    PrintToChat(i, "\x01[\x05r\x01] You get to keep the tank. Rage Meter Refilled.");
+                } else {
+                    PrintHintText(i, "%N gets to keep the tank. Rage Meter Refilled", tank_index);
+                    PrintToChat(i, "\x01[\x05r\x01] %N gets to keep the tank. Rage Meter Refilled.", tank_index);
+                }
+            }
+            
+            SetEntProp(tank_index, Prop_Send, "m_frustration", 0);
+            L4D2Direct_SetTankPassedCount(L4D2Direct_GetTankPassedCount() + 1);
+            
+            g_fTankPreviousPass = GetGameTime();
+            
+            PrintDebug(2, "[rand] Allowing %N to keep tank for second pass.", tank_index);
+            g_iTankPass++;
+            return Plugin_Handled;
+        }
+        
+        g_fTankPreviousPass = GetGameTime();
+        g_iTankPass++;
+        
+        PrintDebug(3, "[rand] Passing tank (vanilla style).");
+        return Plugin_Continue;
+    }
+    
+    if (GetConVarBool(g_hCvarRandomTank))
+    {
+        ForceTankPlayer();
+    }
+    
+    g_fTankPreviousPass = GetGameTime();
+    g_iTankPass++;
+
+    return Plugin_Continue;
 }
 
 public Action:Event_PlayerSpawn(Handle:hEvent, const String:name[], bool:dontBroadcast)
@@ -2317,8 +2375,10 @@ public Action:Event_PlayerSpawn(Handle:hEvent, const String:name[], bool:dontBro
 
     if (!IsClientAndInGame(client) || GetClientTeam(client) != TEAM_INFECTED) { return Plugin_Continue; }
     
+    new iClass = GetEntProp(client, Prop_Send, "m_zombieClass");
+    
     // for special women event, replace male with female boomer
-    if (_:g_iSpecialEvent == EVT_WOMEN && GetEntProp(client, Prop_Send, "m_zombieClass") == ZC_BOOMER )
+    if (_:g_iSpecialEvent == EVT_WOMEN && iClass == ZC_BOOMER )
     {
         new String:model[64];
         GetEntPropString(client, Prop_Data, "m_ModelName", model, sizeof(model));
@@ -2331,6 +2391,10 @@ public Action:Event_PlayerSpawn(Handle:hEvent, const String:name[], bool:dontBro
     if (IsFakeClient(client)) { return Plugin_Continue; }
     
     g_bHasGhost[client] = false;
+    
+    if (iClass >= ZC_SMOKER && iClass <= ZC_CHARGER) {
+        g_bHasSpawned[client] = true;
+    }
 
     return Plugin_Continue;
 }
@@ -2469,6 +2533,7 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
         */
         if (!g_bSpectateDeath[victim]) {
             g_bHasGhost[victim] = false;
+            g_bHasSpawned[victim] = false;
         } else {
             g_bSpectateDeath[victim] = false;
         }
@@ -2490,32 +2555,40 @@ public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBro
 {
     new client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
     
-    // tank stuff:
+    PrintDebug(4, "[rand si] Tank spawned: %N.", client);
+    
+    // tank and ghost stuff:
     g_iTankClient = client;
-    if (!g_bIsTankInPlay) {
-        g_bIsTankInPlay = true;
-    }
     
     // if we have multitanks, prepare next
     if (_:g_iSpecialEvent == EVT_MINITANKS)
     {
-        CreateTimer(1.0, Timer_PrepareNextTank, _, TIMER_FLAG_NO_MAPCHANGE);
+        // only when it's the first pass
+        if (!g_bIsTankInPlay) {
+            CreateTimer(1.0, Timer_PrepareNextTank, _, TIMER_FLAG_NO_MAPCHANGE);
+        }
         //CreateTimer(1.0, Timer_SetTankMiniScale, client, TIMER_FLAG_NO_MAPCHANGE);
     }
     else if (!g_bFirstTankSpawned)  // double tank ?
     {
-        g_bFirstTankSpawned = true;
+        if (!g_bIsTankInPlay)
+        {
+            g_bFirstTankSpawned = true;
         
-        // spawn second
-        if (g_bDoubleTank) {
-            CreateTimer(1.0, Timer_PrepareNextTank, _, TIMER_FLAG_NO_MAPCHANGE);
+            // spawn second
+            if (g_bDoubleTank) {
+                CreateTimer(1.0, Timer_PrepareNextTank, _, TIMER_FLAG_NO_MAPCHANGE);
+            }
         }
     }
+    
+    if (!g_bIsTankInPlay) { g_bIsTankInPlay = true; }
     
     // ghost stuff:
     if (!IsClientAndInGame(client) || IsFakeClient(client)) { return Plugin_Continue; }
     
     g_bHasGhost[client] = false;
+    g_bHasSpawned[client] = false;
     
     return Plugin_Continue;
 }
@@ -2568,6 +2641,9 @@ public Action:Timer_CheckTankDeath(Handle:hTimer, any:client_oldTank)
     }
     
     // do whatever you do when tank is dead...
+    g_iTankClient = 0;
+    g_fTankPreviousPass = 0.0;
+    g_iTankPass = 0;
     g_bIsTankInPlay = false;
     
     // drop stuff?
@@ -2964,6 +3040,7 @@ public InitSpawnArrays()
     for (new i=1; i <= MaxClients; i++)
     {
         g_bHasGhost[i] = false;
+        g_bHasSpawned[i] = false;
         g_bSpectateDeath[i] = false;
     }
 }

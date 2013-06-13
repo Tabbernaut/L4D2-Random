@@ -60,7 +60,8 @@ const Float:    GIFT_EXPLODE_DELAY      = 0.25;         // time between opening 
 const Float:    GIFTUSE_TIMEOUT         = 0.25;         // how long after playerUse command to wait (avoid spamming use)
 const Float:    GIFTREPORT_TIMEOUT      = 1.0;          // how long after playerUse command to wait (avoid spamming messages)
 
-const Float:    DOUBLE_PASS_CHECK_TIME  = 8.0;         // fewer than this amount of seconds is considered a double pass
+const Float:    DOUBLE_PASS_CHECK_TIME  = 8.0;          // fewer than this amount of seconds is considered a double pass
+const Float:    TEAMSHUFFLE_TIMEOUT     = 5.0;          // can't reshuffle within this many seconds
 
 // multi/mini tanks and witches
 const Float:    MULTITANK_EARLY         = 0.35;         // for 2-tank-rounds: where to spawn early tank
@@ -140,8 +141,8 @@ const           EVENT_PENALTY_M2_CI     = 2;            // EVT_PEN_M2       how 
 const           EVENT_PENALTY_M2_SI     = 10;           // EVT_PEN_M2       how many points to deduct for shoving
 const           EVENT_PENALTY_TIME      = 25;           // EVT_PEN_TIME     how many points to deduct for 1 minute
 const           EVENT_SKEET_BONUS       = 15;           // EVT_SKEET        how many points to add per (real) skeet
+const Float:    EVENT_FF_FACTOR         = 0.3;          // EVT_FF           friendly fire factor (cvar value for hard)
 const           EVENT_SKEET_BONUS_TEAM  = 15;           // EVT_SKEET        for a team-skeet (the same for now?)
-const Float:    EVENT_FF_FACTOR         = 0.3;          // EVT_NOHUD        bitmask for what to hide
 const Float:    EVENT_LOCKEDCHANCE      = 0.7;          // EVT_DOORS        most doors closed -- melees will be given on start
 const           EVENT_DOORS_MINMELEE    = 2;            // EVT_DOORS        how many melees at least for locked doors event?
 const           EVENT_BADCOMBO_AMMO     = 25;           // EVT_BADCOMBO     how many grenades ammo?
@@ -507,6 +508,12 @@ const           DMGTYPE_CHAINSAW        = (1<<26);
 
 // structs, enums
 // --------------
+
+enum randomCommands             // for use with tries to check if a command was typed in chat
+{
+    RANDOM_COMMAND,
+    RANDOM_COMMAND_SPECTATE
+}
 
 enum entityBlindable            // for use with tries to check if an entity causes problems with the blind-infected approach
 {

@@ -12,6 +12,7 @@ new     Handle:         g_hTriePropItems                                    = IN
 new     Handle:         g_hTrieUseItems                                     = INVALID_HANDLE;       // trie for recognizing usable items
 new     Handle:         g_hTrieDropItems                                    = INVALID_HANDLE;       // trie for recognizing dropped items/weapons
 new     Handle:         g_hTrieL4D1Common                                   = INVALID_HANDLE;       // trie for recognizing l4d1 commons
+new     Handle:         g_hTrieCommands                                     = INVALID_HANDLE;       // trie for recognizing typed commands in chat
 new                     g_iMeleeClassCount                                  = 0;                    // melee weapons available?
 new     String:         g_sMeleeClass           [MELEE_CLASS_COUNT][MELEE_CLASS_LENGTH];            // available melee class-strings
 new     Handle:         g_hSteamIds                                         = INVALID_HANDLE;       // store players so we know who's already been welcomed
@@ -35,6 +36,11 @@ new                     g_iSpecialEventToForce                              = -1
 new     bool:           g_bIsPaused                                         = false;                // whether game is paused
 new     Float:          g_fPauseAttemptTime                                 = 0.0;                  // when the !pause command was issued
 
+// Team shuffle handling
+new     bool:           g_bTeamSurvivorVoted                                = false;                // whether anyone in survivor team used !teamshuffle or !randteams
+new     bool:           g_bTeamInfectedVoted                                = false;
+new     Float:          g_fTeamShuffleTimeout                               = 0.0;                  // when we can shuffle again
+
 // Stripper
 new     bool:           g_bStripperPresent                                  = false;                // whether a cvar-configurable Stripper:Source is present
 new     String:         g_sStripperDir          [128];                                              // the directory that the stripper cfg files are in
@@ -57,6 +63,7 @@ new     bool:           g_bIsTankInPlay                                     = fa
 new     bool:           g_bFirstTankSpawned                                 = false;
 new                     g_iTankClient                                       = 0;
 new     Float:          g_fTankPreviousPass                                 = 0.0;                  // when did the tank previously pass to a player?
+new                     g_iTankPass                                         = 0;                    // which (human) tank pass we're on
 new     bool:           g_bTankWillSpawn                                    = false;
 new     bool:           g_bDoubleTank                                       = false;                // same, reversed, but for reporting uses only
 new     Float:          g_fTankFlowEarly                                    = 0.0;
@@ -76,11 +83,16 @@ new     Float:          g_fArWitchFlows         [MULTIWITCH_MAX];               
 new     bool:           g_bArWitchSitting       [MULTIWITCH_MAX]            = {true,...};           // stores whether each witch is sitting or walking
 
 // SI Spawning / ghosts
+new     bool:           g_bHasSpawned           [MAXPLAYERS+1]              = {false,...};          // whether player X has spawned his ghost (only true if still alive and not tank)
+new     bool:           g_bHasGhost             [MAXPLAYERS+1]              = {false,...};          // whether player X currently holds a ghost
+new     bool:           g_bSpectateDeath        [MAXPLAYERS+1]              = {false,...};          // whether player X (if he 'died') died because of going spec
+new                     g_iSpectateGhost        [TEAM_SIZE];                                        // people that spectated while being SI ghosts.. remembered to avoid exploit
+new                     g_iSpectateGhostCount                               = 0;                    // amount of ghosts saved
+
+// SDK Calls
 new     Handle:         g_setClass                                          = INVALID_HANDLE;
 new     Handle:         g_createAbility                                     = INVALID_HANDLE;
 new                     g_oAbility                                          = 0;
-
-// SDK Calls
 new     Handle:         g_confRaw                                           = INVALID_HANDLE;
 new     Handle:         g_CallPushPlayer                                    = INVALID_HANDLE;       // for CreateExplosion() push
 new     Handle:         g_CallBileJarPlayer                                 = INVALID_HANDLE;       // for biling infected at will
@@ -88,11 +100,6 @@ new     Handle:         g_CallVomitSurvivor                                 = IN
 new     Handle:         g_CallSHS                                           = INVALID_HANDLE;       // infected
 new     Handle:         g_CallTOB                                           = INVALID_HANDLE;       // survivor
 
-new     bool:           g_bHasGhost             [MAXPLAYERS+1]              = {false,...};          // whether player X currently holds a ghost
-new     bool:           g_bSpectateDeath        [MAXPLAYERS+1]              = {false,...};          // whether player X (if he 'died') died because of going spec
-
-new                     g_iSpectateGhost        [TEAM_SIZE];                                        // people that spectated while being SI ghosts.. remembered to avoid exploit
-new                     g_iSpectateGhostCount                               = 0;                    // amount of ghosts saved
 
 
 // Sack-exploitation checks and Death order effect
@@ -248,7 +255,8 @@ new                     g_RI_iDoors                                         = 1;
 new     bool:           g_RI_bNoTank                                        = false;                // block tank spawns
 new     bool:           g_RI_bNoTankVar                                     = false;                // set tank variation to 0
 new     bool:           g_RI_bNoWitch                                       = false;                // block witch spawns
-new     bool:           g_RI_bNoStorm                                       = false;                // block storms for this map
+new                     g_RI_iNoStorm                                       = 0;                    // block storms for this map 1 = block, 2 = block only fog (special case)
+new     bool:           g_RI_bNoRain                                        = false;                // block storm rain effect
 new     bool:           g_RI_bNoCola                                        = false;                // block cola spawns
 new                     g_RI_iTankBanStart                                  = 0;                    // block specific tank spawn range
 new                     g_RI_iTankBanEnd                                    = 0;                    // block specific tank spawn range

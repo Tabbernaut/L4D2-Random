@@ -111,6 +111,9 @@ DoReport(client=0)
         else if (g_iSpecialEvent == _:EVT_SILENCE) {
             Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! %s%s.", g_csEventText[g_iSpecialEvent], (g_iSpecialEventExtra == SILENCED_SI) ? "special infected" : "survivors" );
         }
+        else if (g_iSpecialEvent == _:EVT_WEATHER && g_RI_iNoStorm == 2) {
+            Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! \x04Eerie Harvest\x01 - special weather...");
+        }
         else {
             Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! %s", g_csEventText[g_iSpecialEvent]);
         }
@@ -500,8 +503,16 @@ RANDOM_DetermineRandomStuff()
                 }
                 case EVT_WEATHER: {
                     new Handle: hTmp = FindConVar("l4d2_storm_fogmode");
-                    if (hTmp != INVALID_HANDLE) { SetConVarInt(hTmp, 0); }
-                    g_iDifficultyRating++;  // because of FPS drops mainly
+                    if (hTmp != INVALID_HANDLE) {
+                        SetConVarInt(hTmp, (g_RI_bNoRain) ? 2 : 0); // 2 = storm but without rain
+                    }
+                    
+                    if (g_RI_iNoStorm == 2) {
+                        EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
+                        g_iDifficultyRating += 3;
+                    } else {
+                        g_iDifficultyRating += 2;
+                    }
                 }
                 case EVT_FOG: {
                     EVENT_SetDifficulty(DIFFICULTY_NOCHANGE, DIFFICULTY_EASY);
@@ -4433,8 +4444,18 @@ RANDOM_PrepareChoicesEvents()
             }
         }
         
-        // storm maps? trying with intro now, see if it works..
-        if ( g_RI_bNoStorm && ( i == EVT_WEATHER || i == EVT_FOG ) )
+        // storm maps? ( 2 == blood harvest weather )
+        if (g_RI_iNoStorm == 2)
+        {
+            if (i == EVT_FOG) {
+                continue;
+            }
+            else if (i == EVT_WEATHER) {
+                // give more chance -- make FOV => WEATHER
+                count += GetConVarInt(g_hArCvarEvtWeight[EVT_FOG]);
+            }
+        }
+        else if ( g_RI_iNoStorm == 1 && (i == EVT_WEATHER || i == EVT_FOG) )
         {
             continue;
         }

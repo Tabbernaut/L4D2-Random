@@ -34,10 +34,13 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     g_bInsightSurvDone = false;         // so we only get the insight effect from a gift once per roundhalf
     g_bInsightInfDone = false;
     
+    g_bTeamSurvivorVoted = false;       // for teamshuffle
+    g_bTeamInfectedVoted = false;
     
     g_bFirstTankSpawned = false;
     g_bIsTankInPlay = false;
     g_fTankPreviousPass = 0.0;
+    g_iTankPass = 0;
     g_iTankClient = 0;
     
     g_iBonusCount = 0;
@@ -1166,7 +1169,7 @@ SUPPORT_MultiWitchRandomization()
         
         // store in array
         g_fArWitchFlows[index] = tmpSpot;
-        g_bArWitchSitting[index] = (GetRandomInt(0,3) == 0) ? true : false;
+        g_bArWitchSitting[index] = (GetRandomInt(0,4) == 0) ? false : true;
         
         PrintDebug(2, "[rand] Multi-witch [%i] to spawn at: %f (%s)", index, g_fArWitchFlows[index], (g_bArWitchSitting[index]) ? "sitting" : "walking");
         
@@ -1230,6 +1233,8 @@ public Action: Timer_PrepareNextTank(Handle:timer)
 {
     if (_:g_iSpecialEvent == EVT_MINITANKS)
     {
+        PrintDebug(3, "[rand] preparing next tank (%i)...", g_iMiniTankIndex+1);
+        
         if (g_iMiniTankIndex == g_iMiniTankNum - 1) {
             return;
         }
@@ -1688,7 +1693,7 @@ bool: SUPPORT_IsInReady()
     if (g_hCvarReadyUp == INVALID_HANDLE || !GetConVarBool(g_hCvarReadyUp)) { return false; }
     
     // find a survivor
-    new client = GetSpawningClient(true);
+    new client = GetAnySurvivor();
     if (client == 0) { return false; }
     
     // if he's frozen, assume it's readyup time
@@ -1719,18 +1724,29 @@ bool: IsEntityInSaferoom(entity, bool:isPlayer=false, bool:endSaferoom=true)
 // get just any survivor client (param = false = switch to infected too)
 GetSpawningClient(bool:onlySurvivors=false)
 {
-    for (new i=1; i <= GetMaxClients(); i++) {
+    for (new i=1; i <= GetMaxClients(); i++)
+    {
         if (IsClientConnected(i) && IsSurvivor(i) && !IsFakeClient(i)) { return i; }
     }
     
     if (onlySurvivors) { return 0; }
     
     // since we're just using this for spawning stuff that requires a client, use infected alternatively
-    for (new i=1; i <= GetMaxClients(); i++) {
+    for (new i=1; i <= GetMaxClients(); i++)
+    {
         if (IsClientConnected(i) && IsInfected(i) && !IsFakeClient(i)) { return i; }
     }
     
     // no usable clients...
+    return 0;
+}
+
+// just for checking rup at the moment
+GetAnySurvivor()
+{
+    for (new i=1; i <= GetMaxClients(); i++) {
+        if (IsClientConnected(i) && IsSurvivor(i)) { return i; }
+    }
     return 0;
 }
 
@@ -2056,8 +2072,6 @@ ForceTankPlayer()
     // randomly pick a tank player
     new tank = PickTankPlayer();
     
-    PrintDebug(3, "[rand tank] Forcing tank player %i (%N).", tank, tank);
-    
     if (tank == 0) { return; }
     
     if (g_iHadTanks[tank] < 100) { g_iHadTanks[tank]++; }
@@ -2152,13 +2166,95 @@ bool: NoSurvivorInSaferoom()
 
 /*  Team changes
     ------------ */
-
-SUPPORT_ShuffleTeams()
+SUPPORT_VoteShuffleTeams(client)
 {
-    if (!SUPPORT_IsInReady() && g_hCvarReadyUp != INVALID_HANDLE && GetConVarBool(g_hCvarReadyUp))
+    if (!IsClientAndInGame(client) || (GetClientTeam(client) != TEAM_SURVIVOR && GetClientTeam(client) != TEAM_INFECTED) ) { return; }
+    
+    // see if we're doing a vote at the right time
+    new bool: bReadyUpLoaded = bool:(g_hCvarReadyUp != INVALID_HANDLE && GetConVarBool(g_hCvarReadyUp));
+    if (bReadyUpLoaded && !SUPPORT_IsInReady())
     {
-        PrintToChatAll("\x01[\x05r\x01] Team shuffles are only allowed before a round is live.");
+        PrintToChat(client, "\x01[\x05r\x01] Team shuffles are only allowed before a round is live.");
         return;
+    }
+    
+    if (g_fTeamShuffleTimeout != 0.0 && GetGameTime() < g_fTeamShuffleTimeout)
+    {
+        PrintToChat(client, "\x01[\x05r\x01] Can't shuffle teams again so quickly (%d second timeout).", RoundToCeil(g_fTeamShuffleTimeout - GetGameTime()) );
+        return;
+    }
+    
+    if (g_bTeamSurvivorVoted && g_bTeamInfectedVoted)
+    {
+        PrintToChat(client, "\x01[\x05r\x01] Shuffle is already under way!");
+        return;
+    }
+    
+    // status?
+    if (GetClientTeam(client) == TEAM_SURVIVOR)
+    {
+        if (g_bTeamInfectedVoted) {
+            // survivors respond
+            if (!g_bTeamSurvivorVoted) {
+                g_bTeamSurvivorVoted = true;
+                PrintToChatAll("\x01[\x05r\x01] %N (Survivor) accepted the team shuffle. Shuffling in 3 seconds.", client);
+                CreateTimer(3.0, Timer_ShuffleTeams, _, TIMER_FLAG_NO_MAPCHANGE);
+            }
+        } else {
+            // survivors first
+            if (!g_bTeamSurvivorVoted) {
+                g_bTeamSurvivorVoted = true;
+                PrintToChatAll("\x01[\x05r\x01] %N (Survivor) voted for a team shuffle. Infected can \x04!teamshuffle\x01 to accept.", client);
+            }
+        }
+    }
+    else
+    {
+        if (g_bTeamSurvivorVoted) {
+            // infected respond
+            if (!g_bTeamInfectedVoted) {
+                g_bTeamInfectedVoted = true;
+                PrintToChatAll("\x01[\x05r\x01] %N (Infected) accepted the team shuffle. Shuffling in 3 seconds.", client);
+                CreateTimer(3.0, Timer_ShuffleTeams, _, TIMER_FLAG_NO_MAPCHANGE);
+            }
+        } else {
+            // Infected first
+            if (!g_bTeamInfectedVoted) {
+                g_bTeamInfectedVoted = true;
+                PrintToChatAll("\x01[\x05r\x01] %N (Infected team) voted for a team shuffle. Survivors can \x04!teamshuffle\x01 to accept.", client);
+            }
+        }
+    }
+}
+
+public Action:Timer_ShuffleTeams(Handle:timer)
+{
+    g_bTeamSurvivorVoted = false;
+    g_bTeamInfectedVoted = false;
+    SUPPORT_ShuffleTeams();
+}
+
+
+SUPPORT_ShuffleTeams(client=-1)
+{
+    new bool: bReadyUpLoaded = bool:(g_hCvarReadyUp != INVALID_HANDLE && GetConVarBool(g_hCvarReadyUp));
+    if (bReadyUpLoaded && !SUPPORT_IsInReady())
+    {
+        if (client == -1) {
+            PrintToChatAll("\x01[\x05r\x01] Team shuffles are only allowed before a round is live.");
+        } else {
+            PrintToChat(client, "\x01[\x05r\x01] Team shuffles are only allowed before a round is live.");
+        }
+        return;
+    }
+    
+    if (g_fTeamShuffleTimeout != 0.0 && GetGameTime() < g_fTeamShuffleTimeout)
+    {
+        if (client == -1) {
+            PrintToChatAll("\x01[\x05r\x01] Can't shuffle teams again so quickly (%d second timeout).", RoundToCeil(g_fTeamShuffleTimeout - GetGameTime()) );
+        } else {
+            PrintToChat(client, "\x01[\x05r\x01] Can't shuffle teams again so quickly (%d second timeout).", RoundToCeil(g_fTeamShuffleTimeout - GetGameTime()) );
+        }
     }
     
     new specCount = 0;
@@ -2224,7 +2320,6 @@ SUPPORT_ShuffleTeams()
     for (new i=1; i <= MaxClients; i++) {
         if (!IsClientInGame(i) || IsFakeClient(i)) { continue; }
         
-        //ChangeClientTeam(i, TEAM_SPECTATOR);
         ChangePlayerTeam(i, TEAM_SPECTATOR );
     }
         
@@ -2235,15 +2330,21 @@ SUPPORT_ShuffleTeams()
         if (i >= iPlayerCount) { break; }
         
         // alternate between teams to pick
-        //PrintToChatAll("Put %N in team %s.", arRandomPlayers[i], (bSurvTeam) ? "survivor" : "infected");
-        //ChangeClientTeam(arRandomPlayers[i], (bSurvTeam) ? TEAM_SURVIVOR : TEAM_INFECTED );
-        ChangePlayerTeam(arRandomPlayers[i], (bSurvTeam) ? TEAM_SURVIVOR : TEAM_INFECTED );
+        if (bReadyUpLoaded) {
+            ServerCommand("sm_swapto #%i %d", GetClientUserId(arRandomPlayers[i]), (bSurvTeam) ? TEAM_SURVIVOR : TEAM_INFECTED);
+        } else {
+            ChangePlayerTeam(arRandomPlayers[i], (bSurvTeam) ? TEAM_SURVIVOR : TEAM_INFECTED );
+        }
         
         bSurvTeam = !bSurvTeam;
     }
     
     PrintToChatAll("\x01[\x05r\x01] Teams were shuffled.");
+    
+    // set timeout
+    g_fTeamShuffleTimeout = GetGameTime() + TEAMSHUFFLE_TIMEOUT;
 }
+
 
 stock bool:ChangePlayerTeam(client, team)
 {

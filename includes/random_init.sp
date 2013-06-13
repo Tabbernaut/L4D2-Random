@@ -298,7 +298,19 @@ INIT_StripperSwitch()
 
 INIT_FillTries()
 {
-    // Tries    
+    // Tries
+    g_hTrieCommands = CreateTrie();
+    SetTrieValue(g_hTrieCommands, "!rand",          RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!random",        RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!teamshuffle",   RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!randteams",     RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!randteams",     RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!info",          RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!drop",          RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!bonus",         RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!penalty",       RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!spectate",      RANDOM_COMMAND_SPECTATE);
+    
     g_hTrieEntityCreated = CreateTrie();                                                                                            // classname trie for checking OnEntityCreated()
     SetTrieValue(g_hTrieEntityCreated, "infected",                                  CREATED_INFECTED);
     SetTrieValue(g_hTrieEntityCreated, "pipe_bomb_projectile",                      CREATED_PIPEBOMB);
@@ -586,7 +598,8 @@ bool: RI_KV_UpdateRandomMapInfo()
     g_RI_bNoTank = false;           // whether we should block tanks
     g_RI_bNoTankVar = false;        // whether we should set tank variation to 0
     g_RI_bNoWitch = false;          // whether we should block witches
-    g_RI_bNoStorm = false;          // whether there shouldn't be storms on the map
+    g_RI_iNoStorm = 0;              // whether there shouldn't be storms on the map
+    g_RI_bNoRain = false;
     g_RI_bNoCola = false;           // whether we should block cola on the map
     g_RI_bWeakHittables = false;    // map works like c5m5
     g_RI_iDistance = 0;             // if > 0, the map's normal distance
@@ -609,7 +622,8 @@ bool: RI_KV_UpdateRandomMapInfo()
         g_RI_bNoTank = bool: (KvGetNum(g_kRIData, "no_tank", 0));
         g_RI_bNoTankVar = bool: (KvGetNum(g_kRIData, "no_tank_var", 0));
         g_RI_bNoWitch = bool: (KvGetNum(g_kRIData, "no_witch", 0));
-        g_RI_bNoStorm = bool: (KvGetNum(g_kRIData, "no_storm", 0));
+        g_RI_iNoStorm = KvGetNum(g_kRIData, "no_storm", g_RI_iNoStorm);
+        g_RI_bNoRain = bool: (KvGetNum(g_kRIData, "no_rain", 0));
         g_RI_bNoCola = bool: (KvGetNum(g_kRIData, "no_cola", 0));
         g_RI_iTankBanStart = KvGetNum(g_kRIData, "tank_ban_start", -1);
         g_RI_iTankBanEnd = KvGetNum(g_kRIData, "tank_ban_end", -1);
@@ -619,7 +633,7 @@ bool: RI_KV_UpdateRandomMapInfo()
         
         if (KvGetNum(g_kRIData, "no_finale", 0)) { g_RI_bIsFinale = false; }
         
-        PrintDebug(1, "[RI] Read data: intro: %i; difficulty: %i; doors; %i; nostorm: %i", g_RI_bIsIntro, g_RI_iDifficulty, g_RI_iDoors, g_RI_bNoStorm);
+        PrintDebug(1, "[RI] Read data: intro: %i; difficulty: %i; doors; %i; nostorm: %i", g_RI_bIsIntro, g_RI_iDifficulty, g_RI_iDoors, g_RI_iNoStorm);
         
         return true;
     }

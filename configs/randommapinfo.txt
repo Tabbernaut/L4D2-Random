@@ -6,7 +6,8 @@
 // no_tank_var		1 = disable tank variation
 // no_witch		1 = block witches on the map
 //
-// no_storm		1 = don't do any storm-related things on this map
+// no_storm		1 = don't do any storm-related things on this map, 2 = for blood harvest maps
+// no_rain		1 = don't do rain effect in storm (prevent indices overflow for some clients)
 // no_cola		1 = don't spawn cola on this map (or give points for it)
 // no_finale		1 = even if the game reports otherwise, this is NOT a finale
 //
@@ -287,19 +288,19 @@
 		"intro"		"1"
 		"difficulty"	"0"
 		"doors"		"0"
-		"no_storm"	"1"
+		"no_storm"	"2"
 		"tank_ban_start"	"0"
 		"tank_ban_end"		"57"
 	}
 	"c12m2_traintunnel"
 	{
 		"difficulty"	"1"
-		"no_storm"	"1"
+		"no_storm"	"2"
 	}
 	"c12m3_bridge"
 	{
 		"difficulty"	"2"
-		"no_storm"	"1"
+		"no_storm"	"2"
 		"tank_ban_start"	"70"
 		"tank_ban_end"		"100"
 	}
@@ -307,7 +308,7 @@
 	{
 		"difficulty"	"1"
 		"doors"		"0"
-		"no_storm"	"1"
+		"no_storm"	"2"
 		"distance"	"600"
 		"distance_hard"	"700"
 	}
@@ -315,7 +316,7 @@
 	{
 		"difficulty"	"3"
 		"doors"		"1"
-		"no_storm"	"1"
+		"no_storm"	"2"
 		"tank_ban_start"	"80"
 		"tank_ban_end"		"100"
 	}
@@ -340,6 +341,7 @@
 	{
 		"difficulty"	"3"
 		"doors"		"0"
+		"no_rain"	"1"
 	}
 	"c5m1_darkwaterfront"
 	{
@@ -400,22 +402,27 @@
 	{
 		"intro"		"1"
 		"difficulty" 	"2"
+		"no_rain"	"1"
 	}
 	"l4d_ihm02_manor"
 	{
 		"difficulty" 	"3"
+		"no_rain"	"1"
 	}
 	"l4d_ihm03_underground"
 	{
 		"difficulty" 	"4"
+		"no_rain"	"1"
 	}
 	"l4d_ihm04_lumberyard"
 	{
 		"difficulty" 	"3"
+		"no_rain"	"1"
 	}
 	"l4d_ihm05_lakeside"
 	{
 		"difficulty" 	"3"
+		"no_rain"	"1"
 	}
 	"bloodtracks_01"
 	{
@@ -461,40 +468,49 @@
 		"difficulty"	"1"
 		"tank_ban_start"	"0"
 		"tank_ban_end"		"45"
+		"no_rain"	"1"
 	}
 	"l4d2_stadium2_riverwalk"
 	{
 		"difficulty"	"2"
+		"no_rain"	"1"
 	}
 	"l4d2_stadium3_city1"
 	{
 		"difficulty"	"3"
 		"tank_ban_start"	"0"
 		"tank_ban_end"		"40"
+		"no_rain"	"1"
 	}
 	"l4d2_stadium4_city2"
 	{
 		"difficulty"	"3"
+		"no_rain"	"1"
 	}
 	"l4d2_stadium5_stadium"
 	{
 		"difficulty"	"2"
+		"no_rain"	"1"
 	}
 	"hf01_theforest"
 	{
 		"intro"		"1"
+		"no_rain"	"1"
 	}
 	"hf02_thesteeple"
 	{
 		"difficulty"	"2"
+		"no_rain"	"1"
 	}
 	"hf03_themansion"
 	{
 		"difficulty"	"2"
+		"no_rain"	"1"
 	}
 	"hf04_escape"
 	{
 		"difficulty"	"2"
+		"no_rain"	"1"
 	}
 	"srocchurch"
 	{
@@ -512,6 +528,7 @@
 	"mnac"
 	{
 		"difficulty"	"3"
+		"no_rain"	"1"
 	}
 	"l4d2_bts01_forest"
 	{
@@ -519,24 +536,29 @@
 		"difficulty"	"2"
 		"tank_ban_start"	"1"
 		"tank_ban_end"		"50"
+		"no_rain"	"1"
 	}
 	"l4d2_bts02_station"
 	{
 		"difficulty"	"2"
 		"tank_ban_start"	"1"
 		"tank_ban_end"		"40"
+		"no_rain"	"1"
 	}
 	"l4d2_bts03_town"
 	{
 		"difficulty"	"3"
+		"no_rain"	"1"
 	}
 	"l4d2_bts04_cinema"
 	{
 		"difficulty"	"3"
+		"no_rain"	"1"
 	}
 	"l4d2_bts05_church"
 	{
 		"difficulty"	"3"
+		"no_rain"	"1"
 	}
 	"l4d2_bts06_school"
 	{
@@ -565,24 +587,29 @@
 	{
 		"intro"		"1"
 		"difficulty"	"1"
+		"no_rain"	"1"
 	}
 	"l4d_dbd2dc_the_mall"
 	{
 		"difficulty"	"3"
+		"no_rain"	"1"
 	}
 	"l4d_dbd2dc_clean_up"
 	{
 		"difficulty"	"3"
+		"no_rain"	"1"
 	}
 	"l4d_dbd2dc_undead_center"
 	{
 		"difficulty"	"3"
+		"no_rain"	"1"
 	}
 	"l4d_dbd2dc_new_dawn"
 	{
 		"difficulty"	"3"
 		"tank_ban_start"	"0"
 		"tank_ban_end"		"70"
+		"no_rain"	"1"
 	}
 	// heaven can wait II
 	"AirCrash"

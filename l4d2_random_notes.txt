@@ -6,18 +6,14 @@ L4D2_Random
     to-do:
     ------  
             - wait:     test and include stabby's random map stuff so people can launch random campaigns after loading random
-            - gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
+            - wait:     gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
             - later:    set debug mode to 0 for release; set cvar debug to 0 for release
             - later:    email Chet, see if maybe he likes Random at all...
             
-            - test:     detect and prevent double-pass?
+            - test:     'randteams' command & next rounds..
+            - test:     double pass fix (in live game)
+            - test:     defib penalty still not reset correctly after a sudden death round ?
             
-            - bugfix:   teamswap gets swapped back.. do a check on every other round?
-                        use sm_swapto if it's there!
-            - bugfix:   defib penalty still not reset correctly after a sudden death round
-            
-            - tweak:    make defib event easier for survivors: give more pills at start
-
 
     minor cleanup / details
     -----------------------
