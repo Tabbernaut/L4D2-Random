@@ -765,6 +765,47 @@ new const String: g_csEventText[][] =
     "\x04Boomer Flu\x01 - One survivor caught the boomer flu and is prone to vomit."
 };
 
+new const String: g_csEventTextShort[][] =
+{
+    "Item Redundancy",
+    "Rush Hour",
+    "Common Holiday",
+    "04Freakshow",
+    "Circus",
+    "Sorry, we're closed",
+    "Quadtastic",
+    "Bad Weather Day",
+    "Fog of War",
+    "Land of Plenty",
+    "Marksmen",
+    "It's Christmas",
+    "Sudden Death",
+    "Adrenaline Rush",
+    "No Heads-Up",
+    "Old School",
+    "Friendly Fire",
+    "Hush",
+    "Pickup Penalty",
+    "Health Penalty",
+    "Shove Penalty",
+    "Time Penalty",
+    "Mini-Tanks",
+    "Keymaster",
+    "Bad Combo",
+    "Babysitting",
+    "Encumbered",
+    "Booby Traps",
+    "Skeet Shoot",
+    "Firepower",
+    "Ammo Shortage",
+    "Lots of Women",
+    "Magic Gun Swap",
+    "Witch Hunt",
+    "Lousy Gifts",
+    "MEDIC!",
+    "Boomer Flu"
+};
+
 new const JUNK_FIRSTNONSOLID = 4;
 //new const JUNK_FIREEXT = 7;
 new const String: g_csJunkModels[][] =

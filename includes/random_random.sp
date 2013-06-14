@@ -402,7 +402,6 @@ RANDOM_DetermineRandomStuff()
     g_bTankWillSpawn = L4D2Direct_GetVSTankToSpawnThisRound( (g_bSecondHalf) ? 1 : 0 );
     g_bWitchWillSpawn = L4D2Direct_GetVSWitchToSpawnThisRound( (g_bSecondHalf) ? 1 : 0 );
     
-    
     // pick special event for the map:
     if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_EVENT))
     {
@@ -766,6 +765,13 @@ RANDOM_DetermineRandomStuff()
         L4D2Direct_SetVSWitchToSpawnThisRound(1, true);
         g_bWitchWillSpawn = true;
     }
+    else if (g_bWitchFirstRound && !g_bWitchWillSpawn)
+    {
+        // force witch if we had one the first round
+        L4D2Direct_SetVSWitchToSpawnThisRound(0, true);
+        L4D2Direct_SetVSWitchToSpawnThisRound(1, true);
+        g_bWitchWillSpawn = true;
+    }
     
     if (g_bTankWillSpawn)
     {
@@ -891,6 +897,9 @@ RANDOM_DetermineRandomStuff()
     
     if (g_bWitchWillSpawn) {
         g_iDifficultyRating++;
+        
+        // remember in case the game forgets...
+        if (!g_bSecondHalf) { g_bWitchFirstRound = true; }
     }
     else {
         L4D2Direct_SetVSWitchToSpawnThisRound(0, false);

@@ -22,6 +22,11 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
         g_bSpecialEventPlayerCheck = false;
     }
     
+    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
+    {
+        g_bWitchFirstRound = false;
+    }
+    
     // called before randomization
     g_bIsPaused = false;
     g_fPauseAttemptTime = 0.0;
@@ -36,6 +41,8 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     
     g_bTeamSurvivorVoted = false;       // for teamshuffle
     g_bTeamInfectedVoted = false;
+    g_bTeamSurvivorVotedEvent = false;  // for picking an event for next round
+    g_bTeamInfectedVotedEvent = false;
     
     g_bFirstTankSpawned = false;
     g_bIsTankInPlay = false;
@@ -2164,7 +2171,7 @@ bool: NoSurvivorInSaferoom()
 }
 
 
-/*  Team changes
+/*  Team changes and other votes
     ------------ */
 SUPPORT_VoteShuffleTeams(client)
 {
@@ -2388,6 +2395,112 @@ stock bool:ChangePlayerTeam(client, team)
     SDKCall(g_CallTOB, client, true);
     
     return true;
+}
+
+SUPPORT_VotePickEvent(event, client)
+{
+    if (!IsClientAndInGame(client) || (GetClientTeam(client) != TEAM_SURVIVOR && GetClientTeam(client) != TEAM_INFECTED) ) { return; }
+    
+    // see if we're doing a vote at the right time
+    if (g_fPickEventTimeout != 0.0 && GetGameTime() < g_fPickEventTimeout)
+    {
+        PrintToChat(client, "\x01[\x05r\x01] Can't pick special event again so quickly (%d second timeout).", RoundToCeil(g_fPickEventTimeout - GetGameTime()) );
+        return;
+    }
+    
+    // what event?
+    if (!g_bTeamSurvivorVotedEvent && !g_bTeamInfectedVotedEvent)
+    {
+        if (event == -1 || event == 0) {
+            PrintToChat(client, "\x01[\x05r\x01] You must give an event number. Use: \"!event #\". Numbers go from \x041\x01 to \x04%i\x01. For a list, see http://www.tabun.nl/random/.", EVT_TOTAL);
+            return;
+        }
+        else if (event < 1 || event > EVT_TOTAL)
+        {
+            PrintToChat(client, "\x01[\x05r\x01] Wrong event number: \x04%i\x01. For numbers go from \x041\x01 to \x04%i\x01. For a list, see http://www.tabun.nl/random/.", event, EVT_TOTAL);
+            return;
+        }
+        else if (g_iSpecialEventToForce == event) {
+            PrintToChat(client, "\x01[\x05r\x01] That event is already forced to appear next round.");
+            return;
+        }
+        else {
+            g_iPickEvent = event - 1;
+        }
+    }
+    
+    // status?
+    if (GetClientTeam(client) == TEAM_SURVIVOR)
+    {
+        if (g_bTeamInfectedVotedEvent) {
+            // survivors respond
+            if (!g_bTeamSurvivorVotedEvent) {
+                if (event == -1) {
+                    // declined
+                    PrintToChatAll("\x01[\x05r\x01] %N (Survivor) declined the event pick.", client);
+                } else {
+                    // accepted
+                    PrintToChatAll("\x01[\x05r\x01] %N (Survivor) accepted the event. Next round has event \x04%i\x01.", client, g_iPickEvent+1);
+                    SUPPORT_PickEvent(g_iPickEvent);
+                }
+                g_bTeamInfectedVotedEvent = false;
+                g_bTeamSurvivorVotedEvent = false;
+            }
+        } else {
+            // survivors first
+            if (!g_bTeamSurvivorVotedEvent) {
+                g_bTeamSurvivorVotedEvent = true;
+                PrintToChatAll("\x01[\x05r\x01] %N (Survivor) voted to pick next event: \x04%i\x01. \"%s\".", client, g_iPickEvent+1, g_csEventTextShort[g_iPickEvent] );
+                PrintToChatAll("\x01[\x05r\x01] Infected can \x04!event\x01 to accept (\"\x04!event no\x01\" to decline.)");
+            }
+        }
+    }
+    else
+    {
+        if (g_bTeamSurvivorVotedEvent) {
+            // infected respond
+            if (!g_bTeamInfectedVotedEvent) {
+                if (event == -1) {
+                    // declined
+                    PrintToChatAll("\x01[\x05r\x01] %N (Survivor) declined the event pick.", client);
+                } else {
+                    // accepted
+                    PrintToChatAll("\x01[\x05r\x01] %N (Survivor) accepted. Next round has event \x04%i\x01.", client, g_iPickEvent+1);
+                    SUPPORT_PickEvent(g_iPickEvent, -1);
+                }
+                g_bTeamInfectedVotedEvent = false;
+                g_bTeamSurvivorVotedEvent = false;
+            }
+        } else {
+            // Infected first
+            if (!g_bTeamInfectedVotedEvent) {
+                g_bTeamInfectedVotedEvent = true;
+                PrintToChatAll("\x01[\x05r\x01] %N (Infected team) voted to pick next event: \x04%i\x01. \"%s\".", client, g_iPickEvent+1, g_csEventTextShort[g_iPickEvent] );
+                PrintToChatAll("\x01[\x05r\x01] Survivors can \x04!event\x01 to accept (\"\x04!event no\x01\" to decline.)");
+            }
+        }
+    }
+}
+
+SUPPORT_PickEvent(event, client=0)
+{
+    if (event < 1 || event > EVT_TOTAL)
+    {
+        if (client > 0) {
+            PrintToChat(client, "\x01[\x05r\x01] Wrong event number: \x04%i\x01. For numbers go from \x041\x01 to \x04%i\x01. For a list, see http://www.tabun.nl/random/.", event, EVT_TOTAL);
+        }
+        return;
+    }
+    
+    g_iSpecialEventToForce = event;
+    
+    if (client == -1) {
+        // don't report
+    }
+    else {
+        // report to all
+        PrintToChatAll("\x01[\x05r\x01] %N (Infected team) voted to pick next round's event: \x04%i\x01. \"%s\".", client, g_iPickEvent+1, g_csEventTextShort[g_iPickEvent] );
+    }
 }
 
 /*  CRox multiwitch plugin

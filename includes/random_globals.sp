@@ -41,6 +41,12 @@ new     bool:           g_bTeamSurvivorVoted                                = fa
 new     bool:           g_bTeamInfectedVoted                                = false;
 new     Float:          g_fTeamShuffleTimeout                               = 0.0;                  // when we can shuffle again
 
+// Event forcing handling
+new     bool:           g_bTeamSurvivorVotedEvent                           = false;                // whether anyone in survivor team used !teamshuffle or !randteams
+new     bool:           g_bTeamInfectedVotedEvent                           = false;
+new                     g_iPickEvent                                        = -1;                   // what even we're picking
+new     Float:          g_fPickEventTimeout                                 = 0.0;                  // when we can vote again
+
 // Stripper
 new     bool:           g_bStripperPresent                                  = false;                // whether a cvar-configurable Stripper:Source is present
 new     String:         g_sStripperDir          [128];                                              // the directory that the stripper cfg files are in
@@ -76,6 +82,7 @@ new     bool:           g_bTankIsEarly                                      = fa
 
 // Witches (Stabby)
 new     bool:           g_bWitchWillSpawn                                   = false;
+new     bool:           g_bWitchFirstRound                                  = false;                // true if there was a witch first round (to prevent 1/0 bugged witch spawns...)
 new     bool:           g_bMultiWitch                                       = false;                // whether we'll have multiple witches this round(half)
 new                     g_iWitchNum;				                                                // the number of witches to be spawned on the current map
 new                     g_iWitchIndex;                                                              // the index of the current witch (in the witch flows array)

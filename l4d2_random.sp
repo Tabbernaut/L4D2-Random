@@ -71,7 +71,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.35",
+    version = "1.0.36",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -187,9 +187,11 @@ public OnPluginStart()
     RegConsoleCmd("sm_randteams",   RandomTeamShuffle_Cmd, "Vote for a team shuffle. Only works during readyup.");
     RegConsoleCmd("sm_teamshuffle", RandomTeamShuffle_Cmd, "Vote for a team shuffle. Only works during readyup.");
     
+    RegConsoleCmd("sm_event",   RandomPickEvent_Cmd, "Vote for a special event to appear next round (use number in list on website).");
+    
     // Admin and test commands
-    RegAdminCmd("sm_forceteamshuffle", RandomForceTeamShuffle_Cmd, ADMFLAG_CHEATS, "Shuffle the teams! Only works during readyup. Admins only.");
-
+    RegAdminCmd("sm_forceteamshuffle",  RandomForceTeamShuffle_Cmd, ADMFLAG_CHEATS, "Shuffle the teams! Only works during readyup. Admins only.");
+    RegAdminCmd("sm_forceevent",        RandomForcePickEvent_Cmd,  ADMFLAG_CHEATS, "Force a special event for next round (use number in list on website).");
     
     //  disable when debugging is done
     #if DEBUG_MODE
@@ -693,6 +695,41 @@ public Action: RandomForceTeamShuffle_Cmd(client, args)
     {
         SUPPORT_ShuffleTeams(client);
     }
+    return Plugin_Handled;
+}
+
+public Action: RandomPickEvent_Cmd(client, args)
+{
+    if (args)
+    {
+        decl String:sMessage[3];
+        GetCmdArg(1, sMessage, sizeof(sMessage));
+    
+        if (StrEqual(sMessage, "no", false)) {
+            SUPPORT_VotePickEvent(-1, client);
+        }
+        else {
+            new setevent = StringToInt(sMessage);
+            SUPPORT_VotePickEvent(setevent, client);
+        }
+    }
+    else {
+        SUPPORT_VotePickEvent(0, client);
+    }
+    
+    return Plugin_Handled;
+}
+public Action: RandomForcePickEvent_Cmd(client, args)
+{
+    if (args)
+    {
+        decl String:sMessage[3];
+        GetCmdArg(1, sMessage, sizeof(sMessage));
+        new setevent = StringToInt(sMessage);
+        
+        SUPPORT_PickEvent(setevent, client);
+    }
+    
     return Plugin_Handled;
 }
 public Action: Spectate_Cmd(client, args)
