@@ -13,11 +13,19 @@ L4D2_Random
             - test:     double pass fix (in live game)
             - test:     defib penalty still not reset correctly after a sudden death round ?
             
-            - feature:  event forcing / picking built in...
+            - low:      handle ammo refills: scout, awp and ak => custom max value
+            
 
     minor cleanup / details
     -----------------------
-            - nitpick:  MAXIMUM ammo does not change with the ammo cvars, just initial.
+            - bugfix:   still broken hud thing on solid health healing (cat from 1+22temp => +27 solid breaks) was downed once (3 max incaps)
+                        cannot reproduce?
+            - nitpick:  melee skeets don't seem to be detected yet..
+            - stabby:   make it possible to restart round with chosen event / pick single event for all maps
+            - nitpick:  if penalty values change, the reported !rand/event values don't change with
+            - nitpick:  when gifts spawn inside walls etc, fire effects will not spawn
+            - nitpick:  MAXIMUM ammo does not change with the ammo cvars, just initial. and even that seems not to work right.
+                        I want different max ammo counts for scout, awp and ak...
             - remember: forward Action:L4D_OnSpawnSpecial(&zombieClass, const Float:vector[3], const Float:qangle[3]);
                         = when a BOT (only) spawns, you could do some stuff with that?
             - nitpick:  boomer vomit doesn't really appear convincingly from the survivor's mouth

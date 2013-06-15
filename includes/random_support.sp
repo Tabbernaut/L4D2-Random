@@ -216,7 +216,7 @@ EVENT_ResetOtherCvars()
     
     // hittable control
     if (FindConVar("hc_car_standing_damage") != INVALID_HANDLE) {
-        new tmpDmg = (g_RI_bWeakHittables) ? WEAK_HITTABLE_DMG : g_iDefTankHittableDamage;
+        new tmpDmg = (g_RI_bWeakHittables) ? g_RC_iWeakHittableDmg : g_iDefTankHittableDamage;
         SetConVarInt(FindConVar("hc_sflog_standing_damage"), tmpDmg);
         SetConVarInt(FindConVar("hc_bhlog_standing_damage"), tmpDmg);
         SetConVarInt(FindConVar("hc_car_standing_damage"), tmpDmg);
@@ -256,20 +256,20 @@ EVENT_SetDifficulty(commonDiff, specialDiff)
     switch (specialDiff)
     {
         case DIFFICULTY_VERYEASY: {
-            SetConVarInt(FindConVar("z_ghost_delay_min"), RoundFloat(float(g_iDefSpawnTimeMin) * EVENT_VERYEASY_SITIME));
-            SetConVarInt(FindConVar("z_ghost_delay_max"), RoundFloat(float(g_iDefSpawnTimeMax) * EVENT_VERYEASY_SITIME));
+            SetConVarInt(FindConVar("z_ghost_delay_min"), RoundFloat(float(g_iDefSpawnTimeMin) * g_RC_fEventSITimeVeryEasy));
+            SetConVarInt(FindConVar("z_ghost_delay_max"), RoundFloat(float(g_iDefSpawnTimeMax) * g_RC_fEventSITimeVeryEasy));
         }
         case DIFFICULTY_EASY: {
-            SetConVarInt(FindConVar("z_ghost_delay_min"), RoundFloat(float(g_iDefSpawnTimeMin) * EVENT_EASY_SITIME));
-            SetConVarInt(FindConVar("z_ghost_delay_max"), RoundFloat(float(g_iDefSpawnTimeMax) * EVENT_EASY_SITIME));
+            SetConVarInt(FindConVar("z_ghost_delay_min"), RoundFloat(float(g_iDefSpawnTimeMin) * g_RC_fEventSITimeEasy));
+            SetConVarInt(FindConVar("z_ghost_delay_max"), RoundFloat(float(g_iDefSpawnTimeMax) * g_RC_fEventSITimeEasy));
         }
         case DIFFICULTY_HARD: {
-            SetConVarInt(FindConVar("z_ghost_delay_min"), RoundFloat(float(g_iDefSpawnTimeMin) * EVENT_HARD_SITIME));
-            SetConVarInt(FindConVar("z_ghost_delay_max"), RoundFloat(float(g_iDefSpawnTimeMax) * EVENT_HARD_SITIME));
+            SetConVarInt(FindConVar("z_ghost_delay_min"), RoundFloat(float(g_iDefSpawnTimeMin) * g_RC_fEventSITimeHard));
+            SetConVarInt(FindConVar("z_ghost_delay_max"), RoundFloat(float(g_iDefSpawnTimeMax) * g_RC_fEventSITimeHard));
         }
         case DIFFICULTY_VERYHARD: {
-            SetConVarInt(FindConVar("z_ghost_delay_min"), RoundFloat(float(g_iDefSpawnTimeMin) * EVENT_VERYHARD_SITIME));
-            SetConVarInt(FindConVar("z_ghost_delay_max"), RoundFloat(float(g_iDefSpawnTimeMax) * EVENT_VERYHARD_SITIME));
+            SetConVarInt(FindConVar("z_ghost_delay_min"), RoundFloat(float(g_iDefSpawnTimeMin) * g_RC_fEventSITimeVeryHard));
+            SetConVarInt(FindConVar("z_ghost_delay_max"), RoundFloat(float(g_iDefSpawnTimeMax) * g_RC_fEventSITimeVeryHard));
         }
         
     }
@@ -279,44 +279,44 @@ EVENT_SetDifficulty(commonDiff, specialDiff)
     {
         // set common level to easy
         case DIFFICULTY_SUPEREASY: {
-            SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * EVENT_SUPEREASY_CILIM));
-            SetConVarInt(FindConVar("z_background_limit"), RoundFloat(float(g_iDefBackgroundLimit) * EVENT_SUPEREASY_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_min_size"), RoundFloat(float(g_iDefHordeSizeMin) * EVENT_SUPEREASY_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_max_size"), RoundFloat(float(g_iDefHordeSizeMax) * EVENT_SUPEREASY_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_min_interval_normal"), RoundFloat(float(g_iDefHordeTimeMin) / EVENT_VERYEASY_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), RoundFloat(float(g_iDefHordeTimeMax) / EVENT_VERYEASY_CILIM));
+            SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * g_RC_fEventCILimSuperEasy));
+            SetConVarInt(FindConVar("z_background_limit"), RoundFloat(float(g_iDefBackgroundLimit) * g_RC_fEventCILimSuperEasy));
+            SetConVarInt(FindConVar("z_mob_spawn_min_size"), RoundFloat(float(g_iDefHordeSizeMin) * g_RC_fEventCILimSuperEasy));
+            SetConVarInt(FindConVar("z_mob_spawn_max_size"), RoundFloat(float(g_iDefHordeSizeMax) * g_RC_fEventCILimSuperEasy));
+            SetConVarInt(FindConVar("z_mob_spawn_min_interval_normal"), RoundFloat(float(g_iDefHordeTimeMin) / g_RC_fEventCILimVeryEasy));
+            SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), RoundFloat(float(g_iDefHordeTimeMax) / g_RC_fEventCILimVeryEasy));
         }
         
         case DIFFICULTY_VERYEASY: {
-            SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * EVENT_VERYEASY_CILIM));
-            SetConVarInt(FindConVar("z_background_limit"), RoundFloat(float(g_iDefBackgroundLimit) * EVENT_VERYEASY_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_min_size"), RoundFloat(float(g_iDefHordeSizeMin) * EVENT_VERYEASY_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_max_size"), RoundFloat(float(g_iDefHordeSizeMax) * EVENT_VERYEASY_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_min_interval_normal"), RoundFloat(float(g_iDefHordeTimeMin) / EVENT_EASY_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), RoundFloat(float(g_iDefHordeTimeMax) / EVENT_EASY_CILIM));
+            SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * g_RC_fEventCILimVeryEasy));
+            SetConVarInt(FindConVar("z_background_limit"), RoundFloat(float(g_iDefBackgroundLimit) * g_RC_fEventCILimVeryEasy));
+            SetConVarInt(FindConVar("z_mob_spawn_min_size"), RoundFloat(float(g_iDefHordeSizeMin) * g_RC_fEventCILimVeryEasy));
+            SetConVarInt(FindConVar("z_mob_spawn_max_size"), RoundFloat(float(g_iDefHordeSizeMax) * g_RC_fEventCILimVeryEasy));
+            SetConVarInt(FindConVar("z_mob_spawn_min_interval_normal"), RoundFloat(float(g_iDefHordeTimeMin) / g_RC_fEventCILimEasy));
+            SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), RoundFloat(float(g_iDefHordeTimeMax) / g_RC_fEventCILimEasy));
         }
         
         case DIFFICULTY_EASY: {
-            SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * EVENT_EASY_CILIM));
-            SetConVarInt(FindConVar("z_background_limit"), RoundFloat(float(g_iDefBackgroundLimit) * EVENT_EASY_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_min_size"), RoundFloat(float(g_iDefHordeSizeMin) * EVENT_EASY_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_max_size"), RoundFloat(float(g_iDefHordeSizeMax) * EVENT_EASY_CILIM));
+            SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * g_RC_fEventCILimEasy));
+            SetConVarInt(FindConVar("z_background_limit"), RoundFloat(float(g_iDefBackgroundLimit) * g_RC_fEventCILimEasy));
+            SetConVarInt(FindConVar("z_mob_spawn_min_size"), RoundFloat(float(g_iDefHordeSizeMin) * g_RC_fEventCILimEasy));
+            SetConVarInt(FindConVar("z_mob_spawn_max_size"), RoundFloat(float(g_iDefHordeSizeMax) * g_RC_fEventCILimEasy));
         }
         case DIFFICULTY_HARD: {
-            SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * EVENT_HARD_CILIM));
-            SetConVarInt(FindConVar("z_background_limit"), RoundFloat(float(g_iDefBackgroundLimit) * EVENT_HARD_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_min_size"), RoundFloat(float(g_iDefHordeSizeMin) * EVENT_HARD_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_max_size"), RoundFloat(float(g_iDefHordeSizeMax) * EVENT_HARD_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), RoundFloat(float(g_iDefHordeTimeMax) / EVENT_HARD_CILIM));
+            SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * g_RC_fEventCILimHard));
+            SetConVarInt(FindConVar("z_background_limit"), RoundFloat(float(g_iDefBackgroundLimit) * g_RC_fEventCILimHard));
+            SetConVarInt(FindConVar("z_mob_spawn_min_size"), RoundFloat(float(g_iDefHordeSizeMin) * g_RC_fEventCILimHard));
+            SetConVarInt(FindConVar("z_mob_spawn_max_size"), RoundFloat(float(g_iDefHordeSizeMax) * g_RC_fEventCILimHard));
+            SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), RoundFloat(float(g_iDefHordeTimeMax) / g_RC_fEventCILimHard));
         }
         
         case DIFFICULTY_VERYHARD: {
-            SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * EVENT_VERYHARD_CILIM));
-            SetConVarInt(FindConVar("z_background_limit"), RoundFloat(float(g_iDefBackgroundLimit) * EVENT_VERYHARD_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_min_size"), RoundFloat(float(g_iDefHordeSizeMin) * EVENT_VERYHARD_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_max_size"), RoundFloat(float(g_iDefHordeSizeMax) * EVENT_VERYHARD_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_min_interval_normal"), RoundFloat(float(g_iDefHordeTimeMin) / EVENT_VERYHARD_CILIM));
-            SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), RoundFloat(float(g_iDefHordeTimeMax) / EVENT_VERYHARD_CILIM));
+            SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * g_RC_fEventCILimVeryHard));
+            SetConVarInt(FindConVar("z_background_limit"), RoundFloat(float(g_iDefBackgroundLimit) * g_RC_fEventCILimVeryHard));
+            SetConVarInt(FindConVar("z_mob_spawn_min_size"), RoundFloat(float(g_iDefHordeSizeMin) * g_RC_fEventCILimVeryHard));
+            SetConVarInt(FindConVar("z_mob_spawn_max_size"), RoundFloat(float(g_iDefHordeSizeMax) * g_RC_fEventCILimVeryHard));
+            SetConVarInt(FindConVar("z_mob_spawn_min_interval_normal"), RoundFloat(float(g_iDefHordeTimeMin) / g_RC_fEventCILimVeryHard));
+            SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), RoundFloat(float(g_iDefHordeTimeMax) / g_RC_fEventCILimVeryHard));
         }
     }
 }
@@ -355,7 +355,7 @@ EVENT_RoundStartPreparation()
             {
                 CloseHandle(g_hWitchSpawnTimer);
             }
-            g_hWitchSpawnTimer = CreateTimer(EVENT_WITCHES_SPAWNFREQ, Timer_WitchSpawn, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+            g_hWitchSpawnTimer = CreateTimer(g_RC_fEventWitchesSpawnFreq, Timer_WitchSpawn, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
             
             // respawn timer too (only once, destroyed at mapchange)
             if (!g_bSecondHalf)
@@ -488,16 +488,16 @@ EVENT_ReportPenalty(client = -1, extraInfo = -1)
     {
         case EVT_PEN_ITEM: {
             if (client != -1) {
-                PrintToChatAll("\x01[\x05r\x01] Item pickup by %N cost \x04%i\x01 points.", client, EVENT_PENALTY_ITEM);
+                PrintToChatAll("\x01[\x05r\x01] Item pickup by %N cost \x04%i\x01 points.", client, g_RC_iEventPenaltyItem);
             } else {
-                PrintToChatAll("\x01[\x05r\x01] Item pickup cost \x04%i\x01 points.", EVENT_PENALTY_ITEM);
+                PrintToChatAll("\x01[\x05r\x01] Item pickup cost \x04%i\x01 points.", g_RC_iEventPenaltyItem);
             }
         }
         case EVT_PEN_HEALTH: {
             if (client != -1) {
-                PrintToChatAll("\x01[\x05r\x01] Healing by %N cost \x04%i\x01 points.", client, EVENT_PENALTY_HEALTH);
+                PrintToChatAll("\x01[\x05r\x01] Healing by %N cost \x04%i\x01 points.", client, g_RC_iEventPenaltyHealth);
             } else {
-                PrintToChatAll("\x01[\x05r\x01] Healing cost \x04%i\x01 points.", EVENT_PENALTY_HEALTH);
+                PrintToChatAll("\x01[\x05r\x01] Healing cost \x04%i\x01 points.", g_RC_iEventPenaltyHealth);
             }
         }
         case EVT_PEN_M2: {
@@ -505,13 +505,13 @@ EVENT_ReportPenalty(client = -1, extraInfo = -1)
             if (extraInfo > 0) { Format(tmpStr, sizeof(tmpStr), "on %s ", g_csSIClassName[extraInfo]); }
             
             if (client != -1) {
-                PrintToChatAll("\x01[\x05r\x01] Shove %sby %N cost \x04%i\x01 points.", tmpStr, client, EVENT_PENALTY_M2_SI);
+                PrintToChatAll("\x01[\x05r\x01] Shove %sby %N cost \x04%i\x01 points.", tmpStr, client, g_RC_iEventPenaltyM2SI);
             } else {
-                PrintToChatAll("\x01[\x05r\x01] Shove %scost \x04%i\x01 points.", tmpStr, EVENT_PENALTY_M2_SI);
+                PrintToChatAll("\x01[\x05r\x01] Shove %scost \x04%i\x01 points.", tmpStr, g_RC_iEventPenaltyM2SI);
             }
         }
         case EVT_PEN_TIME: {
-            PrintToChatAll("\x01[\x05r\x01] Minute \x05%d\x01 passed, \x04%i\x01 point penalty.", g_iBonusCount, EVENT_PENALTY_TIME);
+            PrintToChatAll("\x01[\x05r\x01] Minute \x05%d\x01 passed, \x04%i\x01 point penalty.", g_iBonusCount, g_RC_iEventPenaltyTime);
         }
     }
 }
@@ -524,54 +524,54 @@ EVENT_DisplayRoundPenalty(client=-1)
         case EVT_PEN_ITEM:
         {
             if (client != -1) {
-                PrintToChat(client, "\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 item pickup%s cost \x04%i\x01 points.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_PENALTY_ITEM * g_iBonusCount);
+                PrintToChat(client, "\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 item pickup%s cost \x04%i\x01 points.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", g_RC_iEventPenaltyItem * g_iBonusCount);
             } else {
-                PrintToChatAll("\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 item pickup%s cost \x04%i\x01 points.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_PENALTY_ITEM * g_iBonusCount);
+                PrintToChatAll("\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 item pickup%s cost \x04%i\x01 points.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", g_RC_iEventPenaltyItem * g_iBonusCount);
             }
         }
         case EVT_PEN_HEALTH:
         {
             if (client != -1) {
-                PrintToChat(client, "\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 healing action%s cost \x04%i\x01 points.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_PENALTY_HEALTH * g_iBonusCount);
+                PrintToChat(client, "\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 healing action%s cost \x04%i\x01 points.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", g_RC_iEventPenaltyHealth * g_iBonusCount);
             } else {
-                PrintToChatAll("\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 healing action%s cost \x04%i\x01 points.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_PENALTY_HEALTH * g_iBonusCount);
+                PrintToChatAll("\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 healing action%s cost \x04%i\x01 points.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", g_RC_iEventPenaltyHealth * g_iBonusCount);
             }
         }
         case EVT_PEN_M2:
         {
             if (client != -1) {
-                PrintToChat(client, "\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 m2%s cost \x04%i\x01 points.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_PENALTY_M2_SI * g_iBonusCount);
+                PrintToChat(client, "\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 m2%s cost \x04%i\x01 points.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", g_RC_iEventPenaltyM2SI * g_iBonusCount);
             } else {
-                PrintToChatAll("\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 m2%s cost \x04%i\x01 points.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_PENALTY_M2_SI * g_iBonusCount);
+                PrintToChatAll("\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 m2%s cost \x04%i\x01 points.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", g_RC_iEventPenaltyM2SI * g_iBonusCount);
             }
         }
         
         case EVT_SKEET:
         {
             if (client != -1) {
-                PrintToChat(client, "\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 skeet%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_SKEET_BONUS * g_iBonusCount);
+                PrintToChat(client, "\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 skeet%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", g_RC_iEventBonusSkeet * g_iBonusCount);
             } else {
-                PrintToChatAll("\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 skeet%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_SKEET_BONUS * g_iBonusCount);
+                PrintToChatAll("\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 skeet%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", g_RC_iEventBonusSkeet * g_iBonusCount);
             }
         }
         case EVT_PEN_TIME:
         {
-            PrintToChatAll("\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 minute%s cost \x04%i\x01 points so far.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_PENALTY_TIME * g_iBonusCount);
+            PrintToChatAll("\x01[\x05r\x01] \x04Penalty\x01: \x05%i\x01 minute%s cost \x04%i\x01 points so far.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", g_RC_iEventPenaltyTime * g_iBonusCount);
         }
         case EVT_WITCHES:
         {
             if (client != -1) {
-                PrintToChat(client, "\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 witch kill%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_WITCHES_BONUS * g_iBonusCount);
+                PrintToChat(client, "\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 witch kill%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", g_RC_iEventBonusWitch * g_iBonusCount);
             } else {
-                PrintToChatAll("\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 witch kill%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_WITCHES_BONUS * g_iBonusCount);
+                PrintToChatAll("\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 witch kill%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", g_RC_iEventBonusWitch * g_iBonusCount);
             }
         }
         case EVT_BADSANTA:
         {
             if (client != -1) {
-                PrintToChat(client, "\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 gift unwrap%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_BADSANTA_BONUS * g_iBonusCount);
+                PrintToChat(client, "\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 gift unwrap%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", g_RC_iEventBonusBadSanta * g_iBonusCount);
             } else {
-                PrintToChatAll("\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 gift unwrap%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", EVENT_BADSANTA_BONUS * g_iBonusCount);
+                PrintToChatAll("\x01[\x05r\x01] \x04Bonus\x01: \x05%i\x01 gift unwrap%s gave \x04%i\x01 points bonus.", g_iBonusCount, (g_iBonusCount == 1) ? "" : "s", g_RC_iEventBonusBadSanta * g_iBonusCount);
             }
         }
     }
@@ -601,7 +601,7 @@ public Action: Timer_TimePenalty(Handle:timer)
         g_iTimePenaltyCounter = 1;
         
         g_iBonusCount++;
-        PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_TIME );
+        PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyTime );
         EVENT_ReportPenalty();
     }
     
@@ -626,7 +626,7 @@ public Action: Timer_BoomFlu(Handle:timer)
     
     if (g_iBoomFluCounter >= g_iBoomFluActivate)
     {
-        g_iBoomFluActivate = GetRandomInt(EVENT_BOOMFLU_MININT, EVENT_BOOMFLU_MAXINT);
+        g_iBoomFluActivate = GetRandomInt(g_RC_iEventBoomFluMinInt, g_RC_iEventBoomFluMaxInt);
         g_iBoomFluCounter = 1;
         
         // only boom after we really got going
@@ -691,36 +691,45 @@ EVENT_ReportBoobytrap(client=-1)
 }
 
 
-EVENT_HandleSkeet(skeeter=-1, victim=-1)
+EVENT_HandleSkeet(skeeter=-1, victim=-1, meleeSkeet=false)
 {
     if (_:g_iSpecialEvent == EVT_SKEET)
     {
         g_iBonusCount++;
         if (skeeter == -2) {
-            PBONUS_AddRoundBonus( EVENT_SKEET_BONUS_TEAM );
+            PBONUS_AddRoundBonus( g_RC_iEventBonusSkeetTeam );
         } else {
-            PBONUS_AddRoundBonus( EVENT_SKEET_BONUS );
+            PBONUS_AddRoundBonus( g_RC_iEventBonusSkeet );
         }
         
         if (skeeter == -2) {    // team skeet sets to -2
             if (IsClientAndInGame(victim)) {
-                PrintToChatAll("\x01[\x05r\x01] %N was team-skeeted for \x04%i\x01 points.", victim, EVENT_SKEET_BONUS_TEAM);
+                PrintToChatAll("\x01[\x05r\x01] %N was team-skeeted for \x04%i\x01 points.", victim, g_RC_iEventBonusSkeetTeam);
             } else {
-                PrintToChatAll("\x01[\x05r\x01] A hunter was team-skeeted for \x04%i\x01 points.", EVENT_SKEET_BONUS_TEAM);
+                PrintToChatAll("\x01[\x05r\x01] A hunter was team-skeeted for \x04%i\x01 points.", g_RC_iEventBonusSkeetTeam);
             }
         }
         else if (IsClientAndInGame(skeeter) && IsClientAndInGame(victim)) {
-            PrintToChatAll("\x01[\x05r\x01] %N skeeted %N for \x04%i\x01 points.", skeeter, victim, EVENT_SKEET_BONUS);
+            PrintToChatAll("\x01[\x05r\x01] %N %sskeeted %N for \x04%i\x01 points.", skeeter, (meleeSkeet)?"melee-":"", victim, g_RC_iEventBonusSkeet);
         }
         else if (IsClientAndInGame(skeeter)) {
-            PrintToChatAll("\x01[\x05r\x01] %N skeeted a hunter for \x04%i\x01 points.", skeeter, EVENT_SKEET_BONUS);
+            PrintToChatAll("\x01[\x05r\x01] %N %sskeeted a hunter for \x04%i\x01 points.", skeeter, (meleeSkeet)?"melee-":"", g_RC_iEventBonusSkeet);
         }
         else if (IsClientAndInGame(victim)) {
-            PrintToChatAll("\x01[\x05r\x01] %N was skeeted for \x04%i\x01 points.", victim, EVENT_SKEET_BONUS);
+            PrintToChatAll("\x01[\x05r\x01] %N was %sskeeted for \x04%i\x01 points.", victim, (meleeSkeet)?"melee-":"", g_RC_iEventBonusSkeet);
         }
         else {
-            PrintToChatAll("\x01[\x05r\x01] A hunter was skeeted for \x04%i\x01 points.", EVENT_SKEET_BONUS);
+            PrintToChatAll("\x01[\x05r\x01] A hunter was %sskeeted for \x04%i\x01 points.", (meleeSkeet)?"melee-":"", g_RC_iEventBonusSkeet);
         }
+    }
+}
+EVENT_HandleNonSkeet(victim, damage)
+{
+    if (IsClientAndInGame(victim)) {
+        PrintToChatAll("\x01[\x05r\x01] %N was \x04not\x01 skeeted (\x03%i\x01 damage).", victim, damage);
+    }
+    else {
+        PrintToChatAll("\x01[\x05r\x01] Hunter was \x04not\x01 skeeted (\x03%i\x01 damage).", damage);
     }
 }
 
@@ -1140,7 +1149,7 @@ public Action: Timer_DestroyHealthItems(Handle:timer)
 SUPPORT_MultiWitchRandomization()
 {
     // how many witches (attempt to spawn, not guaranteed)
-    g_iWitchNum = GetRandomInt(MULTIWITCH_MIN, MULTIWITCH_MAX);
+    g_iWitchNum = GetRandomInt(g_RC_iMultiwitchMin, g_RC_iMultiwitchMax);
     
     PrintDebug(1, "[rand] Multi-witch: trying to set %i witches... ", g_iWitchNum);
     
@@ -1265,7 +1274,7 @@ public Action: Timer_PrepareNextTank(Handle:timer)
 SUPPORT_MultiTankRandomization()
 {
     // how many tanks
-    g_iMiniTankNum = MINITANKS_NUM;
+    g_iMiniTankNum = g_RC_iMinitanksNum;
     
     PrintDebug(1, "[rand] Multi-tank: trying to set %i tanks... ", g_iMiniTankNum);
     
@@ -1429,7 +1438,7 @@ EVENT_PickBoobyTraps()
             ||  g_strArStorage[i][entPickedType] == _:PCK_SILLY_GIFT
         ) { continue; }
         
-        if (GetRandomFloat(0.001,1.0) <= EVENT_BOOBYTRAP_CHANCE)
+        if (GetRandomFloat(0.001,1.0) <= g_RC_fEventBoobyTrapChance)
         {
             g_iArBoobyTrap[g_iBoobyTraps] = g_strArStorage[i][entNumber];
             g_iBoobyTraps++;
@@ -1437,12 +1446,12 @@ EVENT_PickBoobyTraps()
     }
     
     // if we picked 0, go and add a few
-    if (g_iBoobyTraps < EVENT_BOOBYTRAP_MIN)
+    if (g_iBoobyTraps < g_RC_iEventBoobyTrapMin)
     {
         for (new j=0; j < 1000; j++)
         {
             // try to add one until we've got enough:
-            if (g_iBoobyTraps >= EVENT_BOOBYTRAP_MIN) { break; }
+            if (g_iBoobyTraps >= g_RC_iEventBoobyTrapMin) { break; }
             
             new i = GetRandomInt(0, g_iStoredEntities - 1);
             
@@ -1491,7 +1500,7 @@ bool: EVENT_CheckBoobyTrap(entity, Float:location[3], client=-1)
         }
     }
     
-    CreateExplosion(location, (GetRandomInt(0, 4) == 0) ? EXPLOSION_POWER_HIGH : EXPLOSION_POWER_LOW);
+    CreateExplosion(location, (GetRandomInt(0, 4) == 0) ? g_RC_fExplosionPowerHigh : g_RC_fExplosionPowerLow);
     
     return true;
 }
@@ -1990,6 +1999,10 @@ Float: FindDistanceFromFloor(entity)
     GetEntPropVector(entity, Prop_Send, "m_vecOrigin", pos);
     
     new bool: bFoundFloor = false;
+    
+    // look from up higher, by a bit
+    pos[2] += 5.0;
+    
     new Float: fNewZ = pos[2];
     
     // do a bunch of TRs and save what we find
@@ -2021,7 +2034,7 @@ Float: FindDistanceFromFloor(entity)
     if (bFoundFloor == false) {          // no floor found, so don't change
         fDif = 0.0;
     } else {
-        fDif = pos[2] - fNewZ;
+        fDif = pos[2] - fNewZ - 5.0;
     }
     return fDif;
 }

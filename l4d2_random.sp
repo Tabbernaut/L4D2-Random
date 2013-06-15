@@ -71,7 +71,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.36",
+    version = "1.0.37",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -190,8 +190,8 @@ public OnPluginStart()
     RegConsoleCmd("sm_event",   RandomPickEvent_Cmd, "Vote for a special event to appear next round (use number in list on website).");
     
     // Admin and test commands
-    RegAdminCmd("sm_forceteamshuffle",  RandomForceTeamShuffle_Cmd, ADMFLAG_CHEATS, "Shuffle the teams! Only works during readyup. Admins only.");
-    RegAdminCmd("sm_forceevent",        RandomForcePickEvent_Cmd,  ADMFLAG_CHEATS, "Force a special event for next round (use number in list on website).");
+    RegAdminCmd("forceteamshuffle",  RandomForceTeamShuffle_Cmd, ADMFLAG_CHEATS, "Shuffle the teams! Only works during readyup. Admins only.");
+    RegAdminCmd("forceevent",        RandomForcePickEvent_Cmd,  ADMFLAG_CHEATS, "Force a special event for next round (use number in list on website).");
     
     //  disable when debugging is done
     #if DEBUG_MODE
@@ -873,8 +873,8 @@ public OnMapStart()
         g_bVeryFirstMapLoad = false;
     }
     
-    // get this map's random-related info
-    RI_KV_UpdateRandomMapInfo();
+    RConfig_Read();                     // get basic random config values (for 'constants')
+    RI_KV_UpdateRandomMapInfo();        // get this map's random-related info
     
     CreateTimer(0.1, SUPPORT_RoundPreparation, _, TIMER_FLAG_NO_MAPCHANGE);
     
@@ -1164,17 +1164,26 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
         }
             
         // handle new hit (only shotgun), and only on pouncing hunters
-        if (GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce") && damagetype & DMG_BUCKSHOT) {
-            
-            // first pellet hit?
-            if (fHunterShotStart[victim][attacker] == 0.0)
-            {
-                // new shotgun blast
-                fHunterShotStart[victim][attacker] = GetGameTime();
-                iHunterShotDmg[victim][attacker] = 0;
+        if (GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce"))
+        {
+            if (damagetype & DMG_BUCKSHOT) {
+                // first pellet hit?
+                if (fHunterShotStart[victim][attacker] == 0.0)
+                {
+                    // new shotgun blast
+                    fHunterShotStart[victim][attacker] = GetGameTime();
+                    iHunterShotDmg[victim][attacker] = 0;
+                }
+                iHunterShotDmg[victim][attacker] += RoundToFloor(damage);
+                iHunterShotDmgTeam[victim] += RoundToFloor(damage);
             }
-            iHunterShotDmg[victim][attacker] += RoundToFloor(damage);
-            iHunterShotDmgTeam[victim] += RoundToFloor(damage);
+            else if (damagetype & DMG_SLASH || damagetype & DMG_CLUB)
+            {
+                if (damage >= 190.0) {
+                    // melee skeet
+                    EVENT_HandleSkeet(attacker, victim, true);
+                }
+            }
         }
     }
     // women, where the witch should die more easily to melee swings
@@ -1186,7 +1195,7 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
             GetEdictClassname(attacker, attackClass, 64);
             if (!StrEqual(attackClass, "witch")) { return Plugin_Continue; }
             
-            damage = (_:g_iSpecialEvent == EVT_WOMEN) ? EVENT_WOMEN_WITCHDMG : EVENT_WITCHES_WITCHDMG;
+            damage = (_:g_iSpecialEvent == EVT_WOMEN) ? g_RC_fEventWomenWitchDmg : g_RC_fEventWitchesWitchDmg;
             return Plugin_Changed;
         }
     }
@@ -1213,9 +1222,9 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
         else if ( IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_INFECTED ) {
             // SI-to-survivor
             if (victim == g_iSpecialEventRole) {
-                damage = damage * EVENT_PROTECT_WEAK;
+                damage = damage * g_RC_fEventProtectWeak;
             } else {
-                damage = damage * EVENT_PROTECT_STRONG;
+                damage = damage * g_RC_fEventProtectStrong;
             }
             return Plugin_Changed;
         }
@@ -1234,7 +1243,7 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
         // does this work well with chainsaw?
         if (StrEqual(classname, "weapon_melee", false))
         {
-            damage = MINITANK_MELEE_DMG;
+            damage = g_RC_fMinitankMeleeDmg;
             return Plugin_Changed;
         }
     }
@@ -1263,7 +1272,7 @@ public Action: OnTakeDamage_Witch(victim, &attacker, &inflictor, &Float:damage, 
     GetEdictClassname(inflictor, classname, sizeof(classname));
     if (!StrEqual(classname, "weapon_melee", false)) { return Plugin_Continue; }
     
-    damage = EVENT_WOMEN_MELEEDMG;
+    damage = g_RC_fEventWomenMeleeDmg;
     return Plugin_Changed;
 }
 
@@ -1624,7 +1633,7 @@ public DoBoomerComboReward(combo, victim)
         // do something special for evt women?
         if (combo > 1)
         {
-            SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * EVENT_VERYHARD_CILIM) + (EVENT_WOMEN_EXTRACOMMON * (combo - 1)) );
+            SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * g_RC_fEventCILimVeryHard) + (EVENT_WOMEN_EXTRACOMMON * (combo - 1)) );
             CreateTimer(1.0, Timer_CheckEndBoomComboReward, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
         }
         
@@ -1654,7 +1663,7 @@ public Action: Timer_CheckEndBoomComboReward(Handle:timer)
 {
     if (GetGameTime() - g_fRewardTime > EVENT_WOMEN_LIMITTIME || !g_bInRound)
     {
-        SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * EVENT_VERYHARD_CILIM) );
+        SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * g_RC_fEventCILimVeryHard) );
         return Plugin_Stop;
     }
     return Plugin_Continue;
@@ -2011,7 +2020,7 @@ public Action:Timer_CheckItemPickup(Handle:hTimer, any:client)
     if (_:g_iSpecialEvent == EVT_PEN_ITEM)
     {
         g_iBonusCount++;
-        PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_ITEM );
+        PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyItem );
         EVENT_ReportPenalty(client);
     }
     
@@ -2042,7 +2051,7 @@ public Action:OnWeaponEquip(client, weapon)
         if (GetTrieValue(g_hTriePenaltyItems, classname, itemHasPenalty))
         {
             g_iBonusCount++;
-            PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_ITEM );
+            PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyItem );
             EVENT_ReportPenalty(client);
         }
     }
@@ -2165,7 +2174,7 @@ public Action:Event_PlayerDefibbed(Handle:event, const String:name[], bool:dontB
     
     if (_:g_iSpecialEvent == EVT_PEN_HEALTH) {
         g_iBonusCount++;
-        PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_HEALTH );
+        PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyHealth );
         EVENT_ReportPenalty(user);
     }
     
@@ -2180,7 +2189,7 @@ public Action:Event_MedkitUsed(Handle:event, const String:name[], bool:dontBroad
     
     if (_:g_iSpecialEvent == EVT_PEN_HEALTH) {
         g_iBonusCount++;
-        PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_HEALTH );
+        PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyHealth );
         EVENT_ReportPenalty(user);
     }
     else if (_:g_iSpecialEvent == EVT_MEDIC) {
@@ -2194,7 +2203,7 @@ public Action:Event_PillsUsed(Handle:event, const String:name[], bool:dontBroadc
     
     if (_:g_iSpecialEvent == EVT_PEN_HEALTH) {
         g_iBonusCount++;
-        PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_HEALTH );
+        PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyHealth );
         EVENT_ReportPenalty(user);
     }
     else if (_:g_iSpecialEvent == EVT_MEDIC && user == g_iSpecialEventRole) {
@@ -2220,7 +2229,7 @@ public Action:Event_ShovedPlayer(Handle:event, const String:name[], bool:dontBro
         if (classType == ZC_JOCKEY || classType == ZC_HUNTER || classType == ZC_SMOKER)
         {
             g_iBonusCount++;
-            PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_M2_SI );
+            PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyM2SI );
             EVENT_ReportPenalty(client, classType);
         }
     }
@@ -2289,8 +2298,8 @@ public Event_WitchDeath(Handle:event, const String:name[], bool:dontBroadcast)
     if (!IsClientAndInGame(client) || GetClientTeam(client) != TEAM_SURVIVOR) { return; }
     
     g_iBonusCount++;
-    PBONUS_AddRoundBonus( EVENT_WITCHES_BONUS );
-    PrintToChatAll("\x01[\x05r\x01] A witch was killed for \x04%i\x01 points.", EVENT_WITCHES_BONUS);
+    PBONUS_AddRoundBonus( g_RC_iEventBonusWitch );
+    PrintToChatAll("\x01[\x05r\x01] A witch was killed for \x04%i\x01 points.", g_RC_iEventBonusWitch);
     
 }
 /*
@@ -2520,6 +2529,9 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
             else if (iHunterShotDmgTeam[victim] >= iPounceInterrupt) {
                 // team skeet
                 EVENT_HandleSkeet(-2, victim);
+            }
+            else {
+                EVENT_HandleNonSkeet(victim, iHunterShotDmg[victim][attacker]);
             }
         }
         
@@ -2918,7 +2930,7 @@ public Action:Timer_PipeCheck(Handle:timer, any:entity)
     // dud chance...
     //  affected by boomer combo
     new Float: fDudChance = GetConVarFloat(g_hCvarPipeDudChance);
-    if (fDudChance > 0.0 && GetGameTime() < g_fDudTimeExpire) { fDudChance = BOOMCOMBO_DUDCHANCE; }
+    if (fDudChance > 0.0 && GetGameTime() < g_fDudTimeExpire) { fDudChance = g_RC_fBoomComboDudChance; }
     
     if (GetRandomFloat(0.001,1.0) <= fDudChance) {
         CreateTimer( PIPEDUD_MINTIME + GetRandomFloat(0.0, PIPEDUD_ADDTIME) , Timer_PipeDud, entity);

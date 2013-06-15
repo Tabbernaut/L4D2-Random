@@ -284,6 +284,7 @@ new     Handle:         g_hCvarSimplePauseCheck                             = IN
 new     Handle:         g_hCvarStripperMode                                 = INVALID_HANDLE;       // cvar what way to use stripper
 new     Handle:         g_hCvarStripperPath                                 = INVALID_HANDLE;       // cvar stripper cfg path (base)
 new     Handle:         g_hCvarRIKeyValuesPath                              = INVALID_HANDLE;       // cvar dir to randommap.txt
+new     Handle:         g_hCvarRCKeyValuesPath                              = INVALID_HANDLE;       // cvar dir to randomconfig.txt
 new     Handle:         g_hCvarWelcomeMode                                  = INVALID_HANDLE;       // cvar which welcome-message mode to use
 new     Handle:         g_hCvarBlockL4D1Common                              = INVALID_HANDLE;       // cvar whether block l4d1 common and not use them for l4d1 event
 
@@ -412,3 +413,76 @@ new     Float:          g_fDefRiotTonfaProb                                 = 0.
 new                     g_iActiveAmmoAk                                     = 250;
 new                     g_iActiveAmmoScout                                  = 90;
 new                     g_iActiveAmmoAWP                                    = 45;
+
+// RandomConfig keyvalues
+new     Float:          g_RC_fItemFactor2v2                                 = 0.5;
+new     Float:          g_RC_fItemFactor3v3                                 = 0.75;
+
+new                     g_RC_iGiftMinItems                                  = 2;
+new                     g_RC_iGiftMaxItems                                  = 5;
+
+new                     g_RC_iMultiwitchMin                                 = 3;
+new                     g_RC_iMultiwitchMax                                 = 7;
+new     bool:           g_RC_bMultiwitchAllowTank                           = true;
+
+new                     g_RC_iMinitanksNum                                  = 9;
+new     Float:          g_RC_fMinitankMeleeDmg                              = 200.0;
+new                     g_RC_iMinitankFrustTime                             = 10;
+new                     g_RC_iMinitankDamage                                = 20;
+new                     g_RC_iMinitankHittableDmg                           = 50;
+
+new                     g_RC_iWeakHittableDmg                               = 25;
+
+new                     g_RC_iTankDropItemsMin                              = 1;
+new                     g_RC_iTankDropItemsMax                              = 2;
+
+new     Float:          g_RC_fEventSITimeVeryHard                           = 0.5;
+new     Float:          g_RC_fEventSITimeHard                               = 0.75;
+new     Float:          g_RC_fEventSITimeEasy                               = 1.25;
+new     Float:          g_RC_fEventSITimeVeryEasy                           = 1.5;
+
+new     Float:          g_RC_fEventCILimVeryHard                            = 1.5;
+new     Float:          g_RC_fEventCILimHard                                = 1.25;
+new     Float:          g_RC_fEventCILimEasy                                = 0.75;
+new     Float:          g_RC_fEventCILimVeryEasy                            = 0.5;
+new     Float:          g_RC_fEventCILimSuperEasy                           = 0.25;
+
+new     Float:          g_RC_fEventAdrenDecay                               = 1.5;
+new                     g_RC_iEventPenaltyItem                              = 5;
+new                     g_RC_iEventPenaltyHealth                            = 15;
+new                     g_RC_iEventPenaltyM2SI                              = 10;
+new                     g_RC_iEventPenaltyTime                              = 25;
+new                     g_RC_iEventBonusSkeet                               = 15;
+new                     g_RC_iEventBonusSkeetTeam                           = 15;
+new                     g_RC_iEventBonusWitch                               = 25;
+new                     g_RC_iEventBonusBadSanta                            = 15;
+
+new     Float:          g_RC_fEventWomenMeleeDmg                            = 500.0;    // on witches
+new     Float:          g_RC_fEventWomenWitchDmg                            = 25.0;     // to survivors
+new     Float:          g_RC_fEventWitchesWitchDmg                          = 50.0;     // to survivors
+
+new     Float:          g_RC_fEventFFFactor                                 = 0.3;      // cvar value for hard
+new                     g_RC_iEventBadComboAmmo                             = 25;
+
+new     Float:          g_RC_fEventProtectWeak                              = 2.0;
+new     Float:          g_RC_fEventProtectStrong                            = 0.75;
+
+new     Float:          g_RC_fEventBoobyTrapChance                          = 0.12;
+new                     g_RC_iEventBoobyTrapMin                             = 5;
+
+new     Float:          g_RC_fEventAmmoMaxFactor                            = 0.5;      // max-ammo changer
+new     Float:          g_RC_fEventAmmoFactor                               = 0.12;     // init-ammo changer
+
+new     Float:          g_RC_fEventWitchesSpawnFreq                         = 40.0;     // s
+
+new                     g_RC_iEventBoomFluMinInt                            = 20;
+new                     g_RC_iEventBoomFluMaxInt                            = 55;
+
+new     Float:          g_RC_fBoomComboDudChance                            = 0.66;     // chance a pipe will dud till 10s after combo
+
+new                     g_RC_iVomitOnType                                   = 7;        // 1 = survivors; 2 = special infected; 4 = common infected [ flags ]
+new     Float:          g_RC_fVomitRange                                    = 125.0;
+new     Float:          g_RC_fVomitStreamTime                               = 3.5;      // time in s vomit can hit anything
+
+new     Float:          g_RC_fExplosionPowerHigh                            = 30.0;
+new     Float:          g_RC_fExplosionPowerLow                             = 20.0;

@@ -236,6 +236,16 @@ ReportSpecialEventRole(bool:isNew=false, client=0)
     
     if ( (!client || client == g_iSpecialEventRole) && IsClientAndInGame(g_iSpecialEventRole))
     {
+        // show a hinttext for emphasis
+        switch (_:g_iSpecialEvent)
+        {
+            case EVT_KEYMASTER: { PrintHintText(g_iSpecialEventRole, "You are the keymaster."); }
+            case EVT_PROTECT: { PrintHintText(g_iSpecialEventRole, "You are the baby."); }
+            case EVT_MEDIC: { PrintHintText(g_iSpecialEventRole, "You are the medic."); }
+            case EVT_BOOMFLU: { PrintHintText(g_iSpecialEventRole, "You have the boomer flu."); }
+        }
+        
+        
         // medics should be told some more stuff
         if (_:g_iSpecialEvent == EVT_MEDIC) {
             if (g_iMedicUnits > 0) {
@@ -531,7 +541,7 @@ RANDOM_DetermineRandomStuff()
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
                     bDoItemRePrep = true;
                     bBlockTank = true;
-                    SetConVarFloat(FindConVar("pain_pills_decay_rate"), g_fDefPillDecayRate * EVENT_ADREN_DECAY);
+                    SetConVarFloat(FindConVar("pain_pills_decay_rate"), g_fDefPillDecayRate * g_RC_fEventAdrenDecay);
                     g_iDifficultyRating += 2;
                 }
                 case EVT_NOHUD: {
@@ -556,7 +566,7 @@ RANDOM_DetermineRandomStuff()
                 }
                 case EVT_FF: {
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_EASY);
-                    SetConVarFloat(FindConVar("survivor_friendly_fire_factor_normal"), EVENT_FF_FACTOR);
+                    SetConVarFloat(FindConVar("survivor_friendly_fire_factor_normal"), g_RC_fEventFFFactor);
                     g_iDifficultyRating++;
                 }
                 case EVT_SILENCE: {
@@ -595,12 +605,12 @@ RANDOM_DetermineRandomStuff()
                 case EVT_MINITANKS: {
                     // set health (lower)
                     SetConVarInt(FindConVar("z_tank_health"), GetConVarInt(g_hCvarMiniTankHealth) );
-                    SetConVarInt(FindConVar("z_frustration_lifetime"), MINITANK_FRUST_TIME);
-                    SetConVarInt(FindConVar("vs_tank_damage"), MINITANKS_DAMAGE);
+                    SetConVarInt(FindConVar("z_frustration_lifetime"), g_RC_iMinitankFrustTime);
+                    SetConVarInt(FindConVar("vs_tank_damage"), g_RC_iMinitankDamage);
                     
                     // hittable control: soften the blow
                     if (FindConVar("hc_car_standing_damage") != INVALID_HANDLE) {
-                        new tmpDmg = (g_RI_bWeakHittables) ? WEAK_HITTABLE_DMG : MINITANKS_HITTABLE_DMG;
+                        new tmpDmg = (g_RI_bWeakHittables) ? g_RC_iWeakHittableDmg : g_RC_iMinitankHittableDmg;
                         SetConVarInt(FindConVar("hc_sflog_standing_damage"), tmpDmg);
                         SetConVarInt(FindConVar("hc_bhlog_standing_damage"), tmpDmg);
                         SetConVarInt(FindConVar("hc_car_standing_damage"), tmpDmg);
@@ -651,15 +661,15 @@ RANDOM_DetermineRandomStuff()
                     g_bNoAmmo = true;
                     g_bSpecialEventPlayerCheck = true;
                     
-                    SetConVarInt(FindConVar("ammo_smg_max"), RoundFloat( float(g_iDefAmmoSmg) * EVENT_MAXAMMO_FACTOR) );
-                    SetConVarInt(FindConVar("ammo_shotgun_max"), RoundFloat( float(g_iDefAmmoShotgun) * EVENT_MAXAMMO_FACTOR) );
-                    SetConVarInt(FindConVar("ammo_huntingrifle_max"), RoundFloat( float(g_iDefAmmoHR) * EVENT_MAXAMMO_FACTOR) );
-                    SetConVarInt(FindConVar("ammo_sniperrifle_max"), RoundFloat( float(g_iDefAmmoSniper) * EVENT_MAXAMMO_FACTOR) );
-                    SetConVarInt(FindConVar("ammo_assaultrifle_max"), RoundFloat( float(g_iDefAmmoRifle) * EVENT_MAXAMMO_FACTOR) );
-                    SetConVarInt(FindConVar("ammo_autoshotgun_max"), RoundFloat( float(g_iDefAmmoAutoShotgun) * EVENT_MAXAMMO_FACTOR) );
-                    g_iActiveAmmoAk = RoundFloat( GetConVarFloat(g_hCvarAmmoAk) * EVENT_MAXAMMO_FACTOR);
-                    g_iActiveAmmoScout = RoundFloat( GetConVarFloat(g_hCvarAmmoScout) * EVENT_MAXAMMO_FACTOR);
-                    g_iActiveAmmoAWP = RoundFloat( GetConVarFloat(g_hCvarAmmoAWP) * EVENT_MAXAMMO_FACTOR);
+                    SetConVarInt(FindConVar("ammo_smg_max"), RoundFloat( float(g_iDefAmmoSmg) * g_RC_fEventAmmoMaxFactor) );
+                    SetConVarInt(FindConVar("ammo_shotgun_max"), RoundFloat( float(g_iDefAmmoShotgun) * g_RC_fEventAmmoMaxFactor) );
+                    SetConVarInt(FindConVar("ammo_huntingrifle_max"), RoundFloat( float(g_iDefAmmoHR) * g_RC_fEventAmmoMaxFactor) );
+                    SetConVarInt(FindConVar("ammo_sniperrifle_max"), RoundFloat( float(g_iDefAmmoSniper) * g_RC_fEventAmmoMaxFactor) );
+                    SetConVarInt(FindConVar("ammo_assaultrifle_max"), RoundFloat( float(g_iDefAmmoRifle) * g_RC_fEventAmmoMaxFactor) );
+                    SetConVarInt(FindConVar("ammo_autoshotgun_max"), RoundFloat( float(g_iDefAmmoAutoShotgun) * g_RC_fEventAmmoMaxFactor) );
+                    g_iActiveAmmoAk = RoundFloat( GetConVarFloat(g_hCvarAmmoAk) * g_RC_fEventAmmoMaxFactor);
+                    g_iActiveAmmoScout = RoundFloat( GetConVarFloat(g_hCvarAmmoScout) * g_RC_fEventAmmoMaxFactor);
+                    g_iActiveAmmoAWP = RoundFloat( GetConVarFloat(g_hCvarAmmoAWP) * g_RC_fEventAmmoMaxFactor);
                     
                     g_iDifficultyRating++;
                 }
@@ -907,7 +917,7 @@ RANDOM_DetermineRandomStuff()
     }
     
     // multi-witches?
-    if (g_bWitchWillSpawn && !g_RI_bIsFinale && (MULTIWITCH_ALLOW_TANK || !g_bTankWillSpawn) && _:g_iSpecialEvent != EVT_MINITANKS )
+    if (g_bWitchWillSpawn && !g_RI_bIsFinale && (g_RC_bMultiwitchAllowTank || !g_bTankWillSpawn) && _:g_iSpecialEvent != EVT_MINITANKS )
     {
         if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
         {
@@ -1082,7 +1092,7 @@ RandomizeItems()
 
     new Float: fAmmoVarMore = 1.0 + GetConVarFloat(g_hCvarAmmoVarianceMore);
     new Float: fAmmoVarLess = 1.0 - GetConVarFloat(g_hCvarAmmoVarianceLess);
-    new Float: fAmmoFactor = (_:g_iSpecialEvent == EVT_AMMO) ? EVENT_AMMO_FACTOR : 1.0;
+    new Float: fAmmoFactor = (_:g_iSpecialEvent == EVT_AMMO) ? g_RC_fEventAmmoFactor : 1.0;
     
     for (new i=0; i < entityCount; i++)
     {
@@ -1852,7 +1862,7 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
     
     new randomPick = PCK_NOITEM;
     new randomIndex = INDEX_NOITEM;
-    new Float: fAmmoFactor = (_:g_iSpecialEvent == EVT_AMMO) ? EVENT_AMMO_FACTOR : 1.0;
+    new Float: fAmmoFactor = (_:g_iSpecialEvent == EVT_AMMO) ? g_RC_fEventAmmoFactor : 1.0;
     
     // if we're doing weapons, we're still not doing NOITEM, so start at pistol (1)
     // otherwise, start at first non-weapon item
@@ -2082,7 +2092,7 @@ RandomizeSurvivorItems()
     
     new Float: fAmmoVarMore = 1.0 + GetConVarFloat(g_hCvarAmmoVarianceMore);
     new Float: fAmmoVarLess = 1.0 - GetConVarFloat(g_hCvarAmmoVarianceLess);
-    new Float: fAmmoFactor = (_:g_iSpecialEvent == EVT_AMMO) ? EVENT_AMMO_FACTOR : 1.0;
+    new Float: fAmmoFactor = (_:g_iSpecialEvent == EVT_AMMO) ? g_RC_fEventAmmoFactor : 1.0;
 
 
     // minimum supplies for higher difficulty rounds
@@ -2987,7 +2997,7 @@ ChangeSurvivorSetup(index, client)
     if (_:g_iSpecialEvent == EVT_BADCOMBO)
     {
         GiveItem(client, "weapon_chainsaw", 0, 0);
-        GiveItem(client, "weapon_grenade_launcher", EVENT_BADCOMBO_AMMO, GRENADE_LAUNCHER_OFFSET_IAMMO);
+        GiveItem(client, "weapon_grenade_launcher", g_RC_iEventBadComboAmmo, GRENADE_LAUNCHER_OFFSET_IAMMO);
         return;
     }
     
@@ -3337,7 +3347,7 @@ RANDOM_DoGiftEffect(client, entity)
                 g_strTempItemSingle[entOrigin_b] = targetPos[1];
                 g_strTempItemSingle[entOrigin_c] = targetPos[2];
                 
-                new itemCount = GetRandomInt(GIFT_MIN_ITEMS, GIFT_MAX_ITEMS);
+                new itemCount = GetRandomInt(g_RC_iGiftMinItems, g_RC_iGiftMaxItems);
                 new bool: noWeapons = false;
                 
                 PrintDebug(3, "[rand] Gift items to spawn: %i", itemCount);
@@ -3443,7 +3453,7 @@ RANDOM_DoGiftEffect(client, entity)
                 PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04explosive surprise\x01!", client);
                 
                 new Handle:pack = CreateDataPack();
-                WritePackFloat(pack, (GetRandomInt(0, 1)) ? EXPLOSION_POWER_LOW : EXPLOSION_POWER_HIGH );
+                WritePackFloat(pack, (GetRandomInt(0, 3)) ? g_RC_fExplosionPowerLow : g_RC_fExplosionPowerLow );
                 WritePackFloat(pack, targetPos[0]);
                 WritePackFloat(pack, targetPos[1]);
                 WritePackFloat(pack, targetPos[2]);
@@ -3556,8 +3566,8 @@ RANDOM_DoGiftEffect(client, entity)
     if (_:g_iSpecialEvent == EVT_BADSANTA)
     {
         g_iBonusCount++;
-        PBONUS_AddRoundBonus( EVENT_BADSANTA_BONUS );
-        PrintToChatAll("\x01[\x05r\x01] %N unwrapped a lousy gift for \x04%i\x01 points.", client, EVENT_BADSANTA_BONUS);
+        PBONUS_AddRoundBonus( g_RC_iEventBonusBadSanta );
+        PrintToChatAll("\x01[\x05r\x01] %N unwrapped a lousy gift for \x04%i\x01 points.", client, g_RC_iEventBonusBadSanta);
     }
 }
 
@@ -3921,7 +3931,7 @@ RANDOM_TankDropItems()
     if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarTankItemDropChance))
     {
         // location stored in global
-        new count = GetRandomInt(1, TANK_DROP_ITEMS_MAX);
+        new count = GetRandomInt(g_RC_iTankDropItemsMin, g_RC_iTankDropItemsMax);
         
         for (new i=0; i < count; i++)
         {
@@ -4683,7 +4693,7 @@ RANDOM_PrepareChoices()
         
         if (total_items != total) {
             
-            new iNoItemExtra = RoundFloat(float(total) / ( ((iSurvivorLimit == 2) ? ITEM_FACTOR_2V2 : ITEM_FACTOR_3V3) * (float(total_items) / float(total)) )) - total;
+            new iNoItemExtra = RoundFloat(float(total) / ( ((iSurvivorLimit == 2) ? g_RC_fItemFactor2v2 : g_RC_fItemFactor3v3) * (float(total_items) / float(total)) )) - total;
             if (iNoItemExtra < 0) { iNoItemExtra = 0; }
             
             PrintDebug(2, "[rand] Adding %i to no-item weight for %i-survivor balance.", iNoItemExtra, iSurvivorLimit);

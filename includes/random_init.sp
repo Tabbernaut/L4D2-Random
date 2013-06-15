@@ -22,6 +22,7 @@ INIT_DefineCVars()
     g_hCvarStripperMode = CreateConVar(                     "rand_stripper_mode",            "2",       "When using Stripper:Source: mode 0 = don't change dir; 1 = toggle standard and _alt (50%); 2 = standard + _alt (33%); 3 = same, but (25%).", FCVAR_PLUGIN, true, 0.0, true, 2.0);
     g_hCvarStripperPath = CreateConVar(                     "rand_stripper_path",            "addons/stripper", "The Stripper:Source directory random uses as its base.", FCVAR_PLUGIN);
     g_hCvarRIKeyValuesPath = CreateConVar(                  "rand_randominfo_path",          "configs/randommapinfo.txt", "The path to the randommap.txt with keyvalues for per-map random settings.", FCVAR_PLUGIN);
+    g_hCvarRCKeyValuesPath = CreateConVar(                  "rand_randomconfig_path",        "configs/randomconfig.txt", "The path to the randomconfig.txt with keyvalues for its base settings.", FCVAR_PLUGIN);
     g_hCvarWelcomeMode = CreateConVar(                      "rand_welcome",                  "3",       "Whether to display welcome messages (1 = only in first round; 2 = always, 3 = each client only once).", FCVAR_PLUGIN, true, 0.0, true, 3.0);
     g_hCvarBlockL4D1Common = CreateConVar(                  "rand_no_l4d1_common",           "3",       "Whether to block L4D1 common. (2 = block all appearing l4d1 common; 3 = block only problematic skins)", FCVAR_PLUGIN, true, 0.0, true, 3.0);
     
@@ -649,6 +650,107 @@ bool: RI_KV_UpdateRandomMapInfo()
     }
     
     return false;
+}
+
+
+// KayValues for general random config
+// -----------------------------------
+RConfig_Read()
+{
+    decl String:sNameBuff[PLATFORM_MAX_PATH];
+    
+    GetConVarString(g_hCvarRCKeyValuesPath, sNameBuff, sizeof(sNameBuff));
+    
+    new Handle: kRCData = CreateKeyValues("RandomConfig");
+    BuildPath(Path_SM, sNameBuff, sizeof(sNameBuff), sNameBuff);
+    
+    if (!FileToKeyValues(g_kRIData, sNameBuff))
+    {
+        LogError("[rand] Couldn't load RandomConfig data!");
+        if (kRCData == INVALID_HANDLE) { return; }
+        CloseHandle(kRCData);
+        return;
+    }
+    
+    // get keyvalues
+    if (KvJumpToKey(kRCData, "settings"))
+    {
+        
+        // read out all the values into global variables here
+        // name format: g_RC_<normal>
+        g_RC_fItemFactor2v2 = KvGetFloat(kRCData, "item_factor_2v2", g_RC_fItemFactor2v2);
+        g_RC_fItemFactor3v3 = KvGetFloat(kRCData, "item_factor_3v3", g_RC_fItemFactor3v3);
+        g_RC_iGiftMinItems = KvGetNum(kRCData, "gift_min_items", g_RC_iGiftMinItems);
+        g_RC_iGiftMaxItems = KvGetNum(kRCData, "gift_max_items", g_RC_iGiftMaxItems);
+        
+        g_RC_iMultiwitchMin = KvGetNum(kRCData, "multiwitch_min", g_RC_iMultiwitchMin);
+        g_RC_iMultiwitchMax = KvGetNum(kRCData, "multiwitch_max", g_RC_iMultiwitchMax);
+        g_RC_bMultiwitchAllowTank = bool: (KvGetNum(kRCData, "multiwitch_allow_tank", 1));
+        g_RC_iMinitanksNum = KvGetNum(kRCData, "minitanks_num", g_RC_iMinitanksNum);
+        g_RC_fMinitankMeleeDmg = KvGetFloat(kRCData, "minitank_melee_damage", g_RC_fMinitankMeleeDmg);
+        g_RC_iMinitankFrustTime = KvGetNum(kRCData, "minitank_frustration_time", g_RC_iMinitankFrustTime);
+        g_RC_iMinitankDamage = KvGetNum(kRCData, "minitank_damage", g_RC_iMinitankDamage);
+        g_RC_iMinitankHittableDmg = KvGetNum(kRCData, "minitank_hittable_damage", g_RC_iMinitankHittableDmg);
+        g_RC_iWeakHittableDmg = KvGetNum(kRCData, "weak_hittable_damage", g_RC_iWeakHittableDmg);
+        
+        g_RC_iTankDropItemsMin = KvGetNum(kRCData, "tank_drop_items_min", g_RC_iTankDropItemsMin);
+        g_RC_iTankDropItemsMax = KvGetNum(kRCData, "tank_drop_items_max", g_RC_iTankDropItemsMax);
+        g_RC_fBoomComboDudChance = KvGetFloat(kRCData, "boomcombo_dud_chance", g_RC_fBoomComboDudChance);
+        
+        g_RC_fEventSITimeVeryHard = KvGetFloat(kRCData, "event_sitime_veryhard", g_RC_fEventSITimeVeryHard);
+        g_RC_fEventSITimeHard = KvGetFloat(kRCData, "event_sitime_hard", g_RC_fEventSITimeHard);
+        g_RC_fEventSITimeEasy = KvGetFloat(kRCData, "event_sitime_easy", g_RC_fEventSITimeEasy);
+        g_RC_fEventSITimeVeryEasy = KvGetFloat(kRCData, "event_sitime_veryeasy", g_RC_fEventSITimeVeryEasy);
+        
+        g_RC_fEventCILimVeryHard = KvGetFloat(kRCData, "event_cilim_veryhard", g_RC_fEventCILimVeryHard);
+        g_RC_fEventCILimHard = KvGetFloat(kRCData, "event_cilim_hard", g_RC_fEventCILimHard);
+        g_RC_fEventCILimEasy = KvGetFloat(kRCData, "event_cilim_easy", g_RC_fEventCILimEasy);
+        g_RC_fEventCILimVeryEasy = KvGetFloat(kRCData, "event_cilim_veryeasy", g_RC_fEventCILimVeryEasy);
+        g_RC_fEventCILimSuperEasy = KvGetFloat(kRCData, "event_cilim_Supereasy", g_RC_fEventCILimSuperEasy);
+
+        g_RC_iEventPenaltyItem = KvGetNum(kRCData, "event_penalty_item", g_RC_iEventPenaltyItem);
+        g_RC_iEventPenaltyHealth = KvGetNum(kRCData, "event_penalty_health", g_RC_iEventPenaltyHealth);
+        g_RC_iEventPenaltyM2SI = KvGetNum(kRCData, "event_penalty_m2si", g_RC_iEventPenaltyM2SI);
+        g_RC_iEventPenaltyTime = KvGetNum(kRCData, "event_penalty_time", g_RC_iEventPenaltyTime);
+        g_RC_iEventBonusSkeet = KvGetNum(kRCData, "event_bonus_skeet", g_RC_iEventBonusSkeet);
+        g_RC_iEventBonusSkeetTeam = KvGetNum(kRCData, "event_bonus_skeet_team", g_RC_iEventBonusSkeetTeam);
+        g_RC_iEventBonusWitch = KvGetNum(kRCData, "event_bonus_witch", g_RC_iEventBonusWitch);
+        g_RC_iEventBonusBadSanta = KvGetNum(kRCData, "event_bonus_badsanta", g_RC_iEventBonusBadSanta);
+
+        g_RC_fEventAdrenDecay = KvGetFloat(kRCData, "event_adren_decay", g_RC_fEventAdrenDecay);
+        g_RC_fEventWomenMeleeDmg = KvGetFloat(kRCData, "event_women_melee_dmg", g_RC_fEventWomenMeleeDmg);
+        g_RC_fEventWomenWitchDmg = KvGetFloat(kRCData, "event_women_witch_dmg", g_RC_fEventWomenWitchDmg);
+        g_RC_fEventWitchesWitchDmg = KvGetFloat(kRCData, "event_witches_witch_dmg", g_RC_fEventWitchesWitchDmg);
+        g_RC_fEventFFFactor = KvGetFloat(kRCData, "event_ff_factor", g_RC_fEventFFFactor);
+        g_RC_iEventBadComboAmmo = KvGetNum(kRCData, "event_badcombo_ammo", g_RC_iEventBadComboAmmo);
+        g_RC_fEventProtectWeak = KvGetFloat(kRCData, "event_protect_weak_factor", g_RC_fEventProtectWeak);
+        g_RC_fEventProtectStrong = KvGetFloat(kRCData, "event_protect_strong_factor", g_RC_fEventProtectStrong);
+        g_RC_fEventBoobyTrapChance = KvGetFloat(kRCData, "event_boobytrap_chance", g_RC_fEventBoobyTrapChance);
+        g_RC_iEventBoobyTrapMin = KvGetNum(kRCData, "event_boobytrap_min", g_RC_iEventBoobyTrapMin);
+        g_RC_fEventAmmoMaxFactor = KvGetFloat(kRCData, "event_ammo_factor_max", g_RC_fEventAmmoMaxFactor);
+        g_RC_fEventAmmoFactor = KvGetFloat(kRCData, "event_ammo_factor", g_RC_fEventAmmoFactor);
+        g_RC_fEventWitchesSpawnFreq = KvGetFloat(kRCData, "event_witches_spawntime", g_RC_fEventWitchesSpawnFreq);
+        g_RC_iEventBoomFluMinInt = KvGetNum(kRCData, "event_boomflu_interval_min", g_RC_iEventBoomFluMinInt);
+        g_RC_iEventBoomFluMaxInt = KvGetNum(kRCData, "event_boomflu_interval_max", g_RC_iEventBoomFluMaxInt);
+        
+        g_RC_iVomitOnType = KvGetNum(kRCData, "vomit_on_type", g_RC_iVomitOnType);
+        g_RC_fVomitRange = KvGetFloat(kRCData, "vomit_range", g_RC_fVomitRange);
+        g_RC_fVomitStreamTime = KvGetFloat(kRCData, "vomit_stream_time", g_RC_fVomitStreamTime);
+        
+        g_RC_fExplosionPowerHigh = KvGetFloat(kRCData, "explosion_power_high", g_RC_fExplosionPowerHigh);
+        g_RC_fExplosionPowerLow = KvGetFloat(kRCData, "explosion_power_low", g_RC_fExplosionPowerLow);
+        
+        PrintDebug(2, "[rand] Read config data.");
+        
+        return;
+    }
+    
+    // no keyvalue set found for map:
+    LogMessage("[rand] RandomConfig data missing.");
+    
+    
+    if (kRCData == INVALID_HANDLE) { return; }
+    CloseHandle(kRCData);    
 }
 
 // melee weapon classes

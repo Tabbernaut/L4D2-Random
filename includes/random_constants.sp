@@ -22,6 +22,8 @@ const Float:    TIMER_STARTCHECK        = 0.25;         // interval for checking
 const Float:    MAX_RAYDIF              = 100.0;        // maximum z-difference for finding floors
 const           MAX_DOORS               = 128;          // amount of doors to track
 const           MAX_BOOBYTRAPS          = 128;          // amount of boobytraps to add maximally
+const           MULTITANK_MAX           = 12;
+const           MULTIWITCH_MAX          = 12;
 
 // String lengths
 // --------------
@@ -54,8 +56,6 @@ const Float:    ITEM_USE_FREEZE_TIME    = 0.5;          // after how long of sta
 const Float:    USING_TIME_DEFAULT      = 3.0;
 const Float:    USING_TIME_GIFT         = 3.5;
 
-const           GIFT_MIN_ITEMS          = 2;            // amount of items to minimally spawn out of a gift box
-const           GIFT_MAX_ITEMS          = 6;
 const Float:    GIFT_EXPLODE_DELAY      = 0.25;         // time between opening gift and actual explosion
 const Float:    GIFTUSE_TIMEOUT         = 0.25;         // how long after playerUse command to wait (avoid spamming use)
 const Float:    GIFTREPORT_TIMEOUT      = 1.0;          // how long after playerUse command to wait (avoid spamming messages)
@@ -67,33 +67,20 @@ const Float:    TEAMSHUFFLE_TIMEOUT     = 5.0;          // can't reshuffle withi
 const Float:    MULTITANK_EARLY         = 0.35;         // for 2-tank-rounds: where to spawn early tank
 const Float:    MULTITANK_LATE          = 0.75;         //                         and the late one
 
-const           MULTIWITCH_MIN          = 3;            // amount of witches in multi-witch mode
-const           MULTIWITCH_MAX          = 7;
 const Float:    MULTIWITCH_FLOW_MIN     = 0.15;         // earliest a multiwitch can spawn
 const Float:    MULTIWITCH_FLOW_MAX     = 0.85;
 const Float:    MULTIWITCH_FLOW_BETWEEN = 0.075;        // minimum flow distance between two witches
 const Float:    MULTIWITCH_FLOW_TANK    = 0.15;         // minimum distance a witch must be from tank spawn
-const bool:     MULTIWITCH_ALLOW_TANK   = true;         // multiwitches possible when there's a tank?
 
-const           MULTITANK_MAX           = 9;
-const           MINITANKS_NUM           = 9;            // 9 tanks, 1250 health each
 const Float:    MINITANKS_FLOW_MIN      = 0.1;
 const Float:    MINITANKS_FLOW_MAX      = 0.9;
 const Float:    MINITANKS_FLOW_INT      = 0.1;
 const Float:    MINITANKS_FLOW_VAR      = 0.025;        // tiny flow variation, for funzies
 const Float:    MINITANKS_SCALE         = 0.67;         // scale the model by what?
-const Float:    MINITANK_MELEE_DMG      = 200.0;        // damage minitanks take from melee weapons
-const           MINITANK_FRUST_TIME     = 10;           // half normal frustration time
-const           MINITANKS_DAMAGE        = 20;           // minitanks punch does a bit less damage
-const           MINITANKS_HITTABLE_DMG  = 50;           // how much damage hittables do for minitanks
-const           WEAK_HITTABLE_DMG       = 25;           // how much damage hittables do on 'weak hittables maps'
 
 const Float:    CSAW_TANK_DMG_FACTOR    = 0.33;         // factor by which to change chainsaws doing damage to tanks
 
 // item balance
-const Float:    ITEM_FACTOR_2V2         = 0.5;          // how many of the items available in #v# game
-const Float:    ITEM_FACTOR_3V3         = 0.75;
-
 const           RATE_MAGNUM             = 10;           // 1 in [#] = magnum (vs normal pistol)
 const           RATE_SMG                = 2;            // 1 in [#] = normal smg (vs silenced)
 const           RATE_PUMPSHOT           = 2;            // 1 in [#] = pumpshotgun/auto (vs chrome/spas)
@@ -110,18 +97,6 @@ const           CISKIN_EXTRA_RATE       = 8;            // 1 in [#]+1 = extra co
 const           CISKIN_L4D1_LESSER_RATE = 2;            // 1 in [#]+1 = extra common type
 const           CISKIN_L4D1_LEAST_RATE  = 2;            // 1 in [#]+1 = extra common type
 
-// difficulty scaling
-const Float:    EVENT_VERYHARD_SITIME   = 0.5;          // more difficult, SI-wise
-const Float:    EVENT_HARD_SITIME       = 0.75;
-const Float:    EVENT_EASY_SITIME       = 1.25;
-const Float:    EVENT_VERYEASY_SITIME   = 1.5; 
-
-const Float:    EVENT_SUPEREASY_CILIM   = 0.25;         // super easy, common-wise
-const Float:    EVENT_VERYEASY_CILIM    = 0.5; 
-const Float:    EVENT_EASY_CILIM        = 0.75;
-const Float:    EVENT_HARD_CILIM        = 1.25;
-const Float:    EVENT_VERYHARD_CILIM    = 1.5;
-
 // event config
 const Float:    EVENT_ITEM_WEIGHT       = 0.2;          // EVT_ITEM         set weight of picked item type to this factor of total weight
 const Float:    EVENT_BADSANTA_WEIGHT   = 0.125;        // EVT_BADSANTA     set weight of picked item type to this factor of total weight
@@ -132,46 +107,24 @@ const Float:    EVENT_DEFIB_EXTRA       = 2.5;          // EVT_DEFIB        by w
 const Float:    EVENT_DEFIB_PILLS       = 1.5;          // EVT_DEFIB        by what factor to change pills amount
 const Float:    EVENT_ADREN_EXTRA       = 4.0;          // EVT_ADREN        by what factor to change adren amount
 const Float:    EVENT_ADREN_LESSER      = 0.5;          // EVT_ADREN        by what factor to change a bunch of other items (less useful in this mode)
-const Float:    EVENT_ADREN_DECAY       = 1.5;          // EVT_ADREN        by what factor to change pill decay rate
 const           EVENT_NOHUD_MASK        = 64;           // EVT_NOHUD        bitmask for what to hide
-const           EVENT_PENALTY_ITEM      = 5;            // EVT_PEN_ITEM     how many points to deduct
-const           EVENT_PENALTY_HEALTH    = 15;           // EVT_PEN_HEALTH   how many points to deduct
 const bool:     EVENT_PENALTY_CI        = false;        // EVT_PEN_M2       whether there are penalties for common-shoves
 const           EVENT_PENALTY_M2_CI     = 2;            // EVT_PEN_M2       how many points to deduct for shoving
-const           EVENT_PENALTY_M2_SI     = 10;           // EVT_PEN_M2       how many points to deduct for shoving
-const           EVENT_PENALTY_TIME      = 25;           // EVT_PEN_TIME     how many points to deduct for 1 minute
-const           EVENT_SKEET_BONUS       = 15;           // EVT_SKEET        how many points to add per (real) skeet
-const Float:    EVENT_FF_FACTOR         = 0.3;          // EVT_FF           friendly fire factor (cvar value for hard)
-const           EVENT_SKEET_BONUS_TEAM  = 15;           // EVT_SKEET        for a team-skeet (the same for now?)
 const Float:    EVENT_LOCKEDCHANCE      = 0.7;          // EVT_DOORS        most doors closed -- melees will be given on start
 const           EVENT_DOORS_MINMELEE    = 2;            // EVT_DOORS        how many melees at least for locked doors event?
-const           EVENT_BADCOMBO_AMMO     = 25;           // EVT_BADCOMBO     how many grenades ammo?
-const Float:    EVENT_PROTECT_WEAK      = 2.0;          // EVT_PROTECT      factor the damage changes for the weak player
-const Float:    EVENT_PROTECT_STRONG    = 0.75;         // EVT_PROTECT      factor the damage changes for the stronger players
 const Float:    EVENT_PROTECT_CIWEAK    = 1.5;
 const Float:    EVENT_PROTECT_CISTRONG  = 0.5;
 const Float:    EVENT_BOOBYTRAP_CHANCE  = 0.1;          // EVT_BOOBYTRAP    odds that an item or door is boobytrapped
 const           EVENT_BOOBYTRAP_MIN     = 5;            //                  minimum amount of traps on a level
-const Float:    EVENT_SKEET_HUNTERS     = 0.8;          // EVT_SKEET        odds that a capping SI is a hunter
 const Float:    EVENT_FIREPOWER_AMMO    = 1.25;         // EVT_FIREPOWER    factor that ammo for T2 weapons is multiplied
 const Float:    EVENT_AMMO_PACKTIME     = 3.0;          // EVT_AMMO         time it takes to repack ammo
-const Float:    EVENT_MAXAMMO_FACTOR    = 0.5;          // EVT_AMMO         how much ammo max in weapons
-const Float:    EVENT_AMMO_FACTOR       = 0.12;         // EVT_AMMO         how much ammo there is in weapons lying around
 const Float:    EVENT_WOMEN_LIMITTIME   = 7.5;          // EVT_WOMEN        how long per combo-step to keep increased common limit
 const           EVENT_WOMEN_EXTRACOMMON = 5;            // EVT_WOMEN        how many extra common per combo (limit increase)
-const Float:    EVENT_WOMEN_MELEEDMG    = 500.0;        // EVT_WOMEN        how much damage a melee does against a witch
-const Float:    EVENT_WOMEN_WITCHDMG    = 25.0;         // EVT_WOMEN        how much damage a witch does against an upright survivor
-const Float:    EVENT_WITCHES_WITCHDMG  = 50.0;         // EVT_WITCHES      how much damage a witch does against an upright survivor
-const           EVENT_WITCHES_BONUS     = 25;           // EVT_WITCHES      how many points to give for each witch kill
-const Float:    EVENT_WITCHES_SPAWNFREQ = 40.0;         // EVT_WITCHES      spawn witch every X seconds
 const Float:    EVENT_WITCHES_RANGE     = 250000.0;     //                  range for glow removal/addition
-const           EVENT_BADSANTA_BONUS    = 15;           // EVT_BADSANTA     how many points to give for each gift unwrap
 const           EVENT_MEDIC_UNITS_BASE  = 11;           // EVT_MEDIC        how many mediunits to start with (default difficulty) (medkit, pills + 8)
 const           EVENT_MEDIC_UNITS_MIN   = 7;            // EVT_MEDIC        minimum mediunits
 const           EVENT_MEDIC_UNITS_MAX   = 14;           // EVT_MEDIC        maximum mediunits 
 const           EVENT_MEDIC_DIFF_BASE   = 4;            // EVT_MEDIC        use this difficulty for the base value (and scale the rest)
-const           EVENT_BOOMFLU_MININT    = 20;           // EVT_BOOMFLU      minimum interval between vomits
-const           EVENT_BOOMFLU_MAXINT    = 55;           // EVT_BOOMFLU
 
 const Float:    EVENT_ENC_W_T1          = 1.5;          // EVT_ENCUMBERED   for determining total player weight
 const Float:    EVENT_ENC_W_T2          = 2.5;
@@ -194,12 +147,8 @@ const Float:    GNOME_FINALE_DIST_FACTOR = 0.25;        // by how much to weight
 const           EARLY_DOORS_MINMELEE    = 1;            // how many melees at least for early locked doors
 const           MANY_DOORS_EVENTFACTOR  = 3;            // how many times event weight for the doors events on many-doors-maps?
 
-const           TANK_DROP_ITEMS_MIN     = 2;            // how many items a tank can drop minimally
-const           TANK_DROP_ITEMS_MAX     = 5;
-
 const           BOOMCOMBO_REWARD        = 6;            // amount of common to spawn extra for 2/3 boom combo's
 const Float:    BOOMCOMBO_DUDTIME       = 10.0;         // how long after a boomer combo started will pipebombs have higher dud-chacne
-const Float:    BOOMCOMBO_DUDCHANCE     = 0.67;
 
 const Float:    PIPEDUD_MINTIME         = 2.4;          // how much time minimally before dudding pipe
 const Float:    PIPEDUD_ADDTIME         = 2.5;          // how much time to add maximally to mintime
@@ -391,14 +340,7 @@ const           HAT_BOOMFLU             = 3;
 const Float:    BLND_ENT_CHECK_INTERVAL = 1.0;          // for 'blind infected' adaptation
 const Float:    BLND_TRACE_TOLERANCE    = 75.0;
 
-const Float:    ZC_TIMEROFFSET          = 0.5;
-const Float:    ZC_TIMERDEATHCHECK      = 0.05;
-const Float:    ZC_TIMERAFTERTANK       = 0.01;
-const Float:    ZC_TIMERCHECKGHOST      = 0.05;         // was 0.1 for ZCS .. bit annoying though
-
 const           EXPLOSION_RADIUS        = 200;
-const Float:    EXPLOSION_POWER_HIGH    = 40.0;
-const Float:    EXPLOSION_POWER_LOW     = 25.0;
 const Float:    EXPLOSION_DURATION      = 15.0;
 const Float:    EXPLOSION_DURATION_MIN  = 1.0;
 
@@ -413,12 +355,9 @@ const Float:    TIMER_POUNCE            = 0.1;          // repeat timer to check
 const Float:    MULTIWITCH_EXTRA_FLOW   = 3000.0;
 const Float:    MULTIWITCH_RESPAWN_FREQ = 5.0;
 
-const Float:    VOMIT_RANGE             = 150.0;
-const           VOMIT_ON_TYPE           = 7;            // 1 = survivors; 2 = special infected; 4 = common infected [ flags ]
 const           VOMIT_TYPE_SUR          = 1;
 const           VOMIT_TYPE_SI           = 2;
 const           VOMIT_TYPE_CI           = 4;
-const Float:    VOMIT_STREAMTIME        = 3.75;
 
 
 // Resources
@@ -770,7 +709,7 @@ new const String: g_csEventTextShort[][] =
     "Item Redundancy",
     "Rush Hour",
     "Common Holiday",
-    "04Freakshow",
+    "Freakshow",
     "Circus",
     "Sorry, we're closed",
     "Quadtastic",

@@ -1200,7 +1200,7 @@ CreateExplosion(Float:carPos[3], Float:power, bool:fire = false)
     decl String:sRadius[256];
     decl String:sPower[256];
     new Float:flMxDistance = float(EXPLOSION_RADIUS);
-    if (!power) { power = EXPLOSION_POWER_LOW; }
+    if (!power) { power = g_RC_fExplosionPowerLow; }
     
     IntToString(EXPLOSION_RADIUS, sRadius, sizeof(sRadius));
     IntToString(RoundFloat(power), sPower, sizeof(sPower));
@@ -1583,7 +1583,7 @@ PlayerDoVomit(client) {
     }
     
     CreateTimer(5.0, Timer_VomitDeleteParticles, EntIndexToEntRef(particle), TIMER_FLAG_NO_MAPCHANGE);
-    CreateTimer(VOMIT_STREAMTIME, Timer_VomitStopTimer, client, TIMER_FLAG_NO_MAPCHANGE);
+    CreateTimer(g_RC_fVomitStreamTime, Timer_VomitStopTimer, client, TIMER_FLAG_NO_MAPCHANGE);
     
     // change position of vomit particle so it looks better
     CreateTimer(0.25, Timer_VomitAdjustPosBA, EntIndexToEntRef(particle), TIMER_FLAG_NO_MAPCHANGE);
@@ -1741,7 +1741,7 @@ VomitTraceAttack(client, bool:bHullTrace) {
 	}
 
 	TR_GetEndPosition(vEnd, trace);
-	if ( GetVectorDistance(vPos, vEnd) > VOMIT_RANGE ) {
+	if ( GetVectorDistance(vPos, vEnd) > g_RC_fVomitRange ) {
 		CloseHandle(trace);
 		return;
 	}
@@ -1751,13 +1751,13 @@ VomitTraceAttack(client, bool:bHullTrace) {
 
 	if ( IsClientAndInGame(entity) && !g_bAlreadyVomitedUpon[entity])
     {
-        if (GetClientTeam(entity) == TEAM_INFECTED && VOMIT_ON_TYPE & VOMIT_TYPE_SI)
+        if (GetClientTeam(entity) == TEAM_INFECTED && g_RC_iVomitOnType & VOMIT_TYPE_SI)
         {
             if (!IsPlayerGhost(entity) && IsPlayerAlive(entity)) {
                 PlayerGetVomitedOn(entity, client);
             }
         }
-        else if (GetClientTeam(entity) == TEAM_SURVIVOR && VOMIT_ON_TYPE & VOMIT_TYPE_SUR)
+        else if (GetClientTeam(entity) == TEAM_SURVIVOR && g_RC_iVomitOnType & VOMIT_TYPE_SUR)
         {
             if (IsPlayerAlive(entity)) {
                 PlayerGetVomitedOn(entity, client);
@@ -1766,7 +1766,7 @@ VomitTraceAttack(client, bool:bHullTrace) {
 	}
 	else
     {
-		if (IsValidEntity(entity) && VOMIT_ON_TYPE & VOMIT_TYPE_CI)
+		if (IsValidEntity(entity) && g_RC_iVomitOnType & VOMIT_TYPE_CI)
         {
 			decl String:classname[16];
 			GetEdictClassname(entity, classname, sizeof(classname));

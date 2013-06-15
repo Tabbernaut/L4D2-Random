@@ -1,0 +1,66 @@
+// Config file for constant values in Random
+
+RandomConfig
+{
+	"settings"
+	{
+		"item_factor_2v2"		"0.5"
+		"item_factor_3v3"		"0.75"
+		"gift_min_items"		"2"
+		"gift_max_items"		"5"
+		"multiwitch_min"		"3"
+		"multiwitch_max"		"7"
+		"multiwitch_allow_tank"		"1"
+		"minitanks_num"			"9"
+		"minitank_melee_damage"		"200.0"
+		"minitank_frustration_time"	"10"
+		"minitank_damage"		"20"
+		"minitank_hittable_damage"	"50"
+		"weak_hittable_damage"		"25"
+		"tank_drop_items_min"		"1"
+		"tank_drop_items_max"		"2"
+		"boomcombo_dud_chance"		"0.66"
+
+		"event_sitime_veryhard"		"0.5"
+		"event_sitime_hard"		"0.75"
+		"event_sitime_easy"		"1.25"
+		"event_sitime_veryeasy"		"1.5"
+		"event_cilim_veryhard"		"1.5"
+		"event_cilim_hard"		"1.25"
+		"event_cilim_easy"		"0.75"
+		"event_cilim_veryeasy"		"0.5"
+		"event_cilim_supereasy"		"0.25"
+
+		"event_penalty_item"		"5"
+		"event_penalty_health"		"15"
+		"event_penalty_m2si"		"10"
+		"event_penalty_time"		"25"
+		"event_bonus_skeet"		"15"
+		"event_bonus_skeet_team"	"15"
+		"event_bonus_witch"		"25"
+		"event_bonus_badsanta"		"15"
+
+		"event_adren_decay"		"1.5"
+		"event_women_melee_dmg"		"500.0"
+		"event_women_witch_dmg"		"25.0"
+		"event_witches_witch_dmg"	"50.0"
+		"event_ff_factor"		"0.3"
+		"event_badcombo_ammo"		"28"
+		"event_protect_weak_factor"	"2.0"
+		"event_protect_strong_factor"	"0.75"
+		"event_boobytrap_chance"	"0.12"
+		"event_boobytrap_min"		"6"
+		"event_ammo_factor_max"		"0.5"
+		"event_ammo_factor"		"0.12"
+		"event_witches_spawntime"	"40.0"
+		"event_boomflu_interval_min"	"20"
+		"event_boomflu_interval_max"	"55"
+
+		"vomit_on_type"			"7"		// 1 survivors; 2 si; 4 common
+		"vomit_range"			"125.0"
+		"vomit_stream_time"		"3.5"
+
+		"explosion_power_high"		"30.0"
+		"explosion_power_low"		"20.0"
+	}
+}
