@@ -869,11 +869,11 @@ public OnMapStart()
     {
         INIT_CVarsGetDefault();         // do this here so the variables are config set
         RI_KV_Load();                   // get RandomMap info (cvar now set to right dir)
+        RConfig_Read();                 // get basic random config values (for 'constants')
         
         g_bVeryFirstMapLoad = false;
     }
     
-    RConfig_Read();                     // get basic random config values (for 'constants')
     RI_KV_UpdateRandomMapInfo();        // get this map's random-related info
     
     CreateTimer(0.1, SUPPORT_RoundPreparation, _, TIMER_FLAG_NO_MAPCHANGE);

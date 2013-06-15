@@ -1,6 +1,6 @@
 // Config file for constant values in Random
 
-RandomConfig
+"RandomConfig"
 {
 	"settings"
 	{

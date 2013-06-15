@@ -664,7 +664,7 @@ RConfig_Read()
     new Handle: kRCData = CreateKeyValues("RandomConfig");
     BuildPath(Path_SM, sNameBuff, sizeof(sNameBuff), sNameBuff);
     
-    if (!FileToKeyValues(g_kRIData, sNameBuff))
+    if (!FileToKeyValues(kRCData, sNameBuff))
     {
         LogError("[rand] Couldn't load RandomConfig data!");
         if (kRCData == INVALID_HANDLE) { return; }
@@ -675,7 +675,6 @@ RConfig_Read()
     // get keyvalues
     if (KvJumpToKey(kRCData, "settings"))
     {
-        
         // read out all the values into global variables here
         // name format: g_RC_<normal>
         g_RC_fItemFactor2v2 = KvGetFloat(kRCData, "item_factor_2v2", g_RC_fItemFactor2v2);
