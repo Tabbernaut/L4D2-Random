@@ -12,9 +12,8 @@ L4D2_Random
             
             - test:     double pass fix (in live game)
             - test:     defib penalty still not reset correctly after a sudden death round ?
-            
-            - low:      handle ammo refills: scout, awp and ak => custom max value
-            
+            - test:     ammo refills: scout, awp and ak => custom max value
+
 
     minor cleanup / details
     -----------------------

@@ -1143,6 +1143,7 @@ public Action: Timer_DestroyHealthItems(Handle:timer)
     }
 }
 
+
 // Stabby's multi-witch stuff
 // ===========================================================================
 
@@ -1944,6 +1945,46 @@ GiveItemMelee(client, String:item[MELEE_CLASS_LENGTH])
 
 
 
+// check ammo for too much/too little (call after player receives (full) ammo)
+SUPPORT_CheckAmmo(client)
+{
+    new weapon = GetPlayerWeaponSlot(client, PLAYER_SLOT_PRIMARY);
+    if (weapon != -1 && IsValidEntity(weapon))
+    {
+        // which is it?
+        new String: classname[64];
+        GetEdictClassname(weapon, classname, sizeof(classname));
+        
+        new iProperAmmo = -1;
+        new iOffset = -1;
+        new iAmmoOffset = FindDataMapOffs(client, "m_iAmmo");
+        
+        if (StrEqual("weapon_rifle_ak47", classname, false)) {
+            new iClipAmmo = 40 - GetEntProp(weapon, Prop_Send, "m_iClip1");
+            iProperAmmo = g_iActiveAmmoAk + iClipAmmo;
+            iOffset = ASSAULT_RIFLE_OFFSET_IAMMO;
+        }
+        else if (StrEqual("weapon_sniper_scout", classname, false)) {
+            new iClipAmmo = 15 - GetEntProp(weapon, Prop_Send, "m_iClip1");
+            iProperAmmo = g_iActiveAmmoScout + iClipAmmo;
+            iOffset = MILITARY_SNIPER_OFFSET_IAMMO;
+        }
+        else if (StrEqual("weapon_sniper_awp", classname, false)) {
+            new iClipAmmo = 20 - GetEntProp(weapon, Prop_Send, "m_iClip1");
+            iProperAmmo = g_iActiveAmmoAWP + iClipAmmo;
+            iOffset = MILITARY_SNIPER_OFFSET_IAMMO;
+        }
+        
+        if (iProperAmmo != -1)
+        {
+            new ammo = GetEntData(client, (iAmmoOffset + iOffset));
+            if (ammo != iProperAmmo) {
+                SetEntData(client, (iAmmoOffset + iOffset), iProperAmmo);
+            }
+        }
+    }
+}
+
 // spawning a zombie (cheap way :()
 SpawnCommon(client, mobs = 1)
 {
@@ -2507,12 +2548,10 @@ SUPPORT_PickEvent(event, client=0)
     
     g_iSpecialEventToForce = event;
     
-    if (client == -1) {
-        // don't report
-    }
-    else {
+    if (client > 0)
+    {
         // report to all
-        PrintToChatAll("\x01[\x05r\x01] %N (Infected team) voted to pick next round's event: \x04%i\x01. \"%s\".", client, g_iPickEvent+1, g_csEventTextShort[g_iPickEvent] );
+        PrintToChatAll("\x01[\x05r\x01] Admin forced event: \x04%i\x01. \"%s\".", g_iPickEvent+1, g_csEventTextShort[g_iPickEvent] );
     }
 }
 

@@ -271,28 +271,32 @@ SUPPORT_GetCurrentWeaponSlot(client)
     decl String:weapon[32];
     GetClientWeapon(client, weapon, 32);
     
-    if (StrEqual(weapon, "weapon_pumpshotgun") || StrEqual(weapon, "weapon_autoshotgun") || StrEqual(weapon, "weapon_rifle") || StrEqual(weapon, "weapon_smg") || StrEqual(weapon, "weapon_hunting_rifle") || StrEqual(weapon, "weapon_sniper_scout") || StrEqual(weapon, "weapon_sniper_military") || StrEqual(weapon, "weapon_sniper_awp") || StrEqual(weapon, "weapon_smg_silenced") || StrEqual(weapon, "weapon_smg_mp5") || StrEqual(weapon, "weapon_shotgun_spas") || StrEqual(weapon, "weapon_shotgun_chrome") || StrEqual(weapon, "weapon_rifle_sg552") || StrEqual(weapon, "weapon_rifle_desert") || StrEqual(weapon, "weapon_rifle_ak47") || StrEqual(weapon, "weapon_grenade_launcher") || StrEqual(weapon, "weapon_rifle_m60"))
-        slot=0;
-    else if (StrEqual(weapon, "weapon_pistol") || StrEqual(weapon, "weapon_pistol_magnum") || StrEqual(weapon, "weapon_chainsaw") || StrEqual(weapon, "weapon_melee"))
-        slot=1;
-    else if (StrEqual(weapon, "weapon_pipe_bomb") || StrEqual(weapon, "weapon_molotov") || StrEqual(weapon, "weapon_vomitjar"))
-        slot=2;
-    else if (StrEqual(weapon, "weapon_first_aid_kit") || StrEqual(weapon, "weapon_defibrillator") || StrEqual(weapon, "weapon_upgradepack_explosive") || StrEqual(weapon, "weapon_upgradepack_incendiary"))
-        slot=3;
-    else if (StrEqual(weapon, "weapon_pain_pills") || StrEqual(weapon, "weapon_adrenaline"))
-        slot=4;
- 
-    if(slot    <0 )
+    new itemPickupPenalty: itemCheck;
+    if (GetTrieValue(g_hTriePenaltyItems, weapon, itemCheck))
     {
-        for(new i=0; i<5; i++)
+        switch (itemCheck)
         {
-            new s=GetPlayerWeaponSlot(client, i);
-            if(s>0)
-            {
+            case ITEM_PICKUP_PENALTY_PRIMARY_T1, ITEM_PICKUP_PENALTY_PRIMARY_T2: { slot = PLAYER_SLOT_PRIMARY; }
+            case ITEM_PICKUP_PENALTY_SAW, ITEM_PICKUP_PENALTY_MELEE, ITEM_PICKUP_PENALTY_MAGNUM, ITEM_PICKUP_PENALTY_PISTOL: { slot = PLAYER_SLOT_SECONDARY; }
+        }
+    }
+    else
+    {
+        
+        if (StrEqual(weapon, "weapon_pipe_bomb") || StrEqual(weapon, "weapon_molotov") || StrEqual(weapon, "weapon_vomitjar")) {  slot = PLAYER_SLOT_THROWABLE; }
+        else if (StrEqual(weapon, "weapon_first_aid_kit") || StrEqual(weapon, "weapon_defibrillator") || StrEqual(weapon, "weapon_upgradepack_explosive") || StrEqual(weapon, "weapon_upgradepack_incendiary")) { slot = PLAYER_SLOT_KIT; }
+        else if (StrEqual(weapon, "weapon_pain_pills") || StrEqual(weapon, "weapon_adrenaline")) { slot = PLAYER_SLOT_PILL; }
+    }
+ 
+    if (slot < 0)
+    {
+        for (new i=0; i < 5; i++) {
+            new s = GetPlayerWeaponSlot(client, i);
+            if ( s > 0) {
                 slot=i;
                 break;
             }
-        } 
+        }
     }
     return slot;
 }

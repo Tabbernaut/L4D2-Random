@@ -412,7 +412,7 @@ new     Float:          g_fDefRiotTonfaProb                                 = 0.
 
 new                     g_iActiveAmmoAk                                     = 250;
 new                     g_iActiveAmmoScout                                  = 90;
-new                     g_iActiveAmmoAWP                                    = 45;
+new                     g_iActiveAmmoAWP                                    = 60;
 
 // RandomConfig keyvalues
 new     Float:          g_RC_fItemFactor2v2                                 = 0.5;
@@ -486,3 +486,6 @@ new     Float:          g_RC_fVomitStreamTime                               = 3.
 
 new     Float:          g_RC_fExplosionPowerHigh                            = 30.0;
 new     Float:          g_RC_fExplosionPowerLow                             = 20.0;
+
+// other RC options
+new     bool:           g_RC_bExtraCommonModels                             = true;

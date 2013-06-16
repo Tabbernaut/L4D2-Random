@@ -71,7 +71,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.37",
+    version = "1.0.38",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -125,6 +125,7 @@ public OnPluginStart()
 
     HookEvent("player_use",                 Event_PlayerUse,                EventHookMode_Post);
     HookEvent("item_pickup",                Event_ItemPickup,               EventHookMode_Post);
+    HookEvent("ammo_pickup",                Event_AmmoPickup,               EventHookMode_Post);
     HookEvent("weapon_drop",                Event_WeaponDrop,               EventHookMode_Post);
     HookEvent("weapon_given",               Event_WeaponGiven,              EventHookMode_Post);    // also works for pills/adren
     HookEvent("player_shoved",              Event_ShovedPlayer,             EventHookMode_Post);
@@ -222,7 +223,12 @@ public OnPluginStart()
     // Do first randomization to prevent errors
     RANDOM_PrepareChoicesSpawns();
     RANDOM_PrepareChoicesGiftEffects();
+    
+    // load KeyValues
+    RI_KV_Load();                   // get RandomMap info (cvar now set to right dir)
+    RConfig_Read();                 // get basic random config values (for 'constants')
 }
+
 
 #if DEBUG_MODE
 /*
@@ -868,8 +874,6 @@ public OnMapStart()
     if (g_bVeryFirstMapLoad)
     {
         INIT_CVarsGetDefault();         // do this here so the variables are config set
-        RI_KV_Load();                   // get RandomMap info (cvar now set to right dir)
-        RConfig_Read();                 // get basic random config values (for 'constants')
         
         g_bVeryFirstMapLoad = false;
     }
@@ -1964,6 +1968,15 @@ public Action:Timer_CheckPlayerUsing(Handle:timer, any:pack)
     return Plugin_Continue;
 }
 
+public Action:Event_AmmoPickup(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    // when players use an ammo pile to fill their ak/scout/awp, change ammo total to new max
+    new client = GetClientOfUserId(GetEventInt(event, "userid"));
+    if (!IsClientAndInGame(client) || GetClientTeam(client) != TEAM_SURVIVOR) { return; }
+    
+    SUPPORT_CheckAmmo(client);
+}
+
 public Action:Event_ItemPickup(Handle:event, const String:name[], bool:dontBroadcast)
 {
     // this gets called first (but only if item was really picked up),
@@ -2797,7 +2810,7 @@ public OnEntityCreated(entity, const String:classname[])
                 }
             }
         }
-        else if (GetRandomInt(0, CISKIN_EXTRA_RATE) == 0) {
+        else if (g_RC_bExtraCommonModels && GetRandomInt(0, CISKIN_EXTRA_RATE) == 0) {
             // it's still a common now, but it has a small chance of getting a sweet model
             SetEntityModel(entity, g_csExtraCommonModels[GetRandomInt(0, sizeof(g_csExtraCommonModels) - 1)]);
         }

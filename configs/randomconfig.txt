@@ -62,5 +62,8 @@
 
 		"explosion_power_high"		"30.0"
 		"explosion_power_low"		"20.0"
+
+		// extra options
+		"extra_common_models"		"1"
 	}
 }

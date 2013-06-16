@@ -303,9 +303,8 @@ INIT_FillTries()
     g_hTrieCommands = CreateTrie();
     SetTrieValue(g_hTrieCommands, "!rand",          RANDOM_COMMAND);
     SetTrieValue(g_hTrieCommands, "!random",        RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!teamshuffle",   RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!randteams",     RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!randteams",     RANDOM_COMMAND);
+    //SetTrieValue(g_hTrieCommands, "!teamshuffle",   RANDOM_COMMAND);
+    //SetTrieValue(g_hTrieCommands, "!randteams",     RANDOM_COMMAND);
     SetTrieValue(g_hTrieCommands, "!info",          RANDOM_COMMAND);
     SetTrieValue(g_hTrieCommands, "!drop",          RANDOM_COMMAND);
     SetTrieValue(g_hTrieCommands, "!bonus",         RANDOM_COMMAND);
@@ -738,6 +737,9 @@ RConfig_Read()
         
         g_RC_fExplosionPowerHigh = KvGetFloat(kRCData, "explosion_power_high", g_RC_fExplosionPowerHigh);
         g_RC_fExplosionPowerLow = KvGetFloat(kRCData, "explosion_power_low", g_RC_fExplosionPowerLow);
+        
+        // extra options
+        g_RC_bExtraCommonModels = bool: (KvGetNum(kRCData, "extra_common_models", 1));
         
         PrintDebug(2, "[rand] Read config data.");
         

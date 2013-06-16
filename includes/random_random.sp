@@ -3421,12 +3421,14 @@ RANDOM_DoGiftEffect(client, entity)
                     for (new i=1; i < MaxClients; i++) {
                         if (IsClientInGame(i) && IsSurvivor(i) && IsPlayerAlive(i)) {
                             CheatCommand(i, "give", "ammo");
+                            SUPPORT_CheckAmmo(i);
                         }
                     }
                 } else {
                     // for the opener
                     PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x05ammo refill\x01.", client);
                     CheatCommand(client, "give", "ammo");
+                    SUPPORT_CheckAmmo(client);
                 }
                 Vocalize_Random(client, "spotammo");
             }
