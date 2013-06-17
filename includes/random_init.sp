@@ -24,9 +24,9 @@ INIT_DefineCVars()
     g_hCvarRIKeyValuesPath = CreateConVar(                  "rand_randominfo_path",          "configs/randommapinfo.txt", "The path to the randommap.txt with keyvalues for per-map random settings.", FCVAR_PLUGIN);
     g_hCvarRCKeyValuesPath = CreateConVar(                  "rand_randomconfig_path",        "configs/randomconfig.txt", "The path to the randomconfig.txt with keyvalues for its base settings.", FCVAR_PLUGIN);
     g_hCvarWelcomeMode = CreateConVar(                      "rand_welcome",                  "3",       "Whether to display welcome messages (1 = only in first round; 2 = always, 3 = each client only once).", FCVAR_PLUGIN, true, 0.0, true, 3.0);
-    g_hCvarBlockL4D1Common = CreateConVar(                  "rand_no_l4d1_common",           "3",       "Whether to block L4D1 common. (2 = block all appearing l4d1 common; 3 = block only problematic skins)", FCVAR_PLUGIN, true, 0.0, true, 3.0);
+    g_hCvarBlockL4D1Common = CreateConVar(                  "rand_no_l4d1_common",           "0",       "Whether to block L4D1 common. (2 = block all appearing l4d1 common; 3 = block only problematic skins)", FCVAR_PLUGIN, true, 0.0, true, 3.0);
     
-    g_hCvarEqual = CreateConVar(                            "rand_equal",                  "2047",      "[Flags] What to keep equal between each team's survivor round (1: items; 2: doors; 4: glows; 8: event; 16: incaps; 32: horde; 64: item weighting; 128: starting health; 256: first attack; 512: tanks; 1024: scoring).", FCVAR_PLUGIN, true, 0.0, false);
+    g_hCvarEqual = CreateConVar(                            "rand_equal",                 "2047",       "[Flags] What to keep equal between each team's survivor round (1: items; 2: doors; 4: glows; 8: event; 16: incaps; 32: horde; 64: item weighting; 128: starting health; 256: first attack; 512: tanks; 1024: scoring).", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarDoReport = CreateConVar(                         "rand_report",                   "1",       "Whether to do automatic reports at the start of a round.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
     g_hCvarReportDelay = CreateConVar(                      "rand_report_delay",            "15",       "How many seconds after first survivor joins map to wait before reporting special event.", FCVAR_PLUGIN, true, 1.0, true, 120.0 );
     g_hCvarReportSackProt = CreateConVar(                   "rand_report_sackprotection",    "2",       "Whether sack-protection measures are reported to the relevant players (1: always; 2: only to offending player once)", FCVAR_PLUGIN, true, 0.0, true, 2.0 );
@@ -158,7 +158,7 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_SKEET] = CreateConVar(           "rand_weight_evt_skeet",         "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_FIREPOWER] = CreateConVar(       "rand_weight_evt_firepower",     "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_AMMO] = CreateConVar(            "rand_weight_evt_ammo",          "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_WOMEN] = CreateConVar(           "rand_weight_evt_women",         "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_WOMEN] = CreateConVar(           "rand_weight_evt_women",         "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_GUNSWAP] = CreateConVar(         "rand_weight_evt_gunswap",       "9",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_WITCHES] = CreateConVar(         "rand_weight_evt_witches",       "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_BADSANTA] = CreateConVar(        "rand_weight_evt_badgifts",      "4",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );

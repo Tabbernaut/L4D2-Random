@@ -92,9 +92,11 @@ new     bool:           g_bArWitchSitting       [MULTIWITCH_MAX]            = {t
 // SI Spawning / ghosts
 new     bool:           g_bHasSpawned           [MAXPLAYERS+1]              = {false,...};          // whether player X has spawned his ghost (only true if still alive and not tank)
 new     bool:           g_bHasGhost             [MAXPLAYERS+1]              = {false,...};          // whether player X currently holds a ghost
+new     bool:           g_bClassPicked          [MAXPLAYERS+1]              = {false,...};          // whether player X got assigned a class (for catching the few times the l4dt forward doesn't fire)
 new     bool:           g_bSpectateDeath        [MAXPLAYERS+1]              = {false,...};          // whether player X (if he 'died') died because of going spec
 new                     g_iSpectateGhost        [TEAM_SIZE];                                        // people that spectated while being SI ghosts.. remembered to avoid exploit
 new                     g_iSpectateGhostCount                               = 0;                    // amount of ghosts saved
+
 
 // SDK Calls
 new     Handle:         g_setClass                                          = INVALID_HANDLE;
@@ -106,8 +108,6 @@ new     Handle:         g_CallBileJarPlayer                                 = IN
 new     Handle:         g_CallVomitSurvivor                                 = INVALID_HANDLE;       // for biling survivors at will
 new     Handle:         g_CallSHS                                           = INVALID_HANDLE;       // infected
 new     Handle:         g_CallTOB                                           = INVALID_HANDLE;       // survivor
-
-
 
 // Sack-exploitation checks and Death order effect
 new                     g_iClassTimeout         [7]                         = 0;                    // the 'level' / counter for the timeout

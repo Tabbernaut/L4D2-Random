@@ -12,11 +12,11 @@ L4D2_Random
             
             - test:     double pass fix (in live game)
             - test:     defib penalty still not reset correctly after a sudden death round ?
-            - test:     ammo refills: scout, awp and ak => custom max value
-
+            
 
     minor cleanup / details
     -----------------------
+            - tweak:    give survivors something (magnum)? when incapped, then take it away from them on EVT_WOMEN.
             - bugfix:   still broken hud thing on solid health healing (cat from 1+22temp => +27 solid breaks) was downed once (3 max incaps)
                         cannot reproduce?
             - nitpick:  melee skeets don't seem to be detected yet..
@@ -48,7 +48,8 @@ L4D2_Random
         
     ideas:
     ------
-            - cvar  - sv_bounce
+            - cvar      sv_bounce
+                        adrenaline_revive_speedup
     
             - gift  - gift idea: X second slowdown (like EVT_ENCUMBERED)
             - gift  - gift idea: ghost-effect for survivors for X seconds (no outlines for SI) (even if running)

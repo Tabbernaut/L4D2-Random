@@ -153,6 +153,7 @@ SUPPORT_CleanArrays()
         
         g_fGotGhost[i] = 0.0;
         g_fDeathAfterGhost[i] = 0.0;
+        g_bClassPicked[i] = false;
         
         g_iClientUsing[i] = 0;
         g_bClientHoldingUse[i] = false;
@@ -2495,7 +2496,7 @@ SUPPORT_VotePickEvent(event, client)
                 } else {
                     // accepted
                     PrintToChatAll("\x01[\x05r\x01] %N (Survivor) accepted the event. Next round has event \x04%i\x01.", client, g_iPickEvent+1);
-                    SUPPORT_PickEvent(g_iPickEvent);
+                    SUPPORT_PickEvent(g_iPickEvent+1);
                 }
                 g_bTeamInfectedVotedEvent = false;
                 g_bTeamSurvivorVotedEvent = false;
@@ -2520,7 +2521,7 @@ SUPPORT_VotePickEvent(event, client)
                 } else {
                     // accepted
                     PrintToChatAll("\x01[\x05r\x01] %N (Survivor) accepted. Next round has event \x04%i\x01.", client, g_iPickEvent+1);
-                    SUPPORT_PickEvent(g_iPickEvent, -1);
+                    SUPPORT_PickEvent(g_iPickEvent+1, -1);
                 }
                 g_bTeamInfectedVotedEvent = false;
                 g_bTeamSurvivorVotedEvent = false;
@@ -2546,7 +2547,8 @@ SUPPORT_PickEvent(event, client=0)
         return;
     }
     
-    g_iSpecialEventToForce = event;
+    g_iPickEvent = event - 1;
+    g_iSpecialEventToForce = g_iPickEvent;
     
     if (client > 0)
     {

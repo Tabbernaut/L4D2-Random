@@ -816,7 +816,7 @@ RANDOM_DetermineRandomStuff()
                 
                 fTankFlow = float(iTankSpawn) / 100.0;
                 
-                PrintDebug(2, "[rand] Boss spawns -- Found banned tank (@ %i), changing to %.f.", oldSpawn, iTankSpawn);
+                PrintDebug(2, "[rand] Boss spawns -- Found banned tank (@ %i), changing to %i.", oldSpawn, iTankSpawn);
                 
                 L4D2Direct_SetVSTankFlowPercent(0, fTankFlow);
                 L4D2Direct_SetVSTankFlowPercent(1, fTankFlow);
@@ -925,10 +925,10 @@ RANDOM_DetermineRandomStuff()
                 g_bMultiWitch = true;
                 SUPPORT_MultiWitchRandomization();
                 g_iDifficultyRating += (g_iWitchNum > 6) ? 4 : ((g_iWitchNum > 4) ? 3 : 2);
-                SetConVarInt(FindConVar("sv_force_time_of_day"), (g_bArWitchSitting[0]) ? WITCHES_NIGHT : WITCHES_DAY );
             } else {
                 g_bMultiWitch = false;
             }
+            SetConVarInt(FindConVar("sv_force_time_of_day"), (g_bArWitchSitting[0]) ? WITCHES_NIGHT : WITCHES_DAY );
         }
     } else {
         // no double witches in any case

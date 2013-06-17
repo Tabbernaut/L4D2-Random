@@ -71,7 +71,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.38",
+    version = "1.0.39",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -119,6 +119,7 @@ public OnPluginStart()
     HookEvent("player_death",               Event_PlayerDeath,              EventHookMode_Pre);
     HookEvent("player_spawn",               Event_PlayerSpawn,              EventHookMode_Post);
     HookEvent("tank_spawn",                 Event_TankSpawned,              EventHookMode_Post);
+    HookEvent("ghost_spawn_time",           Event_GhostSpawnTime,           EventHookMode_Post);
     
     HookEvent("player_now_it",              Event_PlayerBoomed,             EventHookMode_Post);
     HookEvent("player_no_longer_it",        Event_PlayerUnboomed,           EventHookMode_Post);
@@ -547,6 +548,23 @@ public Action: TestGnomes_Cmd(client, args)
 
         return Plugin_Handled;
     }
+    
+    // test timer
+    new oCurrentTimer = FindSendPropInfo("CTerrorPlayer", "m_ghostSpawnClockMaxDelay");
+    new oCurrentStamp = FindSendPropInfo("CTerrorPlayer", "m_ghostSpawnClockCurrentDelay");
+    new offsetlifeState = FindSendPropInfo("CTerrorPlayer", "m_ghostSpawnState");
+    
+    PrintToChatAll("Max: %i Current: %i State: %i",
+            GetEntData(client, oCurrentTimer, 2), 
+            GetEntData(client, oCurrentStamp, 2),
+            GetEntData(client, offsetlifeState, 4)
+        );
+        
+    PrintToChatAll("Max: %i Current: %i State: %i",
+            GetEntData(client, oCurrentTimer, 2), 
+            GetEntData(client, oCurrentStamp, 2),
+            GetEntData(client, offsetlifeState, 4)
+        );
     
     // test vomit
     //PlayerDoVomit(client);
@@ -2324,11 +2342,41 @@ public L4D_OnEnterGhostState(client)
 {
     PrintDebug(4, "[rand si] %N entered ghost state (class %s).%s", client, g_csSIClassName[ GetEntProp(client, Prop_Send, "m_zombieClass") ], (g_bHasSpawned[client]) ? " Was spawned before." : "");
     
-    if (IsClientAndInGame(client) && IsPlayerGhost(client) && !g_bHasSpawned[client])
+    if (IsInfected(client) && IsPlayerGhost(client) && !g_bHasSpawned[client])
     {
+        g_bClassPicked[client] = true;
         DetermineSpawnClass(client, GetEntProp(client, Prop_Send, "m_zombieClass"));
     }
 }
+
+public Action:Event_GhostSpawnTime(Handle:hEvent, const String:name[], bool:dontBroadcast)
+{
+    new client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+    new Float: spawntime = GetEventFloat(hEvent, "spawntime");
+    
+    if (!IsInfected(client) || IsFakeClient(client)) { return; }
+    
+    // do a check after we're supposed to have a ghost -- to see if a class was properly picked
+    CreateTimer(spawntime + 0.15, Timer_GhostStateCheck, client, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action:Timer_GhostStateCheck(Handle:timer, any:client)
+{
+    if (g_bIsPaused || !IsInfected(client) || IsFakeClient(client)) { return Plugin_Continue; }
+
+    if (!IsPlayerAlive(client) || !IsPlayerGhost(client)) { return Plugin_Continue; }
+    
+    if (!g_bClassPicked[client])
+    {
+        new zClass = GetEntProp(client, Prop_Send, "m_zombieClass");
+        PrintDebug(1, "[rand si] caught non-detected ghost handout: %N did not get assigned a spawn (is now %s), doing it now.", client, (zClass > 0 && zClass <= ZC_CHARGER) ? g_csSIClassName[zClass] : "no class" );
+        
+        DetermineSpawnClass(client, zClass);
+    }
+
+    return Plugin_Continue;
+}
+
 
 // l4downtown forward - tank selection
 public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
@@ -2599,6 +2647,7 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
         } else {
             g_bSpectateDeath[victim] = false;
         }
+        g_bClassPicked[victim] = false;
     }
     
     // tank stuff:
@@ -2612,6 +2661,8 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
     
     return Plugin_Continue;
 }
+
+
 
 public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBroadcast)
 {
@@ -2651,45 +2702,11 @@ public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBro
     
     g_bHasGhost[client] = false;
     g_bHasSpawned[client] = false;
+    g_bClassPicked[client] = false;
     
     return Plugin_Continue;
 }
 
-
-/*
-    old hat, not required anymore
-public Action:Timer_CheckPlayerGhostDelayed(Handle:hTimer, any:client)
-{
-    if (IsClientAndInGame(client) && IsValidEntity(client) && IsPlayerGhost(client)) {
-        DetermineSpawnClass(client, GetEntProp(client, Prop_Send, "m_zombieClass"));
-    }
-}
-
-
-public Action:Timer_SpawnGhostClass(Handle:hTimer, any:client)
-{
-    g_hSpawnGhostTimer[client] = INVALID_HANDLE;
-
-    if (!IsClientAndInGame(client) || IsFakeClient(client) || GetClientTeam(client) != TEAM_INFECTED) { return Plugin_Continue; }
-    if (!IsPlayerAlive(client)) {
-        CreateTimer(ZC_TIMERDEATHCHECK, Timer_SpawnGhostClass, client, TIMER_FLAG_NO_MAPCHANGE);
-        return Plugin_Continue;
-    }
-    if (!IsValidEntity(client) || !IsPlayerGhost(client)) { return Plugin_Continue; }
-    
-    DetermineSpawnClass(client, GetEntProp(client, Prop_Send, "m_zombieClass"));
-
-    return Plugin_Continue;
-}
-
-public ClearSpawnGhostTimer(any:client)
-{
-    if (g_hSpawnGhostTimer[client] != INVALID_HANDLE) {
-        CloseHandle(g_hSpawnGhostTimer[client]);
-        g_hSpawnGhostTimer[client] = INVALID_HANDLE;
-    }
-}
-*/
 
 public Action:Timer_CheckTankDeath(Handle:hTimer, any:client_oldTank)
 {
