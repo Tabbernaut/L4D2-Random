@@ -493,3 +493,4 @@ new     Float:          g_RC_fExplosionPowerLow                             = 20
 
 // other RC options
 new     bool:           g_RC_bExtraCommonModels                             = true;
+new     bool:           g_RC_bDrawPanelReport                               = true;

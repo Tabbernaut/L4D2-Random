@@ -742,6 +742,7 @@ RConfig_Read()
         
         // extra options
         g_RC_bExtraCommonModels = bool: (KvGetNum(kRCData, "extra_common_models", 1));
+        g_RC_bDrawPanelReport = bool: (KvGetNum(kRCData, "draw_panel_report", 1));
         
         PrintDebug(2, "[rand] Read config data.");
         

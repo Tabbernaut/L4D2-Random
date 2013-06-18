@@ -17,8 +17,6 @@ const           STORED_GIFT_MAX_COUNT   = 128;          // just arbitrary, users
 const           GNOME_MAX_COUNT         = 128;          // just arbitrary, users shouldn't exceed this total (because why make gnome heaven?)
 const           MAX_REPORTLINES         = 15;
 const           REPLINELENGTH           = 256;          // maximum length of a 'report line'
-const Float:    TIMER_HUMANCHECK        = 2.0;          // interval for checking for humans after map load
-const Float:    TIMER_STARTCHECK        = 0.25;         // interval for checking whether survivors have left saferoom (used if PlayersLeftStartArea while in readyup)
 const Float:    MAX_RAYDIF              = 100.0;        // maximum z-difference for finding floors
 const           MAX_DOORS               = 128;          // amount of doors to track
 const           MAX_BOOBYTRAPS          = 128;          // amount of boobytraps to add maximally
@@ -35,6 +33,8 @@ const           STR_MAX_MAPNAME         = 32;
 
 // Random configuration
 // --------------------
+const Float:    TIMER_HUMANCHECK        = 2.0;          // interval for checking for humans after map load
+const Float:    TIMER_STARTCHECK        = 0.25;         // interval for checking whether survivors have left saferoom (used if PlayersLeftStartArea while in readyup)
 const Float:    DELAY_FIRSTMAPLOAD      = 5.0;          // how long to wait before doing round prep on the very first map loading
 const Float:    DELAY_ROUNDPREP         = 1.0;          // how long between actual round prep and item handling etc
 const Float:    DELAY_ROUNDPREP_COOP    = 8.0;          // coop 'transitions' items, so make sure we randomize after that happens
@@ -43,6 +43,8 @@ const Float:    DELAY_SECONDHALF_REP    = 1.25;         // how long to wait on s
 const Float:    DELAY_SURVSETUP         = 0.25;         // how long to wait after team switch/join to set survivor startup (for GetPlayerSlot check)
 const Float:    DELAY_TEAMSWAP          = 0.1;          // how long to wait before applying changes after team swap..
 const Float:    DELAY_WELCOMEMSG        = 10.0;         // wait time between connect & message
+const Float:    DELAY_PANELAFTERLIVE    = 2.5;          // wait time between OnRoundIsLive and drawn panel report
+const           REPORT_PANEL_LIFETIME   = 20;           // how long to show the panel for
 
 const           INCAP_DEFAULT           = 2;
 const           INCAP_MINIMUM           = 1;

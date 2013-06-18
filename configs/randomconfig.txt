@@ -66,5 +66,6 @@
 
 		// extra options
 		"extra_common_models"		"1"
+		"draw_panel_report"		"1"
 	}
 }

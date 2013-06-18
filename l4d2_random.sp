@@ -961,6 +961,18 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
     if (g_bInRound) { g_bInRound = false; }
 }
 
+
+public OnRoundIsLive()
+{
+    // only if a readyup plugin is active
+    // if not, display panel with a timer?
+    CreateTimer(DELAY_PANELAFTERLIVE, Timer_DoPanelReport, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+public Action: Timer_DoPanelReport(Handle:timer)
+{
+    DoPanelReport();
+}
+
 /*  General hooks
     ------------- */
 
@@ -1362,6 +1374,12 @@ public Action: Timer_RoundStartReport(Handle:timer)
     g_bTimerReport = false;
     if (GetConVarBool(g_hCvarDoReport)) { DoReport(); }
     g_bFirstReportDone = true;
+    
+    // if no readyup, draw the panel
+    if (g_hCvarReadyUp == INVALID_HANDLE || !GetConVarBool(g_hCvarReadyUp))
+    {
+        DoPanelReport();
+    }
 }
 
 public Action: Timer_PlayerJoinedSurvivor(Handle:timer, any:pack)

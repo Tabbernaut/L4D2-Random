@@ -148,6 +148,57 @@ DoReport(client=0)
     }
 }
 
+
+DoPanelReport()
+{
+    if (!g_RC_bDrawPanelReport) { return; }
+    
+    new Handle:panel = CreatePanel();
+    new String: sReport[REPLINELENGTH];
+    
+    SetPanelTitle(panel, "Random Round Info");
+    
+    Format(sReport, sizeof(sReport), "Distance points: %4i", L4D_GetVersusMaxCompletionScore());
+    DrawPanelText(panel, sReport);
+    if (GetConVarInt(g_hCvarRandBonus) > 0) {
+        Format(sReport, sizeof(sReport), "Damage bonus:  %4i", g_iDamageBonus);
+        DrawPanelText(panel, sReport);
+    }
+    
+    //DrawPanelItem(Handle:panel, const String:text[], ITEMDRAW_RAWLINE);
+    DrawPanelItem(panel, "", ITEMDRAW_SPACER);
+    
+    Format(sReport, sizeof(sReport), "Incaps: %i", g_iIncaps);
+    DrawPanelText(panel, sReport);
+    
+    if (GetConVarFloat(g_hCvarOutlineChance) < 1.0) {
+        if (!g_bGlows) {
+            DrawPanelText(panel, "Glows are OFF!");
+        } 
+    }
+    
+    DrawPanelItem(panel, "", ITEMDRAW_SPACER);
+    
+    if (g_iSpecialEvent != -1) {
+        Format(sReport, sizeof(sReport), "Special Event: %d. %s", g_iSpecialEvent+1, g_csEventTextShort[ g_iSpecialEvent ] );
+    } else {
+        Format(sReport, sizeof(sReport), "No Special Event.");
+    }
+    DrawPanelText(panel, sReport);
+    
+    for (new i = 1; i <= MaxClients; i++) 
+    {
+        if (IsClientAndInGame(i) && !IsFakeClient(i)) 
+        {
+            SendPanelToClient(panel, i, Menu_ReportPanel, REPORT_PANEL_LIFETIME);
+        }
+    }
+}
+
+public Menu_ReportPanel(Handle:menu, MenuAction:action, param1, param2) 
+{
+}
+
 DoInsightReport(team=-1)
 {
     new String: sReport[MAX_REPORTLINES][REPLINELENGTH];
@@ -3526,6 +3577,8 @@ RANDOM_DoGiftEffect(client, entity)
                         WritePackCell(pack, i);
                         WritePackString(pack, "ReactionNegative");
                         CreateTimer( GetRandomFloat(0.15, 0.35) , Timer_Vocalize_Random, pack, TIMER_FLAG_NO_MAPCHANGE);
+                        
+                        PrintHintText(i, "Slippery Fingers! You may have dropped some stuff...");
                     }
                 }
             }
