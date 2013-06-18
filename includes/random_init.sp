@@ -84,6 +84,7 @@ INIT_DefineCVars()
     g_hCvarStartItemAmmo =  CreateConVar(                   "rand_item_start_ammo",          "0.5",     "Chances that there will be at least one ammo pile in the start saferoom (if non are generated there).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarStartItemGnome =  CreateConVar(                  "rand_item_start_gnome",         "0.25",    "Chances that there will be at least one gnome in the start saferoom (if non are generated there).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarStartBalanceSurv = CreateConVar(                 "rand_item_start_balance_surv",  "1",       "If enabled, survivor handouts are adjusted based on the round's difficulty rating.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarSpawnBalanceMode = CreateConVar(                 "rand_spawn_balance_mode",       "1",       "Balance chargers, spitters and boomers (ex. first attack): 0 = off; 1 = reduce odds when already 2 in the attack; 2 = more strict; 3 = block more than 2; 4 = block more than 1.", FCVAR_PLUGIN, true, 0.0, true, 5.0);
     
     g_hCvarRandDistance = CreateConVar(                     "rand_distance",                 "1",       "Distance mode: 0 = normal; 1 = variance from normal; 2 = full random.", FCVAR_PLUGIN, true, 0.0, true, 2.0);
     g_hCvarRandDistVar = CreateConVar(                      "rand_dist_var",                 "0.2",     "For distance variance: how much it can deviate from normal value.", FCVAR_PLUGIN, true, 0.1, true, 0.9);
@@ -138,7 +139,7 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_FOG] = CreateConVar(             "rand_weight_evt_fog",           "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_ABUNDANCE] = CreateConVar(       "rand_weight_evt_abundance",     "4",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_SNIPER] = CreateConVar(          "rand_weight_evt_sniper",        "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_GIFTS] = CreateConVar(           "rand_weight_evt_gifts",         "9",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_GIFTS] = CreateConVar(           "rand_weight_evt_gifts",         "8",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_DEFIB] = CreateConVar(           "rand_weight_evt_defib",         "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_ADREN] = CreateConVar(           "rand_weight_evt_adren",         "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_NOHUD] = CreateConVar(           "rand_weight_evt_nohud",         "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -159,7 +160,7 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_FIREPOWER] = CreateConVar(       "rand_weight_evt_firepower",     "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_AMMO] = CreateConVar(            "rand_weight_evt_ammo",          "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_WOMEN] = CreateConVar(           "rand_weight_evt_women",         "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_GUNSWAP] = CreateConVar(         "rand_weight_evt_gunswap",       "9",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_GUNSWAP] = CreateConVar(         "rand_weight_evt_gunswap",       "8",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_WITCHES] = CreateConVar(         "rand_weight_evt_witches",       "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_BADSANTA] = CreateConVar(        "rand_weight_evt_badgifts",      "4",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_MEDIC] = CreateConVar(           "rand_weight_evt_medic",         "7",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -719,6 +720,7 @@ RConfig_Read()
         g_RC_fEventWomenMeleeDmg = KvGetFloat(kRCData, "event_women_melee_dmg", g_RC_fEventWomenMeleeDmg);
         g_RC_fEventWomenWitchDmg = KvGetFloat(kRCData, "event_women_witch_dmg", g_RC_fEventWomenWitchDmg);
         g_RC_fEventWitchesWitchDmg = KvGetFloat(kRCData, "event_witches_witch_dmg", g_RC_fEventWitchesWitchDmg);
+        g_RC_iEventWitchesMaxWitches = KvGetNum(kRCData, "event_witches_max_witches", g_RC_iEventWitchesMaxWitches);
         g_RC_fEventFFFactor = KvGetFloat(kRCData, "event_ff_factor", g_RC_fEventFFFactor);
         g_RC_iEventBadComboAmmo = KvGetNum(kRCData, "event_badcombo_ammo", g_RC_iEventBadComboAmmo);
         g_RC_fEventProtectWeak = KvGetFloat(kRCData, "event_protect_weak_factor", g_RC_fEventProtectWeak);

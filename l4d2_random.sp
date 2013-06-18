@@ -168,7 +168,8 @@ public OnPluginStart()
         // for testing, basically
         g_bPlayersLeftStart = true;
         
-        for (new i=1; i <= MaxClients; i++) {
+        for (new i=1; i <= MaxClients; i++)
+        {
             if (IsClientInGame(i))
             {
                 SDKHook(i, SDKHook_WeaponEquipPost, OnWeaponEquip);     // hook for penalty item tracking

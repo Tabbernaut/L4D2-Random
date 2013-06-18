@@ -44,6 +44,7 @@
 		"event_women_melee_dmg"		"500.0"
 		"event_women_witch_dmg"		"25.0"
 		"event_witches_witch_dmg"	"50.0"
+		"event_witches_max_witches"	"30"
 		"event_ff_factor"		"0.3"
 		"event_badcombo_ammo"		"28"
 		"event_protect_weak_factor"	"2.0"

@@ -20,6 +20,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
         g_bNoAmmo = false;
         g_bNoHealthItems = false;
         g_bSpecialEventPlayerCheck = false;
+        g_bNoSpawnBalance = false;
     }
     
     if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
@@ -49,6 +50,8 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     g_fTankPreviousPass = 0.0;
     g_iTankPass = 0;
     g_iTankClient = 0;
+    
+    g_iWitchesSpawned = 0;
     
     g_iBonusCount = 0;
     g_fDudTimeExpire = 0.0;
@@ -2566,13 +2569,19 @@ public Action:Timer_WitchSpawn(Handle:timer)
         return Plugin_Stop;
     }
     
+    // stop spawning witches when the max is reached
+    if (g_RC_iEventWitchesMaxWitches > 0 && g_iWitchesSpawned >= g_RC_iEventWitchesMaxWitches) {
+        g_hWitchSpawnTimer = INVALID_HANDLE;
+        return Plugin_Stop;
+    }
+    
     if (!g_bIsTankInPlay && !g_bIsPaused && g_bPlayersLeftStart && NoSurvivorInSaferoom())
     {
-        
         for (new i=1; i <= MaxClients; i++)
         {
             if (IsClientInGame(i))
             {
+                g_iWitchesSpawned++;
                 CheatCommand(i, "z_spawn", "witch auto");
                 return Plugin_Continue;
             }

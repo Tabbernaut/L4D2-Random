@@ -4,6 +4,11 @@
 
 #define FIRE_EXT_SPRAY          "extinguisher_spray"
 
+#define SPAWNBALANCE_ODDS_LIGHT     1
+#define SPAWNBALANCE_ODDS_STRICT    2
+#define SPAWNBALANCE_BLOCK_AT_TWO   3
+#define SPAWNBALANCE_BLOCK_AT_ONE   4
+
 /*
     All the super-interesting random stuff goes in here
     (for easier finding / editing
@@ -551,6 +556,7 @@ RANDOM_DetermineRandomStuff()
                     // slightly easier common-wise, since no melee weapons
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
                     bDoItemRePrep = true;
+                    g_bNoSpawnBalance = true;
                     
                     // just so bots won't become them either, just in case
                     SetConVarInt(FindConVar("z_spitter_limit"), 0);
@@ -591,6 +597,7 @@ RANDOM_DetermineRandomStuff()
                 }
                 case EVT_SKEET: {
                     g_bUsingPBonus = true;
+                    g_bNoSpawnBalance = true;
                     SetConVarInt(FindConVar("z_smoker_limit"), 1);
                     SetConVarInt(FindConVar("z_boomer_limit"), 1);
                     SetConVarInt(FindConVar("z_spitter_limit"), 1);
@@ -678,6 +685,7 @@ RANDOM_DetermineRandomStuff()
                     g_bNoSecWeapons = true;
                     g_bNoAmmo = true;
                     bBlockTank = true;
+                    g_bNoSpawnBalance = true;
                     EVENT_SetDifficulty(DIFFICULTY_VERYHARD, DIFFICULTY_HARD);
                     
                     SetConVarInt(FindConVar("z_smoker_limit"), 0);
@@ -3672,6 +3680,13 @@ DetermineSpawnClass(any:client, any:iClass)
     //new valveClass = iClass;
     //PrintDebug(2, "[random spawns] valve ghost pick (%N = %i)", client, valveClass);
     
+    new iChargers = CountInfectedClass(ZC_CHARGER, client);
+    new iSmokers = CountInfectedClass(ZC_SMOKER, client);
+    new iHunters = CountInfectedClass(ZC_HUNTER, client);
+    new iBoomers = CountInfectedClass(ZC_BOOMER, client);
+    new iSpitters = CountInfectedClass(ZC_BOOMER, client);
+    new iSupport = iSpitters + iBoomers;
+    
     if (g_bIsFirstAttack && !IsFakeClient(client))
     {
         // build first attack
@@ -3759,6 +3774,35 @@ DetermineSpawnClass(any:client, any:iClass)
         }
     }
     
+    // spawn balance
+    if (!g_bNoSpawnBalance)
+    {
+        new spawnBalance = GetConVarInt(g_hCvarSpawnBalanceMode);
+        switch(spawnBalance)
+        {
+            case SPAWNBALANCE_ODDS_LIGHT: {
+                if (iChargers > 2 && (GetRandomInt(0,2) > 0) ) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_CHARGER); }
+                else if (iChargers > 1 && (GetRandomInt(0,1) == 1) ) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_CHARGER); }
+                if (iBoomers > 2 && (GetRandomInt(0,2) == 0) ) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_BOOMER); }
+                if (iSpitters > 2 && (GetRandomInt(0,2) == 0) ) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_SPITTER); }
+            }
+            case SPAWNBALANCE_ODDS_STRICT: {
+                if (iChargers > 2 && (GetRandomInt(0,5) > 0) ) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_CHARGER); }
+                else if (iChargers > 1 && (GetRandomInt(0,2) > 0) ) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_CHARGER); }    
+                if (iBoomers > 2 && (GetRandomInt(0,1) > 0) ) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_BOOMER); }
+                if (iSpitters > 2 && (GetRandomInt(0,1) > 0) ) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_SPITTER); }
+            }
+            case SPAWNBALANCE_BLOCK_AT_TWO: {
+                if (iChargers > 1) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_CHARGER); }
+                if (iSpitters > 1) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_SPITTER); }
+            }
+            case SPAWNBALANCE_BLOCK_AT_ONE: {
+                if (iChargers) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_CHARGER); }
+                if (iSpitters) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_SPITTER); }
+            }
+        }
+    }
+    
     // sack protection
     if (!forcedClass && checkSacking && GetConVarBool(g_hCvarSackProtection))
     {
@@ -3788,19 +3832,16 @@ DetermineSpawnClass(any:client, any:iClass)
         {
             // just prevent chargers, if player got a charger
             // and prevent > 2 smokers
-            new chargers = CountInfectedClass(ZC_CHARGER, client);
-            new smokers = CountInfectedClass(ZC_SMOKER, client);
-            new hunters = CountInfectedClass(ZC_HUNTER, client);
-            new support = CountInfectedClass(ZC_BOOMER, client) + CountInfectedClass(ZC_SPITTER, client);
+
             
             // a. force max 1 charger
-            if (chargers) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_CHARGER); }
+            if (iChargers) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_CHARGER); }
             // b. force max 2 smokers
-            if (smokers > 1) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_SMOKER); }
+            if (iSmokers > 1) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_SMOKER); }
             // c. force max 2 hunters
-            if (hunters > 1 && _:g_iSpecialEvent != EVT_L4D1) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_HUNTER); }
+            if (iHunters > 1 && _:g_iSpecialEvent != EVT_L4D1) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_HUNTER); }
             // d. force non-quad (can override previous after-sackdetect-pick)
-            if (support == 0 && g_iSpecialEvent != _:EVT_QUADS && !GetConVarBool(g_hCvarNoSupportSI)) {
+            if (iSupport == 0 && g_iSpecialEvent != _:EVT_QUADS && !GetConVarBool(g_hCvarNoSupportSI)) {
                 // still need to check if pick is acceptable. remove all cappers from choice list
                 new randomIndex = GetRandomInt(0, g_iSpawnWeightedChoicesStartCappers - 1);
                 iClass = g_iArSpawnWeightedChoices[randomIndex];
@@ -3841,10 +3882,8 @@ DetermineSpawnClass(any:client, any:iClass)
     
     // for l4d1 mode, avoid more than 1 boomer or smoker:
     if (_:g_iSpecialEvent == EVT_L4D1) {
-        new smokers = CountInfectedClass(ZC_SMOKER, client);
-        new boomers = CountInfectedClass(ZC_BOOMER, client);
-        if (smokers) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_SMOKER); }
-        if (boomers) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_BOOMER); }
+        if (iSmokers) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_SMOKER); }
+        if (iBoomers) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_BOOMER); }
     }
     // prevent double smoker in 2v2
     else if (GetConVarInt(g_hCvarTeamSize) < 3) {

@@ -219,6 +219,7 @@ new     bool:           g_bArBlockPickupCall    [MAXPLAYERS+1]              = {f
 new                     g_iBonusCount                                       = 0;                    // how many special event bonuses/penalties this roundhalf
 
 // special event stuff
+new     bool:           g_bNoSpawnBalance                                   = false;                // whether spawn balance mode is forced to 0 this round
 new                     g_iArEventTimeout       [EVT_TOTAL]                 = {0,...};              // per event, how many rounds it will sit in timeout
 new                     g_iNoSpecialEventStreak                             = 0;                    // how many times in a row there wasn't a special event
 new     bool:           g_bSpecialEventPlayerCheck                          = false;                // whether the special event requires player checks on teamswaps, deaths, etc
@@ -240,6 +241,7 @@ new     Handle:         g_hWitchSpawnTimer                                  = IN
 new                     g_iMedicUnits                                       = 8;                    // the current 'mediunits' available to the medic
 new                     g_iMedicRanOut                                      = 0;                    // so we can prevent over-reporting
 new     bool:           g_bMedicFirstHandout                                = false;                // whether the medic has handed out pills to anyone yet (for removal check)
+new                     g_iWitchesSpawned                                   = 0;                    // for tracking max no. of witches for witch hunt
 
 new     Handle:         g_hBoomFluTimer                                     = INVALID_HANDLE;       // for the EVT_BOOMFLU
 new                     g_iBoomFluCounter                                   = 0;                    // counts seconds for the boom flu
@@ -319,6 +321,7 @@ new     Handle:         g_hCvarStartItemNoJunk                              = IN
 new     Handle:         g_hCvarStartItemAmmo                                = INVALID_HANDLE;       // cvar the odds that there will be at least one ammo pile in start saferoom
 new     Handle:         g_hCvarStartItemGnome                               = INVALID_HANDLE;       // cvar the odds that there will be at least one gnome in the start saferoom (including handouts)
 new     Handle:         g_hCvarStartBalanceSurv                             = INVALID_HANDLE;       // cvar whether we'll adjust survivor handouts based on difficulty
+new     Handle:         g_hCvarSpawnBalanceMode                             = INVALID_HANDLE;       // cvar mode in which we balance out spawns of chargers/spitters/boomers
 
 new     Handle:         g_hCvarNoitemVariance                               = INVALID_HANDLE;       // cvar the variance of PCK_NOITEM
 new     Handle:         g_hCvarPillsChance                                  = INVALID_HANDLE;       // cvar odds that survivor is given pills/adren at start
@@ -460,6 +463,7 @@ new                     g_RC_iEventBonusBadSanta                            = 15
 new     Float:          g_RC_fEventWomenMeleeDmg                            = 500.0;    // on witches
 new     Float:          g_RC_fEventWomenWitchDmg                            = 25.0;     // to survivors
 new     Float:          g_RC_fEventWitchesWitchDmg                          = 50.0;     // to survivors
+new                     g_RC_iEventWitchesMaxWitches                        = 30;       // after this, no new witches will spawn
 
 new     Float:          g_RC_fEventFFFactor                                 = 0.3;      // cvar value for hard
 new                     g_RC_iEventBadComboAmmo                             = 25;
