@@ -25,6 +25,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     
     if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
     {
+        g_bTankFirstRound = false;
         g_bWitchFirstRound = false;
     }
     
@@ -1441,6 +1442,8 @@ EVENT_PickBoobyTraps()
             ||  g_strArStorage[i][entPickedType] == _:PCK_JUNK
             ||  g_strArStorage[i][entPickedType] == _:PCK_EXPLOSIVE_BARREL
             ||  g_strArStorage[i][entPickedType] == _:PCK_SILLY_GIFT
+            ||  g_strArStorage[i][entPickedType] == _:PCK_SILLY_GNOME
+            ||  g_strArStorage[i][entPickedType] == _:PCK_SILLY_COLA
         ) { continue; }
         
         if (GetRandomFloat(0.001,1.0) <= g_RC_fEventBoobyTrapChance)
@@ -1465,6 +1468,8 @@ EVENT_PickBoobyTraps()
                 ||  g_strArStorage[i][entPickedType] == _:PCK_JUNK
                 ||  g_strArStorage[i][entPickedType] == _:PCK_EXPLOSIVE_BARREL
                 ||  g_strArStorage[i][entPickedType] == _:PCK_SILLY_GIFT
+                ||  g_strArStorage[i][entPickedType] == _:PCK_SILLY_GNOME
+                ||  g_strArStorage[i][entPickedType] == _:PCK_SILLY_COLA
             ) { continue; }
             
             g_iArBoobyTrap[g_iBoobyTraps] = g_strArStorage[i][entNumber];

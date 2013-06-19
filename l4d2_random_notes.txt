@@ -10,7 +10,6 @@ L4D2_Random
             - later:    set debug mode to 0 for release; set cvar debug to 0 for release
             - later:    email Chet, see if maybe he likes Random at all...
             
-            - test:     double pass fix (in live game)
             - test:     defib penalty still not reset correctly after a sudden death round ?
             
 

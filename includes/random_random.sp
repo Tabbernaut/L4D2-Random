@@ -156,7 +156,10 @@ DoPanelReport()
     new Handle:panel = CreatePanel();
     new String: sReport[REPLINELENGTH];
     
-    SetPanelTitle(panel, "Random Round Info");
+    SetPanelTitle(panel, "Random Round Info:");
+    DrawPanelText(panel, "------------------");
+    
+    DrawPanelItem(panel, "", ITEMDRAW_SPACER);
     
     Format(sReport, sizeof(sReport), "Distance points: %4i", L4D_GetVersusMaxCompletionScore());
     DrawPanelText(panel, sReport);
@@ -180,7 +183,9 @@ DoPanelReport()
     DrawPanelItem(panel, "", ITEMDRAW_SPACER);
     
     if (g_iSpecialEvent != -1) {
-        Format(sReport, sizeof(sReport), "Special Event: %d. %s", g_iSpecialEvent+1, g_csEventTextShort[ g_iSpecialEvent ] );
+        Format(sReport, sizeof(sReport), "Special Event:");
+        DrawPanelText(panel, sReport);
+        Format(sReport, sizeof(sReport), "   %d. %s", g_iSpecialEvent+1, g_csEventTextShort[ g_iSpecialEvent ] );
     } else {
         Format(sReport, sizeof(sReport), "No Special Event.");
     }
@@ -821,6 +826,14 @@ RANDOM_DetermineRandomStuff()
         g_bTankWillSpawn = true;
         g_bTankIsEarly = false;
     }
+    else if (g_bTankFirstRound && !g_bTankWillSpawn)
+    {
+        // force tank if we had one the first round
+        L4D2Direct_SetVSTankToSpawnThisRound(0, true);
+        L4D2Direct_SetVSTankToSpawnThisRound(1, true);
+        g_bTankWillSpawn = true;
+    }
+    
     
     if (bBlockWitch || g_RI_bNoWitch) {
         L4D2Direct_SetVSWitchToSpawnThisRound(0, false);
@@ -974,6 +987,8 @@ RANDOM_DetermineRandomStuff()
         L4D2Direct_SetVSWitchToSpawnThisRound(0, false);
         L4D2Direct_SetVSWitchToSpawnThisRound(1, false);
     }
+    
+    if (g_bTankWillSpawn && !g_bSecondHalf) { g_bTankFirstRound = true; }
     
     // multi-witches?
     if (g_bWitchWillSpawn && !g_RI_bIsFinale && (g_RC_bMultiwitchAllowTank || !g_bTankWillSpawn) && _:g_iSpecialEvent != EVT_MINITANKS )
@@ -4067,11 +4082,20 @@ SpawnCommonItem(Float:loc[3], Float:vel[3])
     switch (randomPick) {
         case 0: {
             // pills
-            ent = CreateEntityByName("weapon_pain_pills");
+            if (g_bNoHealthItems) {
+                ent = -1;
+            } else {
+                ent = CreateEntityByName("weapon_pain_pills");
+            }
+            
         }
         case 3: {
             // adren
-            ent = CreateEntityByName("weapon_adrenaline");
+            if (g_bNoHealthItems) {
+                ent = -1;
+            } else {
+                ent = CreateEntityByName("weapon_adrenaline");
+            }
         }
         case 6: {
             // pistol
@@ -4102,6 +4126,8 @@ SpawnCommonItem(Float:loc[3], Float:vel[3])
             DispatchKeyValue(ent, "Spawnflags", "256");
         }
     }
+    
+    if (ent == -1) { return; }
     
     if (!IsValidEntity(ent) || ent == 0)
     {
