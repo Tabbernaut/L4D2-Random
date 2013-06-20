@@ -44,7 +44,7 @@ DoHelpMessage(client)
         PrintToChat(client, "\x05You can find Random gifts that may be opened by holding the USE key.");
     }
     
-    PrintToChat(client, "\x05Commands you can type in chat: \x04!rand\x05, \x04!damage\x05, \x04!bonus\x05 and \x04!drop\x01. ");
+    PrintToChat(client, "\x05Commands you can type in chat: \x04!rand\x05, \x04!damage\x05, \x04!bonus\x05, \x04!drop\x01 and \x04!eventinfo\x01. ");
     PrintToChat(client, "\x05Visit: \x03http://www.tabun.nl/random\x05 for more information.");
 }
 
@@ -157,7 +157,7 @@ DoPanelReport()
     new String: sReport[REPLINELENGTH];
     
     SetPanelTitle(panel, "Random Round Info:");
-    DrawPanelText(panel, "------------------");
+    DrawPanelText(panel, "--------------------------");
     
     DrawPanelItem(panel, "", ITEMDRAW_SPACER);
     
@@ -320,6 +320,162 @@ ReportSpecialEventRole(bool:isNew=false, client=0)
         }
     }
 }
+DoEventInfo(client, event)
+{
+    if (event == -1)
+    {
+        // current event
+        if (g_iSpecialEvent == -1) {
+            PrintToChat(client, "\x01[\x05r\x01] There is no special event this round. Type \"\x04!eventinfo #\x01\" (1 to %i) to get info about any event.", EVT_TOTAL);
+            return;
+        }
+        
+        event = g_iSpecialEvent;
+    }
+    else if (event < 1 || event > 37) {
+        PrintToChat(client, "\x01[\x05r\x01] Incorrect event number. Pick any number from 1 to %i.", EVT_TOTAL);
+        return;
+    }
+    else {
+        event--;
+    }
+    
+    PrintToChat(client, "\x01[\x05r\x01] Special event: \x05%i\x01. \x04%s\x01:", event+1, g_csEventTextShort[event]);
+    
+    switch (event)
+    {
+        case EVT_ITEM: {
+            PrintToChat(client, "\x05One kind of item, randomly picked, will be very common this round. This could be any type of item, whether it is useful or not.\x01");
+        }
+        case EVT_HORDE_HUGE: {
+            PrintToChat(client, "\x05There are a lot more common around and hordes are very large. There will be slower SI spawns to compensate.\x01");
+        }
+        case EVT_HORDE_NONE: {
+            PrintToChat(client, "\x05There are very few common around and hordes are very small. There will be faster SI spawns to compensate (about 8s).\x01");
+        }
+        case EVT_UNCOMMON: {
+            PrintToChat(client, "\x05There are a lot of uncommon infected around. There will be fewer common and uncommon infected around to compensate.\x01");
+        }
+        case EVT_CLOWNS: {
+            PrintToChat(client, "\x05Clowns. Are. Everywhere. I hope you like clowns. There will be fewer common infected (and other uncommons) around to compensate.\x01");
+        }
+        case EVT_DOORS: {
+            PrintToChat(client, "\x05Many of the doors on this map are locked. A locked door can only be opened by destroying it, which can be done with melee weapons or explosives.\x01");
+        }
+        case EVT_QUADS: {
+            PrintToChat(client, "\x05There will be no spitters or boomers this round. Every attack is a potential quadcap. There will be fewer common and slightly slower SI spawns to compensate.\x01");
+        }
+        case EVT_WEATHER: {
+            PrintToChat(client, "\x05There's a spot of stormy weather this round, like in Hard Rain but more so.\x01");
+        }
+        case EVT_FOG: {
+            PrintToChat(client, "\x05here's heavy fog. To make it worse, survivors don't have outlines this round (realism mode).\x01");
+        }
+        case EVT_ABUNDANCE: {
+            PrintToChat(client, "\x05There are a lot of items lying around this map. There will be slightly more common and faster SI spawns to compensate.\x01");
+        }
+        case EVT_SNIPER: {
+            PrintToChat(client, "\x05The only primary weapons available this round are CS:S snipers: Scout and AWP. Survivors start with Scouts.\x01");
+        }
+        case EVT_GIFTS: {
+            PrintToChat(client, "\x05There are many random gifts around...\x01");
+        }
+        case EVT_DEFIB: {
+            PrintToChat(client, "\x05Survivors start black and white and will die immediately if they are incapacitated. There are no medkits. There are, however, a lot of defibs around.\x01");
+            PrintToChat(client, "\x05Defibrillators still bring you back in black and white mode. The defib penalty is lowered to 5 points this round. \x01");
+        }
+        case EVT_ADREN: {
+            PrintToChat(client, "\x05Survivors start bleeding out as soon as they leave the saferoom. They bleed out a bit faster than normally and there are no medkits to stop the bleeding.\x01");
+            PrintToChat(client, "\x05There aren't even pills - the only health items available are adrenaline shots (maybe a rare defib). \x01");
+        }
+        case EVT_NOHUD: {
+            PrintToChat(client, "\x05Survivors have no heads-up display (mainly the health bars on the bottom of the screen). Health and items can still be seen by opening the scores.\x01");
+        }
+        case EVT_L4D1: {
+            PrintToChat(client, "\x05L4D1-mode this round! Only L4D1 inventory items appear and only L4D1 special infected spawn.\x01");
+        }
+        case EVT_FF: {
+            PrintToChat(client, "\x05Survivor friendly fire does triple the damage it normally does in versus games. (This is close to the Hard campaign level of FF.)\x01");
+            PrintToChat(client, "\x05There will be slightly fewer common and slightly slower SI spawns to compensate.\x01");
+        }
+        case EVT_SILENCE: {
+            PrintToChat(client, "\x05This event has two versions:\n1. All survivors become mute. They never utter or otherwise make any sound.\x01");
+            PrintToChat(client, "\x05All special infected become silent. Survivors had better keep their eyes open... There will be slightly slower SI spawns to compensate. Tanks do make sound as normal.\x01");
+        }
+        case EVT_PEN_ITEM: {
+            PrintToChat(client, "\x05Every time a survivor picks up any useful inventory item (pills, weapons, throwables, etc), their team loses 5 points. Type \"!bonus\" to see the current total penalty.\x01");
+        }
+        case EVT_PEN_HEALTH: {
+            PrintToChat(client, "\x05Every time a survivor uses a health item (pills, adrenaline, medkits and defibs), their team loses 15 points. Type \"!bonus\" to see the current total penalty.\x01");
+        }
+        case EVT_PEN_M2: {
+            PrintToChat(client, "\x05Every time a survivor shoves (m2's) a special infected, their team loses 10 points. Only shovable capping infected count (\x03jockey, hunter, smoker\x05), there are no penalties for shoving boomers or spitters. Type \"!bonus\" to see the current total penalty.\x01");
+        }
+        case EVT_PEN_TIME: {
+            PrintToChat(client, "\x05With every passing minute the survivors lose 25 points. Type \"!bonus\" to see the current total penalty. The penalty timer is paused when tanks are in play. \x01");
+        }
+        case EVT_MINITANKS: {
+            PrintToChat(client, "\x05Many tanks will spawn this map. Luckily for the survivors, they have have very low health (1500) and do less damage.\x01");
+            PrintToChat(client, "\x05Mini-tanks are not as powerful as fully grown tanks, so their punched cars (etc) only do 25 damage. Their punches and rocks do 20 damage. They lose rage quickly too. \x01");
+        }
+        case EVT_KEYMASTER: {
+            PrintToChat(client, "\x05A randomly assigned survivor is the 'keymaster', only they can use doors normally. Doors can still be broken with the usual tools.\x01");
+        }
+        case EVT_BADCOMBO: {
+            PrintToChat(client, "\x05All survivors start with a grenade launcher and a chainsaw. If they want any other weapon, they will have to find it somewhere further on in the map.\x01");
+        }
+        case EVT_PROTECT: {
+            PrintToChat(client, "\x05One randomly assigned survivor is the 'baby', twice as vulnerable to all infected attacks. The other survivors are more resilient, but will have to protect the baby.\x01");
+        }
+        case EVT_ENCUMBERED: {
+            PrintToChat(client, "\x05The more stuff survivors carry, the slower they are. Best to travel light!\x01");
+            PrintToChat(client, "\x05Remember that you can always drop your active weapon/item with \"!drop\" (or sm_drop in console). Tip: bind it to a key!\x01");
+        }
+        case EVT_BOOBYTRAP: {
+            PrintToChat(client, "\x05Randomly selected items and doors are booby trapped and may explode when touched. (Not necessarily equal between teams.)\x01");
+        }
+        case EVT_SKEET: {
+            PrintToChat(client, "\x05There's a lot of hunters around. Survivors get 15 bonus points for skeeting them with shotguns.\x01");
+            PrintToChat(client, "\x05Only full skeets (150+ damage in a single leap) count, but team skeets give bonus too. \x01");
+        }
+        case EVT_FIREPOWER: {
+            PrintToChat(client, "\x05No tier-1 weapons are available, only tier-2 and stronger. There will be more common infected and faster SI spawns to compensate.\x01");
+        }
+        case EVT_AMMO: {
+            PrintToChat(client, "\x05There's no ammo piles and weapons have very little ammo in them on pickup. Luckily, your team has a special ammo pack that can be deployed as an ammo pile.\x01");
+            PrintToChat(client, "\x05Hold the USE key to repack the pile as a carryable pack again. Be careful not to lose it, as you only get one for the whole round.\x01");
+        }
+        case EVT_WOMEN: {
+            PrintToChat(client, "\x05In this event there are only women around, who come in big hordes at the irresistable (mostly male) survivors. Survivors only have their melee weapon to fight them off.\x01");
+            PrintToChat(client, "\x05The only special infected are female boomers and spitters.\nThe special infected are slightly buffed: they both recharge their attacks in 15 seconds.\x01");
+            PrintToChat(client, "\x05Witches may spawn for this round, but they only do 25 damage per slash and die to 2 melee swings.\x01");
+        }
+        case EVT_GUNSWAP: {
+            PrintToChat(client, "\x05There are no weapons or ammo piles anywhere on the map. Instead, each survivor is randomly handed a weapon with one clip's worth of ammo.\01");
+            PrintToChat(client, "\x05When they empty their clip, they get handed a fresh weapon with one clip of ammo, and so on. You are more likely to get tier-1 than tier-2 weapons. There are no tier-3 weapons.\x01");
+        }
+        case EVT_WITCHES: {
+            PrintToChat(client, "\x05Homage to the Witch Party config. Many witches will spawn all over the place - a fresh one will spawn every 40 seconds (no witches will spawn while any survivor is in a saferoom).\x01");
+            PrintToChat(client, "\x05Survivors get 25 points bounty for each one they kill. The witches do only 50 damage per slash, but are otherwise unaltered. The map is only worth half of its normal distance points.\x01");
+        }
+        case EVT_BADSANTA: {
+            PrintToChat(client, "\x05Santa's brought the coal: there are a lot of random gifts on the map, but they're all guaranteed to have negative effects when unwrapped.\x01");
+            PrintToChat(client, "\x05Survivors get 15 bonus points for each gift they open anyway. \x01");
+        }
+        case EVT_MEDIC: {
+            PrintToChat(client, "\x05A randomly assigned survivor is the 'medic'. The medic has a limited supply of pills and first aid kits he can hand out.\x01");
+            PrintToChat(client, "\x05Whenever he uses or hands out a medkit or some pills, they are replaced until the supply runs out. How many items a medic can hand out depends on the estimated difficulty for the round.\x01");
+        }
+        case EVT_BOOMFLU: {
+            PrintToChat(client, "\x05One survivor has a bad case of \"boomer flu\". He will cough, burp and regularly have to vomit.\x01");
+            PrintToChat(client, "\x05Anyone he vomits on (survivors, special infected and common infected) will be covered with boomer bile, with all its usual consequences.\x01");
+        }
+        default: {
+            PrintToChat(client, "\x01(no extra information available)\x01");
+        }
+    }
+}
+
 // Make random stuff happen
 // --------------------------
 RANDOM_DetermineRandomStuff()
@@ -490,6 +646,9 @@ RANDOM_DetermineRandomStuff()
         g_iSpecialEventExtra = 0;
         g_iSpecialEventExtraSub = 0;
         g_iNoSpecialEventStreak++;
+        
+        // always force?
+        if (g_iSpecialEventToForceAlways != -1) { g_iSpecialEventToForce = g_iSpecialEventToForceAlways; }
         
         // force special event if second round and first round got one...
         new Float: fSpecialEventChance = GetConVarFloat(g_hCvarSpecialEventChance);
@@ -2477,7 +2636,7 @@ CheckSurvivorSetup()
 // build entity out of stored data
 CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
 {
-    new type, itemJunkIndex, itemAmmoMax /*, itemSpawnPhysics */;
+    new type, itemJunkIndex, itemAmmoMax, bool: itemSpawnPhysics;
     new Float: itemOrigin[3], Float: itemAngles[3];
     new bool: itemCheckOrigin;
     new String: itemStorageMelee[MELEE_CLASS_LENGTH];
@@ -2600,14 +2759,14 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
         case PCK_SILLY_COLA: {
             ent = CreateEntityByName("prop_physics");
             DispatchKeyValue(ent, "model", "models/w_models/weapons/w_cola.mdl");
-            DispatchKeyValue(ent, "Spawnflags", "256");     // 257? (asleep, why?)  or 262?
+            DispatchKeyValue(ent, "Spawnflags", "256");
         }
         
         case PCK_SILLY_GNOME: {
             ent = CreateEntityByName("prop_physics");
             DispatchKeyValue(ent, "model", "models/props_junk/gnome.mdl");
-            DispatchKeyValue(ent, "Spawnflags", "256");     // 264 
-            fPlaceHigher = 15.0;
+            DispatchKeyValue(ent, "Spawnflags", "256");
+            fPlaceHigher = 20.0;
         }
         
         case PCK_SILLY_GIFT: {
@@ -2634,6 +2793,7 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
             DispatchKeyValue(ent, "FlyingParticles", "barrel_fly");
             DispatchKeyValue(ent, "DetonateSound", "BaseGrenade.Explode");            
             //itemSpawnPhysics = true;                                    // force it true for barrels
+            fPlaceHigher = 10.0;
             dontBlind = true;                                           // don't store for blindinfected
         }
         
@@ -2657,7 +2817,7 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
             ent = CreateEntityByName("prop_physics");
             DispatchKeyValue(ent, "model", "models/props_junk/explosive_box001.mdl");
             DispatchKeyValue(ent, "Spawnflags", "257");                 // it's like this in c2m5
-            //itemSpawnPhysics = true;                                    // force
+            itemSpawnPhysics = true;                                    // force
             fPlaceHigher = 10.0;
         }
 
@@ -2755,7 +2915,7 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
             case PCK_PIPEBOMB: {        classname = "weapon_pipe_bomb"; }
             case PCK_VOMITJAR: {        classname = "weapon_vomitjar"; }
             
-            case PCK_GASCAN: {          classname = "weapon_gascan";                    DispatchKeyValue(ent, "Spawnflags", "256"); }
+            case PCK_GASCAN: {          classname = "weapon_gascan";                    DispatchKeyValue(ent, "Spawnflags", "256");     fPlaceHigher = 10.0; }
             
             case PCK_AMMO: {            classname = "weapon_ammo_spawn";                fZOffset = 0.0; }
             case PCK_UPG_EXPLOSIVE: {   classname = "weapon_upgradepack_explosive"; }
@@ -2792,8 +2952,8 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
     
     /*
     // spawn flags (physics only for now)
-    if (itemSpawnPhysics) {
-        //DispatchKeyValue(ent, "spawnflags", "1");         // does this even do anything?
+    if (itemSpawnPhysics && !specialCase) {
+        TeleportEntity(ent, origin, NULL_VECTOR, NULL_VECTOR);
     }
     */
     
@@ -2801,7 +2961,14 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
     DispatchSpawn(ent);
 
     // gift box (quite special case, apparently)
-    if (specialCase) {
+    
+    
+    // physics enabled?
+    if (!inArray) {
+        TeleportEntity(ent, origin, NULL_VECTOR, g_fTempItemSingleVelocity);
+    }
+    else if (specialCase) {
+        // gift box
         TeleportEntity(ent, origin, NULL_VECTOR, NULL_VECTOR);
         
         SetEntProp(ent, Prop_Data, "m_takedamage", 0, 1);
@@ -2813,11 +2980,13 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
         AcceptEntityInput(ent, "Wake");
         SetEntityMoveType(ent, MOVETYPE_VPHYSICS);
     }
-    
-    // physics enabled?
-    if (!inArray) {
-        TeleportEntity(ent, origin, NULL_VECTOR, g_fTempItemSingleVelocity);
-    } /* else if (GetConVarBool(g_hCvarForcePhysics)) {
+    else if (itemSpawnPhysics) {
+        // some items
+        new Float:velocity[3];
+        velocity[2] = 1.0;
+        TeleportEntity(ent, origin, NULL_VECTOR, velocity);
+    }
+    /* else if (GetConVarBool(g_hCvarForcePhysics)) {
         TeleportEntity(ent, origin, NULL_VECTOR, NULL_VECTOR);
     } */
     
@@ -3220,7 +3389,18 @@ RANDOM_CheckPlayerGiftUse(client)
     GetClientAbsOrigin(client, playerPos);
     GetEntPropVector(entity, Prop_Send, "m_vecOrigin", targetPos);
     new Float:distance = GetVectorDistance(playerPos, targetPos);
-    if (distance > ITEM_PICKUP_DISTANCE) { return 1; }
+    
+    if (distance > ITEM_PICKUP_EYECHECKDST) {
+        return 1;
+    }
+    else if (distance > ITEM_PICKUP_DISTANCE) {
+        // re-measure from eyes
+        GetClientEyePosition(client, playerPos);
+        distance = GetVectorDistance(playerPos, targetPos);
+        
+        // if still too far away, no go
+        if (distance > ITEM_PICKUP_EYEDISTANCE) { return 1; }
+    }
     
     // if we are the one using it, make sure USE goes through as normal
     if (g_iClientUsing[client] == entity) { return 2; }
@@ -4512,9 +4692,9 @@ LockDoors()
 
 
 
+
 //  Randomization preparation
 //  ------------------------------
-
 // preparation of choice-hat (events)
 RANDOM_PrepareChoicesEvents()
 {

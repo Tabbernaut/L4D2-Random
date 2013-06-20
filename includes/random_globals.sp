@@ -31,6 +31,7 @@ new     bool:           g_bFirstReportDone                                  = fa
 new     bool:           g_bPlayersLeftStart                                 = false;                // true once the first survivor has left the start saferoom
 new     bool:           g_bSoundHooked                                      = false;                // true when there's a soundhook in place
 new                     g_iSpecialEventToForce                              = -1;                   // if this is anything but -1, forces special event for one round(half) -- debug function
+new                     g_iSpecialEventToForceAlways                        = -1;                   // same but forever
 
 // Pause tracking
 new     bool:           g_bIsPaused                                         = false;                // whether game is paused
@@ -46,6 +47,9 @@ new     bool:           g_bTeamSurvivorVotedEvent                           = fa
 new     bool:           g_bTeamInfectedVotedEvent                           = false;
 new                     g_iPickEvent                                        = -1;                   // what even we're picking
 new     Float:          g_fPickEventTimeout                                 = 0.0;                  // when we can vote again
+new     bool:           g_bTeamSurvivorVotedGameEvent                       = false;                // whether anyone in survivor team used !teamshuffle or !randteams
+new     bool:           g_bTeamInfectedVotedGameEvent                       = false;
+new                     g_iPickGameEvent                                    = -1;                   // what even we're picking
 
 // Stripper
 new     bool:           g_bStripperPresent                                  = false;                // whether a cvar-configurable Stripper:Source is present
@@ -98,7 +102,6 @@ new     bool:           g_bSpectateDeath        [MAXPLAYERS+1]              = {f
 new                     g_iSpectateGhost        [TEAM_SIZE];                                        // people that spectated while being SI ghosts.. remembered to avoid exploit
 new                     g_iSpectateGhostCount                               = 0;                    // amount of ghosts saved
 
-
 // SDK Calls
 new     Handle:         g_setClass                                          = INVALID_HANDLE;
 new     Handle:         g_createAbility                                     = INVALID_HANDLE;
@@ -142,7 +145,6 @@ new                     g_iArWeightedChoices        [STORED_MAX_COUNT];         
 new                     g_iWeightedChoicesTotal;                                                    // total of WeightedChoices 'hat' filled
 new                     g_iWeightedChoicesStartUseful;                                              // where the useful choices start (skipping no-item)
 new                     g_iWeightedChoicesEndUseful;                                                // where the useful choices end (before junk)
-//new                     g_iWeightedChoicesStartNonWeapons;                                          // where the non-weapon items begin (canister)
 new                     g_iArSurvWeightedChoices    [STORED_SURV_MAX_COUNT];                        // all the choices (every category * its weight) for survivor start
 new                     g_iSurvWeightedChoicesStartSecondary;                                       // where the useful secondary choices start
 new                     g_iSurvWeightedChoicesEndSecondary;                                         // where the useful secondary choices end (before magnum)

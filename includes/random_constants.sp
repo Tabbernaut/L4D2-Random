@@ -45,6 +45,7 @@ const Float:    DELAY_TEAMSWAP          = 0.1;          // how long to wait befo
 const Float:    DELAY_WELCOMEMSG        = 10.0;         // wait time between connect & message
 const Float:    DELAY_PANELAFTERLIVE    = 2.5;          // wait time between OnRoundIsLive and drawn panel report
 const           REPORT_PANEL_LIFETIME   = 20;           // how long to show the panel for
+const Float:    DELAY_MAPRESTART        = 5.0;
 
 const           INCAP_DEFAULT           = 2;
 const           INCAP_MINIMUM           = 1;
@@ -52,6 +53,8 @@ const           INCAP_MAXIMUM           = 3;
 const           HEALTH_MAXIMUM          = 100;
 
 const Float:    ITEM_PICKUP_DISTANCE    = 64.0;         // how far can a survivor 'reach' for a gift box?
+const Float:    ITEM_PICKUP_EYECHECKDST = 128.0;        // how far from gift maximally if we are to check eyes too?
+const Float:    ITEM_PICKUP_EYEDISTANCE = 48.0;         //      measured from eyes
 const Float:    ITEM_USE_DISTANCE       = 16.0;         // how far a survivor can move before aborting a use-progress-bar type action
 const Float:    ITEM_USE_FREEZE_TIME    = 0.5;          // after how long of starting a progress-bar use type action you're frozen (while you hold USE)
 
@@ -106,7 +109,7 @@ const Float:    EVENT_UNCOMMON_CHANCE   = 0.5;          // EVT_UNCOMMON     half
 const Float:    EVENT_CLOWNS_CHANCE     = 0.7;          // EVT_CLOWNS       plenty of clowns
 const Float:    EVENT_ABUND_JUNKWGHT    = 0.5;          // EVT_ABUNDANCE    by what factor to change junk amount
 const Float:    EVENT_DEFIB_EXTRA       = 2.5;          // EVT_DEFIB        by what factor to change defib amount
-const Float:    EVENT_DEFIB_PILLS       = 1.5;          // EVT_DEFIB        by what factor to change pills amount
+const Float:    EVENT_DEFIB_PILLS       = 1.25;         // EVT_DEFIB        by what factor to change pills amount
 const Float:    EVENT_ADREN_EXTRA       = 4.0;          // EVT_ADREN        by what factor to change adren amount
 const Float:    EVENT_ADREN_LESSER      = 0.5;          // EVT_ADREN        by what factor to change a bunch of other items (less useful in this mode)
 const           EVENT_NOHUD_MASK        = 64;           // EVT_NOHUD        bitmask for what to hide

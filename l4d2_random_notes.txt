@@ -11,7 +11,6 @@ L4D2_Random
             - later:    email Chet, see if maybe he likes Random at all...
             
             - test:     defib penalty still not reset correctly after a sudden death round ?
-            
 
     minor cleanup / details
     -----------------------
@@ -19,21 +18,16 @@ L4D2_Random
             - bugfix:   still broken hud thing on solid health healing (cat from 1+22temp => +27 solid breaks) was downed once (3 max incaps)
                         cannot reproduce?
             - nitpick:  melee skeets don't seem to be detected yet..
-            - stabby:   make it possible to restart round with chosen event / pick single event for all maps
             - nitpick:  if penalty values change, the reported !rand/event values don't change with
             - nitpick:  when gifts spawn inside walls etc, fire effects will not spawn
-            - nitpick:  MAXIMUM ammo does not change with the ammo cvars, just initial. and even that seems not to work right.
-                        I want different max ammo counts for scout, awp and ak...
             - remember: forward Action:L4D_OnSpawnSpecial(&zombieClass, const Float:vector[3], const Float:qangle[3]);
                         = when a BOT (only) spawns, you could do some stuff with that?
             - nitpick:  boomer vomit doesn't really appear convincingly from the survivor's mouth
             - nitpick:  if I ever use g_bNoHealthItems beyond EVT_MEDIC, it will cause probs with PickRandomItem() as it is now.
-            - superlow: firext stuff particle effect? see how it's done. only if it's easy (it's not, really).
             - nitpick:  can't see the special role's hat when he's ledged (himself)
-            - nitpick:  prevent two ammo piles spawning too close to eachother?
+            - nitpick:  prevent two ammo piles spawning too close to eachother
             - nitpick:  dark carnival 1 gas cans are not randomized.. (they're a point template, I guess)
-            - nitpick:  gunswap event: survivors don't start with same weapons
-            - code:     Clean up the l4d_drop copied code some more.
+            - nitpick:  gunswap event: survivors don't start with same weapons. maybe add GL?
             - code:     "The SetEntProp functions have a parameter for the array index, use it instead of doing manual lookups and computing offsets."
     
     notes:

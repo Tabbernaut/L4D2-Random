@@ -2051,7 +2051,7 @@ Float: FindDistanceFromFloor(entity)
     new bool: bFoundFloor = false;
     
     // look from up higher, by a bit
-    pos[2] += 5.0;
+    pos[2] += 10.0;
     
     new Float: fNewZ = pos[2];
     
@@ -2084,7 +2084,7 @@ Float: FindDistanceFromFloor(entity)
     if (bFoundFloor == false) {          // no floor found, so don't change
         fDif = 0.0;
     } else {
-        fDif = pos[2] - fNewZ - 5.0;
+        fDif = pos[2] - fNewZ - 10.0;
     }
     return fDif;
 }
@@ -2564,6 +2564,124 @@ SUPPORT_PickEvent(event, client=0)
         PrintToChatAll("\x01[\x05r\x01] Admin forced event: \x04%i\x01. \"%s\".", g_iPickEvent+1, g_csEventTextShort[g_iPickEvent] );
     }
 }
+
+SUPPORT_VotePickGameEvent(event, client)
+{
+    if (!IsClientAndInGame(client) || (GetClientTeam(client) != TEAM_SURVIVOR && GetClientTeam(client) != TEAM_INFECTED) ) { return; }
+    
+    // see if we're doing a vote at the right time
+    if (g_fPickEventTimeout != 0.0 && GetGameTime() < g_fPickEventTimeout)
+    {
+        PrintToChat(client, "\x01[\x05r\x01] Can't pick special event again so quickly (%d second timeout).", RoundToCeil(g_fPickEventTimeout - GetGameTime()) );
+        return;
+    }
+    
+    // what event?
+    if (!g_bTeamSurvivorVotedGameEvent && !g_bTeamInfectedVotedGameEvent)
+    {
+        if (event == -1 || event == 0) {
+            PrintToChat(client, "\x01[\x05r\x01] You must give an event number. Use: \"!gameevent #\". Numbers go from \x041\x01 to \x04%i\x01. For a list, see http://www.tabun.nl/random/.", EVT_TOTAL);
+            return;
+        }
+        else if (event < 1 || event > EVT_TOTAL)
+        {
+            PrintToChat(client, "\x01[\x05r\x01] Wrong event number: \x04%i\x01. For numbers go from \x041\x01 to \x04%i\x01. For a list, see http://www.tabun.nl/random/.", event, EVT_TOTAL);
+            return;
+        }
+        else {
+            g_iPickGameEvent = event - 1;
+        }
+    }
+    
+    // status?
+    if (GetClientTeam(client) == TEAM_SURVIVOR)
+    {
+        if (g_bTeamInfectedVotedGameEvent) {
+            // survivors respond
+            if (!g_bTeamSurvivorVotedGameEvent) {
+                if (event == -1) {
+                    // declined
+                    PrintToChatAll("\x01[\x05r\x01] %N (Survivor) declined the game event pick.", client);
+                } else {
+                    // accepted
+                    PrintToChatAll("\x01[\x05r\x01] %N (Survivor) accepted the game event. All rounds will have event \x04%i\x01.", client, g_iPickGameEvent+1);
+                    SUPPORT_PickGameEvent(g_iPickGameEvent+1);
+                }
+                g_bTeamInfectedVotedGameEvent = false;
+                g_bTeamSurvivorVotedGameEvent = false;
+            }
+        } else {
+            // survivors first
+            if (!g_bTeamSurvivorVotedGameEvent) {
+                g_bTeamSurvivorVotedGameEvent = true;
+                PrintToChatAll("\x01[\x05r\x01] %N (Survivor) voted to pick event for \x03all rounds\x01: \x04%i\x01. \"%s\".", client, g_iPickGameEvent+1, g_csEventTextShort[g_iPickGameEvent] );
+                PrintToChatAll("\x01[\x05r\x01] Infected can \x04!gameevent\x01 to accept (\"\x04!gameevent no\x01\" to decline.)");
+            }
+        }
+    }
+    else
+    {
+        if (g_bTeamSurvivorVotedGameEvent) {
+            // infected respond
+            if (!g_bTeamInfectedVotedGameEvent) {
+                if (event == -1) {
+                    // declined
+                    PrintToChatAll("\x01[\x05r\x01] %N (Survivor) declined the game event pick.", client);
+                } else {
+                    // accepted
+                    PrintToChatAll("\x01[\x05r\x01] %N (Survivor) accepted the game event. All rounds will have event \x04%i\x01.", client, g_iPickGameEvent+1);
+                    SUPPORT_PickGameEvent(g_iPickGameEvent+1, -1);
+                }
+                g_bTeamInfectedVotedEvent = false;
+                g_bTeamSurvivorVotedEvent = false;
+            }
+        } else {
+            // Infected first
+            if (!g_bTeamInfectedVotedGameEvent) {
+                g_bTeamInfectedVotedGameEvent = true;
+                PrintToChatAll("\x01[\x05r\x01] %N (Infected team) voted to pick event for \x03all rounds\x01: \x04%i\x01. \"%s\".", client, g_iPickGameEvent+1, g_csEventTextShort[g_iPickGameEvent] );
+                PrintToChatAll("\x01[\x05r\x01] Survivors can \x04!gameevent\x01 to accept (\"\x04!gameevent no\x01\" to decline.)");
+            }
+        }
+    }
+}
+
+SUPPORT_PickGameEvent(event, client=0)
+{
+    if (event < 1 || event > EVT_TOTAL)
+    {
+        if (client > 0) {
+            PrintToChat(client, "\x01[\x05r\x01] Wrong event number: \x04%i\x01. For numbers go from \x041\x01 to \x04%i\x01. For a list, see http://www.tabun.nl/random/.", event, EVT_TOTAL);
+        }
+        return;
+    }
+    
+    g_iPickGameEvent = event - 1;
+    g_iSpecialEventToForceAlways = g_iPickGameEvent;
+    
+    if (client > 0)
+    {
+        // report to all
+        PrintToChatAll("\x01[\x05r\x01] Admin forced event for \x03all rounds\x01: \x04%i\x01. \"%s\".", g_iPickGameEvent+1, g_csEventTextShort[g_iPickGameEvent] );
+    }
+    
+    RestartMapDelayed();
+}
+
+
+// restarting maps
+RestartMapDelayed()
+{
+	CreateTimer(DELAY_MAPRESTART, Timer_RestartMap, _, TIMER_FLAG_NO_MAPCHANGE);
+	PrintToChatAll("\x01[\x05r\x01] Map restarting in \x04%.f\x01 seconds...", DELAY_MAPRESTART );
+}
+public Action:Timer_RestartMap(Handle:timer)
+{
+	decl String:currentMap[256];
+	GetCurrentMap(currentMap, 256);
+	ServerCommand("changelevel %s", currentMap);
+}
+
 
 /*  CRox multiwitch plugin
     ---------------------- */

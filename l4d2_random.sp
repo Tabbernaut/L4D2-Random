@@ -71,7 +71,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.40",
+    version = "1.0.41",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -186,15 +186,18 @@ public OnPluginStart()
     RegConsoleCmd("sm_bonus",   RandomBonus_Cmd,    "Report the special current round bonus (or penalty).");
     RegConsoleCmd("sm_penalty", RandomBonus_Cmd,    "Report the special current round bonus (or penalty).");
     RegConsoleCmd("sm_drop",    RandomDrop_Cmd,     "Drop your currently selected weapon or item.");
+    RegConsoleCmd("sm_eventinfo", RandomEventInfo_Cmd, "Show information about the current event. Add number to get information for the event with that number (use number in list on website).");
     
     RegConsoleCmd("sm_randteams",   RandomTeamShuffle_Cmd, "Vote for a team shuffle. Only works during readyup.");
     RegConsoleCmd("sm_teamshuffle", RandomTeamShuffle_Cmd, "Vote for a team shuffle. Only works during readyup.");
     
     RegConsoleCmd("sm_event",   RandomPickEvent_Cmd, "Vote for a special event to appear next round (use number in list on website).");
+    RegConsoleCmd("sm_gameevent", RandomPickGameEvent_Cmd, "Vote for a special event for all rounds (use number in list on website).");
     
     // Admin and test commands
     RegAdminCmd("forceteamshuffle",  RandomForceTeamShuffle_Cmd, ADMFLAG_CHEATS, "Shuffle the teams! Only works during readyup. Admins only.");
     RegAdminCmd("forceevent",        RandomForcePickEvent_Cmd,  ADMFLAG_CHEATS, "Force a special event for next round (use number in list on website).");
+    RegAdminCmd("forcegameevent",    RandomForcePickGameEvent_Cmd,  ADMFLAG_CHEATS, "Force a special event for all rounds (use number in list on website).");
     
     //  disable when debugging is done
     #if DEBUG_MODE
@@ -706,6 +709,20 @@ public Action: RandomDrop_Cmd(client, args)
     return Plugin_Handled;
 }
 
+public Action: RandomEventInfo_Cmd(client, args)
+{
+    if (args)
+    {
+        decl String:sMessage[3];
+        GetCmdArg(1, sMessage, sizeof(sMessage));
+        new setevent = StringToInt(sMessage);
+        
+        DoEventInfo(client, setevent);
+    }
+    else {
+        DoEventInfo(client, -1);
+    }
+}
 public Action: RandomTeamShuffle_Cmd(client, args)
 {
     if (!g_bCampaignMode)
@@ -753,6 +770,40 @@ public Action: RandomForcePickEvent_Cmd(client, args)
         new setevent = StringToInt(sMessage);
         
         SUPPORT_PickEvent(setevent, client);
+    }
+    
+    return Plugin_Handled;
+}
+public Action: RandomPickGameEvent_Cmd(client, args)
+{
+    if (args)
+    {
+        decl String:sMessage[3];
+        GetCmdArg(1, sMessage, sizeof(sMessage));
+    
+        if (StrEqual(sMessage, "no", false)) {
+            SUPPORT_VotePickGameEvent(-1, client);
+        }
+        else {
+            new setevent = StringToInt(sMessage);
+            SUPPORT_VotePickGameEvent(setevent, client);
+        }
+    }
+    else {
+        SUPPORT_VotePickGameEvent(0, client);
+    }
+    
+    return Plugin_Handled;
+}
+public Action: RandomForcePickGameEvent_Cmd(client, args)
+{
+    if (args)
+    {
+        decl String:sMessage[3];
+        GetCmdArg(1, sMessage, sizeof(sMessage));
+        new setevent = StringToInt(sMessage);
+        
+        SUPPORT_PickGameEvent(setevent, client);
     }
     
     return Plugin_Handled;
