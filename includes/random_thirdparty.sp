@@ -111,38 +111,42 @@ bool: SUPPORT_DropItemSlot(client, slot, bool:throwItem=false)
             
             if (StrEqual(weapon, "weapon_rifle") || StrEqual(weapon, "weapon_rifle_sg552") || StrEqual(weapon, "weapon_rifle_desert") || StrEqual(weapon, "weapon_rifle_ak47"))
             {
-                ammo = GetEntData(client, ammoOffset+(12));
-                SetEntData(client, ammoOffset+(12), 0);
+                ammo = GetEntData(client, ammoOffset+(ASSAULT_RIFLE_OFFSET_IAMMO));
+                SetEntData(client, ammoOffset+(ASSAULT_RIFLE_OFFSET_IAMMO), 0);
             }
             else if (StrEqual(weapon, "weapon_smg") || StrEqual(weapon, "weapon_smg_silenced") || StrEqual(weapon, "weapon_smg_mp5"))
             {
-                ammo = GetEntData(client, ammoOffset+(20));
-                SetEntData(client, ammoOffset+(20), 0);
+                ammo = GetEntData(client, ammoOffset+(SMG_OFFSET_IAMMO));
+                SetEntData(client, ammoOffset+(SMG_OFFSET_IAMMO), 0);
             }
             else if (StrEqual(weapon, "weapon_pumpshotgun") || StrEqual(weapon, "weapon_shotgun_chrome"))
             {
-                ammo = GetEntData(client, ammoOffset+(28));
-                SetEntData(client, ammoOffset+(28), 0);
+                ammo = GetEntData(client, ammoOffset+(SHOTGUN_OFFSET_IAMMO));
+                SetEntData(client, ammoOffset+(SHOTGUN_OFFSET_IAMMO), 0);
             }
             else if (StrEqual(weapon, "weapon_autoshotgun") || StrEqual(weapon, "weapon_shotgun_spas"))
             {
-                ammo = GetEntData(client, ammoOffset+(32));
-                SetEntData(client, ammoOffset+(32), 0);
+                ammo = GetEntData(client, ammoOffset+(AUTO_SHOTGUN_OFFSET_IAMMO));
+                SetEntData(client, ammoOffset+(AUTO_SHOTGUN_OFFSET_IAMMO), 0);
             }
             else if (StrEqual(weapon, "weapon_hunting_rifle"))
             {
-                ammo = GetEntData(client, ammoOffset+(36));
-                SetEntData(client, ammoOffset+(36), 0);
+                ammo = GetEntData(client, ammoOffset+(SNIPER_OFFSET_IAMMO));
+                SetEntData(client, ammoOffset+(SNIPER_OFFSET_IAMMO), 0);
             }
             else if (StrEqual(weapon, "weapon_sniper_scout") || StrEqual(weapon, "weapon_sniper_military") || StrEqual(weapon, "weapon_sniper_awp"))
             {
-                ammo = GetEntData(client, ammoOffset+(40));
-                SetEntData(client, ammoOffset+(40), 0);
+                ammo = GetEntData(client, ammoOffset+(MILITARY_SNIPER_OFFSET_IAMMO));
+                SetEntData(client, ammoOffset+(MILITARY_SNIPER_OFFSET_IAMMO), 0);
             }
             else if (StrEqual(weapon, "weapon_grenade_launcher"))
             {
-                ammo = GetEntData(client, ammoOffset+(68));
-                SetEntData(client, ammoOffset+(68), 0);
+                ammo = GetEntData(client, ammoOffset+(GRENADE_LAUNCHER_OFFSET_IAMMO));
+                SetEntData(client, ammoOffset+(GRENADE_LAUNCHER_OFFSET_IAMMO), 0);
+            }
+            else if (StrEqual(weapon, "weapon_rifle_m60"))
+            {
+                ammo = -1;
             }
             else { return false; }
         }
@@ -234,7 +238,9 @@ bool: SUPPORT_DropItemSlot(client, slot, bool:throwItem=false)
 
         if (slot == 0)
         {
-            SetEntProp(index, Prop_Send, "m_iExtraPrimaryAmmo", ammo);
+            if (ammo != -1) {
+                SetEntProp(index, Prop_Send, "m_iExtraPrimaryAmmo", ammo);
+            }
             SetEntProp(index, Prop_Send, "m_iClip1", clip);
             SetEntProp(index, Prop_Send, "m_upgradeBitVec", upgrade);
             SetEntProp(index, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded", upammo);
@@ -276,7 +282,7 @@ SUPPORT_GetCurrentWeaponSlot(client)
     {
         switch (itemCheck)
         {
-            case ITEM_PICKUP_PENALTY_PRIMARY_T1, ITEM_PICKUP_PENALTY_PRIMARY_T2: { slot = PLAYER_SLOT_PRIMARY; }
+            case ITEM_PICKUP_PENALTY_PRIMARY_T1, ITEM_PICKUP_PENALTY_PRIMARY_T2, ITEM_PICKUP_PENALTY_PRIMARY_T3: { slot = PLAYER_SLOT_PRIMARY; }
             case ITEM_PICKUP_PENALTY_SAW, ITEM_PICKUP_PENALTY_MELEE, ITEM_PICKUP_PENALTY_MAGNUM, ITEM_PICKUP_PENALTY_PISTOL: { slot = PLAYER_SLOT_SECONDARY; }
         }
     }

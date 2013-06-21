@@ -1,6 +1,6 @@
 #pragma semicolon 1
 
-const           DEBUG_MODE              = 1;
+const           DEBUG_MODE              = 0;
 
 // Random global size config
 // -------------------------

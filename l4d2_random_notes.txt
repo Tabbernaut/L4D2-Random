@@ -33,7 +33,8 @@ L4D2_Random
     notes:
     ------
             - Replacing models with SetEntityModel with survivors doesn't work well - animations are too important.
-            - I tried the modelscale netprop, which worked sometimes. most of the time it glitched a LOT of things. It made some players practically immune to damage and so on. horrid.
+            - I tried the modelscale netprop, which worked sometimes. most of the time it glitched a LOT of things.
+              It made some players practically immune to damage and so on. horrid.
     
     video:
     ------

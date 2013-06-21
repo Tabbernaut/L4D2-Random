@@ -71,7 +71,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.41",
+    version = "1.0.42",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -179,24 +179,24 @@ public OnPluginStart()
     }
 
     // Commands
-    RegConsoleCmd("sm_info",    RandomHelp_Cmd,     "Show some Random help information.");
-    RegConsoleCmd("sm_random",  RandomHelp_Cmd,     "Show some Random help information.");
-    RegConsoleCmd("sm_rnd",     RandomReport_Cmd,   "Report what special randomness is currently active.");
-    RegConsoleCmd("sm_rand",    RandomReport_Cmd,   "Report what special randomness is currently active.");
-    RegConsoleCmd("sm_bonus",   RandomBonus_Cmd,    "Report the special current round bonus (or penalty).");
-    RegConsoleCmd("sm_penalty", RandomBonus_Cmd,    "Report the special current round bonus (or penalty).");
-    RegConsoleCmd("sm_drop",    RandomDrop_Cmd,     "Drop your currently selected weapon or item.");
-    RegConsoleCmd("sm_eventinfo", RandomEventInfo_Cmd, "Show information about the current event. Add number to get information for the event with that number (use number in list on website).");
+    RegConsoleCmd("sm_info",        RandomHelp_Cmd,         "Show some Random help information.");
+    RegConsoleCmd("sm_random",      RandomHelp_Cmd,         "Show some Random help information.");
+    RegConsoleCmd("sm_rnd",         RandomReport_Cmd,       "Report what special randomness is currently active.");
+    RegConsoleCmd("sm_rand",        RandomReport_Cmd,       "Report what special randomness is currently active.");
+    RegConsoleCmd("sm_bonus",       RandomBonus_Cmd,        "Report the special current round bonus (or penalty).");
+    RegConsoleCmd("sm_penalty",     RandomBonus_Cmd,        "Report the special current round bonus (or penalty).");
+    RegConsoleCmd("sm_drop",        RandomDrop_Cmd,         "Drop your currently selected weapon or item.");
+    RegConsoleCmd("sm_eventinfo",   RandomEventInfo_Cmd,    "Show information about the current event. Add number to get information for the event with that number (use number in list on website).");
     
-    RegConsoleCmd("sm_randteams",   RandomTeamShuffle_Cmd, "Vote for a team shuffle. Only works during readyup.");
-    RegConsoleCmd("sm_teamshuffle", RandomTeamShuffle_Cmd, "Vote for a team shuffle. Only works during readyup.");
+    RegConsoleCmd("sm_randteams",   RandomTeamShuffle_Cmd,  "Vote for a team shuffle. Only works during readyup.");
+    RegConsoleCmd("sm_teamshuffle", RandomTeamShuffle_Cmd,  "Vote for a team shuffle. Only works during readyup.");
     
-    RegConsoleCmd("sm_event",   RandomPickEvent_Cmd, "Vote for a special event to appear next round (use number in list on website).");
-    RegConsoleCmd("sm_gameevent", RandomPickGameEvent_Cmd, "Vote for a special event for all rounds (use number in list on website).");
+    RegConsoleCmd("sm_event",       RandomPickEvent_Cmd,    "Vote for a special event to appear next round (use number in list on website).");
+    RegConsoleCmd("sm_gameevent",   RandomPickGameEvent_Cmd, "Vote for a special event for all rounds (use number in list on website).");
     
     // Admin and test commands
-    RegAdminCmd("forceteamshuffle",  RandomForceTeamShuffle_Cmd, ADMFLAG_CHEATS, "Shuffle the teams! Only works during readyup. Admins only.");
-    RegAdminCmd("forceevent",        RandomForcePickEvent_Cmd,  ADMFLAG_CHEATS, "Force a special event for next round (use number in list on website).");
+    RegAdminCmd("forceteamshuffle",  RandomForceTeamShuffle_Cmd,    ADMFLAG_CHEATS, "Shuffle the teams! Only works during readyup. Admins only.");
+    RegAdminCmd("forceevent",        RandomForcePickEvent_Cmd,      ADMFLAG_CHEATS, "Force a special event for next round (use number in list on website).");
     RegAdminCmd("forcegameevent",    RandomForcePickGameEvent_Cmd,  ADMFLAG_CHEATS, "Force a special event for all rounds (use number in list on website).");
     
     //  disable when debugging is done

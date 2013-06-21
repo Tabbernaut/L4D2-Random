@@ -304,8 +304,6 @@ INIT_FillTries()
     g_hTrieCommands = CreateTrie();
     SetTrieValue(g_hTrieCommands, "!rand",          RANDOM_COMMAND);
     SetTrieValue(g_hTrieCommands, "!random",        RANDOM_COMMAND);
-    //SetTrieValue(g_hTrieCommands, "!teamshuffle",   RANDOM_COMMAND);
-    //SetTrieValue(g_hTrieCommands, "!randteams",     RANDOM_COMMAND);
     SetTrieValue(g_hTrieCommands, "!info",          RANDOM_COMMAND);
     SetTrieValue(g_hTrieCommands, "!drop",          RANDOM_COMMAND);
     SetTrieValue(g_hTrieCommands, "!bonus",         RANDOM_COMMAND);
@@ -449,10 +447,6 @@ INIT_FillTries()
     SetTrieValue(g_hTriePenaltyItems, "weapon_sniper_scout",        ITEM_PICKUP_PENALTY_PRIMARY_T1);
     SetTrieValue(g_hTriePenaltyItems, "weapon_grenade_launcher",    ITEM_PICKUP_PENALTY_PRIMARY_T3);
     SetTrieValue(g_hTriePenaltyItems, "weapon_rifle_m60",           ITEM_PICKUP_PENALTY_PRIMARY_T3);
-    //SetTrieValue(g_hTriePenaltyItems, "fireworkcrate",              ITEM_PICKUP_CANISTER);
-    //SetTrieValue(g_hTriePenaltyItems, "gascan",                     ITEM_PICKUP_CANISTER);
-    //SetTrieValue(g_hTriePenaltyItems, "propanetank",                ITEM_PICKUP_CANISTER);
-    //SetTrieValue(g_hTriePenaltyItems, "oxygentank",                 ITEM_PICKUP_CANISTER);
     
     g_hTriePropItems = CreateTrie();
     SetTrieValue(g_hTriePropItems, "weapon_gnome",                  ITEM_PROP_GNOME);
