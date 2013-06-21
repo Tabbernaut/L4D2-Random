@@ -15,7 +15,6 @@
 INIT_DefineCVars()
 {
     // ConVars
-    
     g_hCvarDebug = CreateConVar(                            "rand_debug",                    "2",       "Random debug mode. (0: only error reporting, -1: disable all reports, 1+: set debug report level)", FCVAR_PLUGIN, true, -1.0, true, 5.0);
     g_hCvarConfogl = CreateConVar(                          "rand_confogl",                  "1",       "Whether random is loaded as a confogl matchmode (changes the way cvar defaults are read).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarSimplePauseCheck = CreateConVar(                 "rand_simplepausecheck",         "1",       "Uses sv_pausable for a simple pause check.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -171,13 +170,14 @@ INIT_DefineCVars()
     g_hArCvarGiftWeight[GIFT_POS_AMMO] = CreateConVar(      "rand_weight_gift_getammo",      "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_POS_ITEMS] = CreateConVar(     "rand_weight_gift_getitems",     "7",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_POS_LASER] = CreateConVar(     "rand_weight_gift_getlaser",     "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarGiftWeight[GIFT_POS_INSIGHT] = CreateConVar(   "rand_weight_gift_survinsight",  "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_POS_INSIGHT] = CreateConVar(   "rand_weight_gift_survinsight",  "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_NEG_VOMIT] = CreateConVar(     "rand_weight_gift_vomit",        "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarGiftWeight[GIFT_NEG_PANIC] = CreateConVar(     "rand_weight_gift_panic",        "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_NEG_PANIC] = CreateConVar(     "rand_weight_gift_panic",        "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_NEG_ALLDROP] = CreateConVar(   "rand_weight_gift_alldrop",      "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_NEG_EXPLODE] = CreateConVar(   "rand_weight_gift_explode",      "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_NEG_FIRE] = CreateConVar(      "rand_weight_gift_fire",         "4",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarGiftWeight[GIFT_NEG_INSIGHT] = CreateConVar(   "rand_weight_gift_infinsight",   "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_NEG_BLIND] = CreateConVar(     "rand_weight_gift_blind",        "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_NEG_INSIGHT] = CreateConVar(   "rand_weight_gift_infinsight",   "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     
     // built in cvars (for tracking)
@@ -733,6 +733,8 @@ RConfig_Read()
         
         g_RC_fExplosionPowerHigh = KvGetFloat(kRCData, "explosion_power_high", g_RC_fExplosionPowerHigh);
         g_RC_fExplosionPowerLow = KvGetFloat(kRCData, "explosion_power_low", g_RC_fExplosionPowerLow);
+        
+        g_RC_fBlindTime = KvGetFloat(kRCData, "gift_blind_time", g_RC_fBlindTime);
         
         // extra options
         g_RC_bExtraCommonModels = bool: (KvGetNum(kRCData, "extra_common_models", 1));

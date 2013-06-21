@@ -3796,6 +3796,22 @@ RANDOM_DoGiftEffect(client, entity)
                     CreateTimer(1.5, Timer_Vocalize_Random, pack, TIMER_FLAG_NO_MAPCHANGE);
                 }
             }
+            case GIFT_NEG_BLIND: {  // blinds a survivor
+                PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04temporary blindness\x01.", client);
+                
+                PrintHintText(client, "You are blinded for %.f seconds...", g_RC_fBlindTime);
+                
+                DoBlindSurvivor(client, BLIND_AMOUNT);
+                
+                new Handle:pack = CreateDataPack();
+                WritePackCell(pack, client);
+                WritePackString(pack, "ReactionNegative");
+                CreateTimer(1.0, Timer_Vocalize_Random, pack, TIMER_FLAG_NO_MAPCHANGE);
+                
+                // unblind:
+                CreateTimer(g_RC_fBlindTime, Timer_UnBlindSurvivor, client, TIMER_FLAG_NO_MAPCHANGE);
+            }
+            
             case GIFT_NEG_INSIGHT: {   // give insight
                 PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04infected insight\x01...", client);
                 DoInsightReport(TEAM_INFECTED);

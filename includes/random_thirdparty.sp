@@ -1506,6 +1506,44 @@ public Action:Timer_MolotovThink(Handle:h_Timer, any:i_Ent)
 }
 */
 
+
+/*  Blindness
+    --------- */
+
+// amount = 0 = unblind
+DoBlindSurvivor(target, amount)
+{
+	new targets[2];
+	targets[0] = target;
+	
+	new Handle:message = StartMessageEx(g_FadeUserMsgId, targets, 1);
+	BfWriteShort(message, 1536);
+	BfWriteShort(message, 1536);
+	
+	if (amount == 0)
+	{
+		BfWriteShort(message, (0x0001 | 0x0010));
+	}
+	else
+	{
+		BfWriteShort(message, (0x0002 | 0x0008));
+	}
+	
+	BfWriteByte(message, 0);
+	BfWriteByte(message, 0);
+	BfWriteByte(message, 0);
+	BfWriteByte(message, amount);
+	
+	EndMessage();
+}
+
+public Action:Timer_UnBlindSurvivor(Handle:timer, any:client)
+{
+    if (IsSurvivor(client)) {
+        DoBlindSurvivor(client, 0);
+    }
+}
+
 /*  Vomiting
     -------- */
 

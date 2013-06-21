@@ -315,12 +315,13 @@ const           GIFT_NEG_PANIC          = 7;
 const           GIFT_NEG_ALLDROP        = 8;
 const           GIFT_NEG_EXPLODE        = 9;
 const           GIFT_NEG_FIRE           = 10;
-const           GIFT_NEG_INSIGHT        = 11;
+const           GIFT_NEG_BLIND          = 11;
+const           GIFT_NEG_INSIGHT        = 12;
 
 const           GIFT_FIRST_POS_NSR      = 3;            // not-saferoom safe
 const           GIFT_FIRST_NEG          = 6;
 const           GIFT_FIRST_NEG_NSR      = 9;
-const           GIFT_TOTAL              = 12;
+const           GIFT_TOTAL              = 13;
 
 const           DIFFICULTY_NOCHANGE     = 0;            // don't change it
 const           DIFFICULTY_NORMAL       = 1;            // event difficulty
@@ -364,6 +365,7 @@ const           VOMIT_TYPE_SUR          = 1;
 const           VOMIT_TYPE_SI           = 2;
 const           VOMIT_TYPE_CI           = 4;
 
+const           BLIND_AMOUNT            = 215;          // can still see some stuff up close
 
 // Resources
 // ---------

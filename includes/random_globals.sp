@@ -258,6 +258,9 @@ new     bool:           g_bAlreadyVomitedUpon   [MAXPLAYERS+1]              = fa
 new                     g_iHatIndex[MAXPLAYERS+1];				// Player hat entity reference
 new                     g_iType[MAXPLAYERS+1];					// Stores selected hat to give players.
 
+// Blindness
+new     UserMsg:        g_FadeUserMsgId;
+
 // RandomMapInfo keyvalues
 new     Handle:         g_kRIData                                           = INVALID_HANDLE;       // keyvalues handle for randommapinfo.txt
 new     bool:           g_RI_bIsIntro                                       = false;                // only true for intro maps
@@ -493,6 +496,8 @@ new     Float:          g_RC_fVomitStreamTime                               = 3.
 
 new     Float:          g_RC_fExplosionPowerHigh                            = 30.0;
 new     Float:          g_RC_fExplosionPowerLow                             = 20.0;
+
+new     Float:          g_RC_fBlindTime                                     = 15.0;
 
 // other RC options
 new     bool:           g_RC_bExtraCommonModels                             = true;

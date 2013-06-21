@@ -71,7 +71,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.42",
+    version = "1.0.43",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -154,6 +154,9 @@ public OnPluginStart()
     INIT_DefineCVars();
     INIT_FillTries();
     INIT_PrecacheModels(true);
+    
+    // for blindness message
+    g_FadeUserMsgId = GetUserMessageId("Fade");
     
     // prepare client array
     g_hSteamIds = CreateArray(32);
@@ -542,7 +545,9 @@ public Action: TestGnomes_Cmd(client, args)
         
         // hat test
         if (event) {
-            CreateHat(setclient, event);
+            //CreateHat(setclient, event);
+            DoBlindSurvivor(setclient, event);
+            CreateTimer(5.0, Timer_UnBlindSurvivor, setclient, TIMER_FLAG_NO_MAPCHANGE);
         }
         else {
             if (IsClientAndInGame(setclient)) {
