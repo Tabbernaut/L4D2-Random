@@ -64,6 +64,8 @@
 		"explosion_power_high"		"30.0"
 		"explosion_power_low"		"20.0"
 
+		"gift_blind_time"		"13.0"
+
 		// extra options
 		"extra_common_models"		"1"
 		"draw_panel_report"		"1"
