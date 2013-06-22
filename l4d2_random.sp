@@ -71,7 +71,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.43",
+    version = "1.0.44",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -2417,11 +2417,21 @@ public L4D_OnEnterGhostState(client)
 {
     PrintDebug(4, "[rand si] %N entered ghost state (class %s).%s", client, g_csSIClassName[ GetEntProp(client, Prop_Send, "m_zombieClass") ], (g_bHasSpawned[client]) ? " Was spawned before." : "");
     
-    if (IsInfected(client) && IsPlayerGhost(client) && !g_bHasSpawned[client])
+    if (IsInfected(client) && IsPlayerGhost(client))
     {
-        g_bClassPicked[client] = true;
-        DetermineSpawnClass(client, GetEntProp(client, Prop_Send, "m_zombieClass"));
+        if (!g_bHasSpawned[client])
+        {
+            g_bClassPicked[client] = true;
+            DetermineSpawnClass(client, GetEntProp(client, Prop_Send, "m_zombieClass"));
+        }
+        else
+        {
+            // if it's a despawn/respawn, reset sack detection
+            g_fGotGhost[client] = GetGameTime();
+            g_fDeathAfterGhost[client] = 0.0;
+        }
     }
+    
 }
 
 public Action:Event_GhostSpawnTime(Handle:hEvent, const String:name[], bool:dontBroadcast)

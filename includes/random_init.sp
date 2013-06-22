@@ -128,7 +128,7 @@ INIT_DefineCVars()
     g_hArCvarSurvWeight[INDEX_SURV_MELEE] = CreateConVar(   "rand_weight_surv_melee",       "10",       "Weight for picking survivor starting gear.", FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     g_hArCvarEvtWeight[EVT_ITEM] = CreateConVar(            "rand_weight_evt_item",          "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_HORDE_HUGE] = CreateConVar(      "rand_weight_evt_horde",         "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_HORDE_HUGE] = CreateConVar(      "rand_weight_evt_horde",         "3",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_HORDE_NONE] = CreateConVar(      "rand_weight_evt_nohorde",       "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_UNCOMMON] = CreateConVar(        "rand_weight_evt_uncommon",      "4",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_CLOWNS] = CreateConVar(          "rand_weight_evt_circus",        "3",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
