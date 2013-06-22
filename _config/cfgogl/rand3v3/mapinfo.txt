@@ -1271,4 +1271,20 @@
         "start_extra_dist"  "400.000000"
         "end_dist"          "50.000000"
     }
+    "l4d2_ravenholmwar_1"
+    {
+        "max_distance"      "400"
+    }
+    "l4d2_ravenholmwar_2"
+    {
+        "max_distance"      "500"
+    }
+    "l4d2_ravenholmwar_3"
+    {
+        "max_distance"      "600"
+    }
+    "l4d2_ravenholmwar_4"
+    {
+        "max_distance"      "500"
+    }
 }
