@@ -15,6 +15,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     // only reset on first roundhalf or if event's not equal
     if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_EVENT))
     {
+        g_bT2Nerfed = true;
         g_bNoPriWeapons = false;
         g_bNoSecWeapons = false;
         g_bNoAmmo = false;
@@ -1362,7 +1363,7 @@ Float: SUPPORT_GetSpeedFactor(target)
         {
             if (itemHasPenalty == ITEM_PICKUP_PENALTY_PRIMARY_T3) {
                 fWeight += EVENT_ENC_W_T3;
-            } else if (itemHasPenalty == ITEM_PICKUP_PENALTY_PRIMARY_T2) {
+            } else if (itemHasPenalty == ITEM_PICKUP_PENALTY_PRIMARY_T2 || itemHasPenalty == ITEM_PICKUP_PENALTY_PRIMARY_SNIPER) {
                 fWeight += EVENT_ENC_W_T2;
             } else if (itemHasPenalty == ITEM_PICKUP_PENALTY_PRIMARY_T1) {
                 fWeight += EVENT_ENC_W_T1;
@@ -2234,6 +2235,157 @@ bool: NoSurvivorInSaferoom()
 }
 
 
+
+/*  Weapon nerfing 
+    -------------- */
+bool: SUPPORT_IsNerfSecondary(entity, client)
+{
+    if (!entity || !IsValidEntity(entity) || !IsValidEdict(entity)) { return false; }
+    
+    decl String:wclass[64];
+    if (!GetEdictClassname(entity, wclass, sizeof(wclass))) { return false; }
+
+    // if it's a weapon spawn
+    if (StrEqual(wclass, "weapon_spawn")) {
+        new wepid = GetEntProp(entity, Prop_Send, "m_weaponID");
+        switch (wepid)
+        {
+            case WEPID_PISTOL: {
+                // if client already carries one, yes
+                return SUPPORT_PlayerHasPistol(client);
+            }
+            case WEPID_PISTOL_MAGNUM, WEPID_CHAINSAW, WEPID_MELEE: {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    // if it's a normal weapon
+    new itemPickupPenalty: itemWepType;
+    if (GetTrieValue(g_hTriePenaltyItems, wclass, itemWepType))
+    {
+        switch (itemWepType)
+        {
+            case ITEM_PICKUP_PENALTY_PISTOL: {
+                // if client already carries one, yes
+                return SUPPORT_PlayerHasPistol(client);
+            }
+            case ITEM_PICKUP_PENALTY_SAW, ITEM_PICKUP_PENALTY_MAGNUM, ITEM_PICKUP_PENALTY_MELEE: {
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+
+bool: SUPPORT_IsNerfTier2(entity)
+{
+    // consider adding snipers to this check?
+    
+    if (!entity || !IsValidEntity(entity) || !IsValidEdict(entity)) { return false; }
+    
+    decl String:wclass[64];
+    if (!GetEdictClassname(entity, wclass, sizeof(wclass))) { return false; }
+
+    // if it's a weapon spawn
+    if (StrEqual(wclass, "weapon_spawn")) {
+        new wepid = GetEntProp(entity, Prop_Send, "m_weaponID");
+        switch (wepid)
+        {
+            case WEPID_AUTOSHOTGUN, WEPID_SHOTGUN_SPAS, WEPID_RIFLE, WEPID_RIFLE_AK47, WEPID_RIFLE_DESERT, WEPID_RIFLE_SG552: {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    // if it's a normal weapon
+    new itemPickupPenalty: itemWepType;
+    if (GetTrieValue(g_hTriePenaltyItems, wclass, itemWepType))
+    {
+        if (itemWepType == ITEM_PICKUP_PENALTY_PRIMARY_T2) { return true; }
+    }
+    
+    return false;
+}
+
+bool: SUPPORT_PlayerHasPistol(client)
+{
+    if (!IsSurvivor(client) || !IsPlayerAlive(client)) { return false; }
+    
+    new slotSec = GetPlayerWeaponSlot(client, PLAYER_SLOT_SECONDARY);
+    if (slotSec < 1 || !IsValidEntity(slotSec)) { return false; }
+    
+    decl String:classname[64];
+    GetEdictClassname(slotSec, classname, sizeof(classname));
+    new itemPickupPenalty: itemIsPistol;
+    if (GetTrieValue(g_hTriePenaltyItems, classname, itemIsPistol))
+    {
+        if (itemIsPistol == ITEM_PICKUP_PENALTY_PISTOL) { return true; }
+    }
+    
+    return false;
+}
+
+bool: SUPPORT_PlayerHasT2(client)
+{
+    if (!IsSurvivor(client) || !IsPlayerAlive(client)) { return false; }
+    
+    new slotPri = GetPlayerWeaponSlot(client, PLAYER_SLOT_PRIMARY);
+    if (slotPri < 1 || !IsValidEntity(slotPri)) { return false; }
+    
+    decl String:classname[64];
+    GetEdictClassname(slotPri, classname, sizeof(classname));
+    new itemPickupPenalty: itemIsT2;
+    if (GetTrieValue(g_hTriePenaltyItems, classname, itemIsT2))
+    {
+        if (itemIsT2 == ITEM_PICKUP_PENALTY_PRIMARY_T2) { return true; }
+    }
+    
+    return false;
+}
+
+SUPPORT_FixNerfTier2(client)
+{
+    // called when a player picks up a T2
+    
+    new slotSec = GetPlayerWeaponSlot(client, PLAYER_SLOT_SECONDARY);
+    new bool: bDropped = false;
+    
+    if (IsValidEntity(slotSec))
+    {
+        decl String:classname[64];
+        GetEdictClassname(slotSec, classname, sizeof(classname));
+        new itemPickupPenalty: itemHasPenalty;
+        if (GetTrieValue(g_hTriePenaltyItems, classname, itemHasPenalty))
+        {
+            switch (itemHasPenalty)
+            {
+                case ITEM_PICKUP_PENALTY_PISTOL: {
+                    if (GetEntProp(slotSec, Prop_Send, "m_hasDualWeapons")) {
+                        // dual wielding. drop one pistol
+                        bDropped = SUPPORT_DropItemSlot(client, PLAYER_SLOT_SECONDARY);
+                    }
+                }
+                case ITEM_PICKUP_PENALTY_MAGNUM, ITEM_PICKUP_PENALTY_MELEE, ITEM_PICKUP_PENALTY_SAW: {
+                    // drop it
+                    bDropped = SUPPORT_DropItemSlot(client, PLAYER_SLOT_SECONDARY);
+                }
+            }
+        }
+    }
+    
+    if (bDropped)
+    {
+        // report
+        PrintToChat(client, "\x01[\x05r\x01] Only single pistol allowed with \x04T2\x01 rifle/shotgun. Dropped secondary.");
+    }
+}
+
 /*  Team changes and other votes
     ------------ */
 SUPPORT_VoteShuffleTeams(client)
@@ -2672,14 +2824,14 @@ SUPPORT_PickGameEvent(event, client=0)
 // restarting maps
 RestartMapDelayed()
 {
-	CreateTimer(DELAY_MAPRESTART, Timer_RestartMap, _, TIMER_FLAG_NO_MAPCHANGE);
-	PrintToChatAll("\x01[\x05r\x01] Map restarting in \x04%.f\x01 seconds...", DELAY_MAPRESTART );
+    CreateTimer(DELAY_MAPRESTART, Timer_RestartMap, _, TIMER_FLAG_NO_MAPCHANGE);
+    PrintToChatAll("\x01[\x05r\x01] Map restarting in \x04%.f\x01 seconds...", DELAY_MAPRESTART );
 }
 public Action:Timer_RestartMap(Handle:timer)
 {
-	decl String:currentMap[256];
-	GetCurrentMap(currentMap, 256);
-	ServerCommand("changelevel %s", currentMap);
+    decl String:currentMap[256];
+    GetCurrentMap(currentMap, 256);
+    ServerCommand("changelevel %s", currentMap);
 }
 
 

@@ -11,6 +11,8 @@ L4D2_Random
             - later:    email Chet, see if maybe he likes Random at all...
             
             - test:     defib penalty still not reset correctly after a sudden death round ?
+            - test:     still jockey in l4d1 mode ... sigh
+            
 
     minor cleanup / details
     -----------------------

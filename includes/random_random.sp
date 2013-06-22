@@ -180,6 +180,16 @@ DoPanelReport()
         } 
     }
     
+    // report double tanks
+    if (g_bDoubleTank) {
+        DrawPanelText(panel, "Double tank.");
+    }
+    
+    // report multi-witches
+    if (g_bMultiWitch) {
+        DrawPanelText(panel, "Multiple witches.");
+    }
+    
     DrawPanelItem(panel, "", ITEMDRAW_SPACER);
     
     if (g_iSpecialEvent != -1) {
@@ -821,6 +831,7 @@ RANDOM_DetermineRandomStuff()
                 }
                 case EVT_GUNSWAP: {
                     // don't allow normal weapon spawns
+                    g_bT2Nerfed = false;
                     g_bNoPriWeapons = true;
                     g_bNoAmmo = true;
                 }
@@ -868,8 +879,10 @@ RANDOM_DetermineRandomStuff()
                 }
                 case EVT_ENCUMBERED: {
                     g_iDifficultyRating++;
+                    g_bT2Nerfed = false;
                 }
                 case EVT_FIREPOWER: {
+                    g_bT2Nerfed = false;
                     EVENT_SetDifficulty(DIFFICULTY_HARD, DIFFICULTY_HARD);
                     g_iDifficultyRating -= 2;
                     
@@ -896,6 +909,7 @@ RANDOM_DetermineRandomStuff()
                     g_iDifficultyRating++;
                 }
                 case EVT_WOMEN: {
+                    g_bT2Nerfed = false;
                     g_bNoPriWeapons = true;
                     g_bNoSecWeapons = true;
                     g_bNoAmmo = true;
@@ -4126,7 +4140,7 @@ DetermineSpawnClass(any:client, any:iClass)
                 // report to offending client
                 if (reportMode == 1 || ( reportMode == 2 && g_iOffences[offendingClient] == 3) )
                 {
-                    PrintToChat(offendingClient, "\x01[\x05r\x01] Holding onto spawns makes your team get less chargers and no quad-caps. (try to attack together)");
+                    PrintToChat(offendingClient, "\x01[\x05r\x01] Holding onto spawns makes your team get less chargers and no quad-caps. (attack together)");
                 }
                 
                 // report to slighted party
@@ -4158,29 +4172,38 @@ DetermineSpawnClass(any:client, any:iClass)
     
     // prevent unwanted picks!
     //  if (for whatever reason) a class is not accepted, repick
-    if (!forcedClass && !IsAcceptedClass(acceptClasses, acceptCount, iClass))
+    if (!forcedClass)
     {
-        new oldClass = iClass;
-        iClass = acceptClasses[ GetRandomInt(0, acceptCount - 1) ];
-        
-        // repicks for death order
-        if (g_iClassTimeout[iClass] > 0)
+        if (acceptCount < 1)
         {
-            new dMode = GetConVarInt(g_hCvarDeathOrderMode);
-            
-            if (dMode == 1) {
-                if (GetRandomFloat(0.001,1.0) <= (float(g_iClassTimeout[iClass]) / 3.0) * 0.5) {
-                    iClass = acceptClasses[ GetRandomInt(0, acceptCount - 1) ];
-                }
-            }
-            else if (dMode == 2) {
-                if (GetRandomFloat(0.001,1.0) <= (float(g_iClassTimeout[iClass]) / 4.0) * 1.0) {
-                    iClass = acceptClasses[ GetRandomInt(0, acceptCount - 1) ];
-                }
-            }
+            // nothing is accepted
+            iClass = ZC_HUNTER;
+            PrintDebug(2, "[rand si] spawns problem: nothing is accepted! fallback to hunter for %N.", client);
         }
+        else if (!IsAcceptedClass(acceptClasses, acceptCount, iClass))
+        {
+            new oldClass = iClass;
+            iClass = acceptClasses[ GetRandomInt(0, acceptCount - 1) ];
+            
+            // repicks for death order
+            if (g_iClassTimeout[iClass] > 0)
+            {
+                new dMode = GetConVarInt(g_hCvarDeathOrderMode);
+                
+                if (dMode == 1) {
+                    if (GetRandomFloat(0.001,1.0) <= (float(g_iClassTimeout[iClass]) / 3.0) * 0.5) {
+                        iClass = acceptClasses[ GetRandomInt(0, acceptCount - 1) ];
+                    }
+                }
+                else if (dMode == 2) {
+                    if (GetRandomFloat(0.001,1.0) <= (float(g_iClassTimeout[iClass]) / 4.0) * 1.0) {
+                        iClass = acceptClasses[ GetRandomInt(0, acceptCount - 1) ];
+                    }
+                }
+            }
         
-        PrintDebug(2, "[rand si] spawn repick for %N: %s => %s instead.", client, g_csSIClassName[oldClass], g_csSIClassName[iClass]);
+            PrintDebug(2, "[rand si] spawn repick for %N: %s => %s instead.", client, g_csSIClassName[oldClass], g_csSIClassName[iClass]);
+        }
     }
     
     // debug report for forced spawns

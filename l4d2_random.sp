@@ -71,7 +71,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.44",
+    version = "1.0.45",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -175,6 +175,7 @@ public OnPluginStart()
         {
             if (IsClientInGame(i))
             {
+                SDKHook(i, SDKHook_WeaponCanUse,    OnWeaponCanUse);    // hook for t2 nerfing
                 SDKHook(i, SDKHook_WeaponEquipPost, OnWeaponEquip);     // hook for penalty item tracking
                 SDKHook(i, SDKHook_OnTakeDamage,    OnTakeDamage);      // hook for tank damage mod & protect event
             }
@@ -427,6 +428,8 @@ public OnPluginEnd()
 
 public OnClientDisconnect_Post(client)
 {
+    SDKUnhook(client, SDKHook_WeaponCanUse, OnWeaponCanUse);
+    
     if (g_bSpecialEventPlayerCheck)
     {
         new Handle:pack = CreateDataPack();
@@ -442,6 +445,7 @@ public OnClientDisconnect_Post(client)
 
 public OnClientPostAdminCheck(client)
 {
+    SDKHook(client, SDKHook_WeaponCanUse, OnWeaponCanUse);      // hook for t2 nerfing
     SDKHook(client, SDKHook_WeaponEquipPost, OnWeaponEquip);    // hook for item penalty
     SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);        // hook for events damage changes
     
@@ -2136,8 +2140,18 @@ public Action:Timer_CheckItemPickup(Handle:hTimer, any:client)
 public Action:OnWeaponEquip(client, weapon)
 {
     // SDKHooks weapon equiped
-    
     if (!IsValidEntity(weapon) || !IsClientAndInGame(client)) { return Plugin_Continue; }
+    
+    // do nerf check (drops disallowed secondaries)
+    if (g_bT2Nerfed && GetConVarBool(g_hCvarNerfT2))
+    {
+        if (SUPPORT_IsNerfTier2(weapon))
+        {
+            g_fNerfMsgTimeout[client] = GetGameTime() + DELAY_T2_NERF_TIMEOUT;
+            SUPPORT_FixNerfTier2(client);
+        }
+    }
+    
     if (_:g_iSpecialEvent != EVT_PEN_ITEM) { return Plugin_Continue; }
     if (GetClientTeam(client) != TEAM_SURVIVOR || g_bArBlockPickupCall[client]) { return Plugin_Continue; }
     
@@ -2165,6 +2179,28 @@ public Action:OnWeaponEquip(client, weapon)
     return Plugin_Continue;
 }
 
+
+public Action:OnWeaponCanUse(client, weapon)
+{
+    // if we're nerfing t2s, block pickup of anything but single pistol
+    if (!g_bT2Nerfed || !GetConVarBool(g_hCvarNerfT2)) { return Plugin_Continue; }
+    if (!IsSurvivor(client)) { return Plugin_Continue; }
+    
+    if (SUPPORT_IsNerfSecondary(weapon, client) && SUPPORT_PlayerHasT2(client))
+    {
+        // not allowed
+        if (g_fNerfMsgTimeout[client] == 0.0 || g_fNerfMsgTimeout[client] < GetGameTime())
+        {
+            PrintToChat(client, "\x01[\x05r\x01] Only single pistol allowed with \x04T2\x01 rifle/shotgun.");
+            g_fNerfMsgTimeout[client] = GetGameTime() + DELAY_T2_NERF_TIMEOUT;
+            
+        }
+        return Plugin_Handled;
+    }
+    
+    return Plugin_Continue;
+}
+
 public Action:Event_WeaponGiven(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new client = GetClientOfUserId(GetEventInt(event, "userid"));
@@ -2172,7 +2208,7 @@ public Action:Event_WeaponGiven(Handle:event, const String:name[], bool:dontBroa
     
     new weapId = GetEventInt(event, "weapon");
     
-    if (weapId == WEPID_PILLS || weapId == WEPID_ADREN)
+    if (weapId == _:WEPID_PAIN_PILLS || weapId == _:WEPID_ADRENALINE)
     {
         g_bArJustBeenGiven[client] = true;
         //PrintToChatAll("weapon given to %N: %i", client, weapId);
@@ -2430,6 +2466,8 @@ public L4D_OnEnterGhostState(client)
             g_fGotGhost[client] = GetGameTime();
             g_fDeathAfterGhost[client] = 0.0;
         }
+        
+        g_bHasSpawned[client] = false;
     }
     
 }

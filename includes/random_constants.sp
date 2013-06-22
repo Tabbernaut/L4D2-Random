@@ -46,6 +46,7 @@ const Float:    DELAY_WELCOMEMSG        = 10.0;         // wait time between con
 const Float:    DELAY_PANELAFTERLIVE    = 2.5;          // wait time between OnRoundIsLive and drawn panel report
 const           REPORT_PANEL_LIFETIME   = 20;           // how long to show the panel for
 const Float:    DELAY_MAPRESTART        = 5.0;
+const Float:    DELAY_T2_NERF_TIMEOUT   = 3.0;          // how many seconds between spam about t2 nerfs
 
 const           INCAP_DEFAULT           = 2;
 const           INCAP_MINIMUM           = 1;
@@ -443,9 +444,6 @@ const           ZC_TOTAL                = 7;
 //const           SC_COACH_LOUIS          = 2;
 //const           SC_ELLIS_FRANCIS        = 3;
 
-const           WEPID_PILLS             = 15;           // for pickup checks
-const           WEPID_ADREN             = 23;
-
 const           WITCHES_NIGHT           = 0;            // sv_force_time_of_day value
 const           WITCHES_DAY             = 3;
 
@@ -475,6 +473,7 @@ enum itemPickupPenalty          // for use with tries to check if an item should
     ITEM_PICKUP_PENALTY_MAGNUM,
     ITEM_PICKUP_PENALTY_SAW,
     ITEM_PICKUP_PENALTY_PRIMARY_T1,
+    ITEM_PICKUP_PENALTY_PRIMARY_SNIPER,
     ITEM_PICKUP_PENALTY_PRIMARY_T2,
     ITEM_PICKUP_PENALTY_PRIMARY_T3
 }

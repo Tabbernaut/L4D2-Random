@@ -32,6 +32,7 @@ new     bool:           g_bPlayersLeftStart                                 = fa
 new     bool:           g_bSoundHooked                                      = false;                // true when there's a soundhook in place
 new                     g_iSpecialEventToForce                              = -1;                   // if this is anything but -1, forces special event for one round(half) -- debug function
 new                     g_iSpecialEventToForceAlways                        = -1;                   // same but forever
+new     bool:           g_bT2Nerfed                                         = true;                 // true when you can't have > single pistol while holding t2
 
 // Pause tracking
 new     bool:           g_bIsPaused                                         = false;                // whether game is paused
@@ -250,6 +251,9 @@ new     Handle:         g_hBoomFluTimer                                     = IN
 new                     g_iBoomFluCounter                                   = 0;                    // counts seconds for the boom flu
 new                     g_iBoomFluActivate                                  = 0;                    // after how many seconds the boomer flu should activate (again)
 
+// T2 nerf
+new     Float:          g_fNerfMsgTimeout       [MAXPLAYERS+1]              = {0.0,...};            // time when player will get a t2 nerf msg again
+
 // Vomiting
 new     Handle:         g_hVomitTraceAttack     [MAXPLAYERS+1]              = INVALID_HANDLE;       // for tracking who a player vomits upon
 new     bool:           g_bAlreadyVomitedUpon   [MAXPLAYERS+1]              = false;                // so we can just do things once per vomit-covering
@@ -294,7 +298,8 @@ new     Handle:         g_hCvarStripperPath                                 = IN
 new     Handle:         g_hCvarRIKeyValuesPath                              = INVALID_HANDLE;       // cvar dir to randommap.txt
 new     Handle:         g_hCvarRCKeyValuesPath                              = INVALID_HANDLE;       // cvar dir to randomconfig.txt
 new     Handle:         g_hCvarWelcomeMode                                  = INVALID_HANDLE;       // cvar which welcome-message mode to use
-new     Handle:         g_hCvarBlockL4D1Common                              = INVALID_HANDLE;       // cvar whether block l4d1 common and not use them for l4d1 event
+new     Handle:         g_hCvarBlockL4D1Common                              = INVALID_HANDLE;       // cvar whether to block l4d1 common and not use them for l4d1 event
+new     Handle:         g_hCvarNerfT2                                       = INVALID_HANDLE;       // cvar whether to nerf t2 weapons in the game (allowed other weapons)
 
 new     Handle:         g_hCvarEqual                                        = INVALID_HANDLE;       // cvar flags what to equalize between teams
 new     Handle:         g_hCvarDoReport                                     = INVALID_HANDLE;       // cvar whether to report anything at all

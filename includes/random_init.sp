@@ -24,6 +24,7 @@ INIT_DefineCVars()
     g_hCvarRCKeyValuesPath = CreateConVar(                  "rand_randomconfig_path",        "configs/randomconfig.txt", "The path to the randomconfig.txt with keyvalues for its base settings.", FCVAR_PLUGIN);
     g_hCvarWelcomeMode = CreateConVar(                      "rand_welcome",                  "3",       "Whether to display welcome messages (1 = only in first round; 2 = always, 3 = each client only once).", FCVAR_PLUGIN, true, 0.0, true, 3.0);
     g_hCvarBlockL4D1Common = CreateConVar(                  "rand_no_l4d1_common",           "0",       "Whether to block L4D1 common. (2 = block all appearing l4d1 common; 3 = block only problematic skins)", FCVAR_PLUGIN, true, 0.0, true, 3.0);
+    g_hCvarNerfT2 = CreateConVar(                           "rand_nerf_t2",                  "1",       "Whether to nerf t2 weapons (disallow anything better than single pistol for secondary)", FCVAR_PLUGIN, true, 0.0, true, 2.0);
     
     g_hCvarEqual = CreateConVar(                            "rand_equal",                 "2047",       "[Flags] What to keep equal between each team's survivor round (1: items; 2: doors; 4: glows; 8: event; 16: incaps; 32: horde; 64: item weighting; 128: starting health; 256: first attack; 512: tanks; 1024: scoring).", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarDoReport = CreateConVar(                         "rand_report",                   "1",       "Whether to do automatic reports at the start of a round.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
@@ -439,12 +440,12 @@ INIT_FillTries()
     SetTrieValue(g_hTriePenaltyItems, "weapon_rifle",               ITEM_PICKUP_PENALTY_PRIMARY_T2);
     SetTrieValue(g_hTriePenaltyItems, "weapon_rifle_desert",        ITEM_PICKUP_PENALTY_PRIMARY_T2);
     SetTrieValue(g_hTriePenaltyItems, "weapon_rifle_ak47",          ITEM_PICKUP_PENALTY_PRIMARY_T2);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_hunting_rifle",       ITEM_PICKUP_PENALTY_PRIMARY_T2);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_sniper_military",     ITEM_PICKUP_PENALTY_PRIMARY_T2);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_hunting_rifle",       ITEM_PICKUP_PENALTY_PRIMARY_SNIPER);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_sniper_military",     ITEM_PICKUP_PENALTY_PRIMARY_SNIPER);
     SetTrieValue(g_hTriePenaltyItems, "weapon_smg_mp5",             ITEM_PICKUP_PENALTY_PRIMARY_T1);
     SetTrieValue(g_hTriePenaltyItems, "weapon_rifle_sg552",         ITEM_PICKUP_PENALTY_PRIMARY_T2);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_sniper_awp",          ITEM_PICKUP_PENALTY_PRIMARY_T2);
-    SetTrieValue(g_hTriePenaltyItems, "weapon_sniper_scout",        ITEM_PICKUP_PENALTY_PRIMARY_T1);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_sniper_awp",          ITEM_PICKUP_PENALTY_PRIMARY_SNIPER);
+    SetTrieValue(g_hTriePenaltyItems, "weapon_sniper_scout",        ITEM_PICKUP_PENALTY_PRIMARY_SNIPER);
     SetTrieValue(g_hTriePenaltyItems, "weapon_grenade_launcher",    ITEM_PICKUP_PENALTY_PRIMARY_T3);
     SetTrieValue(g_hTriePenaltyItems, "weapon_rifle_m60",           ITEM_PICKUP_PENALTY_PRIMARY_T3);
     
