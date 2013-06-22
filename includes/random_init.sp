@@ -600,9 +600,10 @@ bool: RI_KV_UpdateRandomMapInfo()
     g_RI_bWeakHittables = false;    // map works like c5m5
     g_RI_iDistance = 0;             // if > 0, the map's normal distance
     g_RI_iDistanceHard = 0;         // if > 0, the map's hard-path distance
-    
     g_RI_iTankBanStart = -1;        // block some tank spawns
     g_RI_iTankBanEnd = -1;
+    g_RI_iEarlyDoors = 0;           // if > 0, check for early doors on the map (g_RI_vEarlyDoor)
+    
     
     new String: mapname[64];
     GetCurrentMap(mapname, sizeof(mapname));
@@ -626,8 +627,29 @@ bool: RI_KV_UpdateRandomMapInfo()
         g_RI_bWeakHittables = bool: (KvGetNum(g_kRIData, "weak_hittables", 0));
         g_RI_iDistance = KvGetNum(g_kRIData, "distance", g_RI_iDistance);
         g_RI_iDistanceHard = KvGetNum(g_kRIData, "distance_hard", g_RI_iDistanceHard);
+        g_RI_bIsFinale = bool: (KvGetNum(g_kRIData, "no_finale", 0));
         
-        if (KvGetNum(g_kRIData, "no_finale", 0)) { g_RI_bIsFinale = false; }
+        g_RI_iEarlyDoors = KvGetNum(g_kRIData, "earlydoors", 0);
+        if (g_RI_iEarlyDoors)
+        {
+            new Float: tmpVec[3];
+            new String: tmpStr[16];
+            for (new x=0; x < g_RI_iEarlyDoors && x < EARLYDOOR_MAX; x++)
+            {
+                Format(tmpStr, sizeof(tmpStr), "earlydoor_%i", x+1);
+                
+                KvGetVector(g_kRIData, tmpStr, tmpVec, NULL_VECTOR);
+                if (tmpVec[0] != 0.0 && tmpVec[1] != 0.0 && tmpVec[2] != 0.0)
+                {
+                    g_RI_iArEarlyDoor[x][0] = RoundFloat(tmpVec[0]);
+                    g_RI_iArEarlyDoor[x][1] = RoundFloat(tmpVec[1]);
+                    g_RI_iArEarlyDoor[x][2] = RoundFloat(tmpVec[2]);
+                }
+                
+                PrintDebug(4, "[RI] early door %i: %i %i %i", x+1, g_RI_iArEarlyDoor[x][0], g_RI_iArEarlyDoor[x][1], g_RI_iArEarlyDoor[x][2]);
+            }
+        }
+        
         
         PrintDebug(1, "[RI] Read data: intro: %i; difficulty: %i; doors; %i; nostorm: %i", g_RI_bIsIntro, g_RI_iDifficulty, g_RI_iDoors, g_RI_iNoStorm);
         
@@ -751,8 +773,9 @@ RConfig_Read()
     
     
     if (kRCData == INVALID_HANDLE) { return; }
-    CloseHandle(kRCData);    
+    CloseHandle(kRCData);
 }
+
 
 // melee weapon classes
 // melee stuff

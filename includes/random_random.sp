@@ -4470,11 +4470,7 @@ RandomizeDoors()
                             FloatAbs(fDoubleOrigin[j][1] - g_fStorageDoors[i][1]) > 107 &&
                             fDoubleAngles[j][1] != fFirstAngles[j][1])                      // close enough on the y, but not too close, also not pointing the in the same direction
                         {
-                            /*
-                                First I'd tested whether the angles were right on the doors
-                                but it's just too much hassle with opened/partially opened doors
-                                    and all sorts of false positives. I scrapped it.
-                            */
+                            /*  First I'd tested whether the angles were right on the doors but it's just too much hassle with opened/partially opened doors and all sorts of false positives. I scrapped it. */
                             // they're a pair
                             tmpHit = j;
                             break;
@@ -4500,8 +4496,6 @@ RandomizeDoors()
                 g_fStorageDoors[total][2] = fDoubleOrigin[tmpHit][2];
                 g_iDoorsLocked[total] = iDoubleDoorCheck[tmpHit];
                 total++;
-                // TEST
-                //PrintDebug(3, "Locked for double doors: %i (Location: %.1f %.1f %.1f)", iDoubleDoorCheck[tmpHit], g_fStorageDoors[total-1][0], g_fStorageDoors[total-1][1], g_fStorageDoors[total-1][2]);
             }
         }
     }
@@ -4510,152 +4504,22 @@ RandomizeDoors()
     g_iDoorsLockedTotal = total;
     
     // check for early locks
-    if (total)
+    if (total && g_RI_iEarlyDoors)
     {
-        if (StrEqual(mapName, "c1m1_hotel")) {
-            //
-            for (new i=0; i < g_iDoorsLockedTotal; i++) {
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 388
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 5604
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 2656
-                ) { g_bEarlyLock = true; break; }                   // HiD: 4604160
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 1875
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 6364
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 2656
-                ) { g_bEarlyLock = true; break; }                   // HiD: 1891660
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 1700
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 7680
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 2656
-                ) { g_bEarlyLock = true; break; }                   // HiD: 526253
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 1700
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 7680
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 2464
-                ) { g_bEarlyLock = true; break; }                   // HiD: 570190
+        for (new x=0; x < g_RI_iEarlyDoors; x++)
+        {
+            for (new i=0; i < g_iDoorsLockedTotal; i++)
+            {
+                if (    RoundFloat(g_fStorageDoors[i][0]) == g_RI_iArEarlyDoor[x][0]
+                    &&  RoundFloat(g_fStorageDoors[i][1]) == g_RI_iArEarlyDoor[x][1]
+                    &&  RoundFloat(g_fStorageDoors[i][2]) == g_RI_iArEarlyDoor[x][2]
+                ) {
+                        g_bEarlyLock = true;
+                        break;
+                }
             }
-        }
-        else if (StrEqual(mapName, "c6m1_riverbank")) {
-            for (new i=0; i < g_iDoorsLockedTotal; i++) {
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 3692
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 2216
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 107
-                ) { g_bEarlyLock = true; break; }                   // HiD: 569246
-            }
-        }
-        else if (StrEqual(mapName, "c7m3_port")) {
-            for (new i=0; i < g_iDoorsLockedTotal; i++) {
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 656
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 2076
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 160
-                ) { g_bEarlyLock = true; break; }                   // HiD: 1612186
-            }
-        }
-        else if (StrEqual(mapName, "c8m1_apartment")) {
-            for (new i=0; i < g_iDoorsLockedTotal; i++) {
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 1785
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 1116
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 484
-                ) { g_bEarlyLock = true; break; }                   // HiD: 17131
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 1984
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 792
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 348
-                ) { g_bEarlyLock = true; break; }                   // HiD: 19691
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 1698
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 1013
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 348
-                ) { g_bEarlyLock = true; break; }                   // HiD: 19171
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 2067
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 988
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 212
-                ) { g_bEarlyLock = true; break; }                   // HiD: 19176
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 1705
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 1196
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 212
-                ) { g_bEarlyLock = true; break; }                   // HiD: 19856
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 1604
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 1196
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 76
-                ) { g_bEarlyLock = true; break; }                   // HiD: 20046
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 1785
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 801
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 76
-                ) { g_bEarlyLock = true; break; }                   // HiD: 19181
-            }
-        }
-        else if (StrEqual(mapName, "c8m3_sewers")) {
-            for (new i=0; i < g_iDoorsLockedTotal; i++) {
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 11360
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 5442
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 76
-                ) { g_bEarlyLock = true; break; }                   // HiD: 3219153
-            }
-        }
-        else if (StrEqual(mapName, "c8m4_interior")) {
-            for (new i=0; i < g_iDoorsLockedTotal; i++) {
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 12243
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 13052
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 68
-                ) { g_bEarlyLock = true; break; }                   // HiD: 2868149     double doors @ start
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 12271
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 13322
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 68
-                ) { g_bEarlyLock = true; break; }                   // HiD: 2868398
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 12273
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 13130
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 204
-                ) { g_bEarlyLock = true; break; }                   // HiD: 2868899
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 12252
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 12291
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 340
-                ) { g_bEarlyLock = true; break; }                   // HiD: 2869173     double doors cafet. first
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 12156
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 12606
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 340
-                ) { g_bEarlyLock = true; break; }                   // HiD: 2871136     double doors cafet. second
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 12274
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 13074
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 340
-                ) { g_bEarlyLock = true; break; }                   // HiD: 2871468
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 12274
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 13074
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 476
-                ) { g_bEarlyLock = true; break; }                   // HiD: 2871605     before reception desk, from thereon it's just bad luck :P
-            }
-        }
-        else if (StrEqual(mapName, "c10m5_houseboat")) {
-            for (new i=0; i < g_iDoorsLockedTotal; i++) {
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 1952
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 3782
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == -12
-                ) { g_bEarlyLock = true; break; }                   // HiD: 1310913
-            }
-        }
-        else if (StrEqual(mapName, "c11m4_terminal")) {
-            for (new i=0; i < g_iDoorsLockedTotal; i++) {
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 721
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 4112
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 348
-                ) { g_bEarlyLock = true; break; }                   // HiD: 3943602     first double doors
-                if (    RoundFloat(g_fStorageDoors[i][0]) == 80
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == 5482
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 348
-                ) { g_bEarlyLock = true; break; }                   // HiD: 3943773     end of hallway double doors
-            }
-        }
-        else if (StrEqual(mapName, "c12m2_traintunnel")) {
-            for (new i=0; i < g_iDoorsLockedTotal; i++) {
-                if (    RoundFloat(g_fStorageDoors[i][0]) == -6236
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == -6972
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 400
-                ) { g_bEarlyLock = true; break; }                   // HiD: 1078154
-                if (    RoundFloat(g_fStorageDoors[i][0]) == -6236
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == -6971
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == 264
-                ) { g_bEarlyLock = true; break; }                   // HiD: 1092335
-                if (    RoundFloat(g_fStorageDoors[i][0]) == -8634
-                    &&  RoundFloat(g_fStorageDoors[i][1]) == -7266
-                    &&  RoundFloat(g_fStorageDoors[i][2]) == -12
-                ) { g_bEarlyLock = true; break; }                   // HiD: 1121749
-            }
+            
+            if (g_bEarlyLock) { break; }
         }
         
         if (g_bEarlyLock) {

@@ -23,6 +23,11 @@
 		"no_tank_var"	"1"
 		"tank_ban_start"	"45"
 		"tank_ban_end"		"82"
+		"earlydoors"	"4"
+		"earlydoor_1"	"388 5604 2656"
+		"earlydoor_2"	"1875 6364 2656"
+		"earlydoor_3"	"1700 7680 2656"
+		"earlydoor_4"	"1700 7680 2464"
 	}
 	"c1m2_streets"
 	{
@@ -154,6 +159,8 @@
 		"difficulty"	"2"
 		"tank_ban_start"	"80"
 		"tank_ban_end"		"100"
+		"earlydoors"	"1"
+		"earlydoor_1"	"-3044 3260 224"
 	}
 	"c5m5_bridge"
 	{
@@ -167,6 +174,8 @@
 		"difficulty"	"1"
 		"no_storm"	"1"
 		"no_witch"	"1"
+		"earlydoors"	"1"
+		"earlydoor_1"	"3692 2216 107"
 	}
 	"c6m2_bedlam"
 	{
@@ -191,6 +200,8 @@
 	{
 		"difficulty"	"3"
 		"no_witch"	"1"
+		"earlydoors"	"1"
+		"earlydoor_1"	"656 2076 160"
 	}
 	"c8m1_apartment"
 	{
@@ -200,6 +211,14 @@
 		"tank_ban_end"		"54"
 		"distance"	"400"
 		"distance_hard"	"500"
+		"earlydoors"	"7"
+		"earlydoor_1"	"1785 1116 484"
+		"earlydoor_2"	"1984 792 348"
+		"earlydoor_3"	"1698 1013 348"
+		"earlydoor_4"	"2067 988 212"
+		"earlydoor_5"	"1705 1196 212"
+		"earlydoor_6"	"1604 1196 76"
+		"earlydoor_7"	"1785 801 76"
 	}
 	"c8m2_subway"
 	{
@@ -208,6 +227,8 @@
 	"c8m3_sewers"
 	{
 		"difficulty"	"3"
+		"earlydoors"	"1"
+		"earlydoor_1"	"11360 5442 76"
 	}
 	"c8m4_interior"
 	{
@@ -216,6 +237,14 @@
 		"no_tank_var"	"1"
 		"distance"	"600"
 		"distance_hard"	"700"
+		"earlydoors"	"7"
+		"earlydoor_1"	"12243 13052 68"
+		"earlydoor_2"	"12271 13322 68"
+		"earlydoor_3"	"12273 13130 204"
+		"earlydoor_4"	"12252 12291 340"
+		"earlydoor_5"	"12156 12606 340"
+		"earlydoor_6"	"12274 13074 340"
+		"earlydoor_7"	"12274 13074 476"
 	}
 	"c8m5_rooftop"
 	{
@@ -258,6 +287,8 @@
 	"c10m5_houseboat"
 	{
 		"difficulty"	"3"
+		"earlydoors"	"1"
+		"earlydoor_1"	"1952 3782 -12"
 	}
 	"c11m1_greenhouse"
 	{
@@ -277,6 +308,9 @@
 	{
 		"difficulty"	"2"
 		"doors"		"2"
+		"earlydoors"	"2"
+		"earlydoor_1"	"721 4112 348"
+		"earlydoor_2"	"80 5482 348"
 	}
 	"c11m5_runway"
 	{
@@ -296,6 +330,10 @@
 	{
 		"difficulty"	"1"
 		"no_storm"	"2"
+		"earlydoors"	"3"
+		"earlydoor_1"	"-6236 -6972 400"
+		"earlydoor_2"	"-6236 -6971 264"
+		"earlydoor_3"	"-8634 -7266 -12"
 	}
 	"c12m3_bridge"
 	{
@@ -367,6 +405,8 @@
 		"doors"		"2"
 		"tank_ban_start"	"80"
 		"tank_ban_end"		"100"
+		"earlydoors"	"1"
+		"earlydoor_1"	"-3044 3260 224"
 	}
 	"c5m5_darkbridge"
 	{

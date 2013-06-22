@@ -22,6 +22,7 @@ const           MAX_DOORS               = 128;          // amount of doors to tr
 const           MAX_BOOBYTRAPS          = 128;          // amount of boobytraps to add maximally
 const           MULTITANK_MAX           = 12;
 const           MULTIWITCH_MAX          = 12;
+const           EARLYDOOR_MAX           = 10;
 
 // String lengths
 // --------------

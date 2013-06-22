@@ -282,7 +282,8 @@ new                     g_RI_iTankBanEnd                                    = 0;
 new     bool:           g_RI_bWeakHittables                                 = false;                // makes hittables do less damage (like c5m5 normally)
 new                     g_RI_iDistance                                      = 0;                    // normal max map distance points
 new                     g_RI_iDistanceHard                                  = 0;                    // hard-path max map distance points
-
+new                     g_RI_iEarlyDoors                                    = 0;                    // how many early doors to check
+new                     g_RI_iArEarlyDoor       [EARLYDOOR_MAX][3];                                 // early door coordinates (if any)
 
 // ConVars
 new     Handle:         g_hArCvarWeight         [INDEX_TOTAL];                                      // cvar, per randomize-type, that sets an integer weight 
