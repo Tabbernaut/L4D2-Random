@@ -71,7 +71,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.46",
+    version = "1.0.47",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -154,9 +154,6 @@ public OnPluginStart()
     INIT_DefineCVars();
     INIT_FillTries();
     INIT_PrecacheModels(true);
-    
-    // for blindness message
-    g_FadeUserMsgId = GetUserMessageId("Fade");
     
     // prepare client array
     g_hSteamIds = CreateArray(32);
@@ -495,10 +492,6 @@ public Action: Timer_ClientPostAdminCheck_Delayed(Handle:timer, any:client)
         g_strArGnomes[gnomeIndex][gnomeiHoldingClient] = client;
     }
 }
-
-
-
-
 
 public Action: Timer_DoWelcomeMessage(Handle:timer, any:client)
 {
@@ -920,24 +913,27 @@ public Action: Unpause_Cmd(client, args)
 
 public OnMapStart()
 {
-    /*
-        doesn't need a seed..
-        // Attempt to get nice random -- use clock
-        SetRandomSeed( RoundFloat( GetTime() ) );
-    */
+    g_bItemsFullyRandomized = false;
     
     // check gamemode for 'coop'
     new String:tmpStr[16];
     GetConVarString(FindConVar("mp_gamemode"), tmpStr, sizeof(tmpStr));
-    if (StrEqual(tmpStr, "coop", false)) { g_bCampaignMode = true; } else { g_bCampaignMode = false; }
-    g_bItemsFullyRandomized = false;
+    if (StrEqual(tmpStr, "coop", false)) {
+        g_bCampaignMode = true;
+        g_bItemsFullyRandomized = true;
+        g_bRestartedOnce = true;
+    }
+    else {
+        g_bCampaignMode = false;
+    }
+    
     
     INIT_PrecacheModels();
     INIT_PrecacheParticles();
     INIT_GetMeleeClasses();
     
     // only do special random activation when we've seen at least one map restart
-    if (GetConVarBool(g_hCvarConfogl) && !g_bRestartedOnce)
+    if (GetConVarBool(g_hCvarConfogl) && !g_bRestartedOnce && !g_bCampaignMode)
     {
         g_bRestartedOnce = true;
         g_bItemsFullyRandomized = true;
@@ -990,6 +986,7 @@ public OnMapEnd()
 public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
     g_bSurvivorsLoadedIn = false;
+    g_bBotsAllowedPickup = false;
     
     // this is a bit silly, since roundstart gets called before onmapstart...
     // so just do the round start stuff in onmapstart
@@ -1006,6 +1003,7 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
     // this is only called once in versus games, so we know which round we're in
     g_bSecondHalf = true;
     g_bIsFirstAttack = true;
+    g_bBotsAllowedPickup = false;
     g_bItemsFullyRandomized = false;
     
     if (g_bInRound && g_bUsingPBonus)   // only display once, and only when using pbonus
@@ -1026,6 +1024,8 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 
 public OnRoundIsLive()
 {
+    g_bBotsAllowedPickup = true;
+    
     // only if a readyup plugin is active
     // if not, display panel with a timer?
     CreateTimer(DELAY_PANELAFTERLIVE, Timer_DoPanelReport, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -1072,8 +1072,26 @@ public Action:OnPlayerRunCmd(client, &buttons)
 {
     if (!IsSurvivor(client) || !IsPlayerAlive(client)) { return Plugin_Continue; }
 
+    if (g_iSpecialEvent == EVT_NOHUD)
+    {
+        // hide/show view depending on score showing
+        if (buttons & IN_SCORE)
+        {
+            if (!g_bPlayerIsBlinded[client]) {
+                g_bPlayerIsBlinded[client] = true;
+                DoBlindSurvivor(client, 240, false);
+            }
+        }
+        else if (g_bPlayerIsBlinded[client])
+        {
+            g_bPlayerIsBlinded[client] = false;
+            DoBlindSurvivor(client, 0, false);
+        }
+    }
+    
     if ((buttons & IN_USE))
     {
+        // note: only human players get blocked this way (bots don't fire IN_USE)
         // block all use button use before items are ready
         if (!g_bItemsFullyRandomized) { return Plugin_Handled; }
         
@@ -1432,6 +1450,8 @@ stock DoFirstHumanDetected()
 
 public Action: Timer_RoundStartReport(Handle:timer)
 {
+    g_bBotsAllowedPickup = true;
+    
     // do the report
     g_bTimerReport = false;
     if (GetConVarBool(g_hCvarDoReport)) { DoReport(); }
@@ -1519,6 +1539,7 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
         if (CountHumanSurvivors() + 1 >= GetConVarInt(g_hCvarTeamSize))
         {
             g_bSurvivorsLoadedIn = true;
+            g_bBotsAllowedPickup = true;
             EVENT_AllSurvivorsLoadedIn();
         }
     }
@@ -1617,10 +1638,7 @@ public Action:Timer_TeamSwapDelayed(Handle:hTimer, any:pack)
 
 /*  Boomers
     --------------------------
-    boomer stuff can't be (cleanly/consistently) done.
-    it's a shame, but multiple boomers getting double booms
-    on single survivors cannot be correctly detected
-
+    boomer stuff can't be (cleanly/consistently) done. it's a shame, but multiple boomers getting double booms on single survivors cannot be correctly detected
     combo's on multiple survivors can be done though, and we're doing it.
 */    
 public Event_PlayerBoomed(Handle:event, const String:name[], bool:dontBroadcast)
@@ -2194,6 +2212,11 @@ public Action:OnWeaponEquip(client, weapon)
 
 public Action:OnWeaponCanUse(client, weapon)
 {
+    // if we're blocking bots:
+    if (!g_bCampaignMode && !g_bBotsAllowedPickup && IsFakeClient(client)) {
+        return Plugin_Handled;
+    }
+    
     // if we're nerfing t2s, block pickup of anything but single pistol
     if (!g_bT2Nerfed || !GetConVarBool(g_hCvarNerfT2)) { return Plugin_Continue; }
     if (!IsSurvivor(client)) { return Plugin_Continue; }

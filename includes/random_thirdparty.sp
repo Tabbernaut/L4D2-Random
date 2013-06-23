@@ -1511,30 +1511,17 @@ public Action:Timer_MolotovThink(Handle:h_Timer, any:i_Ent)
     --------- */
 
 // amount = 0 = unblind
-DoBlindSurvivor(target, amount)
+DoBlindSurvivor(target, amount, bool:slow=true)
 {
-	new targets[2];
-	targets[0] = target;
-	
-	new Handle:message = StartMessageEx(g_FadeUserMsgId, targets, 1);
-	BfWriteShort(message, 1536);
-	BfWriteShort(message, 1536);
-	
-	if (amount == 0)
-	{
-		BfWriteShort(message, (0x0001 | 0x0010));
-	}
-	else
-	{
-		BfWriteShort(message, (0x0002 | 0x0008));
-	}
-	
-	BfWriteByte(message, 0);
-	BfWriteByte(message, 0);
-	BfWriteByte(message, 0);
-	BfWriteByte(message, amount);
-	
-	EndMessage();
+    // if 0 amount, do fadeout
+    if (amount == 0)
+    {
+        ScreenFade(target, 0, 0, 0, 0, 0, 1, (slow) ? 500 : 10);
+    } 
+    else
+    {
+        ScreenFade(target, 0, 0, 0, amount, 0, 0, (slow) ? 500 : 10);
+    }
 }
 
 public Action:Timer_UnBlindSurvivor(Handle:timer, any:client)
@@ -1542,6 +1529,22 @@ public Action:Timer_UnBlindSurvivor(Handle:timer, any:client)
     if (IsSurvivor(client)) {
         DoBlindSurvivor(client, 0);
     }
+}
+
+public ScreenFade(target, red, green, blue, alpha, duration, type, speed)
+{
+	new Handle:msg = StartMessageOne("Fade", target);
+	BfWriteShort(msg, speed);
+	BfWriteShort(msg, duration);
+	if (type == 0)
+		BfWriteShort(msg, (0x0002 | 0x0008));
+	else
+		BfWriteShort(msg, (0x0001 | 0x0010));
+	BfWriteByte(msg, red);
+	BfWriteByte(msg, green);
+	BfWriteByte(msg, blue);
+	BfWriteByte(msg, alpha);
+	EndMessage();
 }
 
 /*  Vomiting

@@ -399,7 +399,8 @@ DoEventInfo(client, event)
             PrintToChat(client, "\x05There aren't even pills - the only health items available are adrenaline shots (maybe a rare defib). \x01");
         }
         case EVT_NOHUD: {
-            PrintToChat(client, "\x05Survivors have no heads-up display (mainly the health bars on the bottom of the screen). Health and items can still be seen by opening the scores.\x01");
+            PrintToChat(client, "\x05Survivors have no heads-up display (mainly the health bars on the bottom of the screen).\x01");
+            PrintToChat(client, "\x05Health and items can still be seen by opening the scores - but using the scoreboard blinds you....\x01");
         }
         case EVT_L4D1: {
             PrintToChat(client, "\x05L4D1-mode this round! Only L4D1 inventory items appear and only L4D1 special infected spawn.\x01");
@@ -4650,6 +4651,7 @@ RANDOM_PrepareChoicesEvents()
         //      all scoring events, because no score
         if (    g_bCampaignMode
             &&  (   i == EVT_QUADS || i == EVT_L4D1 || i == EVT_FF || i == EVT_MINITANKS
+                ||  i == EVT_NOHUD
                 ||  i == EVT_PEN_ITEM || i == EVT_PEN_HEALTH || i == EVT_PEN_M2 || i == EVT_PEN_TIME || i == EVT_SKEET || i == EVT_WITCHES || i == EVT_BADSANTA )
         ) {
             continue;

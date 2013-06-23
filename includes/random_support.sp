@@ -163,6 +163,7 @@ SUPPORT_CleanArrays()
         g_iClientUsing[i] = 0;
         g_bClientHoldingUse[i] = false;
         g_bAlreadyVomitedUpon[i] = false;
+        g_bPlayerIsBlinded[i] = false;
         
         // skeet tracking
         ResetHunter(i);

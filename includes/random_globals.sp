@@ -26,6 +26,7 @@ new     bool:           g_bFirstMapDone                                     = fa
 new     bool:           g_bInRound                                          = false;                // are we in a live round?
 new     bool:           g_bIsFirstAttack                                    = false;                // is this / will this be the first attack of the round(half)?
 new     bool:           g_bItemsFullyRandomized                             = false;                // if this is true, all the items are in place and ready to be picked up
+new     bool:           g_bBotsAllowedPickup                                = false;                // bots can't start picking stuff up instantly
 new     bool:           g_bModelsPrecached                                  = false;                // only true if models precached
 new     bool:           g_bFirstReportDone                                  = false;                // true once the first team has had its report for the round (triggered)
 new     bool:           g_bPlayersLeftStart                                 = false;                // true once the first survivor has left the start saferoom
@@ -247,10 +248,10 @@ new                     g_iMedicUnits                                       = 8;
 new                     g_iMedicRanOut                                      = 0;                    // so we can prevent over-reporting
 new     bool:           g_bMedicFirstHandout                                = false;                // whether the medic has handed out pills to anyone yet (for removal check)
 new                     g_iWitchesSpawned                                   = 0;                    // for tracking max no. of witches for witch hunt
-
 new     Handle:         g_hBoomFluTimer                                     = INVALID_HANDLE;       // for the EVT_BOOMFLU
 new                     g_iBoomFluCounter                                   = 0;                    // counts seconds for the boom flu
 new                     g_iBoomFluActivate                                  = 0;                    // after how many seconds the boomer flu should activate (again)
+new     bool:           g_bPlayerIsBlinded      [MAXPLAYERS+1]              = {false,...};          // whether player blinded (NOHUD event)
 
 // T2 nerf
 new     Float:          g_fNerfMsgTimeout       [MAXPLAYERS+1]              = {0.0,...};            // time when player will get a t2 nerf msg again
@@ -262,9 +263,6 @@ new     bool:           g_bAlreadyVomitedUpon   [MAXPLAYERS+1]              = fa
 // Hats
 new                     g_iHatIndex[MAXPLAYERS+1];				// Player hat entity reference
 new                     g_iType[MAXPLAYERS+1];					// Stores selected hat to give players.
-
-// Blindness
-new     UserMsg:        g_FadeUserMsgId;
 
 // RandomMapInfo keyvalues
 new     Handle:         g_kRIData                                           = INVALID_HANDLE;       // keyvalues handle for randommapinfo.txt
