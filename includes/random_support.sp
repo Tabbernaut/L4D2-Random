@@ -178,8 +178,8 @@ SUPPORT_CleanArrays()
 }
 
 
-// Event functions / difficulty
-// ----------------------------
+// Event functions
+// ---------------
 
 EVENT_ResetOtherCvars()
 {
@@ -386,6 +386,18 @@ EVENT_RoundStartPreparation()
             g_iBoomFluCounter = 0;
             g_hBoomFluTimer = CreateTimer( 1.0 , Timer_BoomFlu, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
         }
+    }
+}
+
+EVENT_AllSurvivorsLoadedIn()
+{
+    // called once, when all survivors are loaded in
+    PrintDebug(3, "[rand] All survivors loaded in...");
+    
+    // (re)pick special event role
+    if (g_bSpecialEventPlayerCheck)
+    {
+        EVENT_PickSpecialEventRole(-1, false);
     }
 }
 
@@ -1363,7 +1375,12 @@ Float: SUPPORT_GetSpeedFactor(target)
         {
             if (itemHasPenalty == ITEM_PICKUP_PENALTY_PRIMARY_T3) {
                 fWeight += EVENT_ENC_W_T3;
-            } else if (itemHasPenalty == ITEM_PICKUP_PENALTY_PRIMARY_T2 || itemHasPenalty == ITEM_PICKUP_PENALTY_PRIMARY_SNIPER) {
+            } else if (StrEqual(classname, "weapon_sniper_scout", false)) {
+                // scout's lighter
+                fWeight += EVENT_ENC_W_T1;
+            } else if (itemHasPenalty == ITEM_PICKUP_PENALTY_PRIMARY_SNIPER) {
+                fWeight += EVENT_ENC_W_SNIPER;
+            } else if (itemHasPenalty == ITEM_PICKUP_PENALTY_PRIMARY_T2) {
                 fWeight += EVENT_ENC_W_T2;
             } else if (itemHasPenalty == ITEM_PICKUP_PENALTY_PRIMARY_T1) {
                 fWeight += EVENT_ENC_W_T1;
@@ -1891,6 +1908,15 @@ CountInfectedClass(any:ZClass, ignoreClient)
     return classCount;
 }
 
+CountHumanSurvivors()
+{
+    new count = 0;
+    for (new client = 1; client <= MaxClients; client++)
+    {
+        if (IsSurvivor(client) && !IsFakeClient(client)) { count++; }
+    }
+    return count;
+}
 // give an item to a player
 GiveItem(client, String:item[STR_MAX_ITEMGIVEN], ammo, iOffset)
 {

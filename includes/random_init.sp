@@ -645,8 +645,6 @@ bool: RI_KV_UpdateRandomMapInfo()
                     g_RI_iArEarlyDoor[x][1] = RoundFloat(tmpVec[1]);
                     g_RI_iArEarlyDoor[x][2] = RoundFloat(tmpVec[2]);
                 }
-                
-                PrintDebug(4, "[RI] early door %i: %i %i %i", x+1, g_RI_iArEarlyDoor[x][0], g_RI_iArEarlyDoor[x][1], g_RI_iArEarlyDoor[x][2]);
             }
         }
         

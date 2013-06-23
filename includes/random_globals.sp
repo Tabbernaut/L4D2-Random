@@ -33,6 +33,7 @@ new     bool:           g_bSoundHooked                                      = fa
 new                     g_iSpecialEventToForce                              = -1;                   // if this is anything but -1, forces special event for one round(half) -- debug function
 new                     g_iSpecialEventToForceAlways                        = -1;                   // same but forever
 new     bool:           g_bT2Nerfed                                         = true;                 // true when you can't have > single pistol while holding t2
+new     bool:           g_bSurvivorsLoadedIn                                = false;                // to check for calling EVENT_AllSurvivorsLoadedIn()
 
 // Pause tracking
 new     bool:           g_bIsPaused                                         = false;                // whether game is paused

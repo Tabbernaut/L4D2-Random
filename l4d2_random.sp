@@ -989,6 +989,8 @@ public OnMapEnd()
 
 public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
+    g_bSurvivorsLoadedIn = false;
+    
     // this is a bit silly, since roundstart gets called before onmapstart...
     // so just do the round start stuff in onmapstart
     if (g_bMapStartDone && !g_bInRound)
@@ -1510,6 +1512,16 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
     new newTeam = GetEventInt(hEvent, "team");
     new oldTeam = GetEventInt(hEvent, "oldteam");
     
+    // count survivors joined after round start
+    if (!g_bPlayersLeftStart && !g_bSurvivorsLoadedIn && newTeam == TEAM_SURVIVOR && !IsFakeClient(client))
+    {
+        //PrintDebug(3, "[rand] Survivor loaded in (%N). %i / %i", client, GetConVarInt(g_hCvarTeamSize), CountHumanSurvivors());
+        if (CountHumanSurvivors() + 1 >= GetConVarInt(g_hCvarTeamSize))
+        {
+            g_bSurvivorsLoadedIn = true;
+            EVENT_AllSurvivorsLoadedIn();
+        }
+    }
     
     // survivor-based events
     if (_:g_iSpecialEvent == EVT_PEN_ITEM)

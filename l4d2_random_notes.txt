@@ -29,7 +29,6 @@ L4D2_Random
             - nitpick:  can't see the special role's hat when he's ledged (himself)
             - nitpick:  prevent two ammo piles spawning too close to eachother
             - nitpick:  dark carnival 1 gas cans are not randomized.. (they're a point template, I guess)
-            - nitpick:  gunswap event: survivors don't start with same weapons. maybe add GL?
             - code:     "The SetEntProp functions have a parameter for the array index, use it instead of doing manual lookups and computing offsets."
     
     notes:

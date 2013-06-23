@@ -134,8 +134,9 @@ const           EVENT_MEDIC_UNITS_MAX   = 14;           // EVT_MEDIC        maxi
 const           EVENT_MEDIC_DIFF_BASE   = 4;            // EVT_MEDIC        use this difficulty for the base value (and scale the rest)
 
 const Float:    EVENT_ENC_W_T1          = 1.5;          // EVT_ENCUMBERED   for determining total player weight
-const Float:    EVENT_ENC_W_T2          = 2.5;
-const Float:    EVENT_ENC_W_T3          = 3.5;
+const Float:    EVENT_ENC_W_SNIPER      = 2.5;
+const Float:    EVENT_ENC_W_T2          = 3.0;
+const Float:    EVENT_ENC_W_T3          = 4.0;
 const Float:    EVENT_ENC_W_PISTOL      = 0.5;          // magnum weighs 2 pistols
 const Float:    EVENT_ENC_W_MELEE       = 1.5;
 const Float:    EVENT_ENC_W_THROWABLE   = 1.0;
