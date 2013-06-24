@@ -200,6 +200,7 @@
 	{
 		"difficulty"	"3"
 		"no_witch"	"1"
+		"doors"		"0"
 		"earlydoors"	"1"
 		"earlydoor_1"	"656 2076 160"
 	}
