@@ -103,7 +103,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     
     
     // fix sound hook
-    if (_:g_iSpecialEvent == EVT_SILENCE || _:g_iSpecialEvent == EVT_AMMO) {
+    if (g_iSpecialEvent == EVT_SILENCE || g_iSpecialEvent == EVT_AMMO) {
         if (!g_bSoundHooked) {
             AddNormalSoundHook(Event_SoundPlayed);
             g_bSoundHooked = true;
@@ -116,7 +116,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     }
     
     // launch storm if required
-    if (g_iSpecialEvent == _:EVT_WEATHER || g_iSpecialEvent == _:EVT_FOG)
+    if (g_iSpecialEvent == EVT_WEATHER || g_iSpecialEvent == EVT_FOG)
     {
         SUPPORT_StormStart();
     }
@@ -139,7 +139,7 @@ public Action: Timer_DelayedRoundPrep(Handle:timer)
     }
     
     // some special event stuff that can't be done earlier
-    if (_:g_iSpecialEvent == EVT_BOOBYTRAP)
+    if (g_iSpecialEvent == EVT_BOOBYTRAP)
     {
         EVENT_PickBoobyTraps();
     }
@@ -334,7 +334,7 @@ EVENT_RoundStartPreparation()
     
     g_bSpecialRoleAboutToChange = false;
     
-    switch (_:g_iSpecialEvent)
+    switch (g_iSpecialEvent)
     {
         case EVT_DEFIB: {
             for (new i=1; i <= MaxClients; i++) {
@@ -404,7 +404,7 @@ EVENT_AllSurvivorsLoadedIn()
 
 public Action: EVENT_SurvivorsLeftSaferoom(Handle:timer)
 {
-    switch (_:g_iSpecialEvent)
+    switch (g_iSpecialEvent)
     {
         case EVT_ADREN: {
             // makes survivors start with 99 bleeding health
@@ -503,7 +503,7 @@ HUDRestoreClient(client)
 // only for penalties
 EVENT_ReportPenalty(client = -1, extraInfo = -1)
 {
-    switch (_:g_iSpecialEvent)
+    switch (g_iSpecialEvent)
     {
         case EVT_PEN_ITEM: {
             if (client != -1) {
@@ -538,7 +538,7 @@ EVENT_ReportPenalty(client = -1, extraInfo = -1)
 // this is also for bonus report
 EVENT_DisplayRoundPenalty(client=-1)
 {
-    switch (_:g_iSpecialEvent)
+    switch (g_iSpecialEvent)
     {
         case EVT_PEN_ITEM:
         {
@@ -712,7 +712,7 @@ EVENT_ReportBoobytrap(client=-1)
 
 EVENT_HandleSkeet(skeeter=-1, victim=-1, meleeSkeet=false)
 {
-    if (_:g_iSpecialEvent == EVT_SKEET)
+    if (g_iSpecialEvent == EVT_SKEET)
     {
         g_iBonusCount++;
         if (skeeter == -2) {
@@ -922,7 +922,7 @@ public Action: Timer_CheckSpecialEventRole(Handle:timer, any:pack)
     
 
     // check here for other events (whether bots have stuff they shouldn't have)
-    if (_:g_iSpecialEvent == EVT_AMMO)
+    if (g_iSpecialEvent == EVT_AMMO)
     {
         // upgrade kit should not be in possession of bot
         for (new i=1; i <= MaxClients; i++)
@@ -1013,7 +1013,7 @@ EVENT_PickSpecialEventRole(notClient=-1, bool:notLeftStart=false)
     g_iSpecialEventRole = survivors[pick];
     
     // give correct hat to picked survivor
-    switch (_:g_iSpecialEvent)
+    switch (g_iSpecialEvent)
     {
         case EVT_PROTECT: { CreateHat(g_iSpecialEventRole, HAT_BABY); }
         case EVT_KEYMASTER: { CreateHat(g_iSpecialEventRole, HAT_KEYMASTER); }
@@ -1023,7 +1023,7 @@ EVENT_PickSpecialEventRole(notClient=-1, bool:notLeftStart=false)
     
     
     // when picked, do a medic check
-    if (_:g_iSpecialEvent == EVT_MEDIC)
+    if (g_iSpecialEvent == EVT_MEDIC)
     {
         EVENT_CheckMedic(true);
     }
@@ -1267,7 +1267,7 @@ public Action: Timer_PrepareNextWitch(Handle:timer)
 //  Double-tank && minitanks
 public Action: Timer_PrepareNextTank(Handle:timer)
 {
-    if (_:g_iSpecialEvent == EVT_MINITANKS)
+    if (g_iSpecialEvent == EVT_MINITANKS)
     {
         PrintDebug(3, "[rand] preparing next tank (%i)...", g_iMiniTankIndex+1);
         
@@ -1325,7 +1325,7 @@ SUPPORT_MultiTankRoundPrep()
     g_iMiniTankIndex = 0;
     
     // prepare multi-witch for round
-    if (_:g_iSpecialEvent == EVT_MINITANKS)
+    if (g_iSpecialEvent == EVT_MINITANKS)
     {
         PrintDebug(2, "[rand] Multi-tank: setting first spawn (%.2f)", g_fArMiniTankFlows[0]);
         
@@ -1457,12 +1457,12 @@ EVENT_PickBoobyTraps()
     for (new i=0; i < g_iStoredEntities && i < MAX_BOOBYTRAPS; i++)
     {
         if (g_strArStorage[i][entInStartSaferoom]) { continue; }
-        if (    g_strArStorage[i][entPickedType] == _:PCK_NOITEM
-            ||  g_strArStorage[i][entPickedType] == _:PCK_JUNK
-            ||  g_strArStorage[i][entPickedType] == _:PCK_EXPLOSIVE_BARREL
-            ||  g_strArStorage[i][entPickedType] == _:PCK_SILLY_GIFT
-            ||  g_strArStorage[i][entPickedType] == _:PCK_SILLY_GNOME
-            ||  g_strArStorage[i][entPickedType] == _:PCK_SILLY_COLA
+        if (    g_strArStorage[i][entPickedType] == PCK_NOITEM
+            ||  g_strArStorage[i][entPickedType] == PCK_JUNK
+            ||  g_strArStorage[i][entPickedType] == PCK_EXPLOSIVE_BARREL
+            ||  g_strArStorage[i][entPickedType] == PCK_SILLY_GIFT
+            ||  g_strArStorage[i][entPickedType] == PCK_SILLY_GNOME
+            ||  g_strArStorage[i][entPickedType] == PCK_SILLY_COLA
         ) { continue; }
         
         if (GetRandomFloat(0.001,1.0) <= g_RC_fEventBoobyTrapChance)
@@ -1483,12 +1483,12 @@ EVENT_PickBoobyTraps()
             new i = GetRandomInt(0, g_iStoredEntities - 1);
             
             if (g_strArStorage[i][entInStartSaferoom]) { continue; }
-            if (    g_strArStorage[i][entPickedType] == _:PCK_NOITEM
-                ||  g_strArStorage[i][entPickedType] == _:PCK_JUNK
-                ||  g_strArStorage[i][entPickedType] == _:PCK_EXPLOSIVE_BARREL
-                ||  g_strArStorage[i][entPickedType] == _:PCK_SILLY_GIFT
-                ||  g_strArStorage[i][entPickedType] == _:PCK_SILLY_GNOME
-                ||  g_strArStorage[i][entPickedType] == _:PCK_SILLY_COLA
+            if (    g_strArStorage[i][entPickedType] == PCK_NOITEM
+                ||  g_strArStorage[i][entPickedType] == PCK_JUNK
+                ||  g_strArStorage[i][entPickedType] == PCK_EXPLOSIVE_BARREL
+                ||  g_strArStorage[i][entPickedType] == PCK_SILLY_GIFT
+                ||  g_strArStorage[i][entPickedType] == PCK_SILLY_GNOME
+                ||  g_strArStorage[i][entPickedType] == PCK_SILLY_COLA
             ) { continue; }
             
             g_iArBoobyTrap[g_iBoobyTraps] = g_strArStorage[i][entNumber];
@@ -1707,7 +1707,7 @@ KillProgressBar(client)
 
 bool: SUPPORT_IsWeaponPrimary(weapId)
 {
-    switch (_:weapId)
+    switch (weapId)
     {
         case WEPID_SMG: { return true; }
         case WEPID_PUMPSHOTGUN: { return true; }
@@ -2357,6 +2357,21 @@ bool: SUPPORT_PlayerHasPistol(client)
     
     return false;
 }
+bool: SUPPORT_EntityIsPistol(entity)
+{
+    if (!entity || !IsValidEntity(entity)) { return false; }
+    
+    decl String:classname[32];
+    GetEdictClassname(entity, classname, sizeof(classname));
+    
+    new itemPickupPenalty: itemIsPistol;
+    if (GetTrieValue(g_hTriePenaltyItems, classname, itemIsPistol))
+    {
+        if (itemIsPistol == ITEM_PICKUP_PENALTY_PISTOL) { return true; }
+    }
+    
+    return false;
+}
 
 bool: SUPPORT_PlayerHasT2(client)
 {
@@ -2994,7 +3009,7 @@ public Action:Timer_RestartMap(Handle:timer)
     ---------------------- */
 public Action:Timer_WitchSpawn(Handle:timer)
 {
-    if (_:g_iSpecialEvent != EVT_WITCHES) {
+    if (g_iSpecialEvent != EVT_WITCHES) {
         g_hWitchSpawnTimer = INVALID_HANDLE;
         return Plugin_Stop;
     }
@@ -3021,7 +3036,7 @@ public Action:Timer_WitchSpawn(Handle:timer)
 }
 public Action:Timer_WitchRespawn(Handle:timer)
 {
-    if (_:g_iSpecialEvent != EVT_WITCHES) { return Plugin_Stop; }
+    if (g_iSpecialEvent != EVT_WITCHES) { return Plugin_Stop; }
     
     if (!g_bIsTankInPlay && !g_bIsPaused && g_bPlayersLeftStart && NoSurvivorInSaferoom())
     {
@@ -3134,8 +3149,7 @@ SUPPORT_StormStart()
 
 
 
-/*
-// for debugging blindents
+/*  // for debugging blindents
 DoBlindEntReport()
 {
     PrintDebug("[rand] Randomized item table, for %i items:", g_iStoredEntities);
@@ -3148,10 +3162,10 @@ DoBlindEntReport()
     for (new i=0; i < g_iStoredEntities; i++)
     {
         // don't show stuff that won't be blinded
-        if (g_strArStorage[i][entPickedType] == _:PCK_NOITEM) { continue; }
-        if (g_strArStorage[i][entPickedType] == _:PCK_JUNK) { continue; }
-        if (g_strArStorage[i][entPickedType] == _:PCK_EXPLOSIVE_BARREL) { continue; }
-        if (g_strArStorage[i][entPickedType] == _:PCK_SILLY_GIFT) { continue; }
+        if (g_strArStorage[i][entPickedType] == PCK_NOITEM) { continue; }
+        if (g_strArStorage[i][entPickedType] == PCK_JUNK) { continue; }
+        if (g_strArStorage[i][entPickedType] == PCK_EXPLOSIVE_BARREL) { continue; }
+        if (g_strArStorage[i][entPickedType] == PCK_SILLY_GIFT) { continue; }
         
         count++;
         
@@ -3228,7 +3242,7 @@ DoItemsServerReport(full=false)
         iItemCount[ g_strArStorage[i][entPickedType] ]++;
         
         // count towards group
-        switch (_:g_strArStorage[i][entPickedType])
+        switch (g_strArStorage[i][entPickedType])
         {
             case PCK_NOITEM: { iGroupCount[INDEX_NOITEM]++; }
             case PCK_PISTOL: { iGroupCount[INDEX_PISTOL]++; } case PCK_PISTOL_MAGNUM: { iGroupCount[INDEX_PISTOL]++; }
@@ -3274,9 +3288,9 @@ DoItemsServerReport(full=false)
     PrintDebug( "  %18s: %4i ( %5.1f%% /        ).", g_csItemPickName[PCK_JUNK], iItemCount[PCK_JUNK], float(iItemCount[PCK_JUNK]) / float(g_iStoredEntities) * 100.0 );
     PrintDebug("");
     
-    for (new i=PCK_PISTOL; i < _:PCK_DUALS; i++)
+    for (new i=PCK_PISTOL; i < PCK_DUALS; i++)
     {
-        if (i == _:PCK_JUNK) { continue; }
+        if (i == PCK_JUNK) { continue; }
         PrintDebug( "  %18s: %4i ( %5.1f%% / %5.1f%% ).", g_csItemPickName[i], iItemCount[i], float(iItemCount[i]) / float(g_iStoredEntities) * 100.0, float(iItemCount[i]) / float(iTotalRealItems) * 100.0 );
     }
     */
@@ -3288,9 +3302,9 @@ DoItemsServerReport(full=false)
     
     iTotalWeight = (iTotalWeight - iWeight[0]) - iWeight[INDEX_JUNK];
     
-    for (new i=INDEX_PISTOL; i < _:INDEX_TOTAL; i++)
+    for (new i=INDEX_PISTOL; i < INDEX_TOTAL; i++)
     {
-        if (i == _:INDEX_JUNK) { continue; }
+        if (i == INDEX_JUNK) { continue; }
         PrintDebug(0, "  %18s: %4i ( %5.1f%% / %5.1f%% ). Weighted at: %5.1f%%, expected occurrence: %3i (diff.: %3i).",
                 g_csItemTypeText[i], iGroupCount[i],
                 float(iGroupCount[i]) / float(g_iStoredEntities) * 100.0, float(iGroupCount[i]) / float(iTotalRealItems) * 100.0,

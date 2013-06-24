@@ -38,10 +38,10 @@ bool: SUPPORT_DropItem(client, bool:dropCurrent, count, bool:throwItem)
         new slot = SUPPORT_GetCurrentWeaponSlot(client);
         if (slot >= 0)
         {
-            if ( _:g_iSpecialEvent == EVT_MEDIC && g_iSpecialEventRole == client && (slot == PLAYER_SLOT_KIT || slot == PLAYER_SLOT_PILL) ) {
+            if ( g_iSpecialEvent == EVT_MEDIC && g_iSpecialEventRole == client && (slot == PLAYER_SLOT_KIT || slot == PLAYER_SLOT_PILL) ) {
                 PrintToChat(client, "\x01[\x05r\x01] A medic cannot drop health items.");
             }
-            else if ( _:g_iSpecialEvent != EVT_GUNSWAP || slot != PLAYER_SLOT_PRIMARY ) {
+            else if ( g_iSpecialEvent != EVT_GUNSWAP || slot != PLAYER_SLOT_PRIMARY ) {
                 if ( SUPPORT_DropItemSlot(client, slot, throwItem) ) { dropCount++; } 
             }
             
@@ -67,8 +67,8 @@ bool: SUPPORT_DropItem(client, bool:dropCurrent, count, bool:throwItem)
         for (new i=0; i < count && m > 0; i++)
         {
             new r = GetRandomInt(0, m-1);
-            if (    (_:g_iSpecialEvent != EVT_GUNSWAP || slot[r] != PLAYER_SLOT_PRIMARY)
-                &&  (_:g_iSpecialEvent != EVT_MEDIC || (slot[r] != PLAYER_SLOT_KIT && slot[r] != PLAYER_SLOT_PILL) )
+            if (    (g_iSpecialEvent != EVT_GUNSWAP || slot[r] != PLAYER_SLOT_PRIMARY)
+                &&  (g_iSpecialEvent != EVT_MEDIC || (slot[r] != PLAYER_SLOT_KIT && slot[r] != PLAYER_SLOT_PILL) )
             ) {
                 if ( SUPPORT_DropItemSlot(client, slot[r], throwItem) ) { dropCount++; }
             }

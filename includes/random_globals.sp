@@ -303,6 +303,7 @@ new     Handle:         g_hCvarRCKeyValuesPath                              = IN
 new     Handle:         g_hCvarWelcomeMode                                  = INVALID_HANDLE;       // cvar which welcome-message mode to use
 new     Handle:         g_hCvarBlockL4D1Common                              = INVALID_HANDLE;       // cvar whether to block l4d1 common and not use them for l4d1 event
 new     Handle:         g_hCvarNerfT2                                       = INVALID_HANDLE;       // cvar whether to nerf t2 weapons in the game (allowed other weapons)
+new     Handle:         g_hCvarStopBotsAtStart                              = INVALID_HANDLE;       // cvar whether to stop bots doing anything before humans are ready
 
 new     Handle:         g_hCvarEqual                                        = INVALID_HANDLE;       // cvar flags what to equalize between teams
 new     Handle:         g_hCvarDoReport                                     = INVALID_HANDLE;       // cvar whether to report anything at all
@@ -384,6 +385,7 @@ new     Handle:         g_hCvarAmmoAWP                                      = IN
 // Default convars
 new     Handle:         g_hCvarReadyUp                                      = INVALID_HANDLE;       // cvar handle for readyup checking
 new     Handle:         g_hCvarPausable                                     = INVALID_HANDLE;       // cvar handle for pausable/pausing checking
+new     Handle:         g_hCvarBotStop                                      = INVALID_HANDLE;       // cvar handle for sb_stop
 
 // Default values
 new                     g_iTeamSize                                         = 4;

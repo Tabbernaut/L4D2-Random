@@ -25,6 +25,7 @@ INIT_DefineCVars()
     g_hCvarWelcomeMode = CreateConVar(                      "rand_welcome",                  "3",       "Whether to display welcome messages (1 = only in first round; 2 = always, 3 = each client only once).", FCVAR_PLUGIN, true, 0.0, true, 3.0);
     g_hCvarBlockL4D1Common = CreateConVar(                  "rand_no_l4d1_common",           "3",       "Whether to block L4D1 common. (2 = block all appearing l4d1 common; 3 = block only problematic skins)", FCVAR_PLUGIN, true, 0.0, true, 3.0);
     g_hCvarNerfT2 = CreateConVar(                           "rand_nerf_t2",                  "1",       "Whether to nerf t2 weapons (disallow anything better than single pistol for secondary)", FCVAR_PLUGIN, true, 0.0, true, 2.0);
+    g_hCvarStopBotsAtStart = CreateConVar(                  "rand_stop_bots",                "1",       "Whether to stop bots from doing anything before humans are ready.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     
     g_hCvarEqual = CreateConVar(                            "rand_equal",                 "2047",       "[Flags] What to keep equal between each team's survivor round (1: items; 2: doors; 4: glows; 8: event; 16: incaps; 32: horde; 64: item weighting; 128: starting health; 256: first attack; 512: tanks; 1024: scoring).", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarDoReport = CreateConVar(                         "rand_report",                   "1",       "Whether to do automatic reports at the start of a round.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
@@ -66,7 +67,7 @@ INIT_DefineCVars()
     g_hCvarFallenChance = CreateConVar(                     "rand_fallen_chance",            "0.05",    "Chances of any uncommon spawning becoming a Fallen Survivor.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarJimmyChance = CreateConVar(                      "rand_jimmy_chance",             "0.003",   "Chances of any uncommon spawning becoming Jimmy Gibbs.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarFirstQuadChance = CreateConVar(                  "rand_firstquad_chance",         "0.1",     "Chances of the first attack being a quad cap.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    g_hCvarAmmoVarianceMore = CreateConVar(                 "rand_ammo_more_variance",       "0.2",     "Variance of ammo in weapon pickups, positive direction.", FCVAR_PLUGIN, true, 0.0, false);
+    g_hCvarAmmoVarianceMore = CreateConVar(                 "rand_ammo_more_variance",       "0.15",    "Variance of ammo in weapon pickups, positive direction.", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarAmmoVarianceLess = CreateConVar(                 "rand_ammo_less_variance",       "0.2",     "Variance of ammo in weapon pickups, negative direction.", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarDoubleTankChance = CreateConVar(                 "rand_doubletank_chance",        "0.0",     "Chances of double tanks spawning for a round that will have a tank.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarMultiWitchChance = CreateConVar(                 "rand_multiwitch_chance",        "0.4",     "Chances of multiple witches spawning for a round that will have a witch.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -185,6 +186,7 @@ INIT_DefineCVars()
     // built in cvars (for tracking)
     g_hCvarReadyUp = FindConVar("l4d_ready_enabled");
     g_hCvarPausable = FindConVar("sv_pausable");
+    g_hCvarBotStop = FindConVar("sb_stop");
     
     // hook change of convar
     HookConVarChange(g_hCvarPausable, OnCvarPausableChanged);

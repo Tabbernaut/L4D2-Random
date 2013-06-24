@@ -102,21 +102,21 @@ DoReport(client=0)
     // report special event, if any
     if (g_iSpecialEvent != -1)
     {
-        if (g_iSpecialEvent == _:EVT_WOMEN) {
-            switch (_:g_iSpecialEventExtra)
+        if (g_iSpecialEvent == EVT_WOMEN) {
+            switch (g_iSpecialEventExtra)
             {
                 case EVTWOMEN_TYPE_AXE:     { Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! \x04Axe Effect\x01 - deal with the crazy women."); }
                 case EVTWOMEN_TYPE_ROCK:    { Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! \x04Rock Stars\x01 - deal with the crazy groupies."); }
                 default:                    { Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! \x04Wifebeaters\x01 - it's not right, but you have no choice."); }
             }
         }
-        else if (g_iSpecialEvent == _:EVT_ITEM) {
+        else if (g_iSpecialEvent == EVT_ITEM) {
             Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! %s%s.", g_csEventText[g_iSpecialEvent], g_csItemTypeText[g_iSpecialEventExtra] );
         }
-        else if (g_iSpecialEvent == _:EVT_SILENCE) {
+        else if (g_iSpecialEvent == EVT_SILENCE) {
             Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! %s%s.", g_csEventText[g_iSpecialEvent], (g_iSpecialEventExtra == SILENCED_SI) ? "special infected" : "survivors" );
         }
-        else if (g_iSpecialEvent == _:EVT_WEATHER && g_RI_iNoStorm == 2) {
+        else if (g_iSpecialEvent == EVT_WEATHER && g_RI_iNoStorm == 2) {
             Format(sReport[iLine], REPLINELENGTH, "\x03Special Event\x01! \x04Eerie Harvest\x01 - special weather...");
         }
         else {
@@ -126,7 +126,7 @@ DoReport(client=0)
     }
     
     // report special info for some tricky events
-    if (_:g_iSpecialEvent == EVT_AMMO)
+    if (g_iSpecialEvent == EVT_AMMO)
     {
         Format(sReport[iLine], REPLINELENGTH, "Deploy your ammo pack to make an ammo pile. Hold the USE key to repack the ammo. Don't forget to bring it along!");
         iLine++;
@@ -279,7 +279,7 @@ ReportSpecialEventRole(bool:isNew=false, client=0)
 {
     new String: sReport[REPLINELENGTH] = "";
     
-    switch (_:g_iSpecialEvent)
+    switch (g_iSpecialEvent)
     {
         case EVT_KEYMASTER: {
             Format(sReport, REPLINELENGTH, "%s keymaster: only \x05%N\x01 can use doors.", (isNew) ? "New" : "Current", g_iSpecialEventRole);
@@ -308,7 +308,7 @@ ReportSpecialEventRole(bool:isNew=false, client=0)
     if ( (!client || client == g_iSpecialEventRole) && IsClientAndInGame(g_iSpecialEventRole))
     {
         // show a hinttext for emphasis
-        switch (_:g_iSpecialEvent)
+        switch (g_iSpecialEvent)
         {
             case EVT_KEYMASTER: { PrintHintText(g_iSpecialEventRole, "You are the keymaster."); }
             case EVT_PROTECT: { PrintHintText(g_iSpecialEventRole, "You are the baby."); }
@@ -318,14 +318,14 @@ ReportSpecialEventRole(bool:isNew=false, client=0)
         
         
         // medics should be told some more stuff
-        if (_:g_iSpecialEvent == EVT_MEDIC) {
+        if (g_iSpecialEvent == EVT_MEDIC) {
             if (g_iMedicUnits > 0) {
                 PrintToChat(g_iSpecialEventRole, "\x01[\x05r\x01] You have \x03%i\x01 medi-unit%s left. Costs: medkit: \x052\x01, pills: \x051\x01.", g_iMedicUnits, (g_iMedicUnits == 1) ? "" : "s" );
             } else {
                 PrintToChat(g_iSpecialEventRole, "\x01[\x05r\x01] You have no medical supplies left.");
             }
         }
-        else if (_:g_iSpecialEvent == EVT_BOOMFLU) {
+        else if (g_iSpecialEvent == EVT_BOOMFLU) {
             PrintToChat(g_iSpecialEventRole, "\x01[\x05r\x01] Try not to vomit on your teammates...");
         }
     }
@@ -697,7 +697,7 @@ RANDOM_DetermineRandomStuff()
             // select, put in timeout
             g_iArEventTimeout[g_iSpecialEvent] = GetConVarInt(g_hCvarSpecialEventTimeout);
             
-            switch(_:g_iSpecialEvent)
+            switch(g_iSpecialEvent)
             {
                 case EVT_ITEM: {
                     g_iSpecialEventExtra = GetRandomInt(INDEX_PISTOL, INDEX_TOTAL - 1);
@@ -986,7 +986,7 @@ RANDOM_DetermineRandomStuff()
         }
         
         // reset storm after weather event (but only if the event is not a storm this round)`
-        if ( ( previousEvent == _:EVT_WEATHER || previousEvent == _:EVT_FOG ) && g_iSpecialEvent != _:EVT_WEATHER && g_iSpecialEvent != _:EVT_FOG )
+        if ( ( previousEvent == EVT_WEATHER || previousEvent == EVT_FOG ) && g_iSpecialEvent != EVT_WEATHER && g_iSpecialEvent != EVT_FOG )
         {
             new Handle: hTmp = FindConVar("l4d2_storm_fogmode");
             if (hTmp != INVALID_HANDLE) { SetConVarInt(hTmp, 0); }
@@ -1021,7 +1021,7 @@ RANDOM_DetermineRandomStuff()
         L4D2Direct_SetVSWitchToSpawnThisRound(1, false);
         g_bWitchWillSpawn = false;
     }
-    else if (!g_bWitchWillSpawn && GetConVarFloat(FindConVar("versus_witch_chance")) == 1.0 && _:g_iSpecialEvent != EVT_MINITANKS || _:g_iSpecialEvent == EVT_WOMEN) {
+    else if (!g_bWitchWillSpawn && GetConVarFloat(FindConVar("versus_witch_chance")) == 1.0 && g_iSpecialEvent != EVT_MINITANKS || g_iSpecialEvent == EVT_WOMEN) {
         // block witches on minitanks
         // force witch on women event
         L4D2Direct_SetVSWitchToSpawnThisRound(0, true);
@@ -1172,7 +1172,7 @@ RANDOM_DetermineRandomStuff()
     if (g_bTankWillSpawn && !g_bSecondHalf) { g_bTankFirstRound = true; }
     
     // multi-witches?
-    if (g_bWitchWillSpawn && !g_RI_bIsFinale && (g_RC_bMultiwitchAllowTank || !g_bTankWillSpawn) && _:g_iSpecialEvent != EVT_MINITANKS )
+    if (g_bWitchWillSpawn && !g_RI_bIsFinale && (g_RC_bMultiwitchAllowTank || !g_bTankWillSpawn) && g_iSpecialEvent != EVT_MINITANKS )
     {
         if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
         {
@@ -1191,7 +1191,7 @@ RANDOM_DetermineRandomStuff()
     }
     
     // door locking
-    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_DOORS) || (_:g_iSpecialEvent == EVT_L4D1 && !(GetConVarInt(g_hCvarEqual) & EQ_EVENT) ) ) {
+    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_DOORS) || (g_iSpecialEvent == EVT_L4D1 && !(GetConVarInt(g_hCvarEqual) & EQ_EVENT) ) ) {
         RandomizeDoors();
     } else {
         RestoreDoors();
@@ -1216,7 +1216,7 @@ RANDOM_DetermineRandomStuff()
     if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_GLOWS))
     {
         // fog of war event forces no outlines (unless 0 chance)
-        if (_:g_iSpecialEvent == EVT_FOG && GetConVarFloat(g_hCvarOutlineChance) > 0.0)
+        if (g_iSpecialEvent == EVT_FOG && GetConVarFloat(g_hCvarOutlineChance) > 0.0)
         {
             SetConVarInt(FindConVar("sv_disable_glow_survivors"), 1);
             g_bGlows = false;
@@ -1252,10 +1252,10 @@ RANDOM_DetermineRandomStuff()
     // incaps
     if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_INCAPS))
     {
-        if (_:g_iSpecialEvent == EVT_DEFIB) {
+        if (g_iSpecialEvent == EVT_DEFIB) {
             g_iIncaps = 0;
         }
-        else if (_:g_iSpecialEvent == EVT_MEDIC) {
+        else if (g_iSpecialEvent == EVT_MEDIC) {
             // force default for this
             g_iIncaps = 2;
         }
@@ -1307,7 +1307,7 @@ RANDOM_DetermineRandomStuff()
     // randomize witches standing/sitting (time of day)
     if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
     {
-        if (_:g_iSpecialEvent != EVT_WITCHES && ( (g_bMultiWitch && g_bArWitchSitting[0] == false) || GetRandomInt(0, 3) == 0 ) )
+        if (g_iSpecialEvent != EVT_WITCHES && ( (g_bMultiWitch && g_bArWitchSitting[0] == false) || GetRandomInt(0, 3) == 0 ) )
         { 
             SetConVarInt(FindConVar("sv_force_time_of_day"), WITCHES_DAY);
         } else {
@@ -1347,7 +1347,7 @@ RandomizeItems()
 
     new Float: fAmmoVarMore = 1.0 + GetConVarFloat(g_hCvarAmmoVarianceMore);
     new Float: fAmmoVarLess = 1.0 - GetConVarFloat(g_hCvarAmmoVarianceLess);
-    new Float: fAmmoFactor = (_:g_iSpecialEvent == EVT_AMMO) ? g_RC_fEventAmmoFactor : 1.0;
+    new Float: fAmmoFactor = (g_iSpecialEvent == EVT_AMMO) ? g_RC_fEventAmmoFactor : 1.0;
     
     for (new i=0; i < entityCount; i++)
     {
@@ -1599,7 +1599,7 @@ RandomizeItems()
             
             // special events:
             //  SNIPER: ignore other t1 and t2 picks, only let snipers go through:
-            if (_:g_iSpecialEvent == EVT_SNIPER) {
+            if (g_iSpecialEvent == EVT_SNIPER) {
                 switch (randomPick) {
                     case INDEX_T1SMG: { randomPick = INDEX_SNIPER; }
                     case INDEX_T1SHOTGUN: { randomPick = INDEX_SNIPER; }
@@ -1609,7 +1609,7 @@ RandomizeItems()
                 }
             }
             // skeeting, only shotguns
-            else if (_:g_iSpecialEvent == EVT_SKEET) {
+            else if (g_iSpecialEvent == EVT_SKEET) {
                 switch (randomPick) {
                     case INDEX_T1SMG: { randomPick = INDEX_T1SHOTGUN; }
                     case INDEX_SNIPER: { randomPick = INDEX_T1SHOTGUN; }
@@ -1617,7 +1617,7 @@ RandomizeItems()
                     case INDEX_T3: { randomPick = INDEX_T2SHOTGUN; }
                 }
             }
-            else if (_:g_iSpecialEvent == EVT_BADCOMBO && g_strArStorage[curEnt][entInStartSaferoom]) {
+            else if (g_iSpecialEvent == EVT_BADCOMBO && g_strArStorage[curEnt][entInStartSaferoom]) {
                 // remove all primary and secondary weapons from start saferoom
                 switch (randomPick) {
                     case INDEX_PISTOL: { randomPick = INDEX_NOITEM; }
@@ -1632,7 +1632,7 @@ RandomizeItems()
                 }
             }
             // no t1s
-            else if (_:g_iSpecialEvent == EVT_FIREPOWER) {
+            else if (g_iSpecialEvent == EVT_FIREPOWER) {
                 switch (randomPick) {
                     case INDEX_T1SMG: { randomPick = INDEX_T2RIFLE; }
                     case INDEX_T1SHOTGUN: { randomPick = INDEX_T2SHOTGUN; }
@@ -1645,7 +1645,7 @@ RandomizeItems()
             {
                 case INDEX_PISTOL:
                 {
-                    if (GetRandomInt(0, RATE_MAGNUM - 1) == 0 && _:g_iSpecialEvent != EVT_L4D1 ) {
+                    if (GetRandomInt(0, RATE_MAGNUM - 1) == 0 && g_iSpecialEvent != EVT_L4D1 ) {
                         g_strArStorage[curEnt][entPickedType] = PCK_PISTOL_MAGNUM;
                     } else {
                         g_strArStorage[curEnt][entPickedType] = PCK_PISTOL;
@@ -1654,7 +1654,7 @@ RandomizeItems()
                 
                 case INDEX_T1SMG:
                 {
-                    if (_:g_iSpecialEvent == EVT_L4D1) {
+                    if (g_iSpecialEvent == EVT_L4D1) {
                         g_strArStorage[curEnt][entPickedType] = PCK_SMG;
                     } else {
                         if (GetRandomInt(0, RATE_CSS - 1) == 0) {
@@ -1672,7 +1672,7 @@ RandomizeItems()
                 
                 case INDEX_T1SHOTGUN:
                 {
-                    if ( GetRandomInt(0, RATE_PUMPSHOT - 1) == 0 || _:g_iSpecialEvent == EVT_L4D1 ) {
+                    if ( GetRandomInt(0, RATE_PUMPSHOT - 1) == 0 || g_iSpecialEvent == EVT_L4D1 ) {
                         g_strArStorage[curEnt][entPickedType] = PCK_PUMPSHOTGUN;
                     } else {
                         g_strArStorage[curEnt][entPickedType] = PCK_SHOTGUN_CHROME;
@@ -1682,7 +1682,7 @@ RandomizeItems()
                 
                 case INDEX_T2RIFLE:
                 {
-                    if (_:g_iSpecialEvent == EVT_L4D1) {
+                    if (g_iSpecialEvent == EVT_L4D1) {
                         g_strArStorage[curEnt][entPickedType] = PCK_RIFLE;
                     } else {
                         if (GetRandomInt(0, RATE_CSS - 1) == 0) {
@@ -1703,7 +1703,7 @@ RandomizeItems()
                         }
                     }
                     
-                    if (g_strArStorage[curEnt][entPickedType] == _:PCK_RIFLE_AK47) {
+                    if (g_strArStorage[curEnt][entPickedType] == PCK_RIFLE_AK47) {
                         g_strArStorage[curEnt][entAmmoMax] = RoundFloat(float(g_iActiveAmmoAk) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
                     } else {
                         g_strArStorage[curEnt][entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_assaultrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
@@ -1712,7 +1712,7 @@ RandomizeItems()
                 
                 case INDEX_T2SHOTGUN:
                 {
-                    if ( GetRandomInt(0, RATE_PUMPSHOT - 1) == 0 || _:g_iSpecialEvent == EVT_L4D1 ) {
+                    if ( GetRandomInt(0, RATE_PUMPSHOT - 1) == 0 || g_iSpecialEvent == EVT_L4D1 ) {
                         g_strArStorage[curEnt][entPickedType] = PCK_AUTOSHOTGUN;
                     } else {
                         g_strArStorage[curEnt][entPickedType] = PCK_SHOTGUN_SPAS;
@@ -1722,11 +1722,11 @@ RandomizeItems()
                 
                 case INDEX_SNIPER:
                 {
-                    if (_:g_iSpecialEvent == EVT_L4D1) {
+                    if (g_iSpecialEvent == EVT_L4D1) {
                         g_strArStorage[curEnt][entPickedType] = PCK_HUNTING_RIFLE;
                         g_strArStorage[curEnt][entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_huntingrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
                     }
-                    else if (_:g_iSpecialEvent == EVT_SNIPER || GetRandomInt(0, RATE_CSS_SNIPER - 1) == 0) {
+                    else if (g_iSpecialEvent == EVT_SNIPER || GetRandomInt(0, RATE_CSS_SNIPER - 1) == 0) {
                         if (GetRandomInt(0, 1) == 0) {
                             g_strArStorage[curEnt][entPickedType] = PCK_SNIPER_SCOUT;
                             g_strArStorage[curEnt][entAmmoMax] = RoundFloat(float(g_iActiveAmmoScout) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
@@ -1795,7 +1795,7 @@ RandomizeItems()
                 
                 case INDEX_PILL:
                 {
-                    if ( ( GetRandomInt(0, RATE_ADREN - 1) == 0 || _:g_iSpecialEvent == EVT_ADREN ) && _:g_iSpecialEvent != EVT_L4D1 ) {
+                    if ( ( GetRandomInt(0, RATE_ADREN - 1) == 0 || g_iSpecialEvent == EVT_ADREN ) && g_iSpecialEvent != EVT_L4D1 ) {
                         g_strArStorage[curEnt][entPickedType] = PCK_ADRENALINE;
                     } else {
                         g_strArStorage[curEnt][entPickedType] = PCK_PAIN_PILLS;
@@ -1804,7 +1804,7 @@ RandomizeItems()
                 
                 case INDEX_THROWABLE:
                 {
-                    new tmpRnd = GetRandomInt(0, (_:g_iSpecialEvent == EVT_L4D1) ? 1 : 2 );
+                    new tmpRnd = GetRandomInt(0, (g_iSpecialEvent == EVT_L4D1) ? 1 : 2 );
                     switch (tmpRnd)  {
                         case 0: {
                             g_strArStorage[curEnt][entPickedType] = PCK_PIPEBOMB;
@@ -1821,7 +1821,7 @@ RandomizeItems()
                 case INDEX_KIT:
                 {
                     // special event: only defibs
-                    if ( ( GetRandomInt(0, RATE_DEFIB - 1) == 0 || _:g_iSpecialEvent == EVT_DEFIB || _:g_iSpecialEvent == EVT_ADREN ) && _:g_iSpecialEvent != EVT_L4D1 ) {
+                    if ( ( GetRandomInt(0, RATE_DEFIB - 1) == 0 || g_iSpecialEvent == EVT_DEFIB || g_iSpecialEvent == EVT_ADREN ) && g_iSpecialEvent != EVT_L4D1 ) {
                         g_strArStorage[curEnt][entPickedType] = PCK_DEFIBRILLATOR;
                     } else {
                         g_strArStorage[curEnt][entPickedType] = PCK_FIRST_AID_KIT;
@@ -1962,8 +1962,8 @@ RandomizeItems()
             arStartItems[countStartItems] = i;
             countStartItems++;
             
-            if (g_strArStorage[i][entPickedType] == _:PCK_SILLY_GNOME) { countStartGnome++; }
-            else if (g_strArStorage[i][entPickedType] == _:PCK_AMMO) { countStartAmmo++; }
+            if (g_strArStorage[i][entPickedType] == PCK_SILLY_GNOME) { countStartGnome++; }
+            else if (g_strArStorage[i][entPickedType] == PCK_AMMO) { countStartAmmo++; }
         }
     }
     
@@ -2117,7 +2117,7 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
     
     new randomPick = PCK_NOITEM;
     new randomIndex = INDEX_NOITEM;
-    new Float: fAmmoFactor = (_:g_iSpecialEvent == EVT_AMMO) ? g_RC_fEventAmmoFactor : 1.0;
+    new Float: fAmmoFactor = (g_iSpecialEvent == EVT_AMMO) ? g_RC_fEventAmmoFactor : 1.0;
     
     // if we're doing weapons, we're still not doing NOITEM, so start at pistol (1)
     // otherwise, start at first non-weapon item
@@ -2150,7 +2150,7 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
     g_sTempItemSingleMelee = "";
     
     // sniper special event
-    if (_:g_iSpecialEvent == EVT_SNIPER) {
+    if (g_iSpecialEvent == EVT_SNIPER) {
         switch (randomIndex) {
             case INDEX_T1SMG: { randomIndex = INDEX_SNIPER; }
             case INDEX_T1SHOTGUN: { randomIndex = INDEX_SNIPER; }
@@ -2159,7 +2159,7 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
             case INDEX_T3: { randomIndex = INDEX_SNIPER; }
         }
     }
-    else if (_:g_iSpecialEvent == EVT_SKEET) {
+    else if (g_iSpecialEvent == EVT_SKEET) {
         switch (randomIndex) {
             case INDEX_T1SMG: { randomIndex = INDEX_T1SHOTGUN; }
             case INDEX_SNIPER: { randomIndex = INDEX_T1SHOTGUN; }
@@ -2167,19 +2167,19 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
             case INDEX_T3: { randomIndex = INDEX_T2SHOTGUN; }
         }
     }
-    else if (_:g_iSpecialEvent == EVT_FIREPOWER) {
+    else if (g_iSpecialEvent == EVT_FIREPOWER) {
         switch (randomIndex) {
             case INDEX_T1SMG: { randomIndex = INDEX_T2RIFLE; }
             case INDEX_T1SHOTGUN: { randomIndex = INDEX_T2SHOTGUN; }
         }
     }
-    else if (_:g_iSpecialEvent == EVT_L4D1) {
+    else if (g_iSpecialEvent == EVT_L4D1) {
         if ( randomIndex == INDEX_MELEE || randomIndex == INDEX_T3 || randomIndex == INDEX_UPGRADE ) { randomIndex = INDEX_PISTOL; }
     }
-    else if (_:g_iSpecialEvent == EVT_GUNSWAP) {
+    else if (g_iSpecialEvent == EVT_GUNSWAP) {
         if ( randomIndex == INDEX_AMMO || randomIndex == INDEX_UPGRADE ) { randomIndex = (GetRandomInt(0,1)) ? INDEX_THROWABLE : INDEX_PILL; }
     }
-    else if (_:g_iSpecialEvent == EVT_MEDIC) {
+    else if (g_iSpecialEvent == EVT_MEDIC) {
         switch (randomIndex) {
             case INDEX_KIT: { randomIndex = INDEX_PISTOL; }
             case INDEX_PILL: { randomIndex = INDEX_THROWABLE; }
@@ -2190,12 +2190,12 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
     switch (randomIndex)
     {
         case INDEX_PISTOL: {
-            if (GetRandomInt(0, 1) == 0 && _:g_iSpecialEvent != EVT_L4D1) { randomPick = PCK_PISTOL_MAGNUM; } else { randomPick = PCK_PISTOL; }
+            if (GetRandomInt(0, 1) == 0 && g_iSpecialEvent != EVT_L4D1) { randomPick = PCK_PISTOL_MAGNUM; } else { randomPick = PCK_PISTOL; }
         }
         
         case INDEX_T1SMG: {
             new tmpRnd = GetRandomInt(0, 2);
-            if (_:g_iSpecialEvent == EVT_L4D1) { tmpRnd = 1; }
+            if (g_iSpecialEvent == EVT_L4D1) { tmpRnd = 1; }
             switch (tmpRnd)  {
                 case 0: { randomPick = PCK_SMG_MP5; }
                 case 1: { randomPick = PCK_SMG; }
@@ -2205,13 +2205,13 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
         }
         
         case INDEX_T1SHOTGUN: {
-            if (GetRandomInt(0, 1) == 0 || _:g_iSpecialEvent == EVT_L4D1) { randomPick = PCK_PUMPSHOTGUN; } else { randomPick = PCK_SHOTGUN_CHROME; }
+            if (GetRandomInt(0, 1) == 0 || g_iSpecialEvent == EVT_L4D1) { randomPick = PCK_PUMPSHOTGUN; } else { randomPick = PCK_SHOTGUN_CHROME; }
             g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_shotgun_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
         }
         
         case INDEX_T2RIFLE: {
             new tmpRnd = GetRandomInt(0, 3);
-            if (_:g_iSpecialEvent == EVT_L4D1) { tmpRnd = 1; }
+            if (g_iSpecialEvent == EVT_L4D1) { tmpRnd = 1; }
             switch (tmpRnd)  {
                 case 0: { randomPick = PCK_RIFLE_SG552; }
                 case 1: { randomPick = PCK_RIFLE; }
@@ -2219,7 +2219,7 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
                 case 3: { randomPick = PCK_RIFLE_DESERT; }
             }
             
-            if (randomPick == _:PCK_RIFLE_AK47) {
+            if (randomPick == PCK_RIFLE_AK47) {
                 g_strTempItemSingle[entAmmoMax] = RoundFloat(float(g_iActiveAmmoAk) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
             } else {
                 g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_assaultrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
@@ -2227,13 +2227,13 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
         }
         
         case INDEX_T2SHOTGUN: {
-            if (GetRandomInt(0, 1) == 0 || _:g_iSpecialEvent == EVT_L4D1) { randomPick = PCK_AUTOSHOTGUN; } else { randomPick = PCK_SHOTGUN_SPAS; }
+            if (GetRandomInt(0, 1) == 0 || g_iSpecialEvent == EVT_L4D1) { randomPick = PCK_AUTOSHOTGUN; } else { randomPick = PCK_SHOTGUN_SPAS; }
             g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_autoshotgun_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
         }
         
         case INDEX_SNIPER: {
             new tmpRnd = GetRandomInt(0, 3);
-            if (_:g_iSpecialEvent == EVT_L4D1) { tmpRnd = 2; }
+            if (g_iSpecialEvent == EVT_L4D1) { tmpRnd = 2; }
             switch (tmpRnd)  {
                 case 0: { randomPick = PCK_SNIPER_SCOUT;
                           g_strTempItemSingle[entAmmoMax] = RoundFloat(float(g_iActiveAmmoScout) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor); }
@@ -2276,11 +2276,11 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
         }
         
         case INDEX_PILL: {
-            if (GetRandomInt(0, 1) == 0 || _:g_iSpecialEvent == EVT_ADREN && _:g_iSpecialEvent != EVT_L4D1) { randomPick = PCK_ADRENALINE; } else { randomPick = PCK_PAIN_PILLS; }
+            if (GetRandomInt(0, 1) == 0 || g_iSpecialEvent == EVT_ADREN && g_iSpecialEvent != EVT_L4D1) { randomPick = PCK_ADRENALINE; } else { randomPick = PCK_PAIN_PILLS; }
         }
         
         case INDEX_THROWABLE: {
-            new tmpRnd = GetRandomInt(0, (_:g_iSpecialEvent == EVT_L4D1) ? 1 : 2 );
+            new tmpRnd = GetRandomInt(0, (g_iSpecialEvent == EVT_L4D1) ? 1 : 2 );
             switch (tmpRnd)  {
                 case 0: { randomPick = PCK_PIPEBOMB; }
                 case 1: { randomPick = PCK_MOLOTOV; }
@@ -2289,7 +2289,7 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
         }
         
         case INDEX_KIT: {
-            if (GetRandomInt(0, 4) < 2 || _:g_iSpecialEvent == EVT_DEFIB && _:g_iSpecialEvent != EVT_L4D1) { randomPick = PCK_DEFIBRILLATOR; } else { randomPick = PCK_FIRST_AID_KIT; }
+            if (GetRandomInt(0, 4) < 2 || g_iSpecialEvent == EVT_DEFIB && g_iSpecialEvent != EVT_L4D1) { randomPick = PCK_DEFIBRILLATOR; } else { randomPick = PCK_FIRST_AID_KIT; }
         }
         
         case INDEX_AMMO: { randomPick = PCK_AMMO; }
@@ -2347,7 +2347,7 @@ RandomizeSurvivorItems()
     
     new Float: fAmmoVarMore = 1.0 + GetConVarFloat(g_hCvarAmmoVarianceMore);
     new Float: fAmmoVarLess = 1.0 - GetConVarFloat(g_hCvarAmmoVarianceLess);
-    new Float: fAmmoFactor = (_:g_iSpecialEvent == EVT_AMMO) ? g_RC_fEventAmmoFactor : 1.0;
+    new Float: fAmmoFactor = (g_iSpecialEvent == EVT_AMMO) ? g_RC_fEventAmmoFactor : 1.0;
 
 
     // minimum supplies for higher difficulty rounds
@@ -2398,20 +2398,20 @@ RandomizeSurvivorItems()
         }
         
         // adjust for l4d1 mode
-        if ( _:g_iSpecialEvent == EVT_L4D1) {
+        if ( g_iSpecialEvent == EVT_L4D1) {
             if (randomPick == INDEX_SURV_MELEE || randomPick == INDEX_SURV_MAGNUM) { randomPick = INDEX_SURV_DUALS; }
             if (secondaryPick == INDEX_SURV_MELEE || secondaryPick == INDEX_SURV_MAGNUM) { secondaryPick = INDEX_SURV_DUALS; }
         }
         // adjust for skeet event
-        else if (_:g_iSpecialEvent == EVT_SKEET) {
+        else if (g_iSpecialEvent == EVT_SKEET) {
             if (randomPick == INDEX_SURV_T1SMG) { randomPick = INDEX_SURV_T1SHOT; }
         }
         // only give melees for women event
-        else if (_:g_iSpecialEvent == EVT_WOMEN) {
+        else if (g_iSpecialEvent == EVT_WOMEN) {
             randomPick = INDEX_SURV_MELEE;
             secondaryPick = -1;
         }
-        else if (_:g_iSpecialEvent == EVT_WITCHES) {
+        else if (g_iSpecialEvent == EVT_WITCHES) {
             randomPick = INDEX_SURV_T1SHOT;
         }
         
@@ -2433,7 +2433,7 @@ RandomizeSurvivorItems()
             
             case INDEX_SURV_T1SMG: {
                 iCountPrimary++;
-                if (_:g_iSpecialEvent == EVT_L4D1) {
+                if (g_iSpecialEvent == EVT_L4D1) {
                     randomPick = PCK_SMG;
                 } else {
                     if (GetRandomInt(0, RATE_CSS - 1) == 0) {
@@ -2452,7 +2452,7 @@ RandomizeSurvivorItems()
             
             case INDEX_SURV_T1SHOT: {
                 iCountPrimary++;
-                if ( GetRandomInt(0, RATE_PUMPSHOT - 1) == 0 || _:g_iSpecialEvent == EVT_L4D1 ) {
+                if ( GetRandomInt(0, RATE_PUMPSHOT - 1) == 0 || g_iSpecialEvent == EVT_L4D1 ) {
                     randomPick = PCK_PUMPSHOTGUN;
                 } else {
                     randomPick = PCK_SHOTGUN_CHROME;
@@ -2494,17 +2494,17 @@ RandomizeSurvivorItems()
         
         
         // pills?
-        if (_:g_iSpecialEvent == EVT_ADREN) {
+        if (g_iSpecialEvent == EVT_ADREN) {
             // force adrenaline for special event
             g_iArStorageSurvPills[i] = PCK_ADRENALINE;
             iCountAdren++;
         }
-        else if (_:g_iSpecialEvent == EVT_DEFIB) {
+        else if (g_iSpecialEvent == EVT_DEFIB) {
             // force defib for special event
             g_iArStorageSurvPills[i] = PCK_PAIN_PILLS;
             iCountPills++;
         }
-        else if (_:g_iSpecialEvent == EVT_MEDIC) {
+        else if (g_iSpecialEvent == EVT_MEDIC) {
             // no pills for anyone (yet)
             g_iArStorageSurvPills[i] = PCK_NOITEM;
         }
@@ -2522,7 +2522,7 @@ RandomizeSurvivorItems()
     }
     
     // check for special event
-    if (g_iSpecialEvent == _:EVT_GUNSWAP)
+    if (g_iSpecialEvent == EVT_GUNSWAP)
     {
         // give nothing but pistol (or melee)
         for (new i=0; i < TEAM_SIZE; i++) {
@@ -2532,14 +2532,14 @@ RandomizeSurvivorItems()
     }
     //      so many doors locked, guarantee two melees
     //      but ignore for keymaster event, since the keymaster can unlock
-    else if (g_iSpecialEvent != _:EVT_KEYMASTER)
+    else if (g_iSpecialEvent != EVT_KEYMASTER)
     {
-        if (g_iSpecialEvent == _:EVT_DOORS && iCountMelee < EVENT_DOORS_MINMELEE)
+        if (g_iSpecialEvent == EVT_DOORS && iCountMelee < EVENT_DOORS_MINMELEE)
         {
             PrintDebug(2, "[rand] Adding melees to deal with special event.");
             for (new i=0; i < TEAM_SIZE; i++)
             {
-                if (g_iArStorageSurvSec[i] != _:PCK_MELEE) {
+                if (g_iArStorageSurvSec[i] != PCK_MELEE) {
                     g_iArStorageSurvSec[i] = PCK_MELEE;
                     meleeRandomPick = GetRandomInt(0, sizeof(g_iMeleeClassCount) - 1);
                     g_iArStorageSurvMelee[i] = meleeRandomPick;
@@ -2549,12 +2549,12 @@ RandomizeSurvivorItems()
             }
         }
         // do a similar check if there are early door locks
-        else if (g_bEarlyLock && iCountMelee < EARLY_DOORS_MINMELEE && _:g_iSpecialEvent != EVT_BADCOMBO)
+        else if (g_bEarlyLock && iCountMelee < EARLY_DOORS_MINMELEE && g_iSpecialEvent != EVT_BADCOMBO)
         {
             PrintDebug(2, "[rand] Adding melees to deal with early locks.");
             for (new i=0; i < TEAM_SIZE; i++)
             {
-                if (g_iArStorageSurvSec[i] != _:PCK_MELEE) {
+                if (g_iArStorageSurvSec[i] != PCK_MELEE) {
                     g_iArStorageSurvSec[i] = PCK_MELEE;
                     meleeRandomPick = GetRandomInt(0, sizeof(g_iMeleeClassCount) - 1);
                     g_iArStorageSurvMelee[i] = meleeRandomPick;
@@ -2733,7 +2733,7 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
             case PCK_ADRENALINE: { type = PCK_NOITEM; }
         }
         
-        if (_:g_iSpecialEvent == EVT_MEDIC) {
+        if (g_iSpecialEvent == EVT_MEDIC) {
             // no packs either, to simplify slot 4 tricks
             switch (type)
             {
@@ -2993,7 +2993,7 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
     // if a weapon, do this to prevent it having only 1 clip:
     if (itemAmmoMax)
     {
-        if (type == _:PCK_RIFLE_M60) {
+        if (type == PCK_RIFLE_M60) {
             SetEntProp(ent, Prop_Send, "m_iClip1", itemAmmoMax, 4);
         } else {
             SetEntProp(ent, Prop_Send, "m_iExtraPrimaryAmmo", itemAmmoMax, 4);
@@ -3036,8 +3036,8 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
     }
     
     // ammo pile to coffee
-    if (type == _:PCK_AMMO) {
-        if (_:g_iSpecialEvent != EVT_AMMO && GetRandomInt(0, 2) == 0)
+    if (type == PCK_AMMO) {
+        if (g_iSpecialEvent != EVT_AMMO && GetRandomInt(0, 2) == 0)
         {
             SetEntityModel(ent, MODEL_L4D1AMMO);
         }
@@ -3051,11 +3051,11 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
     }
     
     // gnome/cola scoring support
-    if (type == _:PCK_SILLY_GNOME || type == _:PCK_SILLY_COLA)
+    if (type == PCK_SILLY_GNOME || type == PCK_SILLY_COLA)
     {
         g_iGnomes++;
         g_strArGnomes[g_iGnomes-1][gnomeEntity] = ent;
-        if (type == _:PCK_SILLY_COLA) { g_strArGnomes[g_iGnomes-1][gnomebIsCola] = true; }
+        if (type == PCK_SILLY_COLA) { g_strArGnomes[g_iGnomes-1][gnomebIsCola] = true; }
         
         // if in start saferoom, pre-set its value
         if (inArray && index != -1 && g_strArStorage[index][entInStartSaferoom]) {
@@ -3194,18 +3194,18 @@ ChangeSurvivorSetup(index, client)
     }
     
     // for defib event
-    if (_:g_iSpecialEvent == EVT_DEFIB) {
+    if (g_iSpecialEvent == EVT_DEFIB) {
         GiveItem(client, "weapon_defibrillator", 0, 0);
     }
     // give first player the ammo kit on ammo event
-    else if (_:g_iSpecialEvent == EVT_AMMO) {
+    else if (g_iSpecialEvent == EVT_AMMO) {
         if (index == 0) {
             GiveItem(client, "weapon_upgradepack_incendiary", 0, 0);
         }
     }
         
     // starting health (don't change on bleedout event(s))
-    if (_:g_iSpecialEvent != EVT_ADREN)
+    if (g_iSpecialEvent != EVT_ADREN)
     {
         if (GetConVarFloat(g_hCvarHealthChance)) {
             if (g_iArStorageSurvHealth[index] && g_iArStorageSurvHealth[index] < 100)
@@ -3216,16 +3216,12 @@ ChangeSurvivorSetup(index, client)
     }
     
     // weapon 'gift':
-    // if we're replacing the single pistol, remove it (need to check both main and secondary type)
-    PrintToChatAll("index %i - client %i - typesec: %i", index, client, typeSec);
-    
-    if (    typeSec == _:PCK_NOITEM
-        ||  typeSec == _:PCK_PISTOL_MAGNUM
-        ||  typeSec == _:PCK_MELEE
-        ||  g_iSpecialEvent == _:EVT_BADCOMBO
+    // if we're replacing the single pistol, remove it
+    if (    typeSec == PCK_NOITEM
+        ||  typeSec == PCK_PISTOL_MAGNUM
+        ||  typeSec == PCK_MELEE
+        ||  g_iSpecialEvent == EVT_BADCOMBO
     ) {
-        PrintToChatAll("Stripping pistol from %N", client);
-        
         new weaponIndex = GetPlayerWeaponSlot(client, PLAYER_SLOT_SECONDARY);
         
         if (weaponIndex > -1) {
@@ -3239,7 +3235,7 @@ ChangeSurvivorSetup(index, client)
     }
 
     // for bad combo event, give set items and don't do anything else
-    if (_:g_iSpecialEvent == EVT_BADCOMBO)
+    if (g_iSpecialEvent == EVT_BADCOMBO)
     {
         GiveItem(client, "weapon_chainsaw", 0, 0);
         GiveItem(client, "weapon_grenade_launcher", g_RC_iEventBadComboAmmo, GRENADE_LAUNCHER_OFFSET_IAMMO);
@@ -3249,7 +3245,7 @@ ChangeSurvivorSetup(index, client)
     new String:weaponname[STR_MAX_ITEMGIVEN] = "";
     
     // add secondary (if required)
-    if (typeSec != _:PCK_NOITEM)
+    if (typeSec != PCK_NOITEM)
     {        
         switch (typeSec)
         {
@@ -3259,9 +3255,9 @@ ChangeSurvivorSetup(index, client)
                 // special case
                 PrintDebug(2, "[rand] Handed [sec] melee weapon (%s) to %N.", g_sMeleeClass[(g_iArStorageSurvMelee[index])], client);
                 
-                if (_:g_iSpecialEvent == EVT_WOMEN) {
+                if (g_iSpecialEvent == EVT_WOMEN) {
                     // don't use stored, use whatever the event requires
-                    switch (_:g_iSpecialEventExtra)
+                    switch (g_iSpecialEventExtra)
                     {
                         case EVTWOMEN_TYPE_AXE:     { GiveItemMelee(client, "fireaxe"); }
                         case EVTWOMEN_TYPE_ROCK:    { GiveItemMelee(client, "electric_guitar"); }
@@ -3289,7 +3285,7 @@ ChangeSurvivorSetup(index, client)
     {
         case PCK_NOITEM: {
             // giving gnome for 'nothing' instead, if they didn't receive secondary either
-            if (typeSec == _:PCK_NOITEM) { weaponname = "weapon_gnome"; }
+            if (typeSec == PCK_NOITEM) { weaponname = "weapon_gnome"; }
         }
         case PCK_SMG_MP5: {         weaponname = "weapon_smg_mp5";        ammo = g_iArStorageSurvAmmo[index]; ammoOffset = SMG_OFFSET_IAMMO; }
         case PCK_SMG: {             weaponname = "weapon_smg";            ammo = g_iArStorageSurvAmmo[index]; ammoOffset = SMG_OFFSET_IAMMO; }
@@ -3301,7 +3297,7 @@ ChangeSurvivorSetup(index, client)
     }
     
     // special event, snipers only (marksmen):
-    if ( _:g_iSpecialEvent == EVT_SNIPER && type != _:PCK_NOITEM )
+    if ( g_iSpecialEvent == EVT_SNIPER && type != PCK_NOITEM )
     {
         new Float: fAmmoVarMore = 1.0 + GetConVarFloat(g_hCvarAmmoVarianceMore);
         new Float: fAmmoVarLess = 1.0 - GetConVarFloat(g_hCvarAmmoVarianceLess);
@@ -3311,7 +3307,7 @@ ChangeSurvivorSetup(index, client)
         ammoOffset = MILITARY_SNIPER_OFFSET_IAMMO;
     }
     // special event: magic gun swap == you don't get a primary
-    else if (_:g_iSpecialEvent == EVT_GUNSWAP)
+    else if (g_iSpecialEvent == EVT_GUNSWAP)
     {
         weaponname = ""; // don't proceed to give weapon
         
@@ -3319,9 +3315,9 @@ ChangeSurvivorSetup(index, client)
         EVENT_SwapSurvivorGun(client);
     }
     // special event: no t1s
-    else if (_:g_iSpecialEvent == EVT_FIREPOWER)
+    else if (g_iSpecialEvent == EVT_FIREPOWER)
     {
-        switch (_:type)
+        switch (type)
         {
             case PCK_SMG_MP5: {         weaponname = "weapon_rifle_ak47";   ammo = g_iActiveAmmoAk; ammoOffset = ASSAULT_RIFLE_OFFSET_IAMMO; }
             case PCK_SMG: {             weaponname = "weapon_rifle";        ammo = g_iArStorageSurvAmmo[index]; ammoOffset = ASSAULT_RIFLE_OFFSET_IAMMO; }
@@ -3338,7 +3334,7 @@ ChangeSurvivorSetup(index, client)
         GiveItem(client, weaponname, ammo, ammoOffset);
         
         // if we've given the gnome, make sure the gnome has a value!
-        if (type == _:PCK_NOITEM && typeSec == _:PCK_NOITEM)
+        if (type == PCK_NOITEM && typeSec == PCK_NOITEM)
         {
             UpdateAfterGnomeGiven(client);
         }
@@ -3522,7 +3518,7 @@ RANDOM_DoGiftEffect(client, entity)
     
     new bool: inSaferoom = (IsEntityInSaferoom(entity, false, false) || IsEntityInSaferoom(client, true, false));
     
-    if ( GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarGiftPositiveChance) && _:g_iSpecialEvent != EVT_BADSANTA )
+    if ( GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarGiftPositiveChance) && g_iSpecialEvent != EVT_BADSANTA )
     {
         // positive effect
         
@@ -3597,7 +3593,7 @@ RANDOM_DoGiftEffect(client, entity)
                 
                 PrintDebug(3, "[rand] Gift items to spawn: %i", itemCount);
                 
-                if (_:g_iSpecialEvent == EVT_GUNSWAP && inSaferoom) { noWeapons = true; }   // no weapons if we're starting with GLs/CSs and it's in saferoom
+                if (g_iSpecialEvent == EVT_GUNSWAP && inSaferoom) { noWeapons = true; }   // no weapons if we're starting with GLs/CSs and it's in saferoom
                 
                 if (GetRandomInt(0, 4) == 0) {
                     // same item X times
@@ -3733,7 +3729,7 @@ RANDOM_DoGiftEffect(client, entity)
                         new iDontMessWith = -1;
                         
                         // find a slot that we shouldn't mess with:
-                        if (_:g_iSpecialEvent == EVT_GUNSWAP) {
+                        if (g_iSpecialEvent == EVT_GUNSWAP) {
                             iDontMessWith = 0;
                         } else {
                             for (new j = PLAYER_SLOT_PILL; j >= PLAYER_SLOT_PRIMARY; j--)
@@ -3748,7 +3744,7 @@ RANDOM_DoGiftEffect(client, entity)
                         
                         // drop stuff
                         //  for item pickup penalty event, only drop primaries
-                        for (new j = PLAYER_SLOT_PRIMARY; j <= ((_:g_iSpecialEvent == EVT_PEN_ITEM) ? PLAYER_SLOT_PRIMARY : PLAYER_SLOT_PILL); j++)
+                        for (new j = PLAYER_SLOT_PRIMARY; j <= ((g_iSpecialEvent == EVT_PEN_ITEM) ? PLAYER_SLOT_PRIMARY : PLAYER_SLOT_PILL); j++)
                         {
                             if (j == iDontMessWith) { continue; }
                             
@@ -3828,7 +3824,7 @@ RANDOM_DoGiftEffect(client, entity)
     g_fGiftUseTimeout[client] = GetEngineTime();
     
     // give bonus points if event
-    if (_:g_iSpecialEvent == EVT_BADSANTA)
+    if (g_iSpecialEvent == EVT_BADSANTA)
     {
         g_iBonusCount++;
         PBONUS_AddRoundBonus( g_RC_iEventBonusBadSanta );
@@ -3852,8 +3848,8 @@ RandomizeFirstSpawns()
     new bool: bFirstQuad = bool:(GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarFirstQuadChance));
     
     // if we got the quad event, first attack is a quad too
-    if (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) { bFirstQuad = true; }
-    else if (g_iSpecialEvent == _:EVT_WOMEN) { bFirstQuad = false; }
+    if (g_iSpecialEvent == EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) { bFirstQuad = true; }
+    else if (g_iSpecialEvent == EVT_WOMEN) { bFirstQuad = false; }
     
     for (new i=0; i < TEAM_SIZE; i++)
     {
@@ -3863,7 +3859,7 @@ RandomizeFirstSpawns()
         tmpPick = g_iArSpawnWeightedChoices[tmpPick];
         g_iArStorageSpawns[i] = tmpPick;
         
-        if (_:g_iSpecialEvent == EVT_L4D1)
+        if (g_iSpecialEvent == EVT_L4D1)
         {
             // check if there already is a boomer/smoker, if so, replace it
             if (tmpPick == ZC_SMOKER) {
@@ -3904,7 +3900,7 @@ RandomizeFirstSpawns()
         tmpPick = g_iArSpawnWeightedChoices[tmpPick];
         
         if ( tmpPick == ZC_SPITTER ) {
-            if (_:g_iSpecialEvent == EVT_L4D1) { tmpPick = ZC_BOOMER; }
+            if (g_iSpecialEvent == EVT_L4D1) { tmpPick = ZC_BOOMER; }
         }
         g_iArStorageSpawns[0] = tmpPick;
     }
@@ -3960,7 +3956,7 @@ DetermineSpawnClass(any:client, any:iClass)
     else if (GetConVarBool(g_hCvarRandomSpawns))
     {
         // pick at random
-        new randomIndex = GetRandomInt( (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) ? g_iSpawnWeightedChoicesStartCappers : 0, g_iSpawnWeightedChoicesTotal - 1);
+        new randomIndex = GetRandomInt( (g_iSpecialEvent == EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) ? g_iSpawnWeightedChoicesStartCappers : 0, g_iSpawnWeightedChoicesTotal - 1);
         iClass = g_iArSpawnWeightedChoices[randomIndex];
         
         // repicks for death order
@@ -3971,13 +3967,13 @@ DetermineSpawnClass(any:client, any:iClass)
             
             if (dMode == 1) {
                 if (GetRandomFloat(0.001,1.0) <= (float(g_iClassTimeout[iClass]) / 3.0) * 0.5) {
-                    randomIndex = GetRandomInt( (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) ? g_iSpawnWeightedChoicesStartCappers : 0, g_iSpawnWeightedChoicesTotal - 1);
+                    randomIndex = GetRandomInt( (g_iSpecialEvent == EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) ? g_iSpawnWeightedChoicesStartCappers : 0, g_iSpawnWeightedChoicesTotal - 1);
                     iClass = g_iArSpawnWeightedChoices[randomIndex];
                 }
             }
             else if (dMode == 2) {
                 if (GetRandomFloat(0.001,1.0) <= (float(g_iClassTimeout[iClass]) / 4.0) * 1.0) {
-                    randomIndex = GetRandomInt( (g_iSpecialEvent == _:EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) ? g_iSpawnWeightedChoicesStartCappers : 0, g_iSpawnWeightedChoicesTotal - 1);
+                    randomIndex = GetRandomInt( (g_iSpecialEvent == EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI)) ? g_iSpawnWeightedChoicesStartCappers : 0, g_iSpawnWeightedChoicesTotal - 1);
                     iClass = g_iArSpawnWeightedChoices[randomIndex];
                 }
             }
@@ -3997,20 +3993,20 @@ DetermineSpawnClass(any:client, any:iClass)
     new acceptClasses[7];
     new acceptCount = 0;
     
-    if (g_iSpecialEvent != _:EVT_QUADS && !GetConVarBool(g_hCvarNoSupportSI))
+    if (g_iSpecialEvent != EVT_QUADS && !GetConVarBool(g_hCvarNoSupportSI))
     {
         AddSpawnClass(acceptClasses, acceptCount, ZC_BOOMER);
         
-        if (g_iSpecialEvent != _:EVT_L4D1 && (!g_bIsTankInPlay || !GetConVarBool(g_hCvarNoSpitterDuringTank))) {
+        if (g_iSpecialEvent != EVT_L4D1 && (!g_bIsTankInPlay || !GetConVarBool(g_hCvarNoSpitterDuringTank))) {
             AddSpawnClass(acceptClasses, acceptCount, ZC_SPITTER);
         }
     }
-    if (g_iSpecialEvent != _:EVT_WOMEN)
+    if (g_iSpecialEvent != EVT_WOMEN)
     {
         AddSpawnClass(acceptClasses, acceptCount, ZC_SMOKER);
         AddSpawnClass(acceptClasses, acceptCount, ZC_HUNTER);
         
-        if (g_iSpecialEvent != _:EVT_L4D1)
+        if (g_iSpecialEvent != EVT_L4D1)
         {
             AddSpawnClass(acceptClasses, acceptCount, ZC_JOCKEY);
             AddSpawnClass(acceptClasses, acceptCount, ZC_CHARGER);
@@ -4094,9 +4090,9 @@ DetermineSpawnClass(any:client, any:iClass)
             // b. force max 2 smokers
             if (iSmokers > 1) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_SMOKER); }
             // c. force max 2 hunters
-            if (iHunters > 1 && _:g_iSpecialEvent != EVT_L4D1) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_HUNTER); }
+            if (iHunters > 1 && g_iSpecialEvent != EVT_L4D1) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_HUNTER); }
             // d. force non-quad (can override previous after-sackdetect-pick)
-            if (iSupport == 0 && g_iSpecialEvent != _:EVT_QUADS && !GetConVarBool(g_hCvarNoSupportSI)) {
+            if (iSupport == 0 && g_iSpecialEvent != EVT_QUADS && !GetConVarBool(g_hCvarNoSupportSI)) {
                 // still need to check if pick is acceptable. remove all cappers from choice list
                 new randomIndex = GetRandomInt(0, g_iSpawnWeightedChoicesStartCappers - 1);
                 iClass = g_iArSpawnWeightedChoices[randomIndex];
@@ -4136,7 +4132,7 @@ DetermineSpawnClass(any:client, any:iClass)
     
     
     // for l4d1 mode, avoid more than 1 boomer or smoker:
-    if (_:g_iSpecialEvent == EVT_L4D1) {
+    if (g_iSpecialEvent == EVT_L4D1) {
         if (iSmokers) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_SMOKER); }
         if (iBoomers) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_BOOMER); }
     }
@@ -4190,7 +4186,7 @@ DetermineSpawnClass(any:client, any:iClass)
     }
     
     // special case for skeet event: always 2 hunters in the attack at least
-    if (_:g_iSpecialEvent == EVT_SKEET)
+    if (g_iSpecialEvent == EVT_SKEET)
     {
         new hunters = CountInfectedClass(ZC_HUNTER, -1);
         
@@ -4270,7 +4266,7 @@ SpawnCommonItem(Float:loc[3], Float:vel[3])
     else if (randomPick < 8)  { randomPick = 6; }
     
     // l4d1 event
-    if ( _:g_iSpecialEvent == EVT_L4D1 ) {
+    if ( g_iSpecialEvent == EVT_L4D1 ) {
         if ( randomPick == 3 ) { randomPick = 0; }
         else if (randomPick == 10 ) { randomPick = GetRandomInt(8, 9); }
     } 
@@ -4363,12 +4359,12 @@ RandomizeDoors()
     new iFirstOwner[MAX_DOORS];
     
     new Float: fLockedChance = 0.0;
-    if (g_iSpecialEvent == _:EVT_DOORS) {
+    if (g_iSpecialEvent == EVT_DOORS) {
         fLockedChance = EVENT_LOCKEDCHANCE;
-    } else if ( g_iSpecialEvent == _:EVT_L4D1) {
+    } else if ( g_iSpecialEvent == EVT_L4D1) {
         // can't lock doors in l4d1 mode, no melees!
         fLockedChance = 0.0;
-    } else if (g_iSpecialEvent == _:EVT_KEYMASTER) {
+    } else if (g_iSpecialEvent == EVT_KEYMASTER) {
         // with keymaster, all doors are locked
         fLockedChance = 1.0;
     } else {
@@ -4386,7 +4382,7 @@ RandomizeDoors()
         if (GetEntProp(i, Prop_Data, "m_spawnflags") & (1<<19)) { continue; }       //check for unbreakable flag
         
         // in locked doors event, close all doors (even if not locking them)
-        if (g_iSpecialEvent == _:EVT_DOORS) { AcceptEntityInput(i, "Close"); }
+        if (g_iSpecialEvent == EVT_DOORS) { AcceptEntityInput(i, "Close"); }
         
         // save origin so we can find it later
         new Float: origin[3];
@@ -4527,7 +4523,7 @@ RestoreDoors()
         if (GetEntProp(i, Prop_Data, "m_spawnflags") & (1<<19)) { continue; }       //check for unbreakable flag
         
         // in locked doors event, close all doors (even if not locking them)
-        if (g_iSpecialEvent == _:EVT_DOORS) { AcceptEntityInput(i, "Close"); }
+        if (g_iSpecialEvent == EVT_DOORS) { AcceptEntityInput(i, "Close"); }
         
         new Float: origin[3];
         GetEntPropVector(i, Prop_Send, "m_vecOrigin", origin);                      // can't trust HamId     GetEntProp(i, Prop_Data, "m_iHammerID");
@@ -4692,7 +4688,7 @@ RANDOM_PrepareChoicesGiftEffects()
         }
         
         // temp-health event(s): give temp health instead of full health
-        if ( _:g_iSpecialEvent == EVT_ADREN ) {
+        if ( g_iSpecialEvent == EVT_ADREN ) {
             if (i == GIFT_POS_HEALTH) {
                 continue;
             }
@@ -4702,7 +4698,7 @@ RANDOM_PrepareChoicesGiftEffects()
         }
         
         // events that have special weapon rules: don't steal primary
-        else if ( _:g_iSpecialEvent == EVT_GUNSWAP ) {
+        else if ( g_iSpecialEvent == EVT_GUNSWAP ) {
             // no gift steal effects yet
         }
         
@@ -4742,7 +4738,7 @@ RANDOM_PrepareChoicesSpawns()
         count = g_ciSpawnClassWeight[i];
         
         // different weight for special events
-        if (_:g_iSpecialEvent == EVT_SKEET)
+        if (g_iSpecialEvent == EVT_SKEET)
         {
             // big chance of hunters, small chance for remaining cappers
             if (i == ZC_HUNTER) {
@@ -4751,24 +4747,24 @@ RANDOM_PrepareChoicesSpawns()
                 count = 2;
             }
         }
-        else if (_:g_iSpecialEvent == EVT_QUADS)
+        else if (g_iSpecialEvent == EVT_QUADS)
         {
             g_iSpawnWeightedChoicesStartCappers = 0;
             if (i == ZC_BOOMER || i == ZC_SPITTER) { continue; }
         }
-        else if (_:g_iSpecialEvent == EVT_L4D1)
+        else if (g_iSpecialEvent == EVT_L4D1)
         {
             // no tickets for non-L4D1 classes
             if (i > ZC_HUNTER) { continue; }
         }
-        else if (_:g_iSpecialEvent == EVT_WOMEN)
+        else if (g_iSpecialEvent == EVT_WOMEN)
         {
             // no tickets for cappers
             if (i == ZC_BOOMER)         { count = 5; }
             else if (i == ZC_SPITTER)   { count = 2; }
             else                        { continue; }
         }
-        else if (_:g_iSpecialEvent == EVT_HORDE_NONE)
+        else if (g_iSpecialEvent == EVT_HORDE_NONE)
         {
             if (i == ZC_BOOMER)         { count -= 2; }
         }
@@ -4807,7 +4803,7 @@ RANDOM_PrepareChoices()
     new iSpecialItemWeight = 0;                                             // used only for EVT_ITEM
     
     // special case: abundance event = no 'no item' category
-    if (_:g_iSpecialEvent == EVT_ABUNDANCE) {
+    if (g_iSpecialEvent == EVT_ABUNDANCE) {
         fNoitemVariance = 0.0;
         PrintDebug(1, "[rand] No-Item Variation set to 0 (for abundance).");
     } else {
@@ -4900,25 +4896,25 @@ RANDOM_PrepareChoices()
         if (i == INDEX_NOITEM) {
             count = RoundFloat(float(count) * fNoitemVariance);
         } else {
-            if (_:g_iSpecialEvent == EVT_ABUNDANCE && (i == INDEX_JUNK || i == INDEX_CANISTER || i == INDEX_SILLY)) {
+            if (g_iSpecialEvent == EVT_ABUNDANCE && (i == INDEX_JUNK || i == INDEX_CANISTER || i == INDEX_SILLY)) {
                 // change count for abundance event:
                 count = RoundFloat(float(count) * EVENT_ABUND_JUNKWGHT);
             }
-            else if ( (_:g_iSpecialEvent == EVT_ITEM || _:g_iSpecialEvent == EVT_GIFTS || _:g_iSpecialEvent == EVT_BADSANTA) && i == g_iSpecialEventExtra) {
+            else if ( (g_iSpecialEvent == EVT_ITEM || g_iSpecialEvent == EVT_GIFTS || g_iSpecialEvent == EVT_BADSANTA) && i == g_iSpecialEventExtra) {
                 count = 0;  // set to 0 for now, insert real value later
             }
-            else if (_:g_iSpecialEvent == EVT_DEFIB) {
+            else if (g_iSpecialEvent == EVT_DEFIB) {
                 // no kits, more pills for defib event
                 if (i == INDEX_KIT) { count = RoundFloat(float(count) * EVENT_DEFIB_EXTRA); }
                 else if (i == INDEX_PILL) { count = RoundFloat(float(count) * EVENT_DEFIB_PILLS); }
             }
-            else if (_:g_iSpecialEvent == EVT_ADREN) {
+            else if (g_iSpecialEvent == EVT_ADREN) {
                 // shift item balance around for rush
                 if (i == INDEX_PILL) { count = RoundFloat(float(count) * EVENT_ADREN_EXTRA); }
                 else if (i == INDEX_KIT) { count = 0; }
                 else if (i == INDEX_UPGRADE || i == INDEX_CANISTER) { count = RoundToCeil(float(count) * EVENT_ADREN_LESSER); }
             }
-            else if (_:g_iSpecialEvent == EVT_L4D1) {
+            else if (g_iSpecialEvent == EVT_L4D1) {
                 // no l4d2-only items
                 if (i == INDEX_UPGRADE || i == INDEX_MELEE || i == INDEX_T3) { count = 0; }
             }
@@ -4940,7 +4936,7 @@ RANDOM_PrepareChoices()
     }
     
     // adjust for special event: item type
-    if (_:g_iSpecialEvent == EVT_ITEM || _:g_iSpecialEvent == EVT_GIFTS) {
+    if (g_iSpecialEvent == EVT_ITEM || g_iSpecialEvent == EVT_GIFTS) {
         iSpecialItemWeight = RoundFloat(float(total) * EVENT_ITEM_WEIGHT);
         for (new j=0; j < iSpecialItemWeight; j++)
         {
@@ -4949,7 +4945,7 @@ RANDOM_PrepareChoices()
         total += iSpecialItemWeight;
         total_items += iSpecialItemWeight;
     }
-    else if (_:g_iSpecialEvent == EVT_BADSANTA) {
+    else if (g_iSpecialEvent == EVT_BADSANTA) {
         iSpecialItemWeight = RoundFloat(float(total) * EVENT_BADSANTA_WEIGHT);
         for (new j=0; j < iSpecialItemWeight; j++)
         {
@@ -4975,7 +4971,7 @@ RANDOM_PrepareChoices()
         count = GetConVarInt(g_hArCvarSurvWeight[i]);
         
         // different weight for special picked item EVT_ITEM
-        if (_:g_iSpecialEvent == EVT_ITEM && i == g_iSpecialEventExtra) {
+        if (g_iSpecialEvent == EVT_ITEM && i == g_iSpecialEventExtra) {
             count = iSpecialItemWeight;
         }
         

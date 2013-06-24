@@ -5,23 +5,31 @@ L4D2_Random
 
     to-do:
     ------  
-            - wait:     test and include stabby's random map stuff so people can launch random campaigns after loading random
             - wait:     gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
-            - later:    set debug mode to 0 for release; set cvar debug to 0 for release
+            
             - later:    email Chet, see if maybe he likes Random at all...
+            - later:    test and include stabby's random map stuff so people can launch random campaigns after loading random
             
             - test:     defib penalty still not reset correctly after a sudden death round ?
             - test:     still jockey in l4d1 mode ... sigh
             
-            - event:    tank waves: every 30 seconds, all infected players spawn as mini-tanks?
             
-            - fix:      bots & startup items - pistol not received?
             
 
     minor cleanup / details
     -----------------------
-            - tweak:    give survivors something (magnum)? when incapped, then take it away from them on EVT_WOMEN.
+            - tweak:    skeet counter / display for skeet shoot event
+            - tweak:    EVT_WOMEN: give survivors something (magnum)? when incapped, then take it away from them
             - bugfix:   still broken hud thing on solid health healing (cat from 1+22temp => +27 solid breaks) was downed once (3 max incaps) - cannot reproduce?
+                        to try:
+                            if(healthBuffer == 0.0)
+                            {
+                                SetEntPropFloat(i, Prop_Send, "m_healthBuffer", EBLOCK_BONUS_HEALTH_BUFFER);
+                                DebugPrintToAll("Health buffer for player [%d] set to %f", i, EBLOCK_BONUS_HEALTH_BUFFER);
+                            }
+                            
+            - nitpick:  MORE ammo than max in clip doesn't work for map-spawned weapons (stays at max when picked up)
+                        check + overwrite netprop for client picking it up? what goes on here?
             - nitpick:  melee skeets don't seem to be detected yet..
             - nitpick:  if penalty values change (if they ever do), the reported !rand/event values don't change with
             - nitpick:  when gifts spawn inside walls etc, fire effects will not spawn
@@ -46,9 +54,9 @@ L4D2_Random
         
     ideas:
     ------
-            - cvar      sv_bounce
-                        adrenaline_revive_speedup
+            - event:    tank waves: every 30 seconds, all infected players spawn as mini-tanks?
     
+            - gift  - gift idea: blindess for entire team (shorter)
             - gift  - gift idea: X second slowdown (like EVT_ENCUMBERED)
             - gift  - gift idea: ghost-effect for survivors for X seconds (no outlines for SI) (even if running)
             - gift  - gift idea: see outlines on infected for X seconds ('telepathy')
@@ -104,6 +112,9 @@ Some stuff to keep in mind:
             
         cvars to consider:
         ------------------
+            sv_bounce
+            adrenaline_revive_speedup
+            
             z_common_limit
             z_background_limit
             z_cull_near

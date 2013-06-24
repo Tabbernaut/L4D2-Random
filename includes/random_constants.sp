@@ -536,7 +536,7 @@ enum RandomizableOrNot          // for use with tries to determine ent's random-
     HITTABLE_PHYSICS_ADDON          // the glass on cars
 }
 
-enum pickType                   // which option was randomly picked? data recreated on this basis
+enum _:pickType                   // which option was randomly picked? data recreated on this basis
 {
     PCK_NOITEM,
     PCK_PISTOL,             PCK_PISTOL_MAGNUM,      PCK_SMG_MP5,            PCK_SMG,            PCK_SMG_SILENCED,       PCK_PUMPSHOTGUN,        PCK_SHOTGUN_CHROME,     PCK_RIFLE_SG552,
@@ -550,7 +550,7 @@ enum pickType                   // which option was randomly picked? data recrea
     // PCK_DUALS = only for survivor start setups
 }
 
-enum strEntityData                  // everything required to recreate the entity
+enum _:strEntityData                // everything required to recreate the entity
 {
             entNumber,              // what is the actual entity number?
     bool:   entPickedUp,            // picked up by current team
@@ -570,7 +570,7 @@ enum strEntityData                  // everything required to recreate the entit
             entJunkType             // index of junkModels array
 }
 
-enum strHittableData                // everything required to recreate the hittable
+enum _:strHittableData              // everything required to recreate the hittable
 {
             hitNumber,              // what is the actual entity number?
             hitNumberAddonA,        // entnumber for glass bit (which is parented to it) 0 for none
@@ -598,12 +598,12 @@ enum strHittableData                // everything required to recreate the hitta
             hitColor_b
 }
 
-enum EntInfo                        // for blind_infected adaptation
+enum _:EntInfo                      // for blind_infected adaptation
 {
             iEntity,
     bool:   hasBeenSeen
 }
-enum strGnomeData
+enum _:strGnomeData
 {
     bool:   gnomebIsCola,           // whether the gnome is really cola (don't ask)
     bool:   gnomebWorthPoints,      // whether the gnome is worth points at all
@@ -1032,7 +1032,7 @@ new const String: g_csSIClassName[][] =
     "tank"
 };
 
-enum WeaponId
+enum _:WeaponId
 {
 	WEPID_NONE,				// 0
 	WEPID_PISTOL,			// 1

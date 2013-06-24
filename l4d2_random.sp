@@ -24,6 +24,8 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
+#define PLUGIN_VERSION "1.0.48"
+
 /*
         L4D2 Random
         -----------
@@ -71,7 +73,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.48",
+    version = PLUGIN_VERSION,
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -145,6 +147,9 @@ public OnPluginStart()
     HookEvent("witch_harasser_set",         Event_WitchHarasserSet,         EventHookMode_Post);
     HookEvent("witch_killed",               Event_WitchDeath,               EventHookMode_Post);
     
+    // version convar
+    CreateConVar("rand_version", PLUGIN_VERSION, "Random plugin version.", FCVAR_PLUGIN|FCVAR_NOTIFY|FCVAR_REPLICATED|FCVAR_DONTRECORD);
+
     // default convars
     g_hCvarTeamSize = FindConVar("survivor_limit");
     g_bStripperPresent = (FindConVar("stripper_cfg_path") != INVALID_HANDLE);
@@ -447,7 +452,7 @@ public OnClientPostAdminCheck(client)
     SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);        // hook for events damage changes
     
     // special case: gunswap ammo count
-    if (_:g_iSpecialEvent == EVT_GUNSWAP && IsSurvivor(client))
+    if (g_iSpecialEvent == EVT_GUNSWAP && IsSurvivor(client))
     {
         CreateTimer(0.1, Timer_CheckSurvivorGun, client, TIMER_FLAG_NO_MAPCHANGE);
     }
@@ -1022,6 +1027,7 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
     g_bSurvivorsLoadedIn = false;
     g_bBotsAllowedPickup = false;
+    if (GetConVarBool(g_hCvarStopBotsAtStart)) { SetConVarInt(g_hCvarBotStop, 1); }
     
     // this is a bit silly, since roundstart gets called before onmapstart...
     // so just do the round start stuff in onmapstart
@@ -1135,7 +1141,7 @@ public Action:OnPlayerRunCmd(client, &buttons)
         if (!check) { return Plugin_Handled; }
     }
     // crox's glow code for EVT_WITCHES
-    else if (_:g_iSpecialEvent == EVT_WITCHES)
+    else if (g_iSpecialEvent == EVT_WITCHES)
     {
         if (IsPlayerAlive(client) && GetClientTeam(client) == TEAM_SURVIVOR)
         {
@@ -1169,7 +1175,7 @@ public Action:L4D_OnGetRunTopSpeed(target, &Float:retVal)
 {
     if (!IsClientAndInGame(target) || GetClientTeam(target) != TEAM_SURVIVOR) { return Plugin_Continue; }
     
-    if (_:g_iSpecialEvent == EVT_ENCUMBERED)
+    if (g_iSpecialEvent == EVT_ENCUMBERED)
     {
         new Float: fSpeedFactor = SUPPORT_GetSpeedFactor(target);
         if (fSpeedFactor != 1.0) {
@@ -1190,7 +1196,7 @@ public Action: L4D_OnGetWalkTopSpeed(target, &Float:retVal)
 {
     if (!IsClientAndInGame(target) || GetClientTeam(target) != TEAM_SURVIVOR) { return Plugin_Continue; }
     
-    if (_:g_iSpecialEvent == EVT_ENCUMBERED)
+    if (g_iSpecialEvent == EVT_ENCUMBERED)
     {
         new Float: fSpeedFactor = SUPPORT_GetSpeedFactor(target);
         if (fSpeedFactor != 1.0) {
@@ -1210,7 +1216,7 @@ public Action:L4D_OnGetCrouchTopSpeed(target, &Float:retVal)
 {
     if (!IsClientAndInGame(target) || GetClientTeam(target) != TEAM_SURVIVOR) { return Plugin_Continue; }
     
-    if (_:g_iSpecialEvent == EVT_ENCUMBERED)
+    if (g_iSpecialEvent == EVT_ENCUMBERED)
     {
         new Float: fSpeedFactor = SUPPORT_GetSpeedFactor(target);
         if (fSpeedFactor != 1.0) {
@@ -1234,7 +1240,7 @@ public Action:L4D_OnGetCrouchTopSpeed(target, &Float:retVal)
 // sound catching for silence special event
 public Action: Event_SoundPlayed(clients[64], &numClients, String:sample[PLATFORM_MAX_PATH], &entity, &channel, &Float:volume, &level, &pitch, &flags)
 {
-    if (_:g_iSpecialEvent == EVT_SILENCE)
+    if (g_iSpecialEvent == EVT_SILENCE)
     {
         // hush
         if (IsClientAndInGame(entity))
@@ -1264,7 +1270,7 @@ public Action: Event_SoundPlayed(clients[64], &numClients, String:sample[PLATFOR
             }
         }
     }
-    else if (_:g_iSpecialEvent == EVT_AMMO)
+    else if (g_iSpecialEvent == EVT_AMMO)
     {
         // stop all the bs about 'incendiary' ammo, when it's normal :)
         if (IsSurvivor(entity))
@@ -1337,7 +1343,7 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
         }
     }
     // women, where the witch should die more easily to melee swings
-    else if ( _:g_iSpecialEvent == EVT_WOMEN || _:g_iSpecialEvent == EVT_WITCHES )
+    else if ( g_iSpecialEvent == EVT_WOMEN || g_iSpecialEvent == EVT_WITCHES )
     {
         if (!IsClientAndInGame(attacker))
         {
@@ -1345,12 +1351,12 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
             GetEdictClassname(attacker, attackClass, 64);
             if (!StrEqual(attackClass, "witch")) { return Plugin_Continue; }
             
-            damage = (_:g_iSpecialEvent == EVT_WOMEN) ? g_RC_fEventWomenWitchDmg : g_RC_fEventWitchesWitchDmg;
+            damage = (g_iSpecialEvent == EVT_WOMEN) ? g_RC_fEventWomenWitchDmg : g_RC_fEventWitchesWitchDmg;
             return Plugin_Changed;
         }
     }
     // protect, baby player takes more damage (the others less)
-    else if (_:g_iSpecialEvent == EVT_PROTECT)
+    else if (g_iSpecialEvent == EVT_PROTECT)
     {
         if ( !IsClientAndInGame(victim) ) { return Plugin_Continue; }
         
@@ -1380,7 +1386,7 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
         }
     }
     // set a fixed damage amount for melee weaps on tank
-    else if (_:g_iSpecialEvent == EVT_MINITANKS)
+    else if (g_iSpecialEvent == EVT_MINITANKS)
     {
         if ( !IsClientAndInGame(victim) ) { return Plugin_Continue; }
         if ( !IsClientAndInGame(attacker) ) { return Plugin_Continue; }
@@ -1404,7 +1410,7 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
 public Action: OnTakeDamage_Witch(victim, &attacker, &inflictor, &Float:damage, &damagetype)
 {
     // only hooked on EVT_WOMEN, for making melees do diff. damage to witches
-    if (    _:g_iSpecialEvent != EVT_WOMEN
+    if (    g_iSpecialEvent != EVT_WOMEN
         ||  damage == 0.0
         ||  !IsClientAndInGame(attacker)
         ||  GetClientTeam(attacker) != TEAM_SURVIVOR
@@ -1485,7 +1491,12 @@ stock DoFirstHumanDetected()
 
 public Action: Timer_RoundStartReport(Handle:timer)
 {
-    g_bBotsAllowedPickup = true;
+    // fallback for when no readyup: re-enable bot action
+    if (g_hCvarReadyUp == INVALID_HANDLE || !GetConVarBool(g_hCvarReadyUp))
+    {
+        g_bBotsAllowedPickup = true;
+        if (GetConVarBool(g_hCvarStopBotsAtStart)) { SetConVarInt(g_hCvarBotStop, 0); }
+    }
     
     // do the report
     g_bTimerReport = false;
@@ -1530,6 +1541,8 @@ public Action: Event_PlayerLeftStartArea(Handle:event, const String:name[], bool
 SurvivorsReallyLeftSaferoom()
 {
     g_bIsFirstAttack = false;
+    g_bBotsAllowedPickup = true;
+    if (GetConVarBool(g_hCvarStopBotsAtStart)) { SetConVarInt(g_hCvarBotStop, 0); }
     
     // if report hasn't been shown by now, show it!
     if (!g_bFirstReportDone)
@@ -1575,18 +1588,19 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
         {
             g_bSurvivorsLoadedIn = true;
             g_bBotsAllowedPickup = true;
+            if (GetConVarBool(g_hCvarStopBotsAtStart)) { SetConVarInt(g_hCvarBotStop, 0); }
             EVENT_AllSurvivorsLoadedIn();
         }
     }
     
     // survivor-based events
-    if (_:g_iSpecialEvent == EVT_PEN_ITEM)
+    if (g_iSpecialEvent == EVT_PEN_ITEM)
     {
         // temporarily block pickup
         g_bArBlockPickupCall[client] = true;
         CreateTimer(0.01, Timer_UnblockWeaponPickupCall, client, TIMER_FLAG_NO_MAPCHANGE);
     }
-    else if (_:g_iSpecialEvent == EVT_GUNSWAP && newTeam == TEAM_SURVIVOR)
+    else if (g_iSpecialEvent == EVT_GUNSWAP && newTeam == TEAM_SURVIVOR)
     {
         CreateTimer(0.1, Timer_CheckSurvivorGun, client, TIMER_FLAG_NO_MAPCHANGE);
     }
@@ -1603,7 +1617,7 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
         }
     }
     // do some delayed checks/changes when people go survivor/infected
-    else if (_:g_iSpecialEvent == EVT_NOHUD || _:g_iSpecialEvent == EVT_DEFIB)
+    else if (g_iSpecialEvent == EVT_NOHUD || g_iSpecialEvent == EVT_DEFIB)
     {
         // oddity:  somehow timers swap the order of the infected => spec => survivor switch
         //          so just ignore specs for now
@@ -1653,7 +1667,7 @@ public Action:Timer_TeamSwapDelayed(Handle:hTimer, any:pack)
     if (!IsClientAndInGame(client)) { return; }
     
     // remove / add hud
-    if (_:g_iSpecialEvent == EVT_NOHUD && g_bPlayersLeftStart && !IsFakeClient(client))
+    if (g_iSpecialEvent == EVT_NOHUD && g_bPlayersLeftStart && !IsFakeClient(client))
     {
         if (newTeam == TEAM_INFECTED) {
             HUDRestoreClient(client);
@@ -1662,7 +1676,7 @@ public Action:Timer_TeamSwapDelayed(Handle:hTimer, any:pack)
         }
     }
     // set thirdstrike
-    else if (_:g_iSpecialEvent == EVT_DEFIB && newTeam == TEAM_SURVIVOR)
+    else if (g_iSpecialEvent == EVT_DEFIB && newTeam == TEAM_SURVIVOR)
     {
         SetEntProp(client, Prop_Send, "m_bIsOnThirdStrike", 1);
         //SetEntProp(client, Prop_Send, "m_isGoingToDie", 1);       // nice idea, but this breaks the health bars
@@ -1794,7 +1808,7 @@ public DoBoomerComboReward(combo, victim)
     }
     
     // give appropriate reward
-    if (_:g_iSpecialEvent == EVT_WOMEN) 
+    if (g_iSpecialEvent == EVT_WOMEN) 
     {
         // do something special for evt women?
         if (combo > 1)
@@ -1850,7 +1864,7 @@ stock ClearBoomerTracking()
 
 public Event_LungePounce(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    if (_:g_iSpecialEvent != EVT_SKEET) { return; }
+    if (g_iSpecialEvent != EVT_SKEET) { return; }
     
     new attacker = GetClientOfUserId(GetEventInt(event, "userid"));
 
@@ -1861,7 +1875,7 @@ public Event_LungePounce(Handle:event, const String:name[], bool:dontBroadcast)
 // hunters pouncing / tracking
 public Event_AbilityUse(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    if (_:g_iSpecialEvent != EVT_SKEET) { return; }
+    if (g_iSpecialEvent != EVT_SKEET) { return; }
     
     // track hunters pouncing
     new client = GetClientOfUserId(GetEventInt(event, "userid"));
@@ -1904,7 +1918,7 @@ public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadc
     if (!GetTrieValue(g_hTrieUseItems, classname, classnameUsed)) { return Plugin_Continue; }
     
     // check for boobytraps...
-    if (_:g_iSpecialEvent == EVT_BOOBYTRAP)
+    if (g_iSpecialEvent == EVT_BOOBYTRAP)
     {
         new Float:targetPos[3];
         GetEntPropVector(entity, Prop_Send, "m_vecOrigin", targetPos);
@@ -1932,7 +1946,7 @@ public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadc
         if (inArray)
         {
             // keymaster event!
-            if (_:g_iSpecialEvent == EVT_KEYMASTER)
+            if (g_iSpecialEvent == EVT_KEYMASTER)
             {
                 if (client != g_iSpecialEventRole) {
                     EmitSoundToAll(DOOR_SOUND, entity);
@@ -2027,7 +2041,7 @@ public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadc
         }
         
     }
-    else if (_:g_iSpecialEvent == EVT_AMMO && classnameUsed == ITEM_USE_AMMO)
+    else if (g_iSpecialEvent == EVT_AMMO && classnameUsed == ITEM_USE_AMMO)
     {
         // pack in ammo again
         new Float:startPos[3];
@@ -2154,7 +2168,7 @@ public Action:Event_ItemPickup(Handle:event, const String:name[], bool:dontBroad
     //PrintToChatAll("picked up: %s", sItem);
     
     // special event:
-    if (_:g_iSpecialEvent == EVT_PEN_ITEM)
+    if (g_iSpecialEvent == EVT_PEN_ITEM)
     {
         // only give penalty outside of saferoom
         if (!SAFEDETECT_IsPlayerInStartSaferoom(client))
@@ -2192,7 +2206,7 @@ public Action:Timer_CheckItemPickup(Handle:hTimer, any:client)
 {
     if (g_bArJustBeenGiven[client]) { return Plugin_Continue; }
     
-    if (_:g_iSpecialEvent == EVT_PEN_ITEM)
+    if (g_iSpecialEvent == EVT_PEN_ITEM)
     {
         g_iBonusCount++;
         PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyItem );
@@ -2217,7 +2231,7 @@ public Action:OnWeaponEquip(client, weapon)
         }
     }
     
-    if (_:g_iSpecialEvent != EVT_PEN_ITEM) { return Plugin_Continue; }
+    if (g_iSpecialEvent != EVT_PEN_ITEM) { return Plugin_Continue; }
     if (GetClientTeam(client) != TEAM_SURVIVOR || g_bArBlockPickupCall[client]) { return Plugin_Continue; }
     
     new String: classname[64];
@@ -2248,8 +2262,13 @@ public Action:OnWeaponEquip(client, weapon)
 public Action:OnWeaponCanUse(client, weapon)
 {
     // if we're blocking bots:
-    if (!g_bCampaignMode && !g_bBotsAllowedPickup && IsFakeClient(client))
+    if (!g_bCampaignMode && !GetConVarBool(g_hCvarStopBotsAtStart) && !g_bBotsAllowedPickup && IsFakeClient(client))
     {
+        // still allow single pistol pickup
+        if (!SUPPORT_PlayerHasPistol(client) && SUPPORT_EntityIsPistol(weapon))
+        {
+            return Plugin_Continue;
+        }
         return Plugin_Handled;
     }
     
@@ -2279,13 +2298,13 @@ public Action:Event_WeaponGiven(Handle:event, const String:name[], bool:dontBroa
     
     new weapId = GetEventInt(event, "weapon");
     
-    if (weapId == _:WEPID_PAIN_PILLS || weapId == _:WEPID_ADRENALINE)
+    if (weapId == WEPID_PAIN_PILLS || weapId == WEPID_ADRENALINE)
     {
         g_bArJustBeenGiven[client] = true;
         //PrintToChatAll("weapon given to %N: %i", client, weapId);
         
         // medic event: could be that the medic passed pills, check to be sure
-        if (_:g_iSpecialEvent == EVT_MEDIC && client != g_iSpecialEventRole)
+        if (g_iSpecialEvent == EVT_MEDIC && client != g_iSpecialEventRole)
         {
             g_bMedicFirstHandout = true;
             CreateTimer(0.05, EVENT_TimerCheckMedic, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -2355,7 +2374,7 @@ public Action:Event_WeaponDrop(Handle:event, const String:name[], bool:dontBroad
             g_strArGnomes[gnomeIndex][gnomeiHoldingClient] = 0;
         }
     }
-    else if (_:g_iSpecialEvent == EVT_MEDIC && nameDropped == ITEM_DROP_HEALTH)
+    else if (g_iSpecialEvent == EVT_MEDIC && nameDropped == ITEM_DROP_HEALTH)
     {
         // find and kill the dropped item(s)
         CreateTimer(0.05, Timer_DestroyHealthItems, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -2378,14 +2397,14 @@ public Action:Event_PlayerDefibbed(Handle:event, const String:name[], bool:dontB
     if (!IsClientAndInGame(client)) { return; }
     
     // if we're in no-hud mode, hide hud after defib
-    if (_:g_iSpecialEvent == EVT_NOHUD && !IsFakeClient(client)) {
+    if (g_iSpecialEvent == EVT_NOHUD && !IsFakeClient(client)) {
         HUDRemoveClient(client);
         return;
     }
     
     new user = GetClientOfUserId(GetEventInt(event, "userid"));
     
-    if (_:g_iSpecialEvent == EVT_PEN_HEALTH) {
+    if (g_iSpecialEvent == EVT_PEN_HEALTH) {
         g_iBonusCount++;
         PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyHealth );
         EVENT_ReportPenalty(user);
@@ -2400,12 +2419,12 @@ public Action:Event_MedkitUsed(Handle:event, const String:name[], bool:dontBroad
 {
     new user = GetClientOfUserId(GetEventInt(event, "userid"));
     
-    if (_:g_iSpecialEvent == EVT_PEN_HEALTH) {
+    if (g_iSpecialEvent == EVT_PEN_HEALTH) {
         g_iBonusCount++;
         PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyHealth );
         EVENT_ReportPenalty(user);
     }
-    else if (_:g_iSpecialEvent == EVT_MEDIC) {
+    else if (g_iSpecialEvent == EVT_MEDIC) {
         CreateTimer(0.05, EVENT_TimerCheckMedic, _, TIMER_FLAG_NO_MAPCHANGE);
     }
 }
@@ -2414,12 +2433,12 @@ public Action:Event_PillsUsed(Handle:event, const String:name[], bool:dontBroadc
 {
     new user = GetClientOfUserId(GetEventInt(event, "userid"));
     
-    if (_:g_iSpecialEvent == EVT_PEN_HEALTH) {
+    if (g_iSpecialEvent == EVT_PEN_HEALTH) {
         g_iBonusCount++;
         PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyHealth );
         EVENT_ReportPenalty(user);
     }
-    else if (_:g_iSpecialEvent == EVT_MEDIC && user == g_iSpecialEventRole) {
+    else if (g_iSpecialEvent == EVT_MEDIC && user == g_iSpecialEventRole) {
         CreateTimer(0.05, EVENT_TimerCheckMedic, _, TIMER_FLAG_NO_MAPCHANGE);
     }
 }
@@ -2435,7 +2454,7 @@ public Action:Event_ShovedPlayer(Handle:event, const String:name[], bool:dontBro
     
     //PrintToChatAll("%N shoved player %N.", client, victim);
     
-    if ( _:g_iSpecialEvent == EVT_PEN_M2 && !IsFakeClient(client) )
+    if ( g_iSpecialEvent == EVT_PEN_M2 && !IsFakeClient(client) )
     {
         // only on cappers (except charger)
         new classType = GetEntProp(victim, Prop_Send, "m_zombieClass");
@@ -2459,7 +2478,7 @@ public Action:Event_ShovedEntity(Handle:event, const String:name[], bool:dontBro
     
     //PrintToChatAll("%N shoved entity %i.", client, entity);
     /*
-    if (EVENT_PENALTY_CI && _:g_iSpecialEvent == EVT_PEN_M2) {
+    if (EVENT_PENALTY_CI && g_iSpecialEvent == EVT_PEN_M2) {
         new String: classname[64];
         GetEdictClassname(entity, classname, sizeof(classname));
         
@@ -2484,7 +2503,7 @@ public Action:Event_WeaponFire(Handle:event, const String:name[], bool:dontBroad
     if (!IsClientAndInGame(client) || GetClientTeam(client) != TEAM_SURVIVOR) { return; }
     
     // only on special event
-    if (_:g_iSpecialEvent != EVT_GUNSWAP) { return; }
+    if (g_iSpecialEvent != EVT_GUNSWAP) { return; }
 
     // only if the weapon is a primary
     new weapId = GetEventInt(event, "weaponid");
@@ -2502,7 +2521,7 @@ public Action:Event_WeaponFire(Handle:event, const String:name[], bool:dontBroad
 
 public Event_WitchDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    if (_:g_iSpecialEvent != EVT_WITCHES) { return; }
+    if (g_iSpecialEvent != EVT_WITCHES) { return; }
     
     new client = GetClientOfUserId(GetEventInt(event, "userid"));
     //new witchEnt = GetEventInt(event, "witchid");
@@ -2519,7 +2538,7 @@ public Event_WitchDeath(Handle:event, const String:name[], bool:dontBroadcast)
     Ghosts and spawning events
     -------------------------- */
 
-// l4downtown forward - players getting ghosts
+// l4downtown forward - players getting ghosts [warning: doesn't ALWAYS fire]
 public L4D_OnEnterGhostState(client)
 {
     PrintDebug(4, "[rand si] %N entered ghost state (class %s).%s", client, g_csSIClassName[ GetEntProp(client, Prop_Send, "m_zombieClass") ], (g_bHasSpawned[client]) ? " Was spawned before." : "");
@@ -2679,7 +2698,7 @@ public Action:Event_PlayerSpawn(Handle:hEvent, const String:name[], bool:dontBro
     new iClass = GetEntProp(client, Prop_Send, "m_zombieClass");
     
     // for special women event, replace male with female boomer
-    if (_:g_iSpecialEvent == EVT_WOMEN && iClass == ZC_BOOMER )
+    if (g_iSpecialEvent == EVT_WOMEN && iClass == ZC_BOOMER )
     {
         new String:model[64];
         GetEntPropString(client, Prop_Data, "m_ModelName", model, sizeof(model));
@@ -2736,7 +2755,7 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
         RemoveHat(victim);
         
         // remove hud if we're in special event
-        if (_:g_iSpecialEvent == EVT_NOHUD && !IsFakeClient(victim))
+        if (g_iSpecialEvent == EVT_NOHUD && !IsFakeClient(victim))
         {
             HUDRemoveClient(victim);
         }
@@ -2770,7 +2789,7 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
     new zClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
     
     // track hunter skeets?
-    if (_:g_iSpecialEvent == EVT_SKEET && zClass == ZC_HUNTER)
+    if (g_iSpecialEvent == EVT_SKEET && zClass == ZC_HUNTER)
     {
         //PrintToChatAll("hunter died: %i dmg / %i team dmg", iHunterShotDmg[victim][attacker], iHunterShotDmgTeam[victim]);             
         
@@ -2803,8 +2822,8 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
             new dMode = GetConVarInt(g_hCvarDeathOrderMode);
             
             // no timeouts for some special event classes
-            if (    ( (_:g_iSpecialEvent != EVT_SKEET || _:g_iSpecialEvent != EVT_L4D1) || zClass != ZC_HUNTER)
-                &&  (_:g_iSpecialEvent != EVT_WOMEN || (zClass != ZC_BOOMER && zClass != ZC_SPITTER) )
+            if (    ( (g_iSpecialEvent != EVT_SKEET || g_iSpecialEvent != EVT_L4D1) || zClass != ZC_HUNTER)
+                &&  (g_iSpecialEvent != EVT_WOMEN || (zClass != ZC_BOOMER && zClass != ZC_SPITTER) )
             ) {
                 if (dMode == 1) {
                     g_iClassTimeout[zClass] = 3;
@@ -2868,7 +2887,7 @@ public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBro
     g_iTankClient = client;
     
     // if we have multitanks, prepare next
-    if (_:g_iSpecialEvent == EVT_MINITANKS)
+    if (g_iSpecialEvent == EVT_MINITANKS)
     {
         // only when it's the first pass
         if (!g_bIsTankInPlay) {
@@ -2920,7 +2939,7 @@ public Action:Timer_CheckTankDeath(Handle:hTimer, any:client_oldTank)
     g_bIsTankInPlay = false;
     
     // drop stuff?
-    if (_:g_iSpecialEvent != EVT_MINITANKS) {
+    if (g_iSpecialEvent != EVT_MINITANKS) {
         RANDOM_TankDropItems();
     }
     
@@ -2929,10 +2948,9 @@ public Action:Timer_CheckTankDeath(Handle:hTimer, any:client_oldTank)
 
 
 /* Witch events */
-
 public Event_WitchSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    if (_:g_iSpecialEvent != EVT_WITCHES) { return; }
+    if (g_iSpecialEvent != EVT_WITCHES) { return; }
     
     new witch = GetEventInt(event, "witchid");
     SetEntProp(witch, Prop_Send, "m_iGlowType", 3);
@@ -2941,7 +2959,7 @@ public Event_WitchSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 
 public Event_WitchHarasserSet(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    if (_:g_iSpecialEvent != EVT_WITCHES) { return; }
+    if (g_iSpecialEvent != EVT_WITCHES) { return; }
     
     new witch = GetEventInt(event, "witchid");
     SetEntProp(witch, Prop_Send, "m_iGlowType", 0);
@@ -2963,7 +2981,7 @@ public OnEntityCreated(entity, const String:classname[])
     
     if (classnameOEC == CREATED_WITCH)
     {
-        if (_:g_iSpecialEvent == EVT_WOMEN)
+        if (g_iSpecialEvent == EVT_WOMEN)
         {
             // hook witch for damage
             SDKHook(entity, SDKHook_OnTakeDamage, OnTakeDamage_Witch);
@@ -2973,7 +2991,7 @@ public OnEntityCreated(entity, const String:classname[])
     {
         
         // for women special event... make them female, no uncommon
-        if (_:g_iSpecialEvent == EVT_WOMEN)
+        if (g_iSpecialEvent == EVT_WOMEN)
         {
             if (entity > 0 && IsValidEntity(entity) && IsValidEdict(entity))
             {
@@ -2981,7 +2999,7 @@ public OnEntityCreated(entity, const String:classname[])
             }
             return;
         }
-        else if (_:g_iSpecialEvent == EVT_L4D1)
+        else if (g_iSpecialEvent == EVT_L4D1)
         {
             if (entity > 0 && IsValidEntity(entity) && IsValidEdict(entity))
             {
@@ -2994,8 +3012,8 @@ public OnEntityCreated(entity, const String:classname[])
         new Float: fChance = GetConVarFloat(g_hCvarUncommonChance);
         new bool: isUncommon = false;
         
-        if (g_iSpecialEvent == _:EVT_UNCOMMON) { fChance = EVENT_UNCOMMON_CHANCE; }
-        else if (g_iSpecialEvent == _:EVT_CLOWNS) { fChance = EVENT_CLOWNS_CHANCE; }
+        if (g_iSpecialEvent == EVT_UNCOMMON) { fChance = EVENT_UNCOMMON_CHANCE; }
+        else if (g_iSpecialEvent == EVT_CLOWNS) { fChance = EVENT_CLOWNS_CHANCE; }
             
         // common infected, chance to spawn something else:
         if (g_iCommonBoomQueue == 0 && GetRandomFloat(0.001,1.0) <= fChance)
@@ -3011,7 +3029,7 @@ public OnEntityCreated(entity, const String:classname[])
             }
             else
             {
-                if ((g_iSpecialEvent != _:EVT_UNCOMMON && g_iSpecialEvent != _: EVT_CLOWNS)
+                if ((g_iSpecialEvent != EVT_UNCOMMON && g_iSpecialEvent !=  EVT_CLOWNS)
                     || g_iSpecialEventExtra == -1)
                 {
                     SetEntityModel(entity, g_csUncommonModels[GetRandomInt(0, sizeof(g_csUncommonModels) - 1)]);
@@ -3071,7 +3089,7 @@ public OnEntityCreated(entity, const String:classname[])
         
         CreateTimer(0.05, Timer_CreatedPropPhysics, entity, TIMER_FLAG_NO_MAPCHANGE);
     }
-    else if (_:g_iSpecialEvent == EVT_AMMO && classnameOEC == CREATED_AMMO_DEPLOYED)
+    else if (g_iSpecialEvent == EVT_AMMO && classnameOEC == CREATED_AMMO_DEPLOYED)
     {
         SetEntityModel(entity, "models/props/terror/ammo_stack.mdl");
         
@@ -3210,7 +3228,7 @@ public OnL4D1CommonInfectedSpawned(entity)
     new commonL4D1Type: modelCommon;
     
     // block uncommon infected, if it's the event
-    if (_:g_iSpecialEvent == EVT_L4D1)
+    if (g_iSpecialEvent == EVT_L4D1)
     {
         if (    StrContains(model, "_ceda") != -1
             ||  StrContains(model, "_clown") != -1
@@ -3269,9 +3287,8 @@ public OnL4D1CommonInfectedSpawned(entity)
     }
 }
 
-/*
-    SI Spawning
-    -------------------------- */
+/*  SI Spawning
+    ----------- */
 public GetClassForFirstAttack(ignoreClient)
 {
     // check the current spawns up and compare them to the stored spawns
@@ -3354,7 +3371,8 @@ public Action:Event_SpecialAmmo(Handle:event, const String:name[], bool:dontBroa
 
 
 
-// reset gnomes status
+/*  Gnomes
+    ------ */
 stock ResetGnomes()
 {
     g_iGnomes = 0;
