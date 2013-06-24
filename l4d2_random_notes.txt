@@ -13,14 +13,17 @@ L4D2_Random
             - test:     defib penalty still not reset correctly after a sudden death round ?
             - test:     still jockey in l4d1 mode ... sigh
             
+            - event:    tank waves: every 30 seconds, all infected players spawn as mini-tanks?
+            
+            - fix:      bots & startup items - pistol not received?
+            
 
     minor cleanup / details
     -----------------------
             - tweak:    give survivors something (magnum)? when incapped, then take it away from them on EVT_WOMEN.
-            - bugfix:   still broken hud thing on solid health healing (cat from 1+22temp => +27 solid breaks) was downed once (3 max incaps)
-                        cannot reproduce?
+            - bugfix:   still broken hud thing on solid health healing (cat from 1+22temp => +27 solid breaks) was downed once (3 max incaps) - cannot reproduce?
             - nitpick:  melee skeets don't seem to be detected yet..
-            - nitpick:  if penalty values change, the reported !rand/event values don't change with
+            - nitpick:  if penalty values change (if they ever do), the reported !rand/event values don't change with
             - nitpick:  when gifts spawn inside walls etc, fire effects will not spawn
             - remember: forward Action:L4D_OnSpawnSpecial(&zombieClass, const Float:vector[3], const Float:qangle[3]);
                         = when a BOT (only) spawns, you could do some stuff with that?

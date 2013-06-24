@@ -36,6 +36,9 @@ new                     g_iSpecialEventToForceAlways                        = -1
 new     bool:           g_bT2Nerfed                                         = true;                 // true when you can't have > single pistol while holding t2
 new     bool:           g_bSurvivorsLoadedIn                                = false;                // to check for calling EVENT_AllSurvivorsLoadedIn()
 
+// Menu handling
+new                     g_iEventMenu            [MAXPLAYERS+1]              = {0,...};              // what menu to use
+
 // Pause tracking
 new     bool:           g_bIsPaused                                         = false;                // whether game is paused
 new     Float:          g_fPauseAttemptTime                                 = 0.0;                  // when the !pause command was issued
@@ -336,6 +339,7 @@ new     Handle:         g_hCvarSpawnBalanceMode                             = IN
 
 new     Handle:         g_hCvarNoitemVariance                               = INVALID_HANDLE;       // cvar the variance of PCK_NOITEM
 new     Handle:         g_hCvarPillsChance                                  = INVALID_HANDLE;       // cvar odds that survivor is given pills/adren at start
+new     Handle:         g_hCvarPistolChance                                 = INVALID_HANDLE;       // cvar odds that survivor is given pistol as secondary at start when receiving a primary and nothing else
 new     Handle:         g_hCvarExtraSecondaryChance                         = INVALID_HANDLE;       // cvar odds that survivor is given a secondary if he's already being given a primary
 new     Handle:         g_hCvarHealthChance                                 = INVALID_HANDLE;       // cvar odds that survivor is given different starting health
 new     Handle:         g_hCvarHealthMin                                    = INVALID_HANDLE;       // cvar minimum amount of health a survivor will have

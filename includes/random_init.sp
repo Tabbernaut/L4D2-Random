@@ -23,7 +23,7 @@ INIT_DefineCVars()
     g_hCvarRIKeyValuesPath = CreateConVar(                  "rand_randominfo_path",          "configs/randommapinfo.txt", "The path to the randommap.txt with keyvalues for per-map random settings.", FCVAR_PLUGIN);
     g_hCvarRCKeyValuesPath = CreateConVar(                  "rand_randomconfig_path",        "configs/randomconfig.txt", "The path to the randomconfig.txt with keyvalues for its base settings.", FCVAR_PLUGIN);
     g_hCvarWelcomeMode = CreateConVar(                      "rand_welcome",                  "3",       "Whether to display welcome messages (1 = only in first round; 2 = always, 3 = each client only once).", FCVAR_PLUGIN, true, 0.0, true, 3.0);
-    g_hCvarBlockL4D1Common = CreateConVar(                  "rand_no_l4d1_common",           "0",       "Whether to block L4D1 common. (2 = block all appearing l4d1 common; 3 = block only problematic skins)", FCVAR_PLUGIN, true, 0.0, true, 3.0);
+    g_hCvarBlockL4D1Common = CreateConVar(                  "rand_no_l4d1_common",           "3",       "Whether to block L4D1 common. (2 = block all appearing l4d1 common; 3 = block only problematic skins)", FCVAR_PLUGIN, true, 0.0, true, 3.0);
     g_hCvarNerfT2 = CreateConVar(                           "rand_nerf_t2",                  "1",       "Whether to nerf t2 weapons (disallow anything better than single pistol for secondary)", FCVAR_PLUGIN, true, 0.0, true, 2.0);
     
     g_hCvarEqual = CreateConVar(                            "rand_equal",                 "2047",       "[Flags] What to keep equal between each team's survivor round (1: items; 2: doors; 4: glows; 8: event; 16: incaps; 32: horde; 64: item weighting; 128: starting health; 256: first attack; 512: tanks; 1024: scoring).", FCVAR_PLUGIN, true, 0.0, false);
@@ -54,6 +54,7 @@ INIT_DefineCVars()
     g_hCvarNoitemVariance = CreateConVar(                   "rand_noitem_variance",          "0.25",    "Variance of weight for 'no item' in item randomizer.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarSpecialEventChance = CreateConVar(               "rand_event_chance",             "0.65",    "Chances of any map going in 'special event' mode.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarPillsChance = CreateConVar(                      "rand_pills_chance",             "0.45",    "Chance that a survivor is given pills at start.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
+    g_hCvarPistolChance = CreateConVar(                     "rand_pistol_chance",            "0.9",     "Chance that a survivor is given at least a pistol as secondary at start.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
     g_hCvarExtraSecondaryChance = CreateConVar(             "rand_secondary_chance",         "0.5",     "Chance that a survivor is given a secondary weapon if given a primary at start.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
     g_hCvarHealthChance = CreateConVar(                     "rand_health_chance",            "0.0",     "Chance that a survivor is given different starting health.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarHealthMin = CreateConVar(                        "rand_health_min",              "50",       "Minimum survivor starting health.", FCVAR_PLUGIN, true, 1.0, true, 100.0);

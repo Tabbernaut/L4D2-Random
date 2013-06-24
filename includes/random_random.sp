@@ -332,18 +332,21 @@ ReportSpecialEventRole(bool:isNew=false, client=0)
 }
 DoEventInfo(client, event)
 {
+    new bool: bShowInfo = false;
+    
     if (event == -1)
     {
         // current event
         if (g_iSpecialEvent == -1) {
-            PrintToChat(client, "\x01[\x05r\x01] There is no special event this round. Type \"\x04!eventinfo #\x01\" (1 to %i) to get info about any event.", EVT_TOTAL);
+            PrintToChat(client, "\x01[\x05r\x01] There is no special event this round. Type \"\x04!eventinfo list\x01\" to get info about other events.");
             return;
         }
         
+        bShowInfo = true;
         event = g_iSpecialEvent;
     }
     else if (event < 1 || event > 37) {
-        PrintToChat(client, "\x01[\x05r\x01] Incorrect event number. Pick any number from 1 to %i.", EVT_TOTAL);
+        PrintToChat(client, "\x01[\x05r\x01] Incorrect argument. Use \"list\" or any number from 1 to %i.", EVT_TOTAL);
         return;
     }
     else {
@@ -407,7 +410,6 @@ DoEventInfo(client, event)
         }
         case EVT_FF: {
             PrintToChat(client, "\x05Survivor friendly fire does triple the damage it normally does in versus games. (This is close to the Hard campaign level of FF.)\x01");
-            PrintToChat(client, "\x05There will be slightly fewer common and slightly slower SI spawns to compensate.\x01");
         }
         case EVT_SILENCE: {
             PrintToChat(client, "\x05This event has two versions:\n1. All survivors become mute. They never utter or otherwise make any sound.\x01");
@@ -484,6 +486,11 @@ DoEventInfo(client, event)
         default: {
             PrintToChat(client, "\x01(no extra information available)\x01");
         }
+    }
+    
+    if (bShowInfo)
+    {
+        PrintToChat(client, "\x01[\x05r\x01] Type \"\x04!eventinfo list\x01\" to get info about other events.");
     }
 }
 
@@ -797,7 +804,7 @@ RANDOM_DetermineRandomStuff()
                     SetConVarFloat(FindConVar("sv_infected_riot_control_tonfa_probability"), 0.0);
                 }
                 case EVT_FF: {
-                    EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_EASY);
+                    EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
                     SetConVarFloat(FindConVar("survivor_friendly_fire_factor_normal"), g_RC_fEventFFFactor);
                     g_iDifficultyRating++;
                 }
@@ -2384,6 +2391,8 @@ RandomizeSurvivorItems()
         if (bSecondaryForced || GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarExtraSecondaryChance)) {
             secondaryPick = GetRandomInt(g_iSurvWeightedChoicesStartSecondary, g_iSurvWeightedChoicesEndSecondary);
             secondaryPick = g_iArSurvWeightedChoices[secondaryPick];
+        } else if (GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarPistolChance)) {
+            secondaryPick = INDEX_SURV_PISTOL;
         } else {
             secondaryPick = -1;
         }
@@ -2414,9 +2423,13 @@ RandomizeSurvivorItems()
                 // if we get nothing, keep secondary pick intact if we're forced to give a secondary
                 if (!bSecondaryForced) { secondaryPick = -1; }
             }
-            case INDEX_SURV_PISTOL: {       randomPick = PCK_PISTOL; iCountSecondary++; secondaryPick = -1; }
-            case INDEX_SURV_DUALS: {        randomPick = PCK_DUALS; iCountSecondary++; iCountGift++; secondaryPick = -1; }
-            case INDEX_SURV_MAGNUM: {       randomPick = PCK_PISTOL_MAGNUM; iCountSecondary++; iCountGift++; secondaryPick = -1; }
+            case    INDEX_SURV_PISTOL,
+                    INDEX_SURV_DUALS,
+                    INDEX_SURV_MAGNUM,
+                    INDEX_SURV_MELEE :{
+                        randomPick = PCK_NOITEM;
+                        secondaryPick = randomPick;
+            }
             
             case INDEX_SURV_T1SMG: {
                 iCountPrimary++;
@@ -2447,16 +2460,6 @@ RandomizeSurvivorItems()
                 g_iArStorageSurvAmmo[i] = RoundFloat(GetConVarFloat(FindConVar("ammo_shotgun_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
                 iCountGift++;
             }
-            
-            case INDEX_SURV_MELEE: {
-                randomPick = PCK_MELEE;
-                meleeRandomPick = GetRandomInt(0, sizeof(g_iMeleeClassCount) - 1);
-                g_iArStorageSurvMelee[i] = meleeRandomPick;
-                iCountGift++;
-                iCountMelee++;
-                iCountSecondary++;
-                secondaryPick = -1;
-            }
         }
         
         if (secondaryPick != -1)
@@ -2464,13 +2467,14 @@ RandomizeSurvivorItems()
             switch (secondaryPick)
             {
                 case INDEX_SURV_PISTOL: {       secondaryPick = PCK_PISTOL; iCountSecondary++; }
-                case INDEX_SURV_DUALS: {        secondaryPick = PCK_DUALS; iCountSecondary++; }
-                case INDEX_SURV_MAGNUM: {       secondaryPick = PCK_PISTOL_MAGNUM; iCountSecondary++; }
+                case INDEX_SURV_DUALS: {        secondaryPick = PCK_DUALS; iCountGift++; iCountSecondary++; }
+                case INDEX_SURV_MAGNUM: {       secondaryPick = PCK_PISTOL_MAGNUM; iCountGift++; iCountSecondary++; }
                 
                 case INDEX_SURV_MELEE: {
                     secondaryPick = PCK_MELEE;
                     meleeRandomPick = GetRandomInt(0, sizeof(g_iMeleeClassCount) - 1);
                     g_iArStorageSurvMelee[i] = meleeRandomPick;
+                    iCountGift++;
                     iCountMelee++;
                     iCountSecondary++;
                 }
@@ -2522,8 +2526,8 @@ RandomizeSurvivorItems()
     {
         // give nothing but pistol (or melee)
         for (new i=0; i < TEAM_SIZE; i++) {
-            g_iArStorageSurv[i] = PCK_PISTOL;
-            g_iArStorageSurvSec[i] = -1;
+            g_iArStorageSurv[i] = PCK_NOITEM;
+            g_iArStorageSurvSec[i] = PCK_PISTOL;
         }
     }
     //      so many doors locked, guarantee two melees
@@ -2535,12 +2539,8 @@ RandomizeSurvivorItems()
             PrintDebug(2, "[rand] Adding melees to deal with special event.");
             for (new i=0; i < TEAM_SIZE; i++)
             {
-                if (g_iArStorageSurv[i] != _:PCK_MELEE && g_iArStorageSurvSec[i] != _:PCK_MELEE) {
-                    if (g_iArStorageSurv[i] == _:PCK_SMG || g_iArStorageSurv[i] == _:PCK_SMG_SILENCED || g_iArStorageSurv[i] == _:PCK_SMG_MP5 || g_iArStorageSurv[i] == _:PCK_PUMPSHOTGUN || g_iArStorageSurv[i] == _:PCK_SHOTGUN_CHROME) {
-                        g_iArStorageSurvSec[i] = PCK_MELEE;
-                    } else {
-                        g_iArStorageSurv[i] = PCK_MELEE;
-                    }
+                if (g_iArStorageSurvSec[i] != _:PCK_MELEE) {
+                    g_iArStorageSurvSec[i] = PCK_MELEE;
                     meleeRandomPick = GetRandomInt(0, sizeof(g_iMeleeClassCount) - 1);
                     g_iArStorageSurvMelee[i] = meleeRandomPick;
                     iCountMelee++;
@@ -2554,12 +2554,8 @@ RandomizeSurvivorItems()
             PrintDebug(2, "[rand] Adding melees to deal with early locks.");
             for (new i=0; i < TEAM_SIZE; i++)
             {
-                if (g_iArStorageSurv[i] != _:PCK_MELEE && g_iArStorageSurvSec[i] != _:PCK_MELEE) {
-                    if (g_iArStorageSurv[i] == _:PCK_SMG || g_iArStorageSurv[i] == _:PCK_SMG_SILENCED || g_iArStorageSurv[i] == _:PCK_SMG_MP5 || g_iArStorageSurv[i] == _:PCK_PUMPSHOTGUN || g_iArStorageSurv[i] == _:PCK_SHOTGUN_CHROME) {
-                        g_iArStorageSurvSec[i] = PCK_MELEE;
-                    } else {
-                        g_iArStorageSurv[i] = PCK_MELEE;
-                    }
+                if (g_iArStorageSurvSec[i] != _:PCK_MELEE) {
+                    g_iArStorageSurvSec[i] = PCK_MELEE;
                     meleeRandomPick = GetRandomInt(0, sizeof(g_iMeleeClassCount) - 1);
                     g_iArStorageSurvMelee[i] = meleeRandomPick;
                     iCountMelee++;
@@ -2568,17 +2564,6 @@ RandomizeSurvivorItems()
             }
         }
     }
-    
-    
-    /*
-        don't do this here (yet) .. too imprecise without taking start saferoom status into account
-    // difficulty-rating based on items? weapons / pills
-    if (iCountPrimary < 2) { g_iDifficultyRating++; }
-    else if (iCountPrimary < 3 && iCountMelee < 2) { g_iDifficultyRating++; }
-    else if (iCountStrip > 1) { g_iDifficultyRating++; }
-    
-    if (iCountAdren + iCountPills < 3 || (iCountPills == 0 && iCountAdren < TEAM_SIZE) ) { g_iDifficultyRating++; }
-    */
     
     // done
     PrintDebug(1, "[rand] Randomized and stored %i survivor setups (%i primaries, %i secondaries, %i strips).", TEAM_SIZE, iCountPrimary, iCountSecondary, iCountStrip);
@@ -3183,19 +3168,18 @@ CreateHittable(index)
 ChangeSurvivorSetup(index, client)
 {
     new type = g_iArStorageSurv[index];
+    new typeSec = g_iArStorageSurvSec[index];
     new ammo = 0;
     new ammoOffset = 0;
+    
     
     // if we're playing coop, strip survivor items first
     if (g_bCampaignMode)
     {
         for (new i = PLAYER_SLOT_PRIMARY; i <= PLAYER_SLOT_PILL; i++)
         {
-            
             new weaponIndex = GetPlayerWeaponSlot(client, i);
             if (weaponIndex > -1) {
-                //new String:classname[STR_MAX_WPCLASSNAME];
-                //GetEdictClassname(weaponIndex, classname, sizeof(classname)); 
                 RemovePlayerItem(client, weaponIndex);
             }
         }
@@ -3226,19 +3210,22 @@ ChangeSurvivorSetup(index, client)
         if (GetConVarFloat(g_hCvarHealthChance)) {
             if (g_iArStorageSurvHealth[index] && g_iArStorageSurvHealth[index] < 100)
             {
-                //SetEntPropFloat(client, Prop_Send, "m_healthBuffer", float(g_iArStorageSurvHealth[index]));
                 SetEntProp(client, Prop_Send, "m_iHealth", g_iArStorageSurvHealth[index], 1);
             }
         }
     }
     
     // weapon 'gift':
-    // if we're replacing the single pistol, remove it:
-    if (    type == _:PCK_NOITEM
-        ||  type == _:PCK_PISTOL_MAGNUM
-        ||  type == _:PCK_MELEE
+    // if we're replacing the single pistol, remove it (need to check both main and secondary type)
+    PrintToChatAll("index %i - client %i - typesec: %i", index, client, typeSec);
+    
+    if (    typeSec == _:PCK_NOITEM
+        ||  typeSec == _:PCK_PISTOL_MAGNUM
+        ||  typeSec == _:PCK_MELEE
         ||  g_iSpecialEvent == _:EVT_BADCOMBO
     ) {
+        PrintToChatAll("Stripping pistol from %N", client);
+        
         new weaponIndex = GetPlayerWeaponSlot(client, PLAYER_SLOT_SECONDARY);
         
         if (weaponIndex > -1) {
@@ -3262,8 +3249,6 @@ ChangeSurvivorSetup(index, client)
     new String:weaponname[STR_MAX_ITEMGIVEN] = "";
     
     // add secondary (if required)
-    new typeSec = g_iArStorageSurvSec[index];
-    
     if (typeSec != _:PCK_NOITEM)
     {        
         switch (typeSec)
@@ -3272,8 +3257,20 @@ ChangeSurvivorSetup(index, client)
             case PCK_PISTOL_MAGNUM: {   weaponname = "weapon_pistol_magnum"; }
             case PCK_MELEE: {
                 // special case
-                PrintDebug(2, "[rand] Handed melee weapon (%s) to %N.", g_sMeleeClass[(g_iArStorageSurvMelee[index])], client);
-                GiveItemMelee(client, g_sMeleeClass[(g_iArStorageSurvMelee[index])]);
+                PrintDebug(2, "[rand] Handed [sec] melee weapon (%s) to %N.", g_sMeleeClass[(g_iArStorageSurvMelee[index])], client);
+                
+                if (_:g_iSpecialEvent == EVT_WOMEN) {
+                    // don't use stored, use whatever the event requires
+                    switch (_:g_iSpecialEventExtra)
+                    {
+                        case EVTWOMEN_TYPE_AXE:     { GiveItemMelee(client, "fireaxe"); }
+                        case EVTWOMEN_TYPE_ROCK:    { GiveItemMelee(client, "electric_guitar"); }
+                        default:                    { GiveItemMelee(client, g_sMeleeClass[(g_iArStorageSurvMelee[index])]); }
+                    }
+                }
+                else {
+                    GiveItemMelee(client, g_sMeleeClass[(g_iArStorageSurvMelee[index])]);
+                }
                 weaponname = "";
             }
         }
@@ -3281,50 +3278,31 @@ ChangeSurvivorSetup(index, client)
         if (strlen(weaponname))
         {
             // debug reporting
-            PrintDebug(2, "[rand] Handed %s to %N.", weaponname, client);
+            PrintDebug(2, "[rand] Handed [sec] %s to %N.", weaponname, client);
             GiveItem(client, weaponname, ammo, ammoOffset);
         }
     }
     
-    weaponname = "";
     
     // add primary
     switch (type)
     {
-        case PCK_NOITEM: {          weaponname = "weapon_gnome"; }              // giving gnome for 'nothing' instead, so player can shove
-        case PCK_DUALS: {           weaponname = "weapon_pistol"; }
-        case PCK_PISTOL_MAGNUM: {   weaponname = "weapon_pistol_magnum"; }
+        case PCK_NOITEM: {
+            // giving gnome for 'nothing' instead, if they didn't receive secondary either
+            if (typeSec == _:PCK_NOITEM) { weaponname = "weapon_gnome"; }
+        }
         case PCK_SMG_MP5: {         weaponname = "weapon_smg_mp5";        ammo = g_iArStorageSurvAmmo[index]; ammoOffset = SMG_OFFSET_IAMMO; }
         case PCK_SMG: {             weaponname = "weapon_smg";            ammo = g_iArStorageSurvAmmo[index]; ammoOffset = SMG_OFFSET_IAMMO; }
         case PCK_SMG_SILENCED: {    weaponname = "weapon_smg_silenced";   ammo = g_iArStorageSurvAmmo[index]; ammoOffset = SMG_OFFSET_IAMMO; }
         case PCK_PUMPSHOTGUN: {     weaponname = "weapon_pumpshotgun";    ammo = g_iArStorageSurvAmmo[index]; ammoOffset = SHOTGUN_OFFSET_IAMMO; }
         case PCK_SHOTGUN_CHROME: {  weaponname = "weapon_shotgun_chrome"; ammo = g_iArStorageSurvAmmo[index]; ammoOffset = SHOTGUN_OFFSET_IAMMO; }
         
-        case PCK_MELEE: {
-            // special case
-            PrintDebug(2, "[rand] Handed melee weapon (%s) to %N.", g_sMeleeClass[(g_iArStorageSurvMelee[index])], client);
-            
-            if (_:g_iSpecialEvent == EVT_WOMEN) {
-                // don't use stored, use whatever the event requires
-                //  test if this works without melee unlocker..
-                switch (_:g_iSpecialEventExtra)
-                {
-                    case EVTWOMEN_TYPE_AXE:     { GiveItemMelee(client, "fireaxe"); }
-                    case EVTWOMEN_TYPE_ROCK:    { GiveItemMelee(client, "electric_guitar"); }
-                    default:                    { GiveItemMelee(client, g_sMeleeClass[(g_iArStorageSurvMelee[index])]); }
-                }
-            }
-            else {
-                GiveItemMelee(client, g_sMeleeClass[(g_iArStorageSurvMelee[index])]);
-            }
-            weaponname = "";
-        }
+        default: { weaponname = ""; }
     }
     
     // special event, snipers only (marksmen):
-    if (    _:g_iSpecialEvent == EVT_SNIPER
-        &&  (type == _:PCK_SMG_MP5 || type == _:PCK_SMG || type == _:PCK_SMG_SILENCED || type == _:PCK_PUMPSHOTGUN || type == _:PCK_SHOTGUN_CHROME)
-    ) {
+    if ( _:g_iSpecialEvent == EVT_SNIPER && type != _:PCK_NOITEM )
+    {
         new Float: fAmmoVarMore = 1.0 + GetConVarFloat(g_hCvarAmmoVarianceMore);
         new Float: fAmmoVarLess = 1.0 - GetConVarFloat(g_hCvarAmmoVarianceLess);
         
@@ -3335,9 +3313,7 @@ ChangeSurvivorSetup(index, client)
     // special event: magic gun swap == you don't get a primary
     else if (_:g_iSpecialEvent == EVT_GUNSWAP)
     {
-        if (type == _:PCK_SMG_MP5 || type == _:PCK_SMG || type == _:PCK_SMG_SILENCED || type == _:PCK_PUMPSHOTGUN || type == _:PCK_SHOTGUN_CHROME) {
-            weaponname = "";    // don't proceed to give weapon
-        }
+        weaponname = ""; // don't proceed to give weapon
         
         // do first swap / swap start
         EVENT_SwapSurvivorGun(client);
@@ -3358,11 +3334,11 @@ ChangeSurvivorSetup(index, client)
     if (strlen(weaponname))
     {
         // debug reporting
-        PrintDebug(2, "[rand] Handed %s to %N (ammo: %i).", weaponname, client, ammo);
+        PrintDebug(2, "[rand] Handed [pri] %s to %N (ammo: %i).", weaponname, client, ammo);
         GiveItem(client, weaponname, ammo, ammoOffset);
         
         // if we've given the gnome, make sure the gnome has a value!
-        if (type == _:PCK_NOITEM)
+        if (type == _:PCK_NOITEM && typeSec == _:PCK_NOITEM)
         {
             UpdateAfterGnomeGiven(client);
         }

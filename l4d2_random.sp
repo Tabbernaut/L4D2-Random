@@ -71,7 +71,7 @@ public Plugin:myinfo =
     name = "Randomize the Game",
     author = "Tabun",
     description = "Makes L4D2 sensibly random. Randomizes items, SI spawns and many other things.",
-    version = "1.0.47",
+    version = "1.0.48",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -715,42 +715,71 @@ public Action: RandomEventInfo_Cmd(client, args)
 {
     if (args)
     {
-        decl String:sMessage[3];
+        decl String:sMessage[5];
         GetCmdArg(1, sMessage, sizeof(sMessage));
-        new setevent = StringToInt(sMessage);
         
-        DoEventInfo(client, setevent);
+        if (StrEqual(sMessage, "list", false) || StrEqual(sMessage, "l", false)) {
+            g_iEventMenu[client] = EVTMNU_INFO;
+            SUPPORT_ShowEventList(client);
+        }
+        else {
+            new setevent = StringToInt(sMessage);
+            DoEventInfo(client, setevent);
+        }
     }
     else {
-        DoEventInfo(client, -1);
+        if (g_iSpecialEvent != -1) {
+            DoEventInfo(client, -1);
+        }
+        else {
+            g_iEventMenu[client] = EVTMNU_INFO;
+            SUPPORT_ShowEventList(client);
+        }
     }
+    return Plugin_Handled;
 }
 public Action: RandomTeamShuffle_Cmd(client, args)
 {
-    if (!g_bCampaignMode)
+    if (g_bCampaignMode)
     {
-        SUPPORT_VoteShuffleTeams(client);
+        PrintToChat(client, "\x01[\x05r\x01] This only works in versus games.");
+        return Plugin_Handled;
     }
+    
+    SUPPORT_VoteShuffleTeams(client);
     return Plugin_Handled;
 }
 public Action: RandomForceTeamShuffle_Cmd(client, args)
 {
-    if (!g_bCampaignMode)
+    if (g_bCampaignMode)
     {
-        SUPPORT_ShuffleTeams(client);
+        PrintToChat(client, "\x01[\x05r\x01] This only works in versus games.");
+        return Plugin_Handled;
     }
+    
+    SUPPORT_ShuffleTeams(client);
     return Plugin_Handled;
 }
 
 public Action: RandomPickEvent_Cmd(client, args)
 {
+    if (g_bCampaignMode)
+    {
+        PrintToChat(client, "\x01[\x05r\x01] This only works in versus games.");
+        return Plugin_Handled;
+    }
+    
     if (args)
     {
-        decl String:sMessage[3];
+        decl String:sMessage[5];
         GetCmdArg(1, sMessage, sizeof(sMessage));
     
         if (StrEqual(sMessage, "no", false)) {
             SUPPORT_VotePickEvent(-1, client);
+        }
+        else if (StrEqual(sMessage, "list", false)) {
+            g_iEventMenu[client] = EVTMNU_PICK;
+            SUPPORT_ShowEventList(client);
         }
         else {
             new setevent = StringToInt(sMessage);
@@ -778,6 +807,12 @@ public Action: RandomForcePickEvent_Cmd(client, args)
 }
 public Action: RandomPickGameEvent_Cmd(client, args)
 {
+    if (g_bCampaignMode)
+    {
+        PrintToChat(client, "\x01[\x05r\x01] This only works in versus games.");
+        return Plugin_Handled;
+    }
+    
     if (args)
     {
         decl String:sMessage[3];
@@ -2213,7 +2248,8 @@ public Action:OnWeaponEquip(client, weapon)
 public Action:OnWeaponCanUse(client, weapon)
 {
     // if we're blocking bots:
-    if (!g_bCampaignMode && !g_bBotsAllowedPickup && IsFakeClient(client)) {
+    if (!g_bCampaignMode && !g_bBotsAllowedPickup && IsFakeClient(client))
+    {
         return Plugin_Handled;
     }
     

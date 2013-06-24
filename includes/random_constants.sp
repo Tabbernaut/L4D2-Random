@@ -259,7 +259,11 @@ const           EVT_MEDIC               = 35;
 const           EVT_BOOMFLU             = 36;
 
 const           EVT_TOTAL               = 37;
-    
+
+const           EVTMNU_INFO             = 1;
+const           EVTMNU_PICK             = 2;
+const           EVTMNU_PICKGAME         = 3;
+
 const           EVTWOMEN_TYPE_AXE       = 1;            // axe effect
 const           EVTWOMEN_TYPE_ROCK      = 2;            // rockstars
 const           EVTWOMEN_TYPE_BEAT      = 3;            // fallback: any available

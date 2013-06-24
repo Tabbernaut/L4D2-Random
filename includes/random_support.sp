@@ -2654,12 +2654,12 @@ SUPPORT_VotePickEvent(event, client)
     if (!g_bTeamSurvivorVotedEvent && !g_bTeamInfectedVotedEvent)
     {
         if (event == -1 || event == 0) {
-            PrintToChat(client, "\x01[\x05r\x01] You must give an event number. Use: \"!event #\". Numbers go from \x041\x01 to \x04%i\x01. For a list, see http://www.tabun.nl/random/.", EVT_TOTAL);
+            g_iEventMenu[client] = EVTMNU_PICK;
+            SUPPORT_ShowEventList(client);
             return;
         }
-        else if (event < 1 || event > EVT_TOTAL)
-        {
-            PrintToChat(client, "\x01[\x05r\x01] Wrong event number: \x04%i\x01. For numbers go from \x041\x01 to \x04%i\x01. For a list, see http://www.tabun.nl/random/.", event, EVT_TOTAL);
+        else if (event < 1 || event > EVT_TOTAL) {
+            PrintToChat(client, "\x01[\x05r\x01] Wrong event number: \x04%i\x01. Use \"\x04!event list\x01\" to pick from a list.", event);
             return;
         }
         else if (g_iSpecialEventToForce == event) {
@@ -2668,6 +2668,38 @@ SUPPORT_VotePickEvent(event, client)
         }
         else {
             g_iPickEvent = event - 1;
+        }
+    }
+    else if (event != g_iPickEvent+1 && event >= 1 && event <= EVT_TOTAL) {
+        PrintToChat(client, "\x01[\x05r\x01] A vote is already active. Decline with \"\x04!event no\x01\" before suggesting another event.");
+        return;
+    }
+    
+    SUPPORT_VotePickEventChoose(event, client);
+}
+
+SUPPORT_VotePickEventChoose(event, client)
+{
+    if (!IsClientAndInGame(client) || (GetClientTeam(client) != TEAM_SURVIVOR && GetClientTeam(client) != TEAM_INFECTED) ) { return; }
+    
+    // see if we're doing a vote at the right time
+    if (g_fPickEventTimeout != 0.0 && GetGameTime() < g_fPickEventTimeout)
+    {
+        PrintToChat(client, "\x01[\x05r\x01] Can't pick special event again so quickly (%d second timeout).", RoundToCeil(g_fPickEventTimeout - GetGameTime()) );
+        return;
+    }
+    
+    if (g_bTeamSurvivorVotedEvent || g_bTeamInfectedVotedEvent)
+    {
+        if (    (GetClientTeam(client) == TEAM_SURVIVOR && g_bTeamSurvivorVotedEvent)
+            ||  (GetClientTeam(client) == TEAM_INFECTED && g_bTeamInfectedVotedEvent)
+        ) {
+            PrintToChat(client, "\x01[\x05r\x01] A vote is already active. Wait for the other team to respond.");
+            return;
+        }
+        else if (event > 0) {
+            PrintToChat(client, "\x01[\x05r\x01] A vote is already active. Decline with \"\x04!event no\x01\" before suggesting another event.");
+            return;
         }
     }
     
@@ -2759,16 +2791,49 @@ SUPPORT_VotePickGameEvent(event, client)
     if (!g_bTeamSurvivorVotedGameEvent && !g_bTeamInfectedVotedGameEvent)
     {
         if (event == -1 || event == 0) {
-            PrintToChat(client, "\x01[\x05r\x01] You must give an event number. Use: \"!gameevent #\". Numbers go from \x041\x01 to \x04%i\x01. For a list, see http://www.tabun.nl/random/.", EVT_TOTAL);
+            g_iEventMenu[client] = EVTMNU_PICKGAME;
+            SUPPORT_ShowEventList(client);
             return;
         }
-        else if (event < 1 || event > EVT_TOTAL)
-        {
-            PrintToChat(client, "\x01[\x05r\x01] Wrong event number: \x04%i\x01. For numbers go from \x041\x01 to \x04%i\x01. For a list, see http://www.tabun.nl/random/.", event, EVT_TOTAL);
+        else if (event < 1 || event > EVT_TOTAL) {
+            PrintToChat(client, "\x01[\x05r\x01] Wrong event number: \x04%i\x01. Use \"\x04!gameevent list\x01\" to pick from a list.", event);
             return;
         }
         else {
             g_iPickGameEvent = event - 1;
+        }
+    }
+    else if (event != g_iPickGameEvent+1 && event >= 1 && event <= EVT_TOTAL) {
+        PrintToChat(client, "\x01[\x05r\x01] A vote is already active. Decline with \"\x04!gameevent no\x01\" before suggesting another event.");
+        return;
+    }
+    
+    
+    SUPPORT_VotePickGameEventChoose(event, client);
+}
+
+SUPPORT_VotePickGameEventChoose(event, client)
+{
+    if (!IsClientAndInGame(client) || (GetClientTeam(client) != TEAM_SURVIVOR && GetClientTeam(client) != TEAM_INFECTED) ) { return; }
+    
+    // see if we're doing a vote at the right time
+    if (g_fPickEventTimeout != 0.0 && GetGameTime() < g_fPickEventTimeout)
+    {
+        PrintToChat(client, "\x01[\x05r\x01] Can't pick special event again so quickly (%d second timeout).", RoundToCeil(g_fPickEventTimeout - GetGameTime()) );
+        return;
+    }
+    
+    if (g_bTeamSurvivorVotedGameEvent || g_bTeamInfectedVotedGameEvent)
+    {
+        if (    (GetClientTeam(client) == TEAM_SURVIVOR && g_bTeamSurvivorVotedGameEvent)
+            ||  (GetClientTeam(client) == TEAM_INFECTED && g_bTeamInfectedVotedGameEvent)
+        ) {
+            PrintToChat(client, "\x01[\x05r\x01] A vote is already active. Wait for the other team to respond.");
+            return;
+        }
+        else if (event > 0) {
+            PrintToChat(client, "\x01[\x05r\x01] A vote is already active. Decline with \"\x04!gameevent no\x01\" before suggesting another event.");
+            return;
         }
     }
     
@@ -2847,6 +2912,69 @@ SUPPORT_PickGameEvent(event, client=0)
     RestartMapDelayed();
 }
 
+
+// event list / menu
+SUPPORT_ShowEventList(client)
+{
+    if (IsClientAndInGame(client))
+    {
+        decl String:sTempA[3];
+        new Handle:menu = CreateMenu(EventListHandler);
+
+        if (g_iEventMenu[client] == EVTMNU_INFO)
+        {
+            IntToString(0, sTempA, sizeof(sTempA));
+            AddMenuItem(menu, sTempA, "Current Special Event");
+        }
+        
+        for (new i = 0; i < EVT_TOTAL; i++)
+        {
+            IntToString(i+1, sTempA, sizeof(sTempA));
+            AddMenuItem(menu, sTempA, g_csEventTextShort[i] );
+        }
+
+        switch(g_iEventMenu[client])
+        {
+            case EVTMNU_INFO: {
+                SetMenuTitle(menu, "Get Info on Event:");
+            }
+            case EVTMNU_PICK, EVTMNU_PICKGAME: {
+                SetMenuTitle(menu, "Pick Event:");
+            }
+        }
+        SetMenuExitButton(menu, true);
+        DisplayMenu(menu, client, MENU_TIME_FOREVER);
+    }
+}
+public EventListHandler(Handle:menu, MenuAction:action, client, index)
+{
+    if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+    }
+    else if (action == MenuAction_Select)
+    {
+        decl String:sTemp[32];
+        GetMenuItem(menu, index, sTemp, sizeof(sTemp));
+        new event = StringToInt(sTemp);
+        if (event == 0) { event = -1; }
+        
+        switch (g_iEventMenu[client])
+        {
+            case EVTMNU_INFO: {
+                DoEventInfo(client, event);
+            }
+            case EVTMNU_PICK: {
+                g_iPickEvent = event - 1;
+                SUPPORT_VotePickEventChoose(event, client);
+            }
+            case EVTMNU_PICKGAME: {
+                g_iPickGameEvent = event - 1;
+                SUPPORT_VotePickGameEventChoose(event, client);
+            }
+        }
+    }
+}
 
 // restarting maps
 RestartMapDelayed()
