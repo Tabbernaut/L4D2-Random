@@ -24,7 +24,7 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.48"
+#define PLUGIN_VERSION "1.0.49"
 
 /*
         L4D2 Random
@@ -50,6 +50,9 @@
             - gift boxes and opening results
             - pipebombs (are sometimes duds)
         
+        
+        Note:
+            hittable props with hammerid 1 are always made prop_alarm_cars (to keep events possible)
         
         equal flags:
         ------------

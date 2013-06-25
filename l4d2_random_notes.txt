@@ -13,7 +13,8 @@ L4D2_Random
             - test:     defib penalty still not reset correctly after a sudden death round ?
             - test:     still jockey in l4d1 mode ... sigh
             
-            
+            - tweak:    gnome at start not counted for insight
+            - tweak:    uncap pounce damage for skeet shoot event
             
 
     minor cleanup / details
@@ -22,12 +23,10 @@ L4D2_Random
             - tweak:    EVT_WOMEN: give survivors something (magnum)? when incapped, then take it away from them
             - bugfix:   still broken hud thing on solid health healing (cat from 1+22temp => +27 solid breaks) was downed once (3 max incaps) - cannot reproduce?
                         to try:
-                            if(healthBuffer == 0.0)
-                            {
+                            if(healthBuffer == 0.0) {
                                 SetEntPropFloat(i, Prop_Send, "m_healthBuffer", EBLOCK_BONUS_HEALTH_BUFFER);
                                 DebugPrintToAll("Health buffer for player [%d] set to %f", i, EBLOCK_BONUS_HEALTH_BUFFER);
-                            }
-                            
+                        }
             - nitpick:  MORE ammo than max in clip doesn't work for map-spawned weapons (stays at max when picked up)
                         check + overwrite netprop for client picking it up? what goes on here?
             - nitpick:  melee skeets don't seem to be detected yet..

@@ -504,6 +504,7 @@ RANDOM_DetermineRandomStuff()
     new bool: bBlockTank = false;           // so we can block tank on some event picks
     new bool: bBlockDoubleTank = false;     // so we can block double tank on some event picks
     new bool: bBlockWitch = false;
+    new Float: fTankChance = GetConVarFloat(FindConVar("versus_tank_chance"));
     
     // prepare random choices (if required)
     if (!g_bSecondHalf) {
@@ -1001,20 +1002,28 @@ RANDOM_DetermineRandomStuff()
         g_bTankWillSpawn = false;
         g_bTankIsEarly = false;
     }
-    else if (!g_bTankWillSpawn && GetConVarFloat(FindConVar("versus_tank_chance")) == 1.0) {
+    else if ( !g_bTankWillSpawn && (g_bTankFirstRound || fTankChance == 1.0) ) {
+        // force tank if we had one the first round, or if we (should) have 100% chance of tank
         L4D2Direct_SetVSTankToSpawnThisRound(0, true);
         L4D2Direct_SetVSTankToSpawnThisRound(1, true);
         g_bTankWillSpawn = true;
         g_bTankIsEarly = false;
     }
-    else if (g_bTankFirstRound && !g_bTankWillSpawn)
+    else if ( fTankChance < ( (g_bStripperAltDetected) ? g_RI_fTankOddsHard : g_RI_fTankOddsNormal ) )
     {
-        // force tank if we had one the first round
-        L4D2Direct_SetVSTankToSpawnThisRound(0, true);
-        L4D2Direct_SetVSTankToSpawnThisRound(1, true);
-        g_bTankWillSpawn = true;
+        // change tank chances on some maps (RI) -- only if higher odds than default
+        if ( GetRandomFloat(0.001, 1.0) <= ( (g_bStripperAltDetected) ? g_RI_fTankOddsHard : g_RI_fTankOddsNormal ) ) {
+            L4D2Direct_SetVSTankToSpawnThisRound(0, true);
+            L4D2Direct_SetVSTankToSpawnThisRound(1, true);
+            g_bTankWillSpawn = true;
+            g_bTankIsEarly = false;
+        }
+        else {
+            L4D2Direct_SetVSTankToSpawnThisRound(0, false);
+            L4D2Direct_SetVSTankToSpawnThisRound(1, false);
+            g_bTankWillSpawn = false;
+        }
     }
-    
     
     if (bBlockWitch || g_RI_bNoWitch) {
         L4D2Direct_SetVSWitchToSpawnThisRound(0, false);
@@ -1041,15 +1050,16 @@ RANDOM_DetermineRandomStuff()
         g_iDifficultyRating += 2;
         
         new Float: fTankFlow = L4D2Direct_GetVSTankFlowPercent( (g_bSecondHalf) ? 1 : 0 );
-        new iTankSpawn = RoundToNearest(fTankFlow * 100.0);
         
-        // safeguard against weird values
-        if (fTankFlow > 1.0 || fTankFlow < 0.0) {
-            PrintDebug(2, "[rand] Boss spawns -- Found freaky flow value (%.2f), picking random normal value.", fTankFlow);
-            fTankFlow = GetRandomFloat(0.16, 0.84);
+        // always pick a new tank spawn if it's the first round otherwise, only repick on odd values
+        if ( (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS)) || fTankFlow > 1.0 || fTankFlow <= 0.0)
+        {
+            fTankFlow = GetRandomFloat( GetConVarFloat(FindConVar("versus_boss_flow_min")) + 0.01, GetConVarFloat(FindConVar("versus_boss_flow_max")) - 0.01);
             L4D2Direct_SetVSTankFlowPercent(0, fTankFlow);
             L4D2Direct_SetVSTankFlowPercent(1, fTankFlow);
         }
+        
+        new iTankSpawn = RoundToNearest(fTankFlow * 100.0);
         
         // check tank flow bans:
         if (GetConVarBool(g_hCvarBanTankFlows) && g_RI_iTankBanStart != -1 && g_RI_iTankBanEnd != -1)
@@ -1069,7 +1079,7 @@ RANDOM_DetermineRandomStuff()
                 
                 fTankFlow = float(iTankSpawn) / 100.0;
                 
-                PrintDebug(2, "[rand] Boss spawns -- Found banned tank (@ %i), changing to %i.", oldSpawn, iTankSpawn);
+                PrintDebug(2, "[rand] Boss spawns - Found banned tank (@ %i), changing to %i.", oldSpawn, iTankSpawn);
                 
                 L4D2Direct_SetVSTankFlowPercent(0, fTankFlow);
                 L4D2Direct_SetVSTankFlowPercent(1, fTankFlow);
@@ -1089,8 +1099,6 @@ RANDOM_DetermineRandomStuff()
         }
     }
     
-    PrintDebug(1, "[rand] Boss spawns: Tank: %i (%.2f) / Witch: %i (%.2f)", g_bTankWillSpawn, L4D2Direct_GetVSTankFlowPercent( (g_bSecondHalf) ? 1 : 0 ), g_bWitchWillSpawn, L4D2Direct_GetVSWitchFlowPercent( (g_bSecondHalf) ? 1 : 0 ));
-    
     // multi-tanks? if so, set first tank to spawn early and last tank to spawn late
     // only determine if tanks will spawn at all
     //      tanks should not double-spawn on finales or first maps
@@ -1103,10 +1111,8 @@ RANDOM_DetermineRandomStuff()
                 &&  (       !GetConVarBool(g_hCvarBanTankFlows)
                         ||  g_RI_iTankBanStart == -1
                         ||  g_RI_iTankBanEnd == -1
-                        ||  (
-                                (MULTITANK_EARLY < g_RI_iTankBanStart || MULTITANK_EARLY > g_RI_iTankBanEnd)
-                                &&  (MULTITANK_LATE < g_RI_iTankBanStart || MULTITANK_LATE > g_RI_iTankBanEnd)
-                            )
+                        ||  (       (MULTITANK_EARLY < g_RI_iTankBanStart || MULTITANK_EARLY > g_RI_iTankBanEnd)
+                                &&  (MULTITANK_LATE < g_RI_iTankBanStart || MULTITANK_LATE > g_RI_iTankBanEnd) )
                     )
             ) {
                 g_bDoubleTank = true;
@@ -1161,6 +1167,40 @@ RANDOM_DetermineRandomStuff()
     if (g_bWitchWillSpawn) {
         g_iDifficultyRating++;
         
+        // pick witch spawn pos
+        new Float: fWitchFlow = L4D2Direct_GetVSWitchFlowPercent( (g_bSecondHalf) ? 1 : 0 );
+        
+        if ( (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS)) || fWitchFlow > 1.0 || fWitchFlow <= 0.0)
+        {
+            // if there's a tank, spawn it at a minimal distance away from tank
+            fWitchFlow = GetRandomFloat( GetConVarFloat(FindConVar("versus_boss_flow_min")) + 0.01, GetConVarFloat(FindConVar("versus_boss_flow_max")) - 0.01 );
+            
+            if (g_bTankWillSpawn) {
+                new Float: fTankFlow = L4D2Direct_GetVSTankFlowPercent( (g_bSecondHalf) ? 1 : 0 );
+                
+                if (FloatAbs(fTankFlow - fWitchFlow) < MIN_WITCH_TANK_DISTANCE)
+                {
+                    if ( fTankFlow > fWitchFlow ) {
+                        if ( fTankFlow > 0.15 + MIN_WITCH_TANK_DISTANCE ) {
+                            fWitchFlow = fTankFlow - MIN_WITCH_TANK_DISTANCE;
+                        } else {
+                            fWitchFlow = fTankFlow + MIN_WITCH_TANK_DISTANCE;
+                        }
+                    }
+                    else if ( fTankFlow < fWitchFlow ) {
+                        if ( fTankFlow < 0.85 - MIN_WITCH_TANK_DISTANCE ) {
+                            fWitchFlow = fTankFlow + MIN_WITCH_TANK_DISTANCE;
+                        } else {
+                            fWitchFlow = fTankFlow - MIN_WITCH_TANK_DISTANCE;
+                        }
+                    }
+                }
+            }
+            
+            L4D2Direct_SetVSWitchFlowPercent(0, fWitchFlow);
+            L4D2Direct_SetVSWitchFlowPercent(1, fWitchFlow);
+        }
+        
         // remember in case the game forgets...
         if (!g_bSecondHalf) { g_bWitchFirstRound = true; }
     }
@@ -1168,6 +1208,8 @@ RANDOM_DetermineRandomStuff()
         L4D2Direct_SetVSWitchToSpawnThisRound(0, false);
         L4D2Direct_SetVSWitchToSpawnThisRound(1, false);
     }
+    
+    PrintDebug(1, "[rand] Boss spawns: Tank: %i (%.2f) / Witch: %i (%.2f)", g_bTankWillSpawn, L4D2Direct_GetVSTankFlowPercent( (g_bSecondHalf) ? 1 : 0 ), g_bWitchWillSpawn, L4D2Direct_GetVSWitchFlowPercent( (g_bSecondHalf) ? 1 : 0 ));
     
     if (g_bTankWillSpawn && !g_bSecondHalf) { g_bTankFirstRound = true; }
     
@@ -1322,8 +1364,6 @@ RANDOM_DetermineRandomStuff()
     }
 }
 
-
-
 // Randomization magic
 // --------------------------
 RandomizeItems()
@@ -1420,6 +1460,13 @@ RandomizeItems()
                         }
                     }
                     
+                    // some hittables are forced cars with alarms
+                    if (GetEntProp(i, Prop_Data, "m_iHammerID") == 1)
+                    {
+                        randType = HITTAB_CAR95;
+                        g_strArHittableStorage[curHit][hitIsAlarmed] = true;
+                    }
+                    
                     g_strArHittableStorage[curHit][hitPickedType] = randType;
                     
                     if (randType <= HITTAB_LASTCAR)
@@ -1427,7 +1474,9 @@ RandomizeItems()
                         g_strArHittableStorage[curHit][hitIsCar] = true;
                         
                         // is it alarmed?
-                        if (GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarAlarmedCarChance)) {
+                        if (    g_strArHittableStorage[curHit][hitIsAlarmed]
+                            ||  GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarAlarmedCarChance)
+                        ) {
                             g_strArHittableStorage[curHit][hitIsAlarmed] = true;
                             randType = HITTAB_CAR95;
                         }

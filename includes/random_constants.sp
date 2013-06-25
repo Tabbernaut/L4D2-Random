@@ -85,6 +85,8 @@ const Float:    MINITANKS_FLOW_INT      = 0.1;
 const Float:    MINITANKS_FLOW_VAR      = 0.025;        // tiny flow variation, for funzies
 const Float:    MINITANKS_SCALE         = 0.67;         // scale the model by what?
 
+const Float:    MIN_WITCH_TANK_DISTANCE = 0.2;          // how much distance between tank and witch minimally
+
 const Float:    CSAW_TANK_DMG_FACTOR    = 0.33;         // factor by which to change chainsaws doing damage to tanks
 
 // item balance

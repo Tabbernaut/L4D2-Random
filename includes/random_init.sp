@@ -606,7 +606,8 @@ bool: RI_KV_UpdateRandomMapInfo()
     g_RI_iTankBanStart = -1;        // block some tank spawns
     g_RI_iTankBanEnd = -1;
     g_RI_iEarlyDoors = 0;           // if > 0, check for early doors on the map (g_RI_vEarlyDoor)
-    
+    g_RI_fTankOddsNormal = 0.0;     // tank odds override (if > default)
+    g_RI_fTankOddsHard = 0.0;       // tank odds override (if > default) (hard path)
     
     new String: mapname[64];
     GetCurrentMap(mapname, sizeof(mapname));
@@ -631,6 +632,8 @@ bool: RI_KV_UpdateRandomMapInfo()
         g_RI_iDistance = KvGetNum(g_kRIData, "distance", g_RI_iDistance);
         g_RI_iDistanceHard = KvGetNum(g_kRIData, "distance_hard", g_RI_iDistanceHard);
         g_RI_bIsFinale = bool: (KvGetNum(g_kRIData, "no_finale", 0));
+        g_RI_fTankOddsNormal = KvGetFloat(g_kRIData, "tank_odds", g_RI_fTankOddsNormal);
+        g_RI_fTankOddsHard = KvGetFloat(g_kRIData, "tank_odds_hard", g_RI_fTankOddsHard);
         
         g_RI_iEarlyDoors = KvGetNum(g_kRIData, "earlydoors", 0);
         if (g_RI_iEarlyDoors)

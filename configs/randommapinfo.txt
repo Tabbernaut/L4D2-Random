@@ -120,12 +120,14 @@
 	}
 	"c4m4_milltown_b"
 	{
-		"difficulty"	"1"
-		"no_storm"	"1"
+		"difficulty"		"1"
+		"no_storm"		"1"
 		"tank_ban_start"	"80"
 		"tank_ban_end"		"100"
-		"distance"	"500"
-		"distance_hard"	"700"
+		"distance"		"500"
+		"distance_hard"		"700"
+		"tank_odds"		"1.0"
+		"tank_odds_hard"	"1.0"
 	}
 	"c4m5_milltown_escape"
 	{
@@ -335,6 +337,8 @@
 		"earlydoor_1"	"-6236 -6972 400"
 		"earlydoor_2"	"-6236 -6971 264"
 		"earlydoor_3"	"-8634 -7266 -12"
+		"tank_odds"		"0.9"
+		"tank_odds_hard"	"0.8"
 	}
 	"c12m3_bridge"
 	{
@@ -350,6 +354,8 @@
 		"no_storm"	"2"
 		"distance"	"600"
 		"distance_hard"	"700"
+		"tank_odds"		"0.9"
+		"tank_odds_hard"	"0.8"
 	}
 	"c12m5_cornfield"
 	{

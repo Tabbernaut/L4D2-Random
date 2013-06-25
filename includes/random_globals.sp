@@ -286,6 +286,8 @@ new                     g_RI_iDistance                                      = 0;
 new                     g_RI_iDistanceHard                                  = 0;                    // hard-path max map distance points
 new                     g_RI_iEarlyDoors                                    = 0;                    // how many early doors to check
 new                     g_RI_iArEarlyDoor       [EARLYDOOR_MAX][3];                                 // early door coordinates (if any)
+new     Float:          g_RI_fTankOddsNormal                                = 0.0;                  // if > 0, override value for tank chance this map
+new     Float:          g_RI_fTankOddsHard                                  = 0.0;                  // if > 0, override value for tank chance this map (if hard path)
 
 // ConVars
 new     Handle:         g_hArCvarWeight         [INDEX_TOTAL];                                      // cvar, per randomize-type, that sets an integer weight 
