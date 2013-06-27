@@ -3,6 +3,12 @@ L4D2_Random
 ===========
 
 
+    changelog:
+    ---------
+            - fixed cvar bug (that made Random have way too long spawn timers and such)
+            - prevented T2s / snipers in magic gunswap event before survivors left start saferoom.
+            - made t2 weapons / snipers much less common in magic gunswap event on Random Hard.
+
     to-do:
     ------  
             - wait:     gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
@@ -16,11 +22,18 @@ L4D2_Random
             - tweak:    gnome at start not counted for insight
             - tweak:    uncap pounce damage for skeet shoot event
             
-            - tweak:    no t2s in saferoom before match is live on gunswap event
             - bugfix:   got minitanks on finale.. and two tanks.. which shouldn't happen
             - bugfix:   NM map 2 end saferoom problem? spawned gnome for 4 points
             
-            - tweak:    consider damage change to scout.. higher?
+            - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled)
+            - tweak:    block melees for snipers (except scout); allow double pistols
+            
+            - bugfix:   gnome bonus incorrectly reports (for both teams, even if only one brings it)
+            - bugfix:   top shelf gift won't open still (higher eye distance)
+            
+            - feature:  make event votes / forces blockable with a cvar, for tourneys
+            
+            - test:     pill passer (Sirplease? Crox?) with item penalty event
 
     minor cleanup / details
     -----------------------
@@ -37,6 +50,7 @@ L4D2_Random
             - nitpick:  melee skeets don't seem to be detected yet..
             - nitpick:  if penalty values change (if they ever do), the reported !rand/event values don't change with
             - nitpick:  when gifts spawn inside walls etc, fire effects will not spawn
+                            and items might disappear
             - remember: forward Action:L4D_OnSpawnSpecial(&zombieClass, const Float:vector[3], const Float:qangle[3]);
                         = when a BOT (only) spawns, you could do some stuff with that?
             - nitpick:  boomer vomit doesn't really appear convincingly from the survivor's mouth

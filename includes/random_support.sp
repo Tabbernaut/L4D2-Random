@@ -779,12 +779,22 @@ EVENT_SwapSurvivorGun(client)
         RemoveEdict(weaponIndex);
     }
     
+    
+    // block T2s in startup
+    new bool: bT2 = true;
+    if (!g_bPlayersLeftStart || SUPPORT_IsInReady()) { bT2 = false; }
+    
+    // also block t2s more if they're not supposed to spawn normally
+    if (GetConVarInt(g_hArCvarWeight[INDEX_T2RIFLE]) == 0 || GetConVarInt(g_hArCvarWeight[INDEX_T2SHOTGUN]) == 0) {
+        if (GetRandomInt(0,2)) { bT2 = false; }
+    }
+    
     // pick new weapon (random)
     new ammo = 0;
     new ammoOffset = -1;
     new String:weaponname[STR_MAX_ITEMGIVEN] = "";
     
-    new randomPick = GetRandomInt(0, 7);            // disabled t3 for now
+    new randomPick = GetRandomInt(0, (bT2) ? 7 : 3);            // disabled t3 for now
     
     if (randomPick < 4) { randomPick = 0; }         // t1 4x
     else if (randomPick < 6) { randomPick = 4; }    // sniper 2x

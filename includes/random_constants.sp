@@ -679,7 +679,7 @@ new const String: g_csItemPickName[][] =
 
 new const String: g_csEventText[][] =
 {
-    "\x04Item Redundancy\x01 - Higher chances of finding ",                           // will be concat'd with an item (type) name
+    "\x04Item Redundancy\x01 - Higher chance of finding ",                           // will be concat'd with an item (type) name
     "\x04Rush Hour\x01 - This area is crowded with commons.",
     "\x04Common Holiday\x01 - Very few common infected here...",
     "\x04Freakshow\x01 - Common uncommon.",
