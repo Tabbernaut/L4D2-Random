@@ -17,6 +17,7 @@ new                     g_iMeleeClassCount                                  = 0;
 new     String:         g_sMeleeClass           [MELEE_CLASS_COUNT][MELEE_CLASS_LENGTH];            // available melee class-strings
 new     Handle:         g_hSteamIds                                         = INVALID_HANDLE;       // store players so we know who's already been welcomed
 
+new     bool:           g_bDefaultCvarsLoaded                               = false;                // if not loaded, check if they can be loaded and load them
 new     bool:           g_bVeryFirstMapLoad                                 = true;                 // for preventing a first-map problem with item randomization
 new     bool:           g_bRestartedOnce                                    = false;                // true once the first real map load is going
 new     bool:           g_bCampaignMode                                     = false;                // are we playing a coop game?
@@ -296,6 +297,7 @@ new     Handle:         g_hArCvarEvtWeight      [EVT_TOTAL];                    
 new     Handle:         g_hArCvarGiftWeight     [GIFT_TOTAL];                                       // cvar, per randomize-type, that sets an integer weight -- for picking gift effects
 
 new     Handle:         g_hCvarDebug                                        = INVALID_HANDLE;       // cvar debug mode
+new     Handle:         g_hCvarLoaded                                       = INVALID_HANDLE;       // cvar (for internal check)
 new     Handle:         g_hCvarConfogl                                      = INVALID_HANDLE;       // cvar whether to wait one map-restart before reading default cvar values
 new     Handle:         g_hCvarSimplePauseCheck                             = INVALID_HANDLE;       // cvar whether we should do a very simple pause check
 new     Handle:         g_hCvarStripperMode                                 = INVALID_HANDLE;       // cvar what way to use stripper

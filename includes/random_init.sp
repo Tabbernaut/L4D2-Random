@@ -17,6 +17,7 @@ INIT_DefineCVars()
     // ConVars
     g_hCvarDebug = CreateConVar(                            "rand_debug",                    "2",       "Random debug mode. (0: only error reporting, -1: disable all reports, 1+: set debug report level)", FCVAR_PLUGIN, true, -1.0, true, 5.0);
     g_hCvarConfogl = CreateConVar(                          "rand_confogl",                  "1",       "Whether random is loaded as a confogl matchmode (changes the way cvar defaults are read).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarLoaded = CreateConVar(                           "rand_cvars_loaded",             "0",       "For checking whether the config files are all properly loaded. ", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarSimplePauseCheck = CreateConVar(                 "rand_simplepausecheck",         "1",       "Uses sv_pausable for a simple pause check.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarStripperMode = CreateConVar(                     "rand_stripper_mode",            "2",       "When using Stripper:Source: mode 0 = don't change dir; 1 = toggle standard and _alt (50%); 2 = standard + _alt (33%); 3 = same, but (25%).", FCVAR_PLUGIN, true, 0.0, true, 2.0);
     g_hCvarStripperPath = CreateConVar(                     "rand_stripper_path",            "addons/stripper", "The Stripper:Source directory random uses as its base.", FCVAR_PLUGIN);
@@ -192,6 +193,17 @@ INIT_DefineCVars()
     HookConVarChange(g_hCvarPausable, OnCvarPausableChanged);
 }
 
+INIT_TryCVarsGetDefault()
+{
+    // only load the cvars if the configs are properly loaded
+    PrintDebug(1, "[rand] Init: check for default values to load (%i).", GetConVarBool(g_hCvarLoaded));
+    if (GetConVarBool(g_hCvarLoaded))
+    {
+        INIT_CVarsGetDefault();
+        g_bDefaultCvarsLoaded = true;
+    }
+}
+
 INIT_CVarsGetDefault()
 {
     if (g_bStripperPresent)
@@ -202,6 +214,7 @@ INIT_CVarsGetDefault()
     // Store some default cvar values
     g_iDefSpawnTimeMin =        GetConVarInt(FindConVar("z_ghost_delay_min"));
     g_iDefSpawnTimeMax =        GetConVarInt(FindConVar("z_ghost_delay_max"));
+    PrintDebug(3, "[rand] Default value: ghost spawns (= %i / %i)", g_iDefSpawnTimeMin, g_iDefSpawnTimeMax);
     
     g_iDefCommonLimit =         GetConVarInt(FindConVar("z_common_limit"));
     g_iDefBackgroundLimit =     GetConVarInt(FindConVar("z_background_limit"));
@@ -211,7 +224,7 @@ INIT_CVarsGetDefault()
     g_iDefHordeSizeMax =        GetConVarInt(FindConVar("z_mob_spawn_max_size"));
     
     g_iDefDefibPenalty =        GetConVarInt(FindConVar("vs_defib_penalty"));
-    PrintDebug(3, "[rand] DEFIB PENALTY SAVED (= %i)", g_iDefDefibPenalty);
+    PrintDebug(3, "[rand] Default value: defib penalty (= %i)", g_iDefDefibPenalty);
     //PBONUS_SetDefibPenalty(g_iDefDefibPenalty);
     
     g_iDefDefibDuration =       GetConVarInt(FindConVar("defibrillator_use_duration"));

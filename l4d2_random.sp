@@ -24,7 +24,7 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.49"
+#define PLUGIN_VERSION "1.0.50"
 
 /*
         L4D2 Random
@@ -975,12 +975,24 @@ public OnMapStart()
     INIT_PrecacheParticles();
     INIT_GetMeleeClasses();
     
+    // read in default cvars?
+    if (!g_bDefaultCvarsLoaded)
+    {
+        INIT_TryCVarsGetDefault();
+    }
+    
     // only do special random activation when we've seen at least one map restart
     if (GetConVarBool(g_hCvarConfogl) && !g_bRestartedOnce && !g_bCampaignMode)
     {
         g_bRestartedOnce = true;
         g_bItemsFullyRandomized = true;
         PrintDebug(0, "[rand] First OnMapStart, starting randomization on the next.");
+        return;
+    }
+    
+    if (!g_bDefaultCvarsLoaded)
+    {
+        PrintDebug(0, "[rand] Default cvars were not loaded. OnMapStart preparation halted. Restart map.");
         return;
     }
     
@@ -991,8 +1003,7 @@ public OnMapStart()
     
     if (g_bVeryFirstMapLoad)
     {
-        INIT_CVarsGetDefault();         // do this here so the variables are config set
-        
+        //INIT_CVarsGetDefault();         // do this here so the variables are config set [new approach, see above]
         g_bVeryFirstMapLoad = false;
     }
     

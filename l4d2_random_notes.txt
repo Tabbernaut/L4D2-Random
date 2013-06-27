@@ -16,6 +16,11 @@ L4D2_Random
             - tweak:    gnome at start not counted for insight
             - tweak:    uncap pounce damage for skeet shoot event
             
+            - tweak:    no t2s in saferoom before match is live on gunswap event
+            - bugfix:   got minitanks on finale.. and two tanks.. which shouldn't happen
+            - bugfix:   NM map 2 end saferoom problem? spawned gnome for 4 points
+            
+            - tweak:    consider damage change to scout.. higher?
 
     minor cleanup / details
     -----------------------
@@ -53,6 +58,7 @@ L4D2_Random
         
     ideas:
     ------
+            - event:    bunnyhop pros: prodigysim's plugin: easy bhops
             - event:    tank waves: every 30 seconds, all infected players spawn as mini-tanks?
     
             - gift  - gift idea: blindess for entire team (shorter)

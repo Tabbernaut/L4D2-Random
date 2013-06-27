@@ -184,8 +184,15 @@ SUPPORT_CleanArrays()
 
 EVENT_ResetOtherCvars()
 {
+    // don't do this if defaults were not loaded yet
+    if (!g_bDefaultCvarsLoaded)
+    {
+        INIT_TryCVarsGetDefault();
+        if (!g_bDefaultCvarsLoaded) { return; }
+    }
+        
     // for defib event
-    PrintDebug(3, "[rand] DEFIB PENALTY RESET (to: %i)", g_iDefDefibPenalty);
+    PrintDebug(3, "[rand] Cars: Reset defib penalty (to: %i)", g_iDefDefibPenalty);
     SetConVarInt(FindConVar("vs_defib_penalty"), g_iDefDefibPenalty);
     PBONUS_SetDefibPenalty(g_iDefDefibPenalty);
     
@@ -238,6 +245,13 @@ EVENT_ResetOtherCvars()
 
 EVENT_ResetDifficulty()
 {
+    // don't do this if defaults were not loaded yet
+    if (!g_bDefaultCvarsLoaded)
+    {
+        INIT_TryCVarsGetDefault();
+        if (!g_bDefaultCvarsLoaded) { return; }
+    }
+    
     // reset any changes to cvars related to map difficulty
     
     // common
