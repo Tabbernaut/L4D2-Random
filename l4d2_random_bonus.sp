@@ -11,10 +11,10 @@
 
 public Plugin:myinfo =
 {
-    name = "Damage Scoring [adjusted for Random config]",
+    name = "Damage Scoring [for Random config]",
     author = "CanadaRox, Tabun",
     description = "Custom damage scoring based on damage and a static bonus. Adjusted for use with Random config.",
-    version = "0.999c",
+    version = "1.0",
     url = "https://github.com/CanadaRox/sourcemod-plugins"
 };
 
@@ -353,8 +353,10 @@ stock DisplayBonus(client=-1)
             
             new tmpBonus = (bRoundOver[round]) ? iStoreBonus[round] : CalculateSurvivalBonus() * GetAliveSurvivors();
             
-            if (bRoundOver[round] && iStoreExtra[round]) {
-                tmpBonus -= iStoreExtra[round];
+            if (bRoundOver[round]) {
+                if (iStoreExtra[round]) {
+                    tmpBonus -= iStoreExtra[round];
+                }
             } else if (iRoundExtra) {
                 tmpBonus -= iRoundExtra;
             }
@@ -362,8 +364,10 @@ stock DisplayBonus(client=-1)
             Format(msgPartDmg, sizeof(msgPartDmg), "\x04%4d\x01 (\x05%4d\x01 damage)", tmpBonus, iTotalDamage[round] );
             
             // add extra bonus for random
-            if (bRoundOver[round] && iStoreExtra[round]) {
-                Format(msgPartDmg, sizeof(msgPartDmg), "%s + \x04%d\x01", msgPartDmg, iStoreExtra[round]);
+            if (bRoundOver[round]) {
+                if (iStoreExtra[round]) {
+                    Format(msgPartDmg, sizeof(msgPartDmg), "%s + \x04%d\x01", msgPartDmg, iStoreExtra[round]);
+                }
             } else if (iRoundExtra) {
                 Format(msgPartDmg, sizeof(msgPartDmg), "%s + \x04%d\x01", msgPartDmg, iRoundExtra);
             }
