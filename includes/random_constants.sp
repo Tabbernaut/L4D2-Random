@@ -57,6 +57,7 @@ const           HEALTH_MAXIMUM          = 100;
 const Float:    ITEM_PICKUP_DISTANCE    = 64.0;         // how far can a survivor 'reach' for a gift box?
 const Float:    ITEM_PICKUP_EYECHECKDST = 128.0;        // how far from gift maximally if we are to check eyes too?
 const Float:    ITEM_PICKUP_EYEDISTANCE = 48.0;         //      measured from eyes
+const Float:    AMMO_FIX_RANGE          = 256.0;        // if ammo is deployed further than this from player, position it on player's feet.
 const Float:    ITEM_USE_DISTANCE       = 16.0;         // how far a survivor can move before aborting a use-progress-bar type action
 const Float:    ITEM_USE_FREEZE_TIME    = 0.5;          // after how long of starting a progress-bar use type action you're frozen (while you hold USE)
 
@@ -348,6 +349,10 @@ const           HAT_BABY                = 0;            // g_csHatModels index
 const           HAT_KEYMASTER           = 1;
 const           HAT_MEDIC               = 2;
 const           HAT_BOOMFLU             = 3;
+
+const           NERFTYPE_NONE           = 0;
+const           NERFTYPE_SNIPER         = 1;
+const           NERFTYPE_T2             = 2;
 
 
 // Third-party and mechanics configuration

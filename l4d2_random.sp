@@ -137,6 +137,7 @@ public OnPluginStart()
     HookEvent("player_shoved",              Event_ShovedPlayer,             EventHookMode_Post);
     HookEvent("weapon_fire",                Event_WeaponFire,               EventHookMode_Post);
     HookEvent("upgrade_pack_added",         Event_SpecialAmmo,              EventHookMode_Post);
+    HookEvent("upgrade_pack_begin",         Event_SpecialAmmoDeploy,        EventHookMode_Post);
     HookEvent("defibrillator_used",         Event_PlayerDefibbed,           EventHookMode_Post);
     HookEvent("heal_success",               Event_MedkitUsed,               EventHookMode_Post);
     HookEvent("pills_used",                 Event_PillsUsed,                EventHookMode_Post);
@@ -771,9 +772,13 @@ public Action: RandomForceTeamShuffle_Cmd(client, args)
 
 public Action: RandomPickEvent_Cmd(client, args)
 {
-    if (g_bCampaignMode)
-    {
+    if (g_bCampaignMode) {
         PrintToChat(client, "\x01[\x05r\x01] This only works in versus games.");
+        return Plugin_Handled;
+    }
+    
+    if (!GetConVarBool(g_hCvarBlockEventVotes)) {
+        PrintToChat(client, "\x01[\x05r\x01] Event votes are blocked by the server.");
         return Plugin_Handled;
     }
     
@@ -815,9 +820,13 @@ public Action: RandomForcePickEvent_Cmd(client, args)
 }
 public Action: RandomPickGameEvent_Cmd(client, args)
 {
-    if (g_bCampaignMode)
-    {
+    if (g_bCampaignMode) {
         PrintToChat(client, "\x01[\x05r\x01] This only works in versus games.");
+        return Plugin_Handled;
+    }
+    
+    if (!GetConVarBool(g_hCvarBlockEventVotes)) {
+        PrintToChat(client, "\x01[\x05r\x01] Event votes are blocked by the server.");
         return Plugin_Handled;
     }
     
@@ -1313,7 +1322,10 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
     ) {
         // safeguard: is it really the saw?
         new String: classname[32];
-        GetEdictClassname(inflictor, classname, sizeof(classname));
+        if ( IsValidEdict(inflictor) ) {
+            GetEdictClassname(inflictor, classname, sizeof(classname));
+        }
+        
         if (StrEqual(classname, "weapon_chainsaw", false))
         {
             damage *= CSAW_TANK_DMG_FACTOR;
@@ -1359,7 +1371,7 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
     // women, where the witch should die more easily to melee swings
     else if ( g_iSpecialEvent == EVT_WOMEN || g_iSpecialEvent == EVT_WITCHES )
     {
-        if (!IsClientAndInGame(attacker))
+        if (!IsClientAndInGame(attacker) && IsValidEdict(attacker))
         {
             decl String:attackClass[64];
             GetEdictClassname(attacker, attackClass, 64);
@@ -1373,11 +1385,13 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
     else if (g_iSpecialEvent == EVT_PROTECT)
     {
         if ( !IsClientAndInGame(victim) ) { return Plugin_Continue; }
-        
         if ( GetClientTeam(victim) != TEAM_SURVIVOR ) { return Plugin_Continue; }
         
         new String: classname[32];
-        GetEdictClassname(inflictor, classname, sizeof(classname));
+        
+        if ( IsValidEdict(inflictor) ) {
+            GetEdictClassname(inflictor, classname, sizeof(classname));
+        }
         
         if (StrEqual(classname, "infected", false))
         {
@@ -1408,7 +1422,9 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
         if ( GetClientTeam(attacker) != TEAM_SURVIVOR || GetClientTeam(victim) != TEAM_INFECTED || !IsTank(victim) || !IsValidEdict(inflictor) ) { return Plugin_Continue; }
     
         new String: classname[32];
-        GetEdictClassname(inflictor, classname, sizeof(classname));
+        if ( IsValidEdict(inflictor) ) {
+            GetEdictClassname(inflictor, classname, sizeof(classname));
+        }
         
         // does this work well with chainsaw?
         if (StrEqual(classname, "weapon_melee", false))
@@ -2238,10 +2254,11 @@ public Action:OnWeaponEquip(client, weapon)
     // do nerf check (drops disallowed secondaries)
     if (g_bT2Nerfed && GetConVarBool(g_hCvarNerfT2))
     {
-        if (SUPPORT_IsNerfTier2(weapon))
+        new iTmpTierType = SUPPORT_IsNerfTier2(weapon);
+        if (iTmpTierType)
         {
             g_fNerfMsgTimeout[client] = GetGameTime() + DELAY_T2_NERF_TIMEOUT;
-            SUPPORT_FixNerfTier2(client);
+            SUPPORT_FixNerfTier2(client, iTmpTierType);
         }
     }
     
@@ -2290,12 +2307,17 @@ public Action:OnWeaponCanUse(client, weapon)
     if (!g_bT2Nerfed || !GetConVarBool(g_hCvarNerfT2)) { return Plugin_Continue; }
     if (!IsSurvivor(client)) { return Plugin_Continue; }
     
-    if (SUPPORT_IsNerfSecondary(weapon, client) && SUPPORT_PlayerHasT2(client))
+    new iNerfType = SUPPORT_PlayerHasT2(client);
+    if (iNerfType && SUPPORT_IsNerfSecondary(weapon, client, iNerfType))
     {
         // not allowed
         if (g_fNerfMsgTimeout[client] == 0.0 || g_fNerfMsgTimeout[client] < GetGameTime())
         {
-            PrintToChat(client, "\x01[\x05r\x01] Only single pistol allowed with \x04T2\x01 rifle/shotgun.");
+            if (iNerfType == NERFTYPE_T2) {
+                PrintToChat(client, "\x01[\x05r\x01] Only single pistol allowed with \x04T2\x01 rifle/shotgun.");
+            } else {
+                PrintToChat(client, "\x01[\x05r\x01] Only single or dual pistol allowed with \x04sniper\x01.");
+            }
             g_fNerfMsgTimeout[client] = GetGameTime() + DELAY_T2_NERF_TIMEOUT;
             
         }
@@ -3109,6 +3131,7 @@ public OnEntityCreated(entity, const String:classname[])
         
         // create an ammo pile instead
         CreateTimer(0.01, EVENT_DeployAmmo, entity, TIMER_FLAG_NO_MAPCHANGE);
+        //CreateTimer(0.025, EVENT_CheckDeployedAmmo, entity, TIMER_FLAG_NO_MAPCHANGE);
     }
 }
 
@@ -3351,6 +3374,20 @@ public InitSpawnArrays()
 
 
 // special ammo types
+public Action:Event_SpecialAmmoDeploy(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    // if it's the ammo pack
+    if (g_iSpecialEvent != EVT_AMMO) { return; }
+    
+    new client = GetClientOfUserId(GetEventInt(event, "userid"));
+    if (!IsClientAndInGame(client)) { return; }
+    
+    new Float: targetPos[3];
+    GetClientAbsOrigin(client, targetPos);
+    
+    g_fAmmoDeploySpot = targetPos;
+}
+    
 //      used to limit amount of special ammo in extra clip..
 public Action:Event_SpecialAmmo(Handle:event, const String:name[], bool:dontBroadcast)
 {

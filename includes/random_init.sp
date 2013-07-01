@@ -27,6 +27,7 @@ INIT_DefineCVars()
     g_hCvarBlockL4D1Common = CreateConVar(                  "rand_no_l4d1_common",           "3",       "Whether to block L4D1 common. (2 = block all appearing l4d1 common; 3 = block only problematic skins)", FCVAR_PLUGIN, true, 0.0, true, 3.0);
     g_hCvarNerfT2 = CreateConVar(                           "rand_nerf_t2",                  "1",       "Whether to nerf t2 weapons (disallow anything better than single pistol for secondary)", FCVAR_PLUGIN, true, 0.0, true, 2.0);
     g_hCvarStopBotsAtStart = CreateConVar(                  "rand_stop_bots",                "1",       "Whether to stop bots from doing anything before humans are ready.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarBlockEventVotes = CreateConVar(                  "rand_block_event_votes",        "0",       "Whether to block event votes.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     
     g_hCvarEqual = CreateConVar(                            "rand_equal",                 "2047",       "[Flags] What to keep equal between each team's survivor round (1: items; 2: doors; 4: glows; 8: event; 16: incaps; 32: horde; 64: item weighting; 128: starting health; 256: first attack; 512: tanks; 1024: scoring).", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarDoReport = CreateConVar(                         "rand_report",                   "1",       "Whether to do automatic reports at the start of a round.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );

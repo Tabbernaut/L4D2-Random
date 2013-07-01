@@ -247,8 +247,16 @@ DoInsightReport(team=-1)
     
     if (!g_bCampaignMode)
     {
+        new iExtraGnomes = 0;
+        for (new i = 0; i < g_iTeamSize; i++)
+        {
+            if (g_iArStorageSurv[i] == PCK_NOITEM && g_iArStorageSurvSec[i] == PCK_NOITEM) {
+                iExtraGnomes++;
+            }
+        }
+        
         // gnomes / cola
-        Format(sReport[iLine], REPLINELENGTH, "Bonus items: \x05%d\x01 gnome%s and \x05%d\x01 cola pack%s.", g_iCountItemGnomes, (g_iCountItemGnomes == 1) ? "" : "s", g_iCountItemCola, (g_iCountItemCola == 1) ? "" : "s" );
+        Format(sReport[iLine], REPLINELENGTH, "Bonus items: \x05%d\x01 gnome%s and \x05%d\x01 cola pack%s.", g_iCountItemGnomes + iExtraGnomes, (g_iCountItemGnomes + iExtraGnomes == 1) ? "" : "s", g_iCountItemCola, (g_iCountItemCola == 1) ? "" : "s" );
         iLine++;
     }
     
@@ -3431,8 +3439,9 @@ RANDOM_CheckPlayerGiftUse(client)
     }
     else if (distance > ITEM_PICKUP_DISTANCE) {
         // re-measure from eyes
-        GetClientEyePosition(client, playerPos);
-        distance = GetVectorDistance(playerPos, targetPos);
+        new Float:playerPosB[3];
+        GetClientEyePosition(client, playerPosB);
+        distance = GetVectorDistance(playerPosB, targetPos);
         
         // if still too far away, no go
         if (distance > ITEM_PICKUP_EYEDISTANCE) { return 1; }
@@ -3557,13 +3566,12 @@ RANDOM_DoGiftEffect(client, entity)
 {
     if (!IsSurvivor(client) || !IsValidEntity(entity)) { return; }
     
+    new bool: bPositive = true;
+    new randomPick = -1;
     new Float:playerPos[3];
     new Float:targetPos[3];
     GetClientAbsOrigin(client, playerPos);
     GetEntPropVector(entity, Prop_Send, "m_vecOrigin", targetPos);
-    
-    // gift is being used
-    PrintDebug(2, "[rand] Gift unwrapped by %N (entity: %i)", client, entity);
     
     new bool: inSaferoom = (IsEntityInSaferoom(entity, false, false) || IsEntityInSaferoom(client, true, false));
     
@@ -3572,7 +3580,7 @@ RANDOM_DoGiftEffect(client, entity)
         // positive effect
         
         new randomIndex = GetRandomInt( (inSaferoom) ? g_iGiftWeightedChoicesStartPosSaferoom : 0, (g_bInsightSurvDone) ? g_iGiftWeightedChoicesStartPosInsight - 1 : g_iGiftWeightedChoicesStartNegative - 1 );
-        new randomPick = g_iArGiftWeightedChoices[randomIndex];
+        randomPick = g_iArGiftWeightedChoices[randomIndex];
         
         //PrintToChatAll("client: %i, Entity: %i: pos pick: %i", client, entity, randomPick);
         
@@ -3733,9 +3741,9 @@ RANDOM_DoGiftEffect(client, entity)
     else
     {
         // negative effect
-       
+        bPositive = false;
         new randomIndex = GetRandomInt( (inSaferoom) ? g_iGiftWeightedChoicesStartNegSaferoom : g_iGiftWeightedChoicesStartNegative, (g_bInsightInfDone || g_bCampaignMode ) ? g_iGiftWeightedChoicesStartNegInsight - 1 : g_iGiftWeightedChoicesTotal - 1 );
-        new randomPick = g_iArGiftWeightedChoices[randomIndex];
+        randomPick = g_iArGiftWeightedChoices[randomIndex];
         
         //PrintToChatAll("client: %i, Entity: %i: neg pick: %i", client, entity, randomPick);
         
@@ -3865,6 +3873,9 @@ RANDOM_DoGiftEffect(client, entity)
             }
         }
     }
+    
+    // gift is being used
+    PrintDebug(2, "[rand] Gift unwrapped by %N (entity: %i). %s. Effect: %i.", client, entity, (bPositive)?"Positive":"Negative", randomPick);
     
     // kill the gift
     AcceptEntityInput(entity, "Kill");

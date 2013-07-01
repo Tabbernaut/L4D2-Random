@@ -5,9 +5,16 @@ L4D2_Random
 
     changelog:
     ---------
-            - fixed cvar bug (that made Random have way too long spawn timers and such)
-            - prevented T2s / snipers in magic gunswap event before survivors left start saferoom.
-            - made t2 weapons / snipers much less common in magic gunswap event on Random Hard.
+            - Fixed cvar bug (that made Random have way too long spawn timers and such), for all servers.
+            - Fixed a gnome bonus being incorrectly displayed for one team (actual scores were fine).
+            - Fixed deployed ammo pile disappearing in some places (like in the CEDA trailer on The Parish 2).
+            - Prevented T2s / snipers in magic gunswap event before survivors left start saferoom.
+            - Made t2 weapons / snipers much less common in magic gunswap event on Random Hard.
+            - Made it possible for players to open gifts on shelves at eye level.
+            - Forced sv_disable_glow_survivors to 0 on unload now (since it doesn't normally reset).
+            - Event votes are now blockable with "rand_block_event_votes 1".
+            - Insight reports now include gnomes given to players at start in the gnome count.
+            - Blocked melee weapons, magnum and chainsaw while using hunting rifle, military sniper and AWP. Everything allowed with scout still.
 
     to-do:
     ------  
@@ -19,21 +26,11 @@ L4D2_Random
             - test:     defib penalty still not reset correctly after a sudden death round ?
             - test:     still jockey in l4d1 mode ... sigh
             
-            - tweak:    gnome at start not counted for insight
             - tweak:    uncap pounce damage for skeet shoot event
+            - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled)
             
             - bugfix:   got minitanks on finale.. and two tanks.. which shouldn't happen
-            - bugfix:   NM map 2 end saferoom problem? spawned gnome for 4 points
             
-            - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled)
-            - tweak:    block melees for snipers (except scout); allow double pistols
-            
-            - bugfix:   gnome bonus incorrectly reports (for both teams, even if only one brings it)
-            - bugfix:   top shelf gift won't open still (higher eye distance)
-            
-            - feature:  make event votes / forces blockable with a cvar, for tourneys
-            
-            - test:     pill passer (Sirplease? Crox?) with item penalty event
 
     minor cleanup / details
     -----------------------

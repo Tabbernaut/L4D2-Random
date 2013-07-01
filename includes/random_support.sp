@@ -1578,6 +1578,15 @@ public Action: EVENT_DeployAmmo(Handle:timer, any:entity)
     new Float:targetPos[3];
     GetEntPropVector(entity, Prop_Send, "m_vecOrigin", targetPos);
     
+    //PrintToChatAll("AMMO location: %.f %.f %.f", targetPos[0], targetPos[1], targetPos[2]);
+    
+    new Float:distance = GetVectorDistance(g_fAmmoDeploySpot, targetPos);
+    if (distance > AMMO_FIX_RANGE)
+    {
+        targetPos = g_fAmmoDeploySpot;
+        PrintDebug(3, "[rand] Incorrect ammo spawn location. Positioning ammo at player's feet. (Distance: %.f)", distance);
+    }
+    
     g_strTempItemSingle[entOrigin_a] = targetPos[0];
     g_strTempItemSingle[entOrigin_b] = targetPos[1];
     g_strTempItemSingle[entOrigin_c] = targetPos[2];
@@ -2289,7 +2298,7 @@ bool: NoSurvivorInSaferoom()
 
 /*  Weapon nerfing 
     -------------- */
-bool: SUPPORT_IsNerfSecondary(entity, client)
+bool: SUPPORT_IsNerfSecondary(entity, client, tierType)
 {
     if (!entity || !IsValidEntity(entity) || !IsValidEdict(entity)) { return false; }
     
@@ -2303,7 +2312,11 @@ bool: SUPPORT_IsNerfSecondary(entity, client)
         {
             case WEPID_PISTOL: {
                 // if client already carries one, yes
-                return SUPPORT_PlayerHasPistol(client);
+                if (tierType == NERFTYPE_T2) {
+                    return SUPPORT_PlayerHasPistol(client);
+                } else {
+                    return false;
+                }
             }
             case WEPID_PISTOL_MAGNUM, WEPID_CHAINSAW, WEPID_MELEE: {
                 return true;
@@ -2332,14 +2345,15 @@ bool: SUPPORT_IsNerfSecondary(entity, client)
     return false;
 }
 
-bool: SUPPORT_IsNerfTier2(entity)
+// returns 1 for sniper t2/t1.5; 2 for t2
+SUPPORT_IsNerfTier2(entity)
 {
     // consider adding snipers to this check?
     
-    if (!entity || !IsValidEntity(entity) || !IsValidEdict(entity)) { return false; }
+    if (!entity || !IsValidEntity(entity) || !IsValidEdict(entity)) { return 0; }
     
     decl String:wclass[64];
-    if (!GetEdictClassname(entity, wclass, sizeof(wclass))) { return false; }
+    if (!GetEdictClassname(entity, wclass, sizeof(wclass))) { return 0; }
 
     // if it's a weapon spawn
     if (StrEqual(wclass, "weapon_spawn")) {
@@ -2347,21 +2361,25 @@ bool: SUPPORT_IsNerfTier2(entity)
         switch (wepid)
         {
             case WEPID_AUTOSHOTGUN, WEPID_SHOTGUN_SPAS, WEPID_RIFLE, WEPID_RIFLE_AK47, WEPID_RIFLE_DESERT, WEPID_RIFLE_SG552: {
-                return true;
+                return NERFTYPE_T2;
+            }
+            case WEPID_HUNTING_RIFLE, WEPID_SNIPER_MILITARY, WEPID_SNIPER_AWP: {
+                return NERFTYPE_SNIPER;
             }
         }
         
-        return false;
+        return 0;
     }
 
     // if it's a normal weapon
     new itemPickupPenalty: itemWepType;
     if (GetTrieValue(g_hTriePenaltyItems, wclass, itemWepType))
     {
-        if (itemWepType == ITEM_PICKUP_PENALTY_PRIMARY_T2) { return true; }
+        if ( itemWepType == ITEM_PICKUP_PENALTY_PRIMARY_T2 ) { return NERFTYPE_T2; }
+        if ( itemWepType == ITEM_PICKUP_PENALTY_PRIMARY_SNIPER && !StrEqual(wclass, "weapon_sniper_scout", false) ) { return NERFTYPE_SNIPER; }
     }
     
-    return false;
+    return 0;
 }
 
 bool: SUPPORT_PlayerHasPistol(client)
@@ -2397,25 +2415,27 @@ bool: SUPPORT_EntityIsPistol(entity)
     return false;
 }
 
-bool: SUPPORT_PlayerHasT2(client)
+// returns 1 for sniper t2/t1.5; 2 for t2
+SUPPORT_PlayerHasT2(client)
 {
-    if (!IsSurvivor(client) || !IsPlayerAlive(client)) { return false; }
+    if (!IsSurvivor(client) || !IsPlayerAlive(client)) { return 0; }
     
     new slotPri = GetPlayerWeaponSlot(client, PLAYER_SLOT_PRIMARY);
-    if (slotPri < 1 || !IsValidEntity(slotPri)) { return false; }
+    if (slotPri < 1 || !IsValidEntity(slotPri)) { return 0; }
     
     decl String:classname[64];
     GetEdictClassname(slotPri, classname, sizeof(classname));
     new itemPickupPenalty: itemIsT2;
     if (GetTrieValue(g_hTriePenaltyItems, classname, itemIsT2))
     {
-        if (itemIsT2 == ITEM_PICKUP_PENALTY_PRIMARY_T2) { return true; }
+        if ( itemIsT2 == ITEM_PICKUP_PENALTY_PRIMARY_T2 ) { return NERFTYPE_T2; }
+        if ( itemIsT2 == ITEM_PICKUP_PENALTY_PRIMARY_SNIPER && !StrEqual(classname, "weapon_sniper_scout", false) ) { return NERFTYPE_SNIPER; }
     }
     
-    return false;
+    return 0;
 }
 
-SUPPORT_FixNerfTier2(client)
+SUPPORT_FixNerfTier2(client, tierType)
 {
     // called when a player picks up a T2
     
@@ -2432,7 +2452,7 @@ SUPPORT_FixNerfTier2(client)
             switch (itemHasPenalty)
             {
                 case ITEM_PICKUP_PENALTY_PISTOL: {
-                    if (GetEntProp(slotSec, Prop_Send, "m_hasDualWeapons")) {
+                    if (GetEntProp(slotSec, Prop_Send, "m_hasDualWeapons") && tierType == NERFTYPE_T2) {
                         // dual wielding. drop one pistol
                         bDropped = SUPPORT_DropItemSlot(client, PLAYER_SLOT_SECONDARY);
                     }
@@ -2448,7 +2468,13 @@ SUPPORT_FixNerfTier2(client)
     if (bDropped)
     {
         // report
-        PrintToChat(client, "\x01[\x05r\x01] Only single pistol allowed with \x04T2\x01 rifle/shotgun. Dropped secondary.");
+        if (tierType == NERFTYPE_T2)
+        {
+            PrintToChat(client, "\x01[\x05r\x01] Only single pistol allowed with \x04T2\x01 rifle/shotgun. Dropped secondary.");
+        }
+        else {
+            PrintToChat(client, "\x01[\x05r\x01] Only single or dual pistol allowed with \x04snipers\x01. Dropped secondary.");
+        }
     }
 }
 

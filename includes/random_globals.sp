@@ -256,6 +256,7 @@ new     Handle:         g_hBoomFluTimer                                     = IN
 new                     g_iBoomFluCounter                                   = 0;                    // counts seconds for the boom flu
 new                     g_iBoomFluActivate                                  = 0;                    // after how many seconds the boomer flu should activate (again)
 new     bool:           g_bPlayerIsBlinded      [MAXPLAYERS+1]              = {false,...};          // whether player blinded (NOHUD event)
+new     Float:          g_fAmmoDeploySpot       [3]                         = {0.0,...};            // where ammo was last deployed
 
 // T2 nerf
 new     Float:          g_fNerfMsgTimeout       [MAXPLAYERS+1]              = {0.0,...};            // time when player will get a t2 nerf msg again
@@ -308,6 +309,7 @@ new     Handle:         g_hCvarWelcomeMode                                  = IN
 new     Handle:         g_hCvarBlockL4D1Common                              = INVALID_HANDLE;       // cvar whether to block l4d1 common and not use them for l4d1 event
 new     Handle:         g_hCvarNerfT2                                       = INVALID_HANDLE;       // cvar whether to nerf t2 weapons in the game (allowed other weapons)
 new     Handle:         g_hCvarStopBotsAtStart                              = INVALID_HANDLE;       // cvar whether to stop bots doing anything before humans are ready
+new     Handle:         g_hCvarBlockEventVotes                              = INVALID_HANDLE;       // cvar whether to block event / gameevent votes
 
 new     Handle:         g_hCvarEqual                                        = INVALID_HANDLE;       // cvar flags what to equalize between teams
 new     Handle:         g_hCvarDoReport                                     = INVALID_HANDLE;       // cvar whether to report anything at all
