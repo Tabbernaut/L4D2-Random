@@ -5,16 +5,15 @@ L4D2_Random
 
     changelog:
     ---------
-            - Fixed cvar bug (that made Random have way too long spawn timers and such), for all servers.
-            - Fixed a gnome bonus being incorrectly displayed for one team (actual scores were fine).
-            - Fixed deployed ammo pile disappearing in some places (like in the CEDA trailer on The Parish 2).
-            - Prevented T2s / snipers in magic gunswap event before survivors left start saferoom.
-            - Made t2 weapons / snipers much less common in magic gunswap event on Random Hard.
-            - Made it possible for players to open gifts on shelves at eye level.
-            - Forced sv_disable_glow_survivors to 0 on unload now (since it doesn't normally reset).
-            - Event votes are now blockable with "rand_block_event_votes 1".
-            - Insight reports now include gnomes given to players at start in the gnome count.
-            - Blocked melee weapons, magnum and chainsaw while using hunting rifle, military sniper and AWP. Everything allowed with scout still.
+            - Now handles tank odds itself, circumventing built in tank odds.
+            - Fixed a bug that caused only one team to get a tank sometimes.
+            - Fixed reversed reading of the vote blocking cvar.
+            - Fixed a bug where some finales were not marked as such, allowing incorrect special events.
+            - Fixed a bug that disallowed dual pistols for snipers.
+            - Fixed a bug where and old tank flow call resulted in problems.
+            - Added optional argument to !drop / sm_drop: # (1-5) for slot to drop
+            - Update: Changed z_spawn calls to z_spawn_old (cvar controlled, in case it breaks).
+            - Update: Updated gamedata.
 
     to-do:
     ------  
@@ -28,8 +27,10 @@ L4D2_Random
             
             - tweak:    uncap pounce damage for skeet shoot event
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled)
+            - tweak:    change the way damage bonus scales -- make the damage => bonus effect more sensible. db should be a bit easier to destroy.
             
-            - bugfix:   got minitanks on finale.. and two tanks.. which shouldn't happen
+            - bugfix:   prevent weird gnome bug: use + throw => repeat = huge gnome bonus, when left in start saferoom
+                        also finally find a fix for quick re-pickups destroying points value of gnomes/cola
             
 
     minor cleanup / details
@@ -38,7 +39,7 @@ L4D2_Random
             - tweak:    EVT_WOMEN: give survivors something (magnum)? when incapped, then take it away from them
             - bugfix:   still broken hud thing on solid health healing (cat from 1+22temp => +27 solid breaks) was downed once (3 max incaps) - cannot reproduce?
                         to try:
-                            if(healthBuffer == 0.0) {
+                            if (healthBuffer == 0.0) {
                                 SetEntPropFloat(i, Prop_Send, "m_healthBuffer", EBLOCK_BONUS_HEALTH_BUFFER);
                                 DebugPrintToAll("Health buffer for player [%d] set to %f", i, EBLOCK_BONUS_HEALTH_BUFFER);
                         }

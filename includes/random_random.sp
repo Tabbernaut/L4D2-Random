@@ -223,13 +223,10 @@ DoInsightReport(team=-1)
     // whether tank will spawn
     if (g_bTankWillSpawn)
     {
-        new Float: tankFlows[2];
-        L4D2_GetVersusTankFlowPercent(tankFlows);
-        
         if (g_bDoubleTank) {
             Format(sReport[iLine], REPLINELENGTH, "There are \x05two\x01 tanks this round, at \x05%d%%\x01 and \x05%d%%\x01.", RoundFloat(100.0 * g_fTankFlowEarly), RoundFloat(100.0 * g_fTankFlowLate));
         } else {
-            Format(sReport[iLine], REPLINELENGTH, "There is tank this round, at \x05%d%%\x01.", RoundFloat(100.0 * tankFlows[ (g_bSecondHalf) ? 1 : 0 ]) );
+            Format(sReport[iLine], REPLINELENGTH, "There is tank this round, at \x05%d%%\x01.", RoundFloat(100.0 * L4D2Direct_GetVSTankFlowPercent( (g_bSecondHalf) ? 1 : 0 ) ) );
         }
     } else {
         Format(sReport[iLine], REPLINELENGTH, "No tank this round.");
@@ -519,7 +516,6 @@ RANDOM_DetermineRandomStuff()
         RANDOM_PrepareChoicesEvents();      // rebuild events weighted choices array
     }
     
-    
     // keep old difficulty-rating if it's the second half
     if (!g_bSecondHalf)
     {
@@ -653,7 +649,7 @@ RANDOM_DetermineRandomStuff()
     }
     
     // will a tank/witch spawn?
-    g_bTankWillSpawn = L4D2Direct_GetVSTankToSpawnThisRound( (g_bSecondHalf) ? 1 : 0 );
+    //g_bTankWillSpawn = L4D2Direct_GetVSTankToSpawnThisRound( (g_bSecondHalf) ? 1 : 0 );
     g_bWitchWillSpawn = L4D2Direct_GetVSWitchToSpawnThisRound( (g_bSecondHalf) ? 1 : 0 );
     
     // pick special event for the map:
@@ -1003,34 +999,40 @@ RANDOM_DetermineRandomStuff()
         }
     }
     
-    // force the spawns if we have the cvars set
-    if (bBlockTank || g_RI_bNoTank) {
-        L4D2Direct_SetVSTankToSpawnThisRound(0, false);
-        L4D2Direct_SetVSTankToSpawnThisRound(1, false);
-        g_bTankWillSpawn = false;
-        g_bTankIsEarly = false;
+    
+    // determine tank spawn
+    // handle own 'chances' based on cvars
+    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
+    {
+        if (fTankChance < ( (g_bStripperAltDetected) ? g_RI_fTankOddsHard : g_RI_fTankOddsNormal ) ) {
+            fTankChance = (g_bStripperAltDetected) ? g_RI_fTankOddsHard : g_RI_fTankOddsNormal;
+        }
+        
+        if (bBlockTank || g_RI_bNoTank) {
+            g_bTankWillSpawn = false;
+        }
+        else if ( fTankChance == 1.0 || GetRandomFloat(0.001, 1.0) <= fTankChance ) {
+            g_bTankWillSpawn = true;
+        }
+        else {
+            g_bTankWillSpawn = false;
+        }
     }
-    else if ( !g_bTankWillSpawn && (g_bTankFirstRound || fTankChance == 1.0) ) {
-        // force tank if we had one the first round, or if we (should) have 100% chance of tank
+    else    // second round
+    {
+        g_bTankWillSpawn = g_bTankFirstRound;
+    }
+    
+    if (g_bTankWillSpawn) {
         L4D2Direct_SetVSTankToSpawnThisRound(0, true);
         L4D2Direct_SetVSTankToSpawnThisRound(1, true);
         g_bTankWillSpawn = true;
         g_bTankIsEarly = false;
-    }
-    else if ( fTankChance < ( (g_bStripperAltDetected) ? g_RI_fTankOddsHard : g_RI_fTankOddsNormal ) )
-    {
-        // change tank chances on some maps (RI) -- only if higher odds than default
-        if ( GetRandomFloat(0.001, 1.0) <= ( (g_bStripperAltDetected) ? g_RI_fTankOddsHard : g_RI_fTankOddsNormal ) ) {
-            L4D2Direct_SetVSTankToSpawnThisRound(0, true);
-            L4D2Direct_SetVSTankToSpawnThisRound(1, true);
-            g_bTankWillSpawn = true;
-            g_bTankIsEarly = false;
-        }
-        else {
-            L4D2Direct_SetVSTankToSpawnThisRound(0, false);
-            L4D2Direct_SetVSTankToSpawnThisRound(1, false);
-            g_bTankWillSpawn = false;
-        }
+    } else {
+        L4D2Direct_SetVSTankToSpawnThisRound(0, false);
+        L4D2Direct_SetVSTankToSpawnThisRound(1, false);
+        g_bTankWillSpawn = false;
+        g_bTankIsEarly = false;
     }
     
     if (bBlockWitch || g_RI_bNoWitch) {
@@ -1060,11 +1062,12 @@ RANDOM_DetermineRandomStuff()
         new Float: fTankFlow = L4D2Direct_GetVSTankFlowPercent( (g_bSecondHalf) ? 1 : 0 );
         
         // always pick a new tank spawn if it's the first round otherwise, only repick on odd values
-        if ( (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS)) || fTankFlow > 1.0 || fTankFlow <= 0.0)
+        if ( (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS)) || fTankFlow > 0.85 || fTankFlow < 0.15)
         {
             fTankFlow = GetRandomFloat( GetConVarFloat(FindConVar("versus_boss_flow_min")) + 0.01, GetConVarFloat(FindConVar("versus_boss_flow_max")) - 0.01);
             L4D2Direct_SetVSTankFlowPercent(0, fTankFlow);
             L4D2Direct_SetVSTankFlowPercent(1, fTankFlow);
+            PrintDebug(2, "[rand] Boss spawns - Randomized tank spawn (@ %.2f).", fTankFlow);
         }
         
         new iTankSpawn = RoundToNearest(fTankFlow * 100.0);

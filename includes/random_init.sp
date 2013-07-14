@@ -28,6 +28,7 @@ INIT_DefineCVars()
     g_hCvarNerfT2 = CreateConVar(                           "rand_nerf_t2",                  "1",       "Whether to nerf t2 weapons (disallow anything better than single pistol for secondary)", FCVAR_PLUGIN, true, 0.0, true, 2.0);
     g_hCvarStopBotsAtStart = CreateConVar(                  "rand_stop_bots",                "1",       "Whether to stop bots from doing anything before humans are ready.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarBlockEventVotes = CreateConVar(                  "rand_block_event_votes",        "0",       "Whether to block event votes.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarUseOldSpawn = CreateConVar(                      "rand_use_old_spawn",            "1",       "Whether to use z_spawn_old rather than z_spawn.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     
     g_hCvarEqual = CreateConVar(                            "rand_equal",                 "2047",       "[Flags] What to keep equal between each team's survivor round (1: items; 2: doors; 4: glows; 8: event; 16: incaps; 32: horde; 64: item weighting; 128: starting health; 256: first attack; 512: tanks; 1024: scoring).", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarDoReport = CreateConVar(                         "rand_report",                   "1",       "Whether to do automatic reports at the start of a round.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
@@ -645,7 +646,7 @@ bool: RI_KV_UpdateRandomMapInfo()
         g_RI_bWeakHittables = bool: (KvGetNum(g_kRIData, "weak_hittables", 0));
         g_RI_iDistance = KvGetNum(g_kRIData, "distance", g_RI_iDistance);
         g_RI_iDistanceHard = KvGetNum(g_kRIData, "distance_hard", g_RI_iDistanceHard);
-        g_RI_bIsFinale = bool: (KvGetNum(g_kRIData, "no_finale", 0));
+        g_RI_bIsFinale = bool: (KvGetNum(g_kRIData, "finale", (g_RI_bIsFinale) ? 1 : 0 ));
         g_RI_fTankOddsNormal = KvGetFloat(g_kRIData, "tank_odds", g_RI_fTankOddsNormal);
         g_RI_fTankOddsHard = KvGetFloat(g_kRIData, "tank_odds_hard", g_RI_fTankOddsHard);
         

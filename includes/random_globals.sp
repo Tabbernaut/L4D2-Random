@@ -301,6 +301,7 @@ new     Handle:         g_hCvarDebug                                        = IN
 new     Handle:         g_hCvarLoaded                                       = INVALID_HANDLE;       // cvar (for internal check)
 new     Handle:         g_hCvarConfogl                                      = INVALID_HANDLE;       // cvar whether to wait one map-restart before reading default cvar values
 new     Handle:         g_hCvarSimplePauseCheck                             = INVALID_HANDLE;       // cvar whether we should do a very simple pause check
+new     Handle:         g_hCvarUseOldSpawn                                  = INVALID_HANDLE;       // cvar whether we should use z_spawn_old
 new     Handle:         g_hCvarStripperMode                                 = INVALID_HANDLE;       // cvar what way to use stripper
 new     Handle:         g_hCvarStripperPath                                 = INVALID_HANDLE;       // cvar stripper cfg path (base)
 new     Handle:         g_hCvarRIKeyValuesPath                              = INVALID_HANDLE;       // cvar dir to randommap.txt

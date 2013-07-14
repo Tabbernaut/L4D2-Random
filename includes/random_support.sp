@@ -192,7 +192,7 @@ EVENT_ResetOtherCvars()
     }
         
     // for defib event
-    PrintDebug(3, "[rand] Cars: Reset defib penalty (to: %i)", g_iDefDefibPenalty);
+    PrintDebug(3, "[rand] CVars: Reset defib penalty (to: %i)", g_iDefDefibPenalty);
     SetConVarInt(FindConVar("vs_defib_penalty"), g_iDefDefibPenalty);
     PBONUS_SetDefibPenalty(g_iDefDefibPenalty);
     
@@ -2058,12 +2058,24 @@ SUPPORT_CheckAmmo(client)
 // spawning a zombie (cheap way :()
 SpawnCommon(client, mobs = 1)
 {
-    new flags = GetCommandFlags("z_spawn");
-    SetCommandFlags("z_spawn", flags & ~FCVAR_CHEAT);
-    for(new i=0; i < mobs; i++) {
-        FakeClientCommand(client, "z_spawn infected auto");
+    if (GetConVarBool(g_hCvarUseOldSpawn))
+    {
+        new flags = GetCommandFlags("z_spawn_old");
+        SetCommandFlags("z_spawn_old", flags & ~FCVAR_CHEAT);
+        for(new i=0; i < mobs; i++) {
+            FakeClientCommand(client, "z_spawn_old infected auto");
+        }
+        SetCommandFlags("z_spawn_old", flags);
     }
-    SetCommandFlags("z_spawn", flags);
+    else
+    {
+        new flags = GetCommandFlags("z_spawn");
+        SetCommandFlags("z_spawn", flags & ~FCVAR_CHEAT);
+        for(new i=0; i < mobs; i++) {
+            FakeClientCommand(client, "z_spawn infected auto");
+        }
+        SetCommandFlags("z_spawn", flags);
+    }
 }
 
 // spawning a zombie (in exact location, normal way)
@@ -2088,12 +2100,24 @@ SpawnCommonLocation(Float:location[3], bool: isFemale = false)
 // spawning a horde (cheap way.. damnit)
 SpawnPanicHorde(client, mobs = 1)
 {
-    new flags = GetCommandFlags("z_spawn");
-    SetCommandFlags("z_spawn", flags & ~FCVAR_CHEAT);
-    for(new i=0; i < mobs; i++) {
-        FakeClientCommand(client, "z_spawn mob auto");
+    if (GetConVarBool(g_hCvarUseOldSpawn))
+    {
+        new flags = GetCommandFlags("z_spawn_old");
+        SetCommandFlags("z_spawn_old", flags & ~FCVAR_CHEAT);
+        for(new i=0; i < mobs; i++) {
+            FakeClientCommand(client, "z_spawn_old mob auto");
+        }
+        SetCommandFlags("z_spawn_old", flags);
     }
-    SetCommandFlags("z_spawn", flags);
+    else
+    {
+        new flags = GetCommandFlags("z_spawn");
+        SetCommandFlags("z_spawn", flags & ~FCVAR_CHEAT);
+        for(new i=0; i < mobs; i++) {
+            FakeClientCommand(client, "z_spawn mob auto");
+        }
+        SetCommandFlags("z_spawn", flags);
+    }
 }
 
 
@@ -2333,8 +2357,12 @@ bool: SUPPORT_IsNerfSecondary(entity, client, tierType)
         switch (itemWepType)
         {
             case ITEM_PICKUP_PENALTY_PISTOL: {
-                // if client already carries one, yes
-                return SUPPORT_PlayerHasPistol(client);
+                if (tierType == NERFTYPE_T2) {
+                    // if client already carries one, yes
+                    return SUPPORT_PlayerHasPistol(client);
+                } else {
+                    return false;
+                }
             }
             case ITEM_PICKUP_PENALTY_SAW, ITEM_PICKUP_PENALTY_MAGNUM, ITEM_PICKUP_PENALTY_MELEE: {
                 return true;
@@ -3077,7 +3105,12 @@ public Action:Timer_WitchSpawn(Handle:timer)
             if (IsClientInGame(i))
             {
                 g_iWitchesSpawned++;
-                CheatCommand(i, "z_spawn", "witch auto");
+                
+                if (GetConVarBool(g_hCvarUseOldSpawn)) {
+                    CheatCommand(i, "z_spawn_old", "witch auto");
+                } else {
+                    CheatCommand(i, "z_spawn", "witch auto");
+                }
                 return Plugin_Continue;
             }
         }
@@ -3131,7 +3164,11 @@ public Action:Timer_WitchRespawn(Handle:timer)
                 if (IsClientInGame(client)) {
                     for (new i = 0; i < witchSpawnCount; i++)
                     {
-                        CheatCommand(i, "z_spawn", "witch auto");
+                        if (GetConVarBool(g_hCvarUseOldSpawn)) {
+                            CheatCommand(i, "z_spawn_old", "witch auto");
+                        } else {
+                            CheatCommand(i, "z_spawn", "witch auto");
+                        }
                     }
                     break;
                 }

@@ -24,7 +24,7 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.51"
+#define PLUGIN_VERSION "1.0.52"
 
 /*
         L4D2 Random
@@ -713,7 +713,24 @@ public Action: RandomDrop_Cmd(client, args)
     // only allow when able to drop anything
     if ( !IsSurvivor(client) || !IsPlayerAlive(client) || IsHangingFromLedge(client) || IsIncapacitated(client) ) { return Plugin_Handled; }
     
-    if ( SUPPORT_DropItem(client, true, 0, true) ) {
+    if (args)
+    {
+        decl String:sMessage[3];
+        GetCmdArg(1, sMessage, sizeof(sMessage));
+        new slot = StringToInt(sMessage);
+        
+        if (slot > 0 && slot < 6) {
+            if ( SUPPORT_DropItem(client, false, 0, slot, true) ) {
+                PrintToChat(client, "\x01[\x05r\x01] Dropped.");
+            }
+        }
+        else {
+            PrintToChat(client, "\x01[\x05r\x01] Incorrect argument: must be a number between 0 and 6.");
+        }
+        return Plugin_Handled;
+    }
+    
+    if ( SUPPORT_DropItem(client, true, 0, 0, true) ) {
         PrintToChat(client, "\x01[\x05r\x01] Dropped.");
     }
     
@@ -777,7 +794,7 @@ public Action: RandomPickEvent_Cmd(client, args)
         return Plugin_Handled;
     }
     
-    if (!GetConVarBool(g_hCvarBlockEventVotes)) {
+    if (GetConVarBool(g_hCvarBlockEventVotes)) {
         PrintToChat(client, "\x01[\x05r\x01] Event votes are blocked by the server.");
         return Plugin_Handled;
     }
@@ -825,7 +842,7 @@ public Action: RandomPickGameEvent_Cmd(client, args)
         return Plugin_Handled;
     }
     
-    if (!GetConVarBool(g_hCvarBlockEventVotes)) {
+    if (GetConVarBool(g_hCvarBlockEventVotes)) {
         PrintToChat(client, "\x01[\x05r\x01] Event votes are blocked by the server.");
         return Plugin_Handled;
     }

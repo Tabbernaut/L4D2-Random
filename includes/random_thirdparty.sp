@@ -29,26 +29,31 @@
 
 /*  Drop weapons/items slots
     ------------------------ */
-bool: SUPPORT_DropItem(client, bool:dropCurrent, count, bool:throwItem)
+bool: SUPPORT_DropItem(client, bool:dropCurrent, count, dropSlot = 0, bool:throwItem = false)
 {
     new dropCount = 0;
     
-    if (dropCurrent)
+    if (dropCurrent || dropSlot)
     {
-        new slot = SUPPORT_GetCurrentWeaponSlot(client);
-        if (slot >= 0)
+        if (dropCurrent) {
+            dropSlot = SUPPORT_GetCurrentWeaponSlot(client);
+        } else {
+            // 1-5 => actual slot index
+            dropSlot--;
+        }
+        if (dropSlot >= 0)
         {
-            if ( g_iSpecialEvent == EVT_MEDIC && g_iSpecialEventRole == client && (slot == PLAYER_SLOT_KIT || slot == PLAYER_SLOT_PILL) ) {
+            if ( g_iSpecialEvent == EVT_MEDIC && g_iSpecialEventRole == client && (dropSlot == PLAYER_SLOT_KIT || dropSlot == PLAYER_SLOT_PILL) ) {
                 PrintToChat(client, "\x01[\x05r\x01] A medic cannot drop health items.");
             }
-            else if ( g_iSpecialEvent != EVT_GUNSWAP || slot != PLAYER_SLOT_PRIMARY ) {
-                if ( SUPPORT_DropItemSlot(client, slot, throwItem) ) { dropCount++; } 
+            else if ( g_iSpecialEvent != EVT_GUNSWAP || dropSlot != PLAYER_SLOT_PRIMARY ) {
+                if ( SUPPORT_DropItemSlot(client, dropSlot, throwItem) ) { dropCount++; } 
             }
             
         }
     }
     
-    if (count == 0 && !dropCurrent) { count = 1; }
+    if (count == 0 && !dropCurrent && !dropSlot) { count = 1; }
     
     if (count > 0)
     {
