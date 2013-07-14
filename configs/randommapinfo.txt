@@ -47,6 +47,7 @@
 	{
 		"difficulty"	"3"
 		"doors"		"0"
+		"finale"	"1"
 	}
 	"c2m1_highway"
 	{
@@ -75,6 +76,7 @@
 	{
 		"difficulty"	"2"
 		"doors"		"0"
+		"finale"	"1"
 	}
 	"c3m1_plankcountry"
 	{
@@ -98,6 +100,7 @@
 	"c3m4_plantation"
 	{
 		"difficulty"	"3"
+		"finale"	"1"
 	}
 	"c4m1_milltown_a"
 	{
@@ -133,6 +136,7 @@
 	{
 		"difficulty"	"3"
 		"doors"		"0"
+		"finale"	"1"
 	}
 	"c5m1_waterfront"
 	{
@@ -169,6 +173,7 @@
 		"difficulty"	"1"
 		"doors"		"0"
 		"weak_hittables" "1"
+		"finale"	"1"
 	}
 	"c6m1_riverbank"
 	{
@@ -187,6 +192,7 @@
 	{
 		"difficulty"	"3"
 		"doors"		"0"
+		"finale"	"1"
 	}
 	"c7m1_docks"
 	{
@@ -205,6 +211,7 @@
 		"doors"		"0"
 		"earlydoors"	"1"
 		"earlydoor_1"	"656 2076 160"
+		"finale"	"1"
 	}
 	"c8m1_apartment"
 	{
@@ -253,6 +260,7 @@
 	{
 		"difficulty"	"2"
 		"doors"		"0"
+		"finale"	"1"
 	}
 	"c9m1_alleys"
 	{
@@ -264,6 +272,7 @@
 	{
 		"difficulty"	"3"
 		"doors"		"2"
+		"finale"	"1"
 	}
 	"c10m1_caves"
 	{
@@ -281,7 +290,7 @@
 	"c10m3_ranchhouse"
 	{
 		"difficulty"	"2"
-		"no_finale"	"1"
+		"finale"	"0"
 	}
 	"c10m4_mainstreet"
 	{
@@ -292,6 +301,7 @@
 		"difficulty"	"3"
 		"earlydoors"	"1"
 		"earlydoor_1"	"1952 3782 -12"
+		"finale"	"1"
 	}
 	"c11m1_greenhouse"
 	{
@@ -319,6 +329,7 @@
 	{
 		"difficulty"	"2"
 		"doors"		"0"
+		"finale"	"1"
 	}
 	"c12m1_hilltop"
 	{
@@ -364,6 +375,7 @@
 		"no_storm"	"2"
 		"tank_ban_start"	"80"
 		"tank_ban_end"		"100"
+		"finale"	"1"
 	}
 	"c13m1_alpinecreek"
 	{
@@ -387,6 +399,7 @@
 		"difficulty"	"3"
 		"doors"		"0"
 		"no_rain"	"1"
+		"finale"	"1"
 	}
 	"c5m1_darkwaterfront"
 	{
@@ -420,6 +433,7 @@
 		"difficulty"	"1"
 		"doors"		"0"
 		"weak_hittables" "1"
+		"finale"	"1"
 	}
 	"cdta_01detour"
 	{
@@ -444,6 +458,7 @@
 		"tank_ban_start"	"1"
 		"tank_ban_end"		"70"
 		"weak_hittables" "1"
+		"finale"	"1"
 	}
 	"l4d_ihm01_forest"
 	{
@@ -470,6 +485,7 @@
 	{
 		"difficulty" 	"3"
 		"no_rain"	"1"
+		"finale"	"1"
 	}
 	"bloodtracks_01"
 	{
@@ -488,6 +504,7 @@
 	"bloodtracks_04"
 	{
 		"difficulty" 	"3"
+		"finale"	"1"
 	}
 	// carried off
 	"cwm1_intro"
@@ -508,6 +525,7 @@
 	"cwm4_building"
 	{
 		"difficulty"	"3"
+		"finale"	"1"
 	}
 	"l4d2_stadium1_apartment"
 	{
@@ -538,6 +556,7 @@
 	{
 		"difficulty"	"2"
 		"no_rain"	"1"
+		"finale"	"1"
 	}
 	"hf01_theforest"
 	{
@@ -558,6 +577,7 @@
 	{
 		"difficulty"	"2"
 		"no_rain"	"1"
+		"finale"	"1"
 	}
 	"srocchurch"
 	{
@@ -576,6 +596,7 @@
 	{
 		"difficulty"	"3"
 		"no_rain"	"1"
+		"finale"	"1"
 	}
 	"l4d2_bts01_forest"
 	{
@@ -610,6 +631,7 @@
 	"l4d2_bts06_school"
 	{
 		"difficulty"	"4"
+		"finale"	"1"
 	}
 	"l4d2_diescraper1_apartment_33"
 	{
@@ -629,6 +651,7 @@
 	"l4d2_diescraper4_top_33"
 	{
 		"difficulty"	"3"
+		"finale"	"1"
 	}
 	"l4d_dbd2dc_anna_is_gone"
 	{
@@ -657,6 +680,7 @@
 		"tank_ban_start"	"0"
 		"tank_ban_end"		"70"
 		"no_rain"	"1"
+		"finale"	"1"
 	}
 	// heaven can wait II
 	"AirCrash"
@@ -683,6 +707,7 @@
 	"BombShelter"
 	{
 		"difficulty" 	"2"
+		"finale"	"1"
 	}
 	"l4d_149_1"
 	{
@@ -709,6 +734,7 @@
 	"l4d_149_5"
 	{
 		"difficulty"	"2"
+		"finale"	"1"
 	}
 	"l4d2_city17_01"
 	{
@@ -736,5 +762,6 @@
 	"l4d2_city17_05"
 	{
 		"difficulty" 	"2"
+		"finale"	"1"
 	}
 }
