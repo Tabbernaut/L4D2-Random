@@ -11,6 +11,7 @@ L4D2_Random
             - Fixed a bug where some finales were not marked as such, allowing incorrect special events.
             - Fixed a bug that disallowed dual pistols for snipers.
             - Fixed a bug where and old tank flow call resulted in problems.
+            - Fixed many problems with gnome bonus scoring, including gnomes losing their value and exploits giving players huge bonuses.
             - Added optional argument to !drop / sm_drop: # (1-5) for slot to drop
             - Update: Changed z_spawn calls to z_spawn_old (cvar controlled, in case it breaks).
             - Update: Updated gamedata.
@@ -18,19 +19,16 @@ L4D2_Random
     to-do:
     ------  
             - wait:     gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
+                        but hey, windows sigs are broken anyway
             
             - later:    email Chet, see if maybe he likes Random at all...
             - later:    test and include stabby's random map stuff so people can launch random campaigns after loading random
+            `
+            - test:     still jockey in l4d1 mode ... sigh - can't reproduce
             
-            - test:     defib penalty still not reset correctly after a sudden death round ?
-            - test:     still jockey in l4d1 mode ... sigh
-            
-            - tweak:    uncap pounce damage for skeet shoot event
-            - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled)
             - tweak:    change the way damage bonus scales -- make the damage => bonus effect more sensible. db should be a bit easier to destroy.
-            
-            - bugfix:   prevent weird gnome bug: use + throw => repeat = huge gnome bonus, when left in start saferoom
-                        also finally find a fix for quick re-pickups destroying points value of gnomes/cola
+            - tweak:    uncap pounce damage for skeet shoot event [when fixed]
+            - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             
 
     minor cleanup / details

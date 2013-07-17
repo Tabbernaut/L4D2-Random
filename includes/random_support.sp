@@ -146,6 +146,9 @@ public Action: Timer_DelayedRoundPrep(Handle:timer)
     
     // blind infected to items generated
     ItemsBlindInfected();
+    
+    // output debug info about gnomes
+    DoGnomesServerReport();
 }
 
 SUPPORT_CleanArrays()
@@ -2506,6 +2509,562 @@ SUPPORT_FixNerfTier2(client, tierType)
     }
 }
 
+
+/*  Gnomes
+    ------ */
+ResetGnomes()
+{
+    g_iGnomes = 0;
+    for (new x=0; x < GNOME_MAX_COUNT; x++)
+    {
+        g_strArGnomes[x][gnomebIsCola] = false;
+        g_strArGnomes[x][gnomebWorthPoints] = true;
+        g_strArGnomes[x][gnomebHeldByPlayer] = false;
+        g_strArGnomes[x][gnomeiHoldingClient] = 0;
+        g_strArGnomes[x][gnomebFirstPickup] = false;
+        g_strArGnomes[x][gnomefFirstPickup] = 9999.0;
+        g_strArGnomes[x][gnomeEntity] = -1;
+        g_strArGnomes[x][gnomebAccountedFor] = false;
+    }
+    
+    g_iGnomesHeld = 0;
+    for (new x=0; x < TEAM_SIZE; x++)
+    {
+        g_iArGnomesHeld[x] = 0;
+    }
+}
+
+// check if all gnomes are accounted for correctly
+//      gnomes set as 'held' to actually be held, by the correct player
+//      gnomes with entity set to actually be that entity
+CheckGnomes()
+{
+    new String:classname[128];
+    
+    for (new i=0; i < g_iGnomes; i++)
+    {
+        // skip the gnome if already deemed unaccounted for
+        if (g_strArGnomes[i][gnomebAccountedFor]) { continue; }
+        
+        
+        new gnomeEnt = g_strArGnomes[i][gnomeEntity];
+        new gnomeClient = g_strArGnomes[i][gnomeiHoldingClient];
+        
+        if ( g_strArGnomes[i][gnomebHeldByPlayer] )
+        {
+            // is that player really holding the gnome?
+            if (    !IsClientAndInGame( gnomeClient )
+                ||  !IsPlayerAlive( gnomeClient )
+                ||  !IsPlayerHoldingGnome( gnomeClient )
+            ) {
+                PrintDebug(4, "[rand gnome] Found gnome incorrectly marked as held: #%i (ent: %i; client: %i)", i, gnomeEnt, gnomeClient);
+                g_strArGnomes[i][gnomebHeldByPlayer] = false;
+                g_strArGnomes[i][gnomeiHoldingClient] = 0;
+                RemoveGnomeHeld(gnomeEnt);
+                gnomeClient = 0;
+            }
+            else
+            {
+                // it is really held by a player - check if the entity is correct
+                new tmpEnt = GetEntPropEnt(gnomeClient, Prop_Send, "m_hActiveWeapon");
+                if ( tmpEnt != gnomeEnt )
+                {
+                    PrintDebug(4, "[rand gnome] Found gnome incorrectly marked as held, wrong entity: #%i (ent: %i (expected %i); client: %i [%N])", i, gnomeEnt, tmpEnt, gnomeClient, gnomeClient);
+                    
+                    // is what the player is holding a gnome?
+                    if (IsValidEntity(tmpEnt)) {
+                        GetEdictClassname(tmpEnt, classname, sizeof(classname));
+                    } else {
+                        classname = "";
+                    }
+                    
+                    if ( !StrEqual(classname, "weapon_gnome", false) && !StrEqual(classname, "weapon_cola_bottles", false) )
+                    {
+                        // it's not even a gnome
+                        g_strArGnomes[i][gnomebHeldByPlayer] = false;
+                        g_strArGnomes[i][gnomeiHoldingClient] = 0;
+                        RemoveGnomeHeld(gnomeEnt);
+                        gnomeClient = 0;
+                    }
+                    else
+                    {
+                        // it is a gnome
+                    
+                        // see if any other gnome is currently deemed to be held by this player
+                        // if that gnome's entity # matches, consider THIS gnome to not be held
+                        new bool: foundGnome = false;
+                        for (new j=0; j < g_iGnomes; j++)
+                        {
+                            if (j == i) { continue; }
+                            if (    g_strArGnomes[j][gnomebHeldByPlayer]
+                                &&  g_strArGnomes[j][gnomeiHoldingClient] == gnomeClient
+                                &&  g_strArGnomes[j][gnomeEntity] == tmpEnt
+                            ) {
+                                PrintDebug(4, "[rand gnome] player is holding different gnome: #%i (ent: %i)", j, tmpEnt);
+                                foundGnome = true;
+                            }
+                        }
+                    
+                        if (foundGnome)
+                        {
+                            // the player is holding a different gnome
+                            g_strArGnomes[i][gnomebHeldByPlayer] = false;
+                            g_strArGnomes[i][gnomeiHoldingClient] = 0;
+                            RemoveGnomeHeld(gnomeEnt);
+                            gnomeClient = 0;
+                        }
+                        else
+                        {
+                            // otherwise, update held gnome entity
+                            RemoveGnomeHeld(gnomeEnt);
+                            g_strArGnomes[i][gnomeEntity] = tmpEnt;
+                            gnomeEnt = tmpEnt;
+                            g_strArGnomes[i][gnomebAccountedFor] = true;
+                        }
+                    }
+                }
+                else
+                {
+                    // correct
+                    g_strArGnomes[i][gnomebAccountedFor] = true;
+                }
+                
+                // it is actually held, check the array, add if necessary
+                if ( g_strArGnomes[i][gnomebHeldByPlayer] && FindGnomeHeldIndex( gnomeEnt ) == -1 )
+                {
+                    g_iGnomesHeld++;
+                    g_iArGnomesHeld[i] = gnomeEnt;
+                }
+            }
+        }
+        
+        if ( !g_strArGnomes[i][gnomebHeldByPlayer] )
+        {
+            // check the gnome entity (if not correctly found to be held)
+            if ( gnomeEnt == 0 ){
+                PrintDebug(4, "[rand gnome] Found gnome with missing entity number, set as unaccounted for.");
+                g_strArGnomes[i][gnomeEntity] = 0;
+                g_strArGnomes[i][gnomebAccountedFor] = false;
+            } 
+            else if ( !IsValidEntity( gnomeEnt ) ) {
+                PrintDebug(4, "[rand gnome] Found gnome with wrong entity number: #%i (ent expected %i), set as unaccounted for.", i, gnomeEnt);
+                g_strArGnomes[i][gnomeEntity] = 0;
+                g_strArGnomes[i][gnomebAccountedFor] = false;
+                continue;
+            }
+            
+            // entity exists, check if it's a gnome/cola
+            GetEdictClassname(gnomeEnt, classname, sizeof(classname));
+            new bool: isGnomeCola = false;
+            if (StrEqual(classname, "weapon_gnome", false) || StrEqual(classname, "weapon_cola_bottles", false))
+            {
+                isGnomeCola = true;
+            }
+            else if ( StrEqual(classname, "prop_physics", false) )
+            {
+                // check model
+                new String: model[128];
+                GetEntPropString(gnomeEnt, Prop_Data, "m_ModelName", model, STR_MAX_MODELNAME);
+                if ( StrEqual(model, "models/props_junk/gnome.mdl", false) || StrEqual(model, "models/w_models/weapons/w_cola.mdl", false) ) {
+                    isGnomeCola = true;
+                }
+            }
+            
+            if (!isGnomeCola)
+            {
+                // wrong type
+                PrintDebug(4, "[rand gnome] Found gnome with wrong entity number (wrong class: %s): #%i (ent expected %i), set as unaccounted for.", classname, i, gnomeEnt);
+                g_strArGnomes[i][gnomeEntity] = 0;
+                g_strArGnomes[i][gnomebAccountedFor] = false;
+                continue;
+            }
+            
+            // it's okay
+            g_strArGnomes[i][gnomebAccountedFor] = true;
+        }
+    }
+}
+stock bool: IsPlayerHoldingGnome( client )
+{
+    if (!IsClientAndInGame(client)) { return false; }
+    
+    new String:classname[128];
+    new entity = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+    
+    if (    !IsValidEntity(entity)
+        ||  ( !StrEqual(classname, "weapon_gnome", false) && !StrEqual(classname, "weapon_cola_bottles", false ) )
+    ) {
+        return false;
+    }
+    
+    return true;
+}
+FindGnomeIndex(entity)
+{
+    for (new x=0; x < g_iGnomes; x++)
+    {
+        if (g_strArGnomes[x][gnomeEntity] == entity) {
+            return x;
+        }
+    }
+    return -1;
+}
+
+FindGnomeIndexByClient(client)
+{
+    for (new x=0; x < g_iGnomes; x++)
+    {
+        if (g_strArGnomes[x][gnomeiHoldingClient] == client) {
+            return x;
+        }
+    }
+    return -1;
+}
+
+FindGnomeHeldIndex(entity)
+{
+    for (new i=0; i < g_iGnomesHeld; i++)
+    {
+        if (g_iArGnomesHeld[i] == entity) { return i; }
+    }
+    return -1;
+}
+
+RemoveGnomeHeld(entity)
+{
+    // unsets a gnome as held (and cleans up the array)
+    new found = FindGnomeHeldIndex(entity);
+    
+    if (found != -1)
+    {
+        g_iArGnomesHeld[found] = 0;
+        if (found + 1 < g_iGnomesHeld) {
+            for (new i = found; i < g_iGnomesHeld - 1; i++) {
+                g_iArGnomesHeld[i] = g_iArGnomesHeld[i+1];
+            }
+        }
+        g_iGnomesHeld--;
+    }
+}
+
+// called when any client picks up a gnome (client is assumed safe, entity too) -- bIsGnome is false when cola
+OnPlayerGnomePickup(client, entity, bool: bIsGnome = true)
+{
+    CheckGnomes();
+    
+    new gnomeIndex = FindGnomeIndex(entity);
+    
+    PrintDebug(4, "[rand gnome] Gnome pickup (%s): index %i, entity %i.", (bIsGnome) ? "gnome" : "cola", gnomeIndex, entity);
+    
+    // if gnomeIndex is not correct, find unaccounted for gnome..
+    if ( gnomeIndex == -1 )
+    {
+        for (new i=0; i < g_iGnomes; i++)
+        {
+            if (g_strArGnomes[i][gnomebAccountedFor] || bIsGnome == g_strArGnomes[i][gnomebIsCola]) { continue; }
+            
+            PrintDebug(4, "[rand gnome] assigning to unaccounted for gnome at index %i.", i);
+            gnomeIndex = i;
+            break;
+        }
+    }
+    
+    if ( gnomeIndex == -1 )
+    {
+        // still not found which gnome it is... this SHOULD never happen...
+        // create new index for it
+        UpdateClientHoldingGnome(client, entity);
+        gnomeIndex = g_iGnomes - 1;
+    }
+    
+    if (gnomeIndex == -1 || !g_strArGnomes[gnomeIndex][gnomebWorthPoints])
+    {
+        // weird, unknown gnome
+        if (!g_bCampaignMode)
+        {
+            PrintToChat(client, "\x01[\x05r\x01] This %s is not worth any points.", (bIsGnome) ? "gnome" : "cola" );
+        }
+    }
+    else
+    {
+        // manage held gnomes array
+        g_iGnomesHeld++;
+        if (g_iGnomesHeld > TEAM_SIZE) { g_iGnomesHeld = 1; PrintDebug(3, "[rand gnome] Excessive 'held gnome/cola' count!"); }     // shouldn't happen after CheckGnomes!
+        
+        g_iArGnomesHeld[g_iGnomesHeld-1] = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+        
+        if (!g_strArGnomes[gnomeIndex][gnomebFirstPickup])
+        {
+            // first pickup = set value according to flow distance
+            g_strArGnomes[gnomeIndex][gnomebFirstPickup] = true;
+            g_strArGnomes[gnomeIndex][gnomefFirstPickup] = FloatAbs( L4D2Direct_GetFlowDistance(client) / L4D2Direct_GetMapMaxFlowDistance() );
+        }
+        
+        new tmpPoints = GetGnomeValue( g_strArGnomes[gnomeIndex][gnomefFirstPickup] );
+        
+        if (!g_bCampaignMode) {
+            PrintToChat(client, "\x01[\x05r\x01] This %s is worth \x03%i\x01 point%s.", (bIsGnome) ? "gnome" : "cola", tmpPoints, (tmpPoints > 1) ? "s" : "" );
+            //PrintToChatAll("picked up gnomecola [%i]: %i is now: %i", g_iGnomesHeld, g_strArGnomes[gnomeIndex][gnomeEntity], g_iArGnomesHeld[g_iGnomesHeld-1]);
+        }
+        
+        g_strArGnomes[gnomeIndex][gnomeEntity] = g_iArGnomesHeld[g_iGnomesHeld-1];
+        g_strArGnomes[gnomeIndex][gnomebHeldByPlayer] = true;
+        g_strArGnomes[gnomeIndex][gnomeiHoldingClient] = client;
+    }
+}
+
+// called when player drops cola (weapondrop event) -- NOT called for gnomes!
+OnPlayerDroppingCola(client, entity)
+{
+    new gnomeIndex = -1;
+    
+    // can we find it by entity?
+    if (entity && IsValidEntity(entity)) {
+        gnomeIndex = FindGnomeIndex(entity);
+    } else {
+        gnomeIndex = FindGnomeIndexByClient(client);
+        if (gnomeIndex != -1) {
+            entity = g_strArGnomes[gnomeIndex][gnomeEntity];
+        }
+    }
+    
+    if (gnomeIndex != -1)
+    {
+        new found = -1;
+        for (new i = 0; i < g_iGnomesHeld; i++)
+        {
+            if (entity == g_iArGnomesHeld[i]) {
+                found = i;
+                break;
+            }
+        }
+        
+        // cola was dropped, remove from held array
+        if (found != -1)
+        {
+            new gnomeEnt = g_iArGnomesHeld[found];
+            RemoveGnomeHeld(gnomeEnt);
+            
+            //PrintToChatAll("dropped gnome: %i (= %i) (now %i held)", entity, gnomeEnt, g_iGnomesHeld);
+
+            g_iGnomeJustDropped = gnomeEnt;
+        }
+        
+        // adjust gnomes array too
+        g_strArGnomes[gnomeIndex][gnomeEntity] = entity;        // though it shouldn't be changed
+        g_strArGnomes[gnomeIndex][gnomebHeldByPlayer] = false;
+        g_strArGnomes[gnomeIndex][gnomeiHoldingClient] = 0;
+    }
+    else
+    {
+        PrintDebug(4, "[rand gnome] couldn't find gnome index for dropped cola entity %i. Checking Gnomes.", entity);
+        CheckGnomes();
+    }
+}
+
+// called when an entity is destroyed (could be a gnome) -- happens when gnome is dropped
+OnPossibleGnomeDestroyed(entity)
+{
+    // entity does not exist anymore
+    // check if we find it in the gnomes arrays
+    
+    // held gnome?
+    new found = -1;
+    for (new i = 0; i < g_iGnomesHeld; i++) {
+        if (entity == g_iArGnomesHeld[i]) {
+            found = i;
+            break;
+        }
+    }
+    
+    // yup, a gnome was dropped
+    if (found != -1)
+    {
+        new gnomeIndex = FindGnomeIndex(entity);
+        RemoveGnomeHeld(entity);
+        
+        PrintDebug(4, "[rand gnome] gnome drop detected: entity: %i, gnome index: %i. ", entity, gnomeIndex);
+        
+        if (gnomeIndex != -1)
+        {
+            g_strArGnomes[gnomeIndex][gnomebHeldByPlayer] = false;
+            g_strArGnomes[gnomeIndex][gnomeiHoldingClient] = 0;
+            //g_strArGnomes[gnomeIndex][gnomeEntity] = 0;
+            g_strArGnomes[gnomeIndex][gnomebAccountedFor] = false;
+        }
+        else
+        {
+            PrintDebug(4, "[rand gnome] couldn't find gnome index for dropped gnome entity %i. Checking Gnomes.", entity);
+            CheckGnomes();
+        }
+        
+        // this is unsafe -- what if two players drop a gnome at the same time?
+        // use bAccountedFor instead, just find unaccounted for gnomes and use them
+        // just use this as an 'is something dropped?' check
+        g_iGnomeJustDropped = entity;
+    }
+}
+
+// called when a gnome is created that might be dropped (client is assumed safe, entity too) -- not called for cola!
+OnPossibleDroppedGnomeCreated(entity)
+{
+    if (!g_bItemsFullyRandomized) { return; }   // the gnome's created by randomization, not due to player drop
+    //if (g_iGnomeJustDropped < 1) { return; }  // wouldn't be called if this were true
+    
+    new gnomeIndex = FindGnomeIndex(g_iGnomeJustDropped);
+    
+    PrintDebug(4, "[rand gnome] possible gnome drop: entity %i (index: %i).", entity, gnomeIndex);
+    
+    // if gnome is indeed unaccounted for, use it
+    // if not, find a gnome that IS unaccounted for, and use that
+    
+    if (gnomeIndex != -1 && !g_strArGnomes[gnomeIndex][gnomebAccountedFor])
+    {
+        g_strArGnomes[gnomeIndex][gnomeEntity] = entity;
+        g_strArGnomes[gnomeIndex][gnomebHeldByPlayer] = false;
+        g_strArGnomes[gnomeIndex][gnomeiHoldingClient] = 0;
+        g_strArGnomes[gnomeIndex][gnomebAccountedFor] = true;
+    }
+    else
+    {
+        PrintDebug(4, "[rand gnome] dropped gnome problem: no index, or gnome at index was not unaccounted for. Checking other gnomes.");
+        
+        CheckGnomes();
+        
+        gnomeIndex = -1;
+        for (new i=0; i < g_iGnomes; i++)
+        {
+            if ( g_strArGnomes[i][gnomebFirstPickup] && !g_strArGnomes[i][gnomebAccountedFor] )
+            {
+                gnomeIndex = i;
+            }
+        }
+        
+        if (gnomeIndex != -1)
+        {
+            // use this unaccounted for gnome
+            PrintDebug(4, "[rand gnome] Assigning gnome drop to (new) index: %i.", gnomeIndex);
+            
+            g_strArGnomes[gnomeIndex][gnomeEntity] = entity;
+            g_strArGnomes[gnomeIndex][gnomebHeldByPlayer] = false;
+            g_strArGnomes[gnomeIndex][gnomeiHoldingClient] = 0;
+            g_strArGnomes[gnomeIndex][gnomebAccountedFor] = true;
+        }
+        else
+        {
+            PrintDebug(3, "[rand gnome] dropped gnome created problem: no unaccounted for gnomes. Valueless gnome created! (entity %i)", entity);
+        }
+    }
+    
+    g_iGnomeJustDropped = 0;
+}
+
+// this should only be called after a gnome is handed to someone for having no weapon at start
+UpdateClientHoldingGnome(client, entity=-1, bool:setHeld=true)
+{
+    // if a client is handed a gnome (at round start)
+    if (!IsSurvivor(client)) { return; }
+    
+    g_iGnomes++;
+    g_strArGnomes[g_iGnomes-1][gnomebFirstPickup] = true;
+    g_strArGnomes[g_iGnomes-1][gnomefFirstPickup] = 0.0;
+    
+    if (entity == -1) {
+        entity = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+    }
+    
+    g_strArGnomes[g_iGnomes-1][gnomeEntity] = entity;
+    g_strArGnomes[g_iGnomes-1][gnomebHeldByPlayer] = true;
+    g_strArGnomes[g_iGnomes-1][gnomeiHoldingClient] = client;
+    g_strArGnomes[g_iGnomes-1][gnomebAccountedFor] = true;
+    
+    // if it's not in held gnome array, add it
+    if (setHeld && FindGnomeHeldIndex( g_strArGnomes[g_iGnomes-1][gnomeEntity] ) == -1)
+    {
+        g_iGnomesHeld++;
+        g_iArGnomesHeld[g_iGnomesHeld-1] = g_strArGnomes[g_iGnomes-1][gnomeEntity];
+    }
+}
+
+
+// value of a gnome when picked up at given distance
+GetGnomeValue(Float:distance)
+{
+    distance = FloatAbs(distance);
+    new Float: fBonus = GetConVarFloat(g_hCvarGnomeBonus);
+    
+    if (g_RI_bIsFinale)
+    {
+        fBonus = fBonus * GetConVarFloat(g_hCvarGnomeFinaleFactor);
+        
+        // weigh distance for only this factor, if we're going by distance
+        if (fBonus < 10.0) {
+            fBonus = fBonus * L4D_GetVersusMaxCompletionScore();
+            // factor in distance factor (get right average between full and distance-scaled bonus)
+            fBonus = ((1.0 - GNOME_FINALE_DIST_FACTOR) * fBonus) + (GNOME_FINALE_DIST_FACTOR * fBonus * (1.0 - distance));
+        }
+    } else {
+        if (fBonus < 10.0) {
+            fBonus = fBonus * L4D_GetVersusMaxCompletionScore() * (1.0 - distance);
+        }
+    }
+    
+    return RoundToCeil( fBonus );
+}
+
+GetGnomeBonus(bool:showMessage = false)
+{
+    /*
+        This gets called internally only on round-end to display the result
+        This gets called by l4d2_random_bonus to actually calculate/get the bonus working
+            showMessage is only set by internal calls
+    */
+    
+    // check gnome status on all -- so false gnomes 'held' are not counted
+    CheckGnomes();
+    
+    // check if gnomes are held
+    // check which gnomes are in saferoom as props
+    
+    new countGnomes = 0;
+    new countCola = 0;
+    new countPoints = 0;
+    
+    // only do calc if there can be bonus at all
+    if (GetConVarFloat(g_hCvarGnomeBonus) == 0.0) { return 0; }
+    
+    for (new i=0; i < g_iGnomes; i++)
+    {
+        //PrintToChatAll("gnome %i: held: %i, insafe: %i...", i, g_strArGnomes[i][gnomebHeldByPlayer], IsEntityInSaferoom( g_strArGnomes[i][gnomeEntity] , false, true) );
+        
+        // is it in saferoom?
+        if (!g_strArGnomes[i][gnomebHeldByPlayer] && !IsEntityInSaferoom( g_strArGnomes[i][gnomeEntity], false, true)) { continue; }
+        if (!g_strArGnomes[i][gnomebFirstPickup] || !g_strArGnomes[i][gnomebWorthPoints]) { continue; }
+        
+        if (!g_strArGnomes[i][gnomebIsCola]) { countGnomes++; } else { countCola++; }
+        
+        countPoints += GetGnomeValue(g_strArGnomes[i][gnomefFirstPickup]);
+    }
+    
+    if (!countGnomes && !countCola) { return 0; }
+    
+    if (showMessage) {
+        new String: msgPart[128] = "";
+        if (countGnomes) {
+            Format(msgPart, sizeof(msgPart), "\x03%i\x01 gnome%s%s", countGnomes, (countGnomes == 1) ? "" : "s", (countCola) ? " and " : "" );
+        }
+        if (countCola) {
+            Format(msgPart, sizeof(msgPart), "%s\x03%i\x01 colapack%s", msgPart, countCola, (countCola == 1) ? "" : "s");
+        }
+        
+        PrintToChatAll("\x01[\x05r\x01] Survivors brought %s, worth \x04%i\x01 bonus point%s.", msgPart, countPoints, (countPoints == 1) ? "" : "s"  );
+    }
+    
+    return countPoints;
+}
+
+
+
 /*  Team changes and other votes
     ------------ */
 SUPPORT_VoteShuffleTeams(client)
@@ -3204,6 +3763,7 @@ Float:MULTIWITCH_GetMaxSurvivorCompletion()
 
 
 
+
 /*  L4D2 Storm plugin
     -------------------------- */
     
@@ -3398,6 +3958,51 @@ DoItemsServerReport(full=false)
                 float(iWeight[i]) / float(iTotalWeight) * 100.0,
                 RoundFloat( (float(iWeight[i]) / float(iTotalWeight)) * iTotalRealItems ),
                 iGroupCount[i] - RoundFloat( (float(iWeight[i]) / float(iTotalWeight)) * iTotalRealItems )
+            );
+    }
+    
+    PrintDebug(0, "-----------------------------------------------------------------------------------------------------------");
+    
+}
+
+DoGnomesServerReport()
+{
+    if (!g_iGnomes) {
+        PrintDebug(0, "[rand] no gnomes this map, not displaying table.");
+        return;
+    }
+    
+    PrintDebug(0, "[rand] gnomes table for %i gnomes/cola:", g_iGnomes);
+    
+    new String: tmpStr[64];
+    new String: tmpStrB[64];
+    
+    PrintDebug(0, "-----------------------------------------------------------------------------------------------------------");
+    PrintDebug(0, "    #   g or c  status           entity  picked up?  worth points?  accounted for?");
+    PrintDebug(0, "-----------------------------------------------------------------------------------------------------------");
+    
+    for (new i=0; i < g_iGnomes; i++)
+    {
+        if (g_strArGnomes[i][gnomebHeldByPlayer]) {
+            Format(tmpStr, sizeof(tmpStr), "held (by %i)", g_strArGnomes[i][gnomeiHoldingClient]);
+        } else {
+            Format(tmpStr, sizeof(tmpStr), "lying around");
+        }
+        
+        if (g_strArGnomes[i][gnomebFirstPickup]) {
+            Format(tmpStrB, sizeof(tmpStrB), "yes (%1.2f)", g_strArGnomes[i][gnomefFirstPickup]);
+        } else {
+            Format(tmpStrB, sizeof(tmpStrB), "no");
+        }
+        
+        PrintDebug(0, "  %3i.: %5s  %15s  %4i     %10s  %13s  %4s",
+                i,
+                (g_strArGnomes[i][gnomebIsCola]) ? "cola" : "gnome",
+                tmpStr,
+                g_strArGnomes[i][gnomeEntity],
+                tmpStrB,
+                (g_strArGnomes[i][gnomebWorthPoints]) ? "yes" : "no",
+                (g_strArGnomes[i][gnomebAccountedFor]) ? "yes" : "no"
             );
     }
     

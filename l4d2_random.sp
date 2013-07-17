@@ -24,7 +24,7 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.52"
+#define PLUGIN_VERSION "1.0.53"
 
 /*
         L4D2 Random
@@ -524,7 +524,9 @@ public Action: TestGnomes_Cmd(client, args)
     // animation test
     //StartSurvivorAnim_Healing(client);
     
-    
+    DoGnomesServerReport();
+
+    /*
     decl String:sMessage[MAX_NAME_LENGTH];
     GetCmdArg(1, sMessage, sizeof(sMessage));
     new setclient = StringToInt(sMessage);
@@ -535,19 +537,6 @@ public Action: TestGnomes_Cmd(client, args)
     if (args)
     {
         //L4D2Direct_DoAnimationEvent(setclient, event);
-        
-        /*
-        SetEntProp(setclient, Prop_Send, "m_nSequence", event);
-        SetEntProp(setclient, Prop_Send, "m_NetGestureActivity", 579);      // for idle things?
-        SetEntProp(setclient, Prop_Send, "m_NetGestureSequence", 550);
-        
-        
-        //SetEntPropFloat(setclient, Prop_Send, "m_flCycle ", 0.0);
-        
-            549 
-            550 shrug shoulders
-            551
-        */
         
         // hat test
         if (event) {
@@ -584,17 +573,6 @@ public Action: TestGnomes_Cmd(client, args)
     // test vomit
     //PlayerDoVomit(client);
     
-    // test models
-    /*
-    for (new i=1; i <= MaxClients; i++)
-    {
-        if (IsSurvivor(i)) {
-            SetEntityModel(i, "models/survivors/survivor_coach.mdl");
-            //SetEntityModel(i, "models/infected/boomer.mdl");
-        }
-    }
-    */
-    
     // test messing around with health
     //SetEntityHealth(client, 1);
     //SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 99.0);
@@ -610,19 +588,6 @@ public Action: TestGnomes_Cmd(client, args)
     
     PrintToChatAll( "\x01Are we in saferoom? Start: \x03%s\x01 - End: \x03%s\x01", (inStart) ? "yes":"no", (inEnd) ? "yes":"no" );
     PrintToChatAll("gnomebonus: %i", GetGnomeBonus() );
-    
-    // netproptest
-    /*
-    PrintToChatAll( "\x01Netprops: something: \x03%f\x01",
-            GetEntPropFloat(client, Prop_Send, "m_flLaggedMovementValue")
-        );
-    
-    //SetEntPropFloat(client, Prop_Send, "m_flLaggedMovementValue", 1.25);
-    
-    PrintToChatAll( "\x01Netprops: something: \x03%i\x01",
-            GetEntProp(client, Prop_Send, "m_holdingObject")
-        );
-    */
     
     // show a little list of all the known gnomes and their status
     for (new i=0; i < g_iGnomes; i++)
@@ -642,13 +607,6 @@ public Action: TestGnomes_Cmd(client, args)
     //SetEntPropFloat(1, Prop_Send, "m_healthBuffer", 100.0);
     
     //CheckGnomes();
-    
-    /*
-    // do scoring manip
-    new tmpInt = GetRandomInt(1,20);
-    
-    PrintToChatAll("test: set defibs used for roundhalf %i [team: %i] to: %i", g_bSecondHalf, GameRules_GetProp("m_bAreTeamsFlipped", 4, 0), tmpInt);
-    GameRules_SetProp("m_iVersusDefibsUsed", tmpInt, 4, GameRules_GetProp("m_bAreTeamsFlipped", 4, 0) );
     */
     return Plugin_Handled;
 }
@@ -1211,7 +1169,7 @@ public Action:OnPlayerRunCmd(client, &buttons)
 
 
 // for encumbered mode
-public Action:L4D_OnGetRunTopSpeed(target, &Float:retVal)
+public Action: L4D_OnGetRunTopSpeed(target, &Float:retVal)
 {
     if (!IsClientAndInGame(target) || GetClientTeam(target) != TEAM_SURVIVOR) { return Plugin_Continue; }
     
@@ -1252,7 +1210,7 @@ public Action: L4D_OnGetWalkTopSpeed(target, &Float:retVal)
     }
     return Plugin_Continue;
 }
-public Action:L4D_OnGetCrouchTopSpeed(target, &Float:retVal)
+public Action: L4D_OnGetCrouchTopSpeed(target, &Float:retVal)
 {
     if (!IsClientAndInGame(target) || GetClientTeam(target) != TEAM_SURVIVOR) { return Plugin_Continue; }
     
@@ -2040,48 +1998,7 @@ public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadc
         {
             if (g_iJustPickedItemUp == GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon"))
             {
-                new gnomeIndex = FindGnomeIndex(entity);
-                
-                // set value to max if not found in gnome array, then add to array (if the gnome's in the start saferoom somehow)
-                if ( gnomeIndex == -1 && (IsEntityInSaferoom(client, true, false) || IsEntityInSaferoom(entity, false, false) ) )
-                {
-                    // fix up gnome and array(s) to match
-                    UpdateAfterGnomeGiven(client, entity);
-                    gnomeIndex = g_iGnomes - 1;
-                }
-                
-                if (gnomeIndex == -1 || !g_strArGnomes[gnomeIndex][gnomebWorthPoints])
-                {
-                    // weird, unknown gnome
-                    if (!g_bCampaignMode) {
-                        PrintToChat(client, "\x01[\x05r\x01] This %s is not worth any points.", (isGnome) ? "gnome" : "cola" );
-                    }
-                }
-                else
-                {
-                    // manage held gnomes array
-                    g_iGnomesHeld++;
-                    if (g_iGnomesHeld > TEAM_SIZE) { g_iGnomesHeld = 1; PrintDebug(0, "[rand] Excessive 'held gnome/cola' count!"); }
-                    g_iArGnomesHeld[g_iGnomesHeld-1] = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-                    
-                    if (!g_strArGnomes[gnomeIndex][gnomebFirstPickup])
-                    {
-                        // first pickup = set value according to flow distance
-                        g_strArGnomes[gnomeIndex][gnomebFirstPickup] = true;
-                        g_strArGnomes[gnomeIndex][gnomefFirstPickup] = FloatAbs( L4D2Direct_GetFlowDistance(client) / L4D2Direct_GetMapMaxFlowDistance() );
-                    }
-                    
-                    new tmpPoints = GetGnomeValue( g_strArGnomes[gnomeIndex][gnomefFirstPickup] );
-                    
-                    if (!g_bCampaignMode) {
-                        PrintToChat(client, "\x01[\x05r\x01] This %s is worth \x03%i\x01 point%s.", (isGnome) ? "gnome" : "cola", tmpPoints, (tmpPoints > 1) ? "s" : "" );
-                        //PrintToChatAll("picked up gnomecola [%i]: %i is now: %i", g_iGnomesHeld, g_strArGnomes[gnomeIndex][gnomeEntity], g_iArGnomesHeld[g_iGnomesHeld-1]);
-                    }
-                    
-                    g_strArGnomes[gnomeIndex][gnomeEntity] = g_iArGnomesHeld[g_iGnomesHeld-1];
-                    g_strArGnomes[gnomeIndex][gnomebHeldByPlayer] = true;
-                    g_strArGnomes[gnomeIndex][gnomeiHoldingClient] = client;
-                }
+                OnPlayerGnomePickup(client, entity, isGnome);
             }
             
             g_iJustPickedItemUp = 0;
@@ -2237,10 +2154,11 @@ public Action:Event_ItemPickup(Handle:event, const String:name[], bool:dontBroad
     
     // gnome
     new bool: isGnome = StrEqual(sItem, "gnome", false);
-    new bool: isCola = StrEqual(sItem, "cola_bottles", false);
+    new bool: isCola = (isGnome) ? false : StrEqual(sItem, "cola_bottles", false);
     
     if (isGnome || isCola)
     {
+        // store entity no. -- rest is handled on PlayerUse event (called directly after ItemPickup)
         g_iJustPickedItemUp = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
     }
 }
@@ -2384,48 +2302,11 @@ public Action:Event_WeaponDrop(Handle:event, const String:name[], bool:dontBroad
     new itemDropType: nameDropped;
     if (!GetTrieValue(g_hTrieDropItems, sItem, nameDropped)) { return; }
     
+    // only cola?
     if (nameDropped == ITEM_DROP_COLA)
     {
-        // can we find it by entity?
-        new gnomeIndex = -1;
-        
-        if (entity && IsValidEntity(entity)) {
-            gnomeIndex = FindGnomeIndex(entity);
-        } else {
-            gnomeIndex = FindGnomeIndexByClient(client);
-            if (gnomeIndex != -1) {
-                entity = g_strArGnomes[gnomeIndex][gnomeEntity];
-            }
-        }
-        
-        //PrintToChatAll("dropped cola: ent %i (or heldby %i) (index: %i)", entity, client, gnomeIndex);
-        
-        if (gnomeIndex != -1)
-        {
-            new found = -1;
-            for (new i = 0; i < g_iGnomesHeld; i++) {
-                if (entity == g_iArGnomesHeld[i]) {
-                    found = i;
-                    break;
-                }
-            }
-            
-            // cola was dropped, remove from held array
-            if (found != -1)
-            {
-                new gnomeEnt = g_iArGnomesHeld[found];
-                RemoveGnomeHeld(gnomeEnt);
-                
-                //PrintToChatAll("dropped gnome: %i (= %i) (now %i held)", entity, gnomeEnt, g_iGnomesHeld);
-
-                g_iGnomeJustDropped = gnomeEnt;
-            }
-            
-            // adjust gnomes array too
-            g_strArGnomes[gnomeIndex][gnomeEntity] = entity; // though it shouldn't be changed
-            g_strArGnomes[gnomeIndex][gnomebHeldByPlayer] = false;
-            g_strArGnomes[gnomeIndex][gnomeiHoldingClient] = 0;
-        }
+        // we're starting a gnome/cola drop (picked up when entity is created)
+        OnPlayerDroppingCola(client, entity);
     }
     else if (g_iSpecialEvent == EVT_MEDIC && nameDropped == ITEM_DROP_HEALTH)
     {
@@ -2433,7 +2314,6 @@ public Action:Event_WeaponDrop(Handle:event, const String:name[], bool:dontBroad
         CreateTimer(0.05, Timer_DestroyHealthItems, _, TIMER_FLAG_NO_MAPCHANGE);
     }
 }
-
 
 public Action:Event_ReviveSuccess(Handle:event, const String:name[], bool:dontBroadcast)
 {
@@ -3140,7 +3020,7 @@ public OnEntityCreated(entity, const String:classname[])
         // is really the gnome?
         if (GetConVarFloat(g_hCvarGnomeBonus) == 0.0) { return; }
         
-        CreateTimer(0.05, Timer_CreatedPropPhysics, entity, TIMER_FLAG_NO_MAPCHANGE);
+        CreateTimer(0.01, Timer_CreatedPropPhysics, entity, TIMER_FLAG_NO_MAPCHANGE);
     }
     else if (g_iSpecialEvent == EVT_AMMO && classnameOEC == CREATED_AMMO_DEPLOYED)
     {
@@ -3161,20 +3041,10 @@ public Action: Timer_CreatedPropPhysics(Handle:timer, any:entity)
     GetEntPropString(entity, Prop_Data, "m_ModelName", modelname, STR_MAX_MODELNAME);
     
     new bool: isGnome = StrEqual(modelname, "models/props_junk/gnome.mdl", false);
-    new bool: isCola = StrEqual(modelname, "models/w_models/weapons/w_cola.mdl", false);
+    new bool: isCola = (isGnome) ? false : StrEqual(modelname, "models/w_models/weapons/w_cola.mdl", false);
     if (isGnome || isCola)
     {
-        new gnomeIndex = FindGnomeIndex(g_iGnomeJustDropped);
-        
-        if (gnomeIndex != -1) {
-            g_strArGnomes[gnomeIndex][gnomeEntity] = entity;
-            g_strArGnomes[gnomeIndex][gnomebHeldByPlayer] = false;
-            g_strArGnomes[gnomeIndex][gnomeiHoldingClient] = 0;
-            
-            //PrintToChatAll("gnome drop continued: %i => %i", g_iGnomeJustDropped, entity);
-        }
-        
-        g_iGnomeJustDropped = 0;
+        OnPossibleDroppedGnomeCreated(entity);
     }
     
     return Plugin_Continue;
@@ -3188,21 +3058,7 @@ public OnEntityDestroyed(entity)
     
     if (g_iGnomesHeld && GetConVarFloat(g_hCvarGnomeBonus) >= 0.0)
     {
-        new found = -1;
-        for (new i = 0; i < g_iGnomesHeld; i++) {
-            if (entity == g_iArGnomesHeld[i]) {
-                found = i;
-                break;
-            }
-        }
-        
-        // yup, a gnome was dropped
-        if (found != -1)
-        {
-            new gnomeEnt = g_iArGnomesHeld[found];
-            RemoveGnomeHeld(gnomeEnt);
-            g_iGnomeJustDropped = gnomeEnt;
-        }
+        OnPossibleGnomeDestroyed(entity);
     }
 }
 
@@ -3438,175 +3294,4 @@ public Action:Event_SpecialAmmo(Handle:event, const String:name[], bool:dontBroa
 
 
 
-
-/*  Gnomes
-    ------ */
-stock ResetGnomes()
-{
-    g_iGnomes = 0;
-    for (new x=0; x < GNOME_MAX_COUNT; x++)
-    {
-        g_strArGnomes[x][gnomebIsCola] = false;
-        g_strArGnomes[x][gnomebWorthPoints] = true;
-        g_strArGnomes[x][gnomebHeldByPlayer] = false;
-        g_strArGnomes[x][gnomeiHoldingClient] = 0;
-        g_strArGnomes[x][gnomebFirstPickup] = false;
-        g_strArGnomes[x][gnomefFirstPickup] = 9999.0;
-        g_strArGnomes[x][gnomeEntity] = -1;
-    }
-    
-    g_iGnomesHeld = 0;
-    for (new x=0; x < TEAM_SIZE; x++)
-    {
-        g_iArGnomesHeld[x] = 0;
-    }
-    
-}
-
-stock FindGnomeIndex(entity)
-{
-    for (new x=0; x < g_iGnomes; x++)
-    {
-        if (g_strArGnomes[x][gnomeEntity] == entity) {
-            return x;
-        }
-    }
-    return -1;
-}
-
-stock FindGnomeIndexByClient(client)
-{
-    for (new x=0; x < g_iGnomes; x++)
-    {
-        if (g_strArGnomes[x][gnomeiHoldingClient] == client) {
-            return x;
-        }
-    }
-    return -1;
-}
-
-stock FindGnomeHeldIndex(entity)
-{
-    for (new i=0; i < g_iGnomesHeld; i++)
-    {
-        if (g_iArGnomesHeld[i] == entity) { return i; }
-    }
-    return -1;
-}
-
-stock RemoveGnomeHeld(entity)
-{
-    // unsets a gnome as held (and cleans up the array)
-    new found = FindGnomeHeldIndex(entity);
-    
-    if (found != -1)
-    {
-        g_iArGnomesHeld[found] = 0;
-        if (found + 1 < g_iGnomesHeld) {
-            for (new i = found; i < g_iGnomesHeld - 1; i++) {
-                g_iArGnomesHeld[i] = g_iArGnomesHeld[i+1];
-            }
-        }
-        g_iGnomesHeld--;
-    }
-}
-
-UpdateAfterGnomeGiven(client, entity=-1, bool:setHeld=true)
-{
-    // if a client is handed a gnome (at round start)
-    if (!IsSurvivor(client)) { return; }
-    
-    
-    g_iGnomes++;
-    g_strArGnomes[g_iGnomes-1][gnomebFirstPickup] = true;
-    g_strArGnomes[g_iGnomes-1][gnomefFirstPickup] = 0.0;
-    if (entity == -1) {
-        g_strArGnomes[g_iGnomes-1][gnomeEntity] = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-    } else {
-        g_strArGnomes[g_iGnomes-1][gnomeEntity] = entity;
-    }
-    g_strArGnomes[g_iGnomes-1][gnomebHeldByPlayer] = true;
-    g_strArGnomes[g_iGnomes-1][gnomeiHoldingClient] = client;
-    
-    // if it's not in held gnome array, add it
-    if (setHeld && FindGnomeHeldIndex( g_strArGnomes[g_iGnomes-1][gnomeEntity] ) == -1)
-    {
-        g_iGnomesHeld++;
-        g_iArGnomesHeld[g_iGnomesHeld-1] = g_strArGnomes[g_iGnomes-1][gnomeEntity];
-    }
-}
-
-
-// value of a gnome when picked up at given distance
-GetGnomeValue(Float:distance)
-{
-    distance = FloatAbs(distance);
-    new Float: fBonus = GetConVarFloat(g_hCvarGnomeBonus);
-    
-    if (g_RI_bIsFinale)
-    {
-        fBonus = fBonus * GetConVarFloat(g_hCvarGnomeFinaleFactor);
-        
-        // weigh distance for only this factor, if we're going by distance
-        if (fBonus < 10.0) {
-            fBonus = fBonus * L4D_GetVersusMaxCompletionScore();
-            // factor in distance factor (get right average between full and distance-scaled bonus)
-            fBonus = ((1.0 - GNOME_FINALE_DIST_FACTOR) * fBonus) + (GNOME_FINALE_DIST_FACTOR * fBonus * (1.0 - distance));
-        }
-    } else {
-        if (fBonus < 10.0) {
-            fBonus = fBonus * L4D_GetVersusMaxCompletionScore() * (1.0 - distance);
-        }
-    }
-    
-    return RoundToCeil( fBonus );
-}
-
-GetGnomeBonus(bool:showMessage = false)
-{
-    /*
-        This gets called internally only on round-end to display the result
-        This gets called by l4d2_random_bonus to actually calculate/get the bonus working
-            showMessage is only set by internal calls
-    */
-    
-    // check if gnomes are held
-    // check which gnomes are in saferoom as props
-    
-    new countGnomes = 0;
-    new countCola = 0;
-    new countPoints = 0;
-    
-    // only do calc if there can be bonus at all
-    if (GetConVarFloat(g_hCvarGnomeBonus) == 0.0) { return 0; }
-    
-    for (new i=0; i < g_iGnomes; i++)
-    {
-        //PrintToChatAll("gnome %i: held: %i, insafe: %i...", i, g_strArGnomes[i][gnomebHeldByPlayer], IsEntityInSaferoom( g_strArGnomes[i][gnomeEntity] , false, true) );
-        
-        // is it in saferoom?
-        if (!g_strArGnomes[i][gnomebHeldByPlayer] && !IsEntityInSaferoom( g_strArGnomes[i][gnomeEntity], false, true)) { continue; }
-        if (!g_strArGnomes[i][gnomebFirstPickup] || !g_strArGnomes[i][gnomebWorthPoints]) { continue; }
-        
-        if (!g_strArGnomes[i][gnomebIsCola]) { countGnomes++; } else { countCola++; }
-        
-        countPoints += GetGnomeValue(g_strArGnomes[i][gnomefFirstPickup]);
-    }
-    
-    if (!countGnomes && !countCola) { return 0; }
-    
-    if (showMessage) {
-        new String: msgPart[128] = "";
-        if (countGnomes) {
-            Format(msgPart, sizeof(msgPart), "\x03%i\x01 gnome%s%s", countGnomes, (countGnomes == 1) ? "" : "s", (countCola) ? " and " : "" );
-        }
-        if (countCola) {
-            Format(msgPart, sizeof(msgPart), "%s\x03%i\x01 colapack%s", msgPart, countCola, (countCola == 1) ? "" : "s");
-        }
-        
-        PrintToChatAll("\x01[\x05r\x01] Survivors brought %s, worth \x04%i\x01 bonus point%s.", msgPart, countPoints, (countPoints == 1) ? "" : "s"  );
-    }
-    
-    return countPoints;
-}
 

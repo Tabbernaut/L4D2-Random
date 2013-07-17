@@ -296,17 +296,17 @@ const           HITTAB_LASTCAR          = 7;
 const           HITTAB_FIRSTSMALL       = 11;
 const           HITTAB_TOTAL            = 19;
 
-const           EQ_ITEMS                = 1;            // flags for rand_equal cvar
-const           EQ_DOORS                = 2;
-const           EQ_GLOWS                = 4;
-const           EQ_EVENT                = 8;
-const           EQ_INCAPS               = 16;
-const           EQ_HORDE                = 32;
-const           EQ_ITEM_WEIGHTS         = 64;           // redistribute weights for item randomization?
-const           EQ_SURV_HEALTH          = 128;
-const           EQ_FIRST_ATTACK         = 256;
-const           EQ_TANKS                = 512;          // only for double-tank for a round, though
-const           EQ_POINTS               = 1024;         // for distance & bonus
+const           EQ_ITEMS                = (1<< 0);      // flags for rand_equal cvar
+const           EQ_DOORS                = (1<< 1);
+const           EQ_GLOWS                = (1<< 2);
+const           EQ_EVENT                = (1<< 3);
+const           EQ_INCAPS               = (1<< 4);
+const           EQ_HORDE                = (1<< 5);
+const           EQ_ITEM_WEIGHTS         = (1<< 6);      // redistribute weights for item randomization?
+const           EQ_SURV_HEALTH          = (1<< 7);
+const           EQ_FIRST_ATTACK         = (1<< 8);
+const           EQ_TANKS                = (1<< 9);      // only for double-tank for a round, though
+const           EQ_POINTS               = (1<< 10);     // for distance & bonus
 
 const           EQ_EVERYTHING           = 2047;         // minimum value for which everything is equal
 
@@ -610,6 +610,7 @@ enum _:EntInfo                      // for blind_infected adaptation
             iEntity,
     bool:   hasBeenSeen
 }
+
 enum _:strGnomeData
 {
     bool:   gnomebIsCola,           // whether the gnome is really cola (don't ask)
@@ -618,7 +619,8 @@ enum _:strGnomeData
             gnomeiHoldingClient,    // who is holding it
     bool:   gnomebFirstPickup,      // whether it has been picked up at all
     Float:  gnomefFirstPickup,      // where (in fractional distance) the gnome was first picked up
-            gnomeEntity             // if not held, what phys prop entity is the gnome?
+            gnomeEntity,            // if not held, what phys prop entity is the gnome?
+    bool:   gnomebAccountedFor      // if gnome is considered accounted for at this time
 }
 
 new const g_ciSpawnClassWeight[] =

@@ -3115,6 +3115,7 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
     {
         g_iGnomes++;
         g_strArGnomes[g_iGnomes-1][gnomeEntity] = ent;
+        g_strArGnomes[g_iGnomes-1][gnomebAccountedFor] = true;
         if (type == PCK_SILLY_COLA) { g_strArGnomes[g_iGnomes-1][gnomebIsCola] = true; }
         
         // if in start saferoom, pre-set its value
@@ -3396,11 +3397,9 @@ ChangeSurvivorSetup(index, client)
         // if we've given the gnome, make sure the gnome has a value!
         if (type == PCK_NOITEM && typeSec == PCK_NOITEM)
         {
-            UpdateAfterGnomeGiven(client);
+            UpdateClientHoldingGnome(client);
         }
     }
-    
-
 }
 
 
