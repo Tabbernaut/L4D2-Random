@@ -10,6 +10,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     {
         g_bStripperAltDetected = false;
         SetConVarInt(FindConVar("sv_force_time_of_day"), -1);
+        RNDBNS_SetScaleMode( GetConVarInt(g_hCvarRandBonusScaleMode) );
     }
     
     // only reset on first roundhalf or if event's not equal

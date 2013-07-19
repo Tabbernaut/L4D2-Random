@@ -101,6 +101,10 @@ INIT_DefineCVars()
     g_hCvarRandBonusVar = CreateConVar(                     "rand_bonus_var",                "0.2",     "For bonus variance: how much it can deviate from normal value.", FCVAR_PLUGIN, true, 0.1, true, 0.9);
     g_hCvarRandBonusMin = CreateConVar(                     "rand_bonus_min",               "200",      "For fully random bonus: the minimum.", FCVAR_PLUGIN, true, 50.0, true, 900.0);
     g_hCvarRandBonusMax = CreateConVar(                     "rand_bonus_max",               "800",      "For fully random bonus: the maximum.", FCVAR_PLUGIN, true, 100.0, true, 4000.0);
+    g_hCvarRandBonusSolidFactor = CreateConVar(             "rand_bonus_solid_factor",        "2.0",    "How much solid health is worth for the damage bonus.", FCVAR_PLUGIN, true, 0.0);
+    g_hCvarRandBonusScaleMode = CreateConVar(               "rand_bonus_scale_mode",          "2",      "1 = scale; 2 = reduce.", FCVAR_PLUGIN, true, 0.0);
+    
+    
     
     g_hCvarAmmoAk = CreateConVar(                           "rand_ammo_ak",                 "250",      "Ammo for the AK47 in Random.", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarAmmoScout = CreateConVar(                        "rand_ammo_scout",              "150",      "Ammo for the Scout rifle in Random.", FCVAR_PLUGIN, true, 0.0, false);
@@ -321,13 +325,18 @@ INIT_FillTries()
 {
     // Tries
     g_hTrieCommands = CreateTrie();
-    SetTrieValue(g_hTrieCommands, "!rand",          RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!random",        RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!info",          RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!drop",          RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!bonus",         RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!penalty",       RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!spectate",      RANDOM_COMMAND_SPECTATE);
+    SetTrieValue(g_hTrieCommands, "!rand",              RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!random",            RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!info",              RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!drop",              RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!bonus",             RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!penalty",           RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!spectate",          RANDOM_COMMAND_SPECTATE);
+    // DB
+    SetTrieValue(g_hTrieCommands, "!damage",            RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!health",            RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!damage_explain",    RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "!health_explain",    RANDOM_COMMAND);
     
     g_hTrieEntityCreated = CreateTrie();                                                                                            // classname trie for checking OnEntityCreated()
     SetTrieValue(g_hTrieEntityCreated, "infected",                                  CREATED_INFECTED);

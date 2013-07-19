@@ -663,6 +663,7 @@ RANDOM_DetermineRandomStuff()
         
         new previousEvent = g_iSpecialEvent;
         g_bUsingPBonus = false;
+        RNDBNS_SetSolidFactor( GetConVarFloat(g_hCvarRandBonusSolidFactor) );
         
         g_iSpecialEvent = -1;
         g_sSpecialEventExtra = "";
@@ -786,6 +787,7 @@ RANDOM_DetermineRandomStuff()
                     bBlockTank = true;
                     SetConVarFloat(FindConVar("pain_pills_decay_rate"), g_fDefPillDecayRate * g_RC_fEventAdrenDecay);
                     g_iDifficultyRating += 2;
+                    RNDBNS_SetSolidFactor( 1.0 );   // no solid health + bleed out makes this better
                 }
                 case EVT_NOHUD: {
                     // handled in survivor setup handout / playerleftsaferoom, etc
@@ -2671,7 +2673,11 @@ CheckSurvivorSetup()
     new iSurvivorCount = 0;
     
     // don't do anything if there's nothing to hand out
-    if (!g_bSurvHandout || g_iSurvHandled >= TEAM_SIZE) { return; }
+    if (!g_bSurvHandout || g_iSurvHandled >= TEAM_SIZE)
+    {
+        RNDBNS_CheckStartHealth();
+        return;
+    }
     
     for (new i=1; i < MaxClients && iSurvivorCount < TEAM_SIZE; i++)
     {
@@ -2686,6 +2692,8 @@ CheckSurvivorSetup()
             if (g_iSurvHandled >= TEAM_SIZE) { g_bSurvHandout = false; break; }
         }
     }
+    
+    RNDBNS_CheckStartHealth();
 }
 
 

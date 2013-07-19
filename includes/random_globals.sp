@@ -384,6 +384,8 @@ new     Handle:         g_hCvarRandBonusStatic                              = IN
 new     Handle:         g_hCvarRandBonusVar                                 = INVALID_HANDLE;       // cvar the variance when using bonus variance mode
 new     Handle:         g_hCvarRandBonusMin                                 = INVALID_HANDLE;       // cvar the minimum random distance points for a map
 new     Handle:         g_hCvarRandBonusMax                                 = INVALID_HANDLE;       // cvar the maximum random distance
+new     Handle:         g_hCvarRandBonusSolidFactor                         = INVALID_HANDLE;       // cvar what solid health is worth (compared to normal health)
+new     Handle:         g_hCvarRandBonusScaleMode                           = INVALID_HANDLE;       // cvar how to scale for bonus: scale entire bonus or reduce
 
 new     Handle:         g_hCvarAmmoAk                                       = INVALID_HANDLE;       // cvar how much ammo in AK47s
 new     Handle:         g_hCvarAmmoScout                                    = INVALID_HANDLE;       // cvar how much ammo in Scout rifle

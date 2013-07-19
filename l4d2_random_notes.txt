@@ -5,6 +5,7 @@ L4D2_Random
 
     changelog:
     ---------
+            - Damage bonus revamped (easier to destroy): solid starting health counts double, reduction of max damage for smaller bonuses.
             - Now handles tank odds itself, circumventing built in tank odds.
             - Fixed a bug that caused only one team to get a tank sometimes.
             - Fixed reversed reading of the vote blocking cvar.
@@ -13,6 +14,7 @@ L4D2_Random
             - Fixed a bug where and old tank flow call resulted in problems.
             - Fixed many problems with gnome bonus scoring, including gnomes losing their value and exploits giving players huge bonuses.
             - Added optional argument to !drop / sm_drop: # (1-5) for slot to drop
+            - Added command: !damage_explain to show how bonus is calculated.
             - Update: Changed z_spawn calls to z_spawn_old (cvar controlled, in case it breaks).
             - Update: Updated gamedata.
 
@@ -23,10 +25,9 @@ L4D2_Random
             
             - later:    email Chet, see if maybe he likes Random at all...
             - later:    test and include stabby's random map stuff so people can launch random campaigns after loading random
-            `
+            
             - test:     still jockey in l4d1 mode ... sigh - can't reproduce
             
-            - tweak:    change the way damage bonus scales -- make the damage => bonus effect more sensible. db should be a bit easier to destroy.
             - tweak:    uncap pounce damage for skeet shoot event [when fixed]
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             
