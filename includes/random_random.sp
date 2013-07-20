@@ -4647,7 +4647,6 @@ RANDOM_PrepareChoicesEvents()
     new total = 0;
     new count = 0;
     
-    
     // special event choices
     // ---------------------
     
@@ -4679,6 +4678,7 @@ RANDOM_PrepareChoicesEvents()
         }
         
         // remove some events if we can't spawn witches
+        //  note: on g_RI_bNoWitch, block future EVT_MINIWITCH event...
         if (    g_RI_bNoWitch
             &&  ( i == EVT_WITCHES )
         ) {
@@ -4726,7 +4726,13 @@ RANDOM_PrepareChoicesEvents()
             continue;
         }
         
-        // note: on g_RI_bNoWitch, block future EVT_MINIWITCH event...
+        // block events if no SDKcalls ready
+        if ( i == EVT_BOOMFLU && (g_CallVomitSurvivor == INVALID_HANDLE || g_CallBileJarPlayer == INVALID_HANDLE) )
+        {
+            continue;
+        }
+        
+        
         
         for (new j=0; j < count; j++)
         {

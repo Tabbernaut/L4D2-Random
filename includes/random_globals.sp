@@ -113,7 +113,6 @@ new                     g_iSpectateGhostCount                               = 0;
 new     Handle:         g_setClass                                          = INVALID_HANDLE;
 new     Handle:         g_createAbility                                     = INVALID_HANDLE;
 new                     g_oAbility                                          = 0;
-new     Handle:         g_confRaw                                           = INVALID_HANDLE;
 new     Handle:         g_CallPushPlayer                                    = INVALID_HANDLE;       // for CreateExplosion() push
 new     Handle:         g_CallBileJarPlayer                                 = INVALID_HANDLE;       // for biling infected at will
 new     Handle:         g_CallVomitSurvivor                                 = INVALID_HANDLE;       // for biling survivors at will

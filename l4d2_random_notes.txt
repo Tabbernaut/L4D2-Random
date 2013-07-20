@@ -15,6 +15,7 @@ L4D2_Random
             - Fixed many problems with gnome bonus scoring, including gnomes losing their value and exploits giving players huge bonuses.
             - Added optional argument to !drop / sm_drop: # (1-5) for slot to drop
             - Added command: !damage_explain to show how bonus is calculated.
+            - Made some SDKCalls optional (vomit: breaks boomer flu event, team switching: teamshuffle). Random will load, but disable the relevant functions.
             - Update: Changed z_spawn calls to z_spawn_old (cvar controlled, in case it breaks).
             - Update: Updated gamedata.
 

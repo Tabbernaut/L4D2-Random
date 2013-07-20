@@ -1562,7 +1562,12 @@ PlayerGetVomitedOn(client, attacker = -1)
     
     if (GetClientTeam(client) == TEAM_SURVIVOR)
     {
-        SDKCall(g_CallVomitSurvivor, client, attacker, true);
+        if (g_CallVomitSurvivor != INVALID_HANDLE) {
+            SDKCall(g_CallVomitSurvivor, client, attacker, true);
+        }
+        else {
+            PrintToChatAll("[r error] Couldn't do vomit effect due to missing VomitSurvivor SDKCall Handle. Act like you're boomed.");
+        }
         
         if (!g_bAlreadyVomitedUpon[client])
         {
@@ -1578,7 +1583,13 @@ PlayerGetVomitedOn(client, attacker = -1)
     }
     else if (GetClientTeam(client) == TEAM_INFECTED)
     {
-        SDKCall(g_CallBileJarPlayer, client, attacker, true);
+        if (g_CallBileJarPlayer != INVALID_HANDLE) {
+            SDKCall(g_CallBileJarPlayer, client, attacker, true);
+        }
+        else {
+            PrintToChatAll("[r error] Couldn't do vomit effect (infected) due to missing VomitSurvivor SDKCall Handle. Act like you're boomed.");
+        }
+        
         
         if (!g_bAlreadyVomitedUpon[client])
         {
@@ -1654,8 +1665,7 @@ PlayerDoVomit(client) {
     CreateTimer(0.77, Timer_VomitAdjustPosE, EntIndexToEntRef(particle), TIMER_FLAG_NO_MAPCHANGE);
 }
 
-public Action:Timer_VomitAdjustPosB(Handle:timer, any:vomit)
-{
+public Action:Timer_VomitAdjustPosB(Handle:timer, any:vomit) {
     if (!IsValidEntity(vomit)) { return; }
     new Float: loc[3], Float: ang[3];
     GetEntPropVector(vomit, Prop_Send, "m_vecOrigin", loc);
@@ -1665,8 +1675,7 @@ public Action:Timer_VomitAdjustPosB(Handle:timer, any:vomit)
     
     TeleportEntity(vomit, loc, ang, NULL_VECTOR);
 }
-public Action:Timer_VomitAdjustPosBA(Handle:timer, any:vomit)
-{
+public Action:Timer_VomitAdjustPosBA(Handle:timer, any:vomit) {
     if (!IsValidEntity(vomit)) { return; }
     new Float: loc[3], Float: ang[3];
     GetEntPropVector(vomit, Prop_Send, "m_vecOrigin", loc);
@@ -1676,8 +1685,7 @@ public Action:Timer_VomitAdjustPosBA(Handle:timer, any:vomit)
     
     TeleportEntity(vomit, loc, ang, NULL_VECTOR);
 }
-public Action:Timer_VomitAdjustPosBB(Handle:timer, any:vomit)
-{
+public Action:Timer_VomitAdjustPosBB(Handle:timer, any:vomit) {
     if (!IsValidEntity(vomit)) { return; }
     new Float: loc[3], Float: ang[3];
     GetEntPropVector(vomit, Prop_Send, "m_vecOrigin", loc);
@@ -1689,8 +1697,7 @@ public Action:Timer_VomitAdjustPosBB(Handle:timer, any:vomit)
 }
 
 
-public Action:Timer_VomitAdjustPosC(Handle:timer, any:vomit)
-{
+public Action:Timer_VomitAdjustPosC(Handle:timer, any:vomit) {
     if (!IsValidEntity(vomit)) { return; }
     new Float: loc[3], Float: ang[3];
     GetEntPropVector(vomit, Prop_Send, "m_vecOrigin", loc);
@@ -1700,8 +1707,7 @@ public Action:Timer_VomitAdjustPosC(Handle:timer, any:vomit)
     
     TeleportEntity(vomit, loc, ang, NULL_VECTOR);
 }
-public Action:Timer_VomitAdjustPosCA(Handle:timer, any:vomit)
-{
+public Action:Timer_VomitAdjustPosCA(Handle:timer, any:vomit) {
     if (!IsValidEntity(vomit)) { return; }
     new Float: loc[3], Float: ang[3];
     GetEntPropVector(vomit, Prop_Send, "m_vecOrigin", loc);
@@ -1711,8 +1717,7 @@ public Action:Timer_VomitAdjustPosCA(Handle:timer, any:vomit)
     
     TeleportEntity(vomit, loc, ang, NULL_VECTOR);
 }
-public Action:Timer_VomitAdjustPosCB(Handle:timer, any:vomit)
-{
+public Action:Timer_VomitAdjustPosCB(Handle:timer, any:vomit) {
     if (!IsValidEntity(vomit)) { return; }
     new Float: loc[3], Float: ang[3];
     GetEntPropVector(vomit, Prop_Send, "m_vecOrigin", loc);
@@ -1723,8 +1728,7 @@ public Action:Timer_VomitAdjustPosCB(Handle:timer, any:vomit)
     TeleportEntity(vomit, loc, ang, NULL_VECTOR);
 }
 
-public Action:Timer_VomitAdjustPosD(Handle:timer, any:vomit)
-{
+public Action:Timer_VomitAdjustPosD(Handle:timer, any:vomit) {
     if (!IsValidEntity(vomit)) { return; }
     new Float: loc[3], Float: ang[3];
     GetEntPropVector(vomit, Prop_Send, "m_vecOrigin", loc);
@@ -1735,8 +1739,7 @@ public Action:Timer_VomitAdjustPosD(Handle:timer, any:vomit)
     TeleportEntity(vomit, loc, ang, NULL_VECTOR);
 }
 
-public Action:Timer_VomitAdjustPosE(Handle:timer, any:vomit)
-{
+public Action:Timer_VomitAdjustPosE(Handle:timer, any:vomit) {
     if (!IsValidEntity(vomit)) { return; }
     new Float: loc[3], Float: ang[3];
     GetEntPropVector(vomit, Prop_Send, "m_vecOrigin", loc);

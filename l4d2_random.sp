@@ -24,7 +24,7 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.54"
+#define PLUGIN_VERSION "1.0.55"
 
 /*
         L4D2 Random
@@ -724,6 +724,11 @@ public Action: RandomEventInfo_Cmd(client, args)
 }
 public Action: RandomTeamShuffle_Cmd(client, args)
 {
+    if (g_CallTOB == INVALID_HANDLE || g_CallSHS) {
+        PrintToChat(client, "\x01[\x05r\x01] Server/Config problem: cannot move players (SDKCall TakeOverBot or SetHumanSpec missing signature).");
+        return Plugin_Handled;
+    }
+    
     if (g_bCampaignMode)
     {
         PrintToChat(client, "\x01[\x05r\x01] This only works in versus games.");
@@ -735,6 +740,11 @@ public Action: RandomTeamShuffle_Cmd(client, args)
 }
 public Action: RandomForceTeamShuffle_Cmd(client, args)
 {
+    if (g_CallTOB == INVALID_HANDLE || g_CallSHS) {
+        PrintToChat(client, "\x01[\x05r\x01] Server/Config problem: cannot move players (SDKCall TakeOverBot or SetHumanSpec missing signature).");
+        return Plugin_Handled;
+    }
+    
     if (g_bCampaignMode)
     {
         PrintToChat(client, "\x01[\x05r\x01] This only works in versus games.");

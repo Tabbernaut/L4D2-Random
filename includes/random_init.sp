@@ -515,12 +515,12 @@ INIT_FillTries()
 // SDK Calls
 INIT_PrepareAllSDKCalls()
 {
-    g_confRaw = LoadGameConfigFile("l4d2_random");
-    if (g_confRaw == INVALID_HANDLE)
+    new Handle: confRaw = LoadGameConfigFile("l4d2_random");
+    if (confRaw == INVALID_HANDLE)
             ThrowError("Could not load gamedata/l4d2_random.txt");
     
     StartPrepSDKCall(SDKCall_Player);
-    PrepSDKCall_SetFromConf(g_confRaw, SDKConf_Signature, "SetClass");
+    PrepSDKCall_SetFromConf(confRaw, SDKConf_Signature, "SetClass");
     PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
     g_setClass = EndPrepSDKCall();
 
@@ -528,7 +528,7 @@ INIT_PrepareAllSDKCalls()
             ThrowError("Unable to find SetClass signature.");
     
     StartPrepSDKCall(SDKCall_Static);
-    PrepSDKCall_SetFromConf(g_confRaw, SDKConf_Signature, "CreateAbility");
+    PrepSDKCall_SetFromConf(confRaw, SDKConf_Signature, "CreateAbility");
     PrepSDKCall_AddParameter(SDKType_CBasePlayer, SDKPass_Pointer);
     PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Pointer);
     g_createAbility = EndPrepSDKCall();
@@ -536,11 +536,11 @@ INIT_PrepareAllSDKCalls()
     if (g_createAbility == INVALID_HANDLE)
             ThrowError("Unable to find CreateAbility signature.");
 
-    g_oAbility = GameConfGetOffset(g_confRaw, "oAbility");
+    g_oAbility = GameConfGetOffset(confRaw, "oAbility");
 
     
     StartPrepSDKCall(SDKCall_Player);
-    PrepSDKCall_SetFromConf(g_confRaw, SDKConf_Signature, "CTerrorPlayer_Fling");
+    PrepSDKCall_SetFromConf(confRaw, SDKConf_Signature, "CTerrorPlayer_Fling");
     PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
     PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
     PrepSDKCall_AddParameter(SDKType_CBasePlayer, SDKPass_Pointer);
@@ -550,22 +550,23 @@ INIT_PrepareAllSDKCalls()
     if (g_CallPushPlayer == INVALID_HANDLE)
             ThrowError("Unable to find the \"CTerrorPlayer_Fling\" signature.");
     
+    
+    // the following are non-critical (but block some functions)
     StartPrepSDKCall(SDKCall_Player);
-    PrepSDKCall_SetFromConf(g_confRaw, SDKConf_Signature, "CTerrorPlayer_OnHitByVomitJar");
+    PrepSDKCall_SetFromConf(confRaw, SDKConf_Signature, "CTerrorPlayer_OnHitByVomitJar");
     PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
     g_CallBileJarPlayer = EndPrepSDKCall();
-    
     if (g_CallBileJarPlayer == INVALID_HANDLE)
-            ThrowError("Unable to find the \"CTerrorPlayer_OnHitByVomitJar\" signature.");
+            LogMessage("[r init] SDKPrep failed: Unable to find the \"CTerrorPlayer_OnHitByVomitJar\" signature.");
     
     // vomit tracking
     StartPrepSDKCall(SDKCall_Player);
-    PrepSDKCall_SetFromConf(g_confRaw, SDKConf_Signature, "CTerrorPlayer_OnVomitedUpon");
+    PrepSDKCall_SetFromConf(confRaw, SDKConf_Signature, "CTerrorPlayer_OnVomitedUpon");
     PrepSDKCall_AddParameter(SDKType_CBasePlayer, SDKPass_Pointer);
     PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
     g_CallVomitSurvivor = EndPrepSDKCall();
     if (g_CallVomitSurvivor == INVALID_HANDLE)
-            SetFailState("Unable to find the \"CTerrorPlayer_OnVomitedUpon\" signature.");
+            LogMessage("[r init] SDKPrep failed: Unable to find the \"CTerrorPlayer_OnVomitedUpon\" signature.");
     
     
     new Handle: confRaw_b = LoadGameConfigFile("left4downtown.l4d2");
@@ -573,14 +574,18 @@ INIT_PrepareAllSDKCalls()
     PrepSDKCall_SetFromConf(confRaw_b, SDKConf_Signature, "SetHumanSpec");
     PrepSDKCall_AddParameter(SDKType_CBasePlayer, SDKPass_Pointer);
     g_CallSHS = EndPrepSDKCall();
+    if (g_CallSHS == INVALID_HANDLE)
+            LogMessage("[r init] SDKPrep failed: Unable to find the \"SetHumanSpec\" signature.");
     
     StartPrepSDKCall(SDKCall_Player);
     PrepSDKCall_SetFromConf(confRaw_b, SDKConf_Signature, "TakeOverBot");
     PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
     g_CallTOB = EndPrepSDKCall();
+    if (g_CallTOB == INVALID_HANDLE)
+            LogMessage("[r init] SDKPrep failed: Unable to find the \"TakeOverBot\" signature.");
 
     
-    CloseHandle(g_confRaw);
+    CloseHandle(confRaw);
     CloseHandle(confRaw_b);
 }
 
