@@ -843,6 +843,12 @@ RANDOM_DetermineRandomStuff()
                     SetConVarInt(FindConVar("z_spitter_limit"), 1);
                     SetConVarInt(FindConVar("z_jockey_limit"), 1);
                     SetConVarInt(FindConVar("z_charger_limit"), 1);
+                    
+                    // pounce uncap
+                    if (g_hCvarPounceUncapDamage != INVALID_HANDLE && g_hCvarPounceUncapRange != INVALID_HANDLE) {
+                        SetConVarInt(g_hCvarPounceUncapDamage, g_RC_iPounceUncapDamageMax);
+                        SetConVarFloat(g_hCvarPounceUncapRange, g_RC_fPounceUncapRangeMax);
+                    }
                 }
                 case EVT_GUNSWAP: {
                     // don't allow normal weapon spawns

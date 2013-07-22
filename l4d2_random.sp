@@ -24,7 +24,7 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.55"
+#define PLUGIN_VERSION "1.0.56"
 
 /*
         L4D2 Random

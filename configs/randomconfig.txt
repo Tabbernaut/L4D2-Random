@@ -66,6 +66,9 @@
 
 		"gift_blind_time"		"13.0"
 
+		"pounce_uncap_damage_max"	"49"		// for hunters event(s)
+		"pounce_uncap_range_max"	"1729.1666"
+
 		// extra options
 		"extra_common_models"		"1"
 		"draw_panel_report"		"1"

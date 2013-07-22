@@ -395,6 +395,10 @@ new     Handle:         g_hCvarReadyUp                                      = IN
 new     Handle:         g_hCvarPausable                                     = INVALID_HANDLE;       // cvar handle for pausable/pausing checking
 new     Handle:         g_hCvarBotStop                                      = INVALID_HANDLE;       // cvar handle for sb_stop
 
+new     Handle:         g_hCvarPounceUncapDamage                            = INVALID_HANDLE;       // z_pounce_max_bonus_damage
+new     Handle:         g_hCvarPounceUncapRange                             = INVALID_HANDLE;       // z_pounce_damage_range_max
+
+
 // Default values
 new                     g_iTeamSize                                         = 4;
 new                     g_iDefSpawnTimeMin                                  = 15;
@@ -441,6 +445,9 @@ new     Float:          g_fDefRiotTonfaProb                                 = 0.
 new                     g_iActiveAmmoAk                                     = 250;
 new                     g_iActiveAmmoScout                                  = 90;
 new                     g_iActiveAmmoAWP                                    = 60;
+
+new                     g_iPounceUncapDamageMax                             = 24;
+new     Float:          g_fPounceUncapRangeMax                              = 1000.0;
 
 // RandomConfig keyvalues
 new     Float:          g_RC_fItemFactor2v2                                 = 0.5;
@@ -517,6 +524,9 @@ new     Float:          g_RC_fExplosionPowerHigh                            = 30
 new     Float:          g_RC_fExplosionPowerLow                             = 20.0;
 
 new     Float:          g_RC_fBlindTime                                     = 15.0;
+
+new                     g_RC_iPounceUncapDamageMax                          = 49;
+new     Float:          g_RC_fPounceUncapRangeMax                           = 1729.1666;
 
 // other RC options
 new     bool:           g_RC_bExtraCommonModels                             = true;

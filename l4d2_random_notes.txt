@@ -19,6 +19,8 @@ L4D2_Random
             - Update: Changed z_spawn calls to z_spawn_old (cvar controlled, in case it breaks).
             - Update: Updated gamedata.
 
+            - Uncapped pounce damage (50 dmg max, 1729... range max) for Skeet Shoot event.
+
     to-do:
     ------  
             - wait:     gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
@@ -29,7 +31,6 @@ L4D2_Random
             
             - test:     still jockey in l4d1 mode ... sigh - can't reproduce
             
-            - tweak:    uncap pounce damage for skeet shoot event [when fixed]
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             
 

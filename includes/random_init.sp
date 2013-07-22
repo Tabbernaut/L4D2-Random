@@ -195,6 +195,10 @@ INIT_DefineCVars()
     g_hCvarPausable = FindConVar("sv_pausable");
     g_hCvarBotStop = FindConVar("sb_stop");
     
+    // pounce uncap
+    g_hCvarPounceUncapDamage = FindConVar("z_hunter_max_pounce_bonus_damage");
+    g_hCvarPounceUncapRange = FindConVar("z_pounce_damage_range_max");
+    
     // hook change of convar
     HookConVarChange(g_hCvarPausable, OnCvarPausableChanged);
 }
@@ -265,9 +269,14 @@ INIT_CVarsGetDefault()
     g_fDefCedaBileProb =        GetConVarFloat(FindConVar("sv_infected_ceda_vomitjar_probability"));
     g_fDefRiotTonfaProb =       GetConVarFloat(FindConVar("sv_infected_riot_control_tonfa_probability"));
     
-    
     if (FindConVar("hc_car_standing_damage") != INVALID_HANDLE) {
         g_iDefTankHittableDamage =  GetConVarInt(FindConVar("hc_car_standing_damage"));
+    }
+    
+    // pounce uncap
+    if (g_hCvarPounceUncapDamage != INVALID_HANDLE && g_hCvarPounceUncapRange != INVALID_HANDLE) {
+        g_iPounceUncapDamageMax = GetConVarInt(g_hCvarPounceUncapDamage);
+        g_fPounceUncapRangeMax = GetConVarFloat(g_hCvarPounceUncapRange);
     }
 }
 
@@ -791,6 +800,9 @@ RConfig_Read()
         g_RC_fExplosionPowerLow = KvGetFloat(kRCData, "explosion_power_low", g_RC_fExplosionPowerLow);
         
         g_RC_fBlindTime = KvGetFloat(kRCData, "gift_blind_time", g_RC_fBlindTime);
+        
+        g_RC_iPounceUncapDamageMax = KvGetNum(kRCData, "pounce_uncap_damage_max", g_RC_iPounceUncapDamageMax);
+        g_RC_fPounceUncapRangeMax = KvGetFloat(kRCData, "pounce_uncap_range_max", g_RC_fPounceUncapRangeMax);
         
         // extra options
         g_RC_bExtraCommonModels = bool: (KvGetNum(kRCData, "extra_common_models", 1));

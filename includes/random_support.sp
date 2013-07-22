@@ -245,6 +245,12 @@ EVENT_ResetOtherCvars()
         SetConVarInt(FindConVar("hc_baggage_standing_damage"), tmpDmg);
         SetConVarInt(FindConVar("hc_incap_standard_damage"), tmpDmg);
     }
+    
+    // pounce uncap
+    if (g_hCvarPounceUncapDamage != INVALID_HANDLE && g_hCvarPounceUncapRange != INVALID_HANDLE) {
+        SetConVarInt(g_hCvarPounceUncapDamage, g_iPounceUncapDamageMax);
+        SetConVarFloat(g_hCvarPounceUncapRange, g_fPounceUncapRangeMax);
+    }
 }
 
 EVENT_ResetDifficulty()
