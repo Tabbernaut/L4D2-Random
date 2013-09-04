@@ -23,6 +23,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
         g_bNoHealthItems = false;
         g_bSpecialEventPlayerCheck = false;
         g_bNoSpawnBalance = false;
+        g_bFreezeDistanceOnTank = GetConVarBool( g_hCvarFreezeDistanceTank );
     }
     
     if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
@@ -49,6 +50,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     g_bTeamInfectedVotedEvent = false;
     
     g_bFirstTankSpawned = false;
+    g_bSecondTankSpawned = false;
     g_bIsTankInPlay = false;
     g_fTankPreviousPass = 0.0;
     g_iTankPass = 0;
@@ -1303,11 +1305,11 @@ public Action: Timer_PrepareNextTank(Handle:timer)
 {
     if (g_iSpecialEvent == EVT_MINITANKS)
     {
-        PrintDebug(3, "[rand] preparing next tank (%i)...", g_iMiniTankIndex+1);
-        
         if (g_iMiniTankIndex == g_iMiniTankNum - 1) {
             return;
         }
+        
+        PrintDebug(3, "[rand] preparing next tank (%i)...", g_iMiniTankIndex+1);
         
         L4D2Direct_SetVSTankToSpawnThisRound(0, true);
         L4D2Direct_SetVSTankToSpawnThisRound(1, true);
@@ -1776,16 +1778,24 @@ bool: SUPPORT_IsWeaponPrimary(weapId)
 bool: SUPPORT_IsInReady()
 {
     // do a check that's compatible with new and old readyup plugins
+    // use native if crox's plugin is loaded
     
     // check if we've readyup loaded (here because now all plugins are loaded)
     if (g_hCvarReadyUp == INVALID_HANDLE || !GetConVarBool(g_hCvarReadyUp)) { return false; }
     
-    // find a survivor
-    new client = GetAnySurvivor();
-    if (client == 0) { return false; }
-    
-    // if he's frozen, assume it's readyup time
-    return bool: (GetEntityMoveType(client) == MOVETYPE_NONE);
+    if (g_bReadyUpAvailable) {
+        // use native
+        return IsInReady();
+    }
+    else {
+        // use trick:
+        // find a survivor
+        new client = GetAnySurvivor();
+        if (client == 0) { return false; }
+        
+        // if he's frozen, assume it's readyup time
+        return bool: (GetEntityMoveType(client) == MOVETYPE_NONE);
+    }
 }
 
 bool: IsEntityInSaferoom(entity, bool:isPlayer=false, bool:endSaferoom=true)
@@ -1863,6 +1873,24 @@ bool: IsTank(any:client)
 
 bool:IsHangingFromLedge(client) { return bool:(GetEntProp(client, Prop_Send, "m_isHangingFromLedge") || GetEntProp(client, Prop_Send, "m_isFallingFromLedge")); }
 bool:IsIncapacitated(client) { return bool:GetEntProp(client, Prop_Send, "m_isIncapacitated"); }
+
+/* tankrush blocking */
+SUPPORT_FreezePoints( bool:bShowMessage = false ) {
+    if ( !g_bFrozenPoints ) {
+        g_iRememberFrozenDistance = L4D_GetVersusMaxCompletionScore();
+        if ( bShowMessage ) PrintToChatAll("\x01[\x05r\x01] \x04Freezing\x01 distance points until tank is killed.");
+        L4D_SetVersusMaxCompletionScore(0);
+        g_bFrozenPoints = true;
+    }
+}
+
+SUPPORT_UnFreezePoints( bool:bShowMessage = false ) {
+    if ( g_bFrozenPoints ) {
+        if ( bShowMessage ) PrintToChatAll("\x01[\x05r\x01] \x04Unfreezing\x01 distance points.");
+        L4D_SetVersusMaxCompletionScore(g_iRememberFrozenDistance);
+        g_bFrozenPoints = false;
+    }
+}
 
 /* GetTankClient()
 {
@@ -3238,11 +3266,14 @@ SUPPORT_ShuffleTeams(client=-1)
         if (i >= iPlayerCount) { break; }
         
         // alternate between teams to pick
+        /*
         if (bReadyUpLoaded) {
             ServerCommand("sm_swapto #%i %d", GetClientUserId(arRandomPlayers[i]), (bSurvTeam) ? TEAM_SURVIVOR : TEAM_INFECTED);
         } else {
             ChangePlayerTeam(arRandomPlayers[i], (bSurvTeam) ? TEAM_SURVIVOR : TEAM_INFECTED );
         }
+        */
+        ChangePlayerTeam(arRandomPlayers[i], (bSurvTeam) ? TEAM_SURVIVOR : TEAM_INFECTED );
         
         bSurvTeam = !bSurvTeam;
     }
@@ -3254,49 +3285,49 @@ SUPPORT_ShuffleTeams(client=-1)
 }
 
 
-stock bool:ChangePlayerTeam(client, team)
+stock bool:ChangePlayerTeam(client, team /*, bool:force */)
 {
-    if (GetClientTeam(client) == team) return true;
-    
-    if (team != TEAM_SURVIVOR)
+    if (GetClientTeam(client) == team)
     {
-        //we can always swap to infected or spectator, it has no actual limit
-        ChangeClientTeam(client, team);
         return true;
     }
-    
     /*
-    if (GetTeamHumanCount(team) == GetTeamMaxHumans(team))
+    else if (!force && GetTeamHumanCount(team) == GetTeamMaxHumans(team)) 
     {
         return false;
     }
     */
     
-    //for survivors its more tricky
-    new bot;
-    
-    for (bot = 1; 
-        bot < MaxClients+1 && (!IsClientInGame(bot) || !IsFakeClient(bot) || (GetClientTeam(bot) != TEAM_SURVIVOR));
-        bot++) {}
-    
-    if (bot == MaxClients+1)
+    if (team != TEAM_SURVIVOR)
     {
-        decl String:command[] = "sb_add";
-        new flags = GetCommandFlags(command);
-        SetCommandFlags(command, flags & ~FCVAR_CHEAT);
-        
-        ServerCommand("sb_add");
-        SetCommandFlags(command, flags);
-        
-        return false;
+        ChangeClientTeam(client, team);
+        return true;
     }
-
-    //have to do this to give control of a survivor bot
-    SDKCall(g_CallSHS, bot, client);
-    SDKCall(g_CallTOB, client, true);
-    
-    return true;
+    else
+    {
+        new bot = FindSurvivorBot();
+        if (bot > 0)
+        {
+            CheatCommand(client, "sb_takecontrol", "");
+            return true;
+        }
+    }
+    return false;
 }
+
+/* return -1 if no bot found, clientid otherwise */
+stock FindSurvivorBot()
+{
+    for (new client = 1; client <= MaxClients; client++)
+    {
+        if (IsClientInGame(client) && IsFakeClient(client) && GetClientTeam(client) == TEAM_SURVIVOR)
+        {
+            return client;
+        }
+    }
+    return -1;
+}
+
 
 SUPPORT_VotePickEvent(event, client)
 {

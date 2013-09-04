@@ -16,6 +16,7 @@ new     Handle:         g_hTrieCommands                                     = IN
 new                     g_iMeleeClassCount                                  = 0;                    // melee weapons available?
 new     String:         g_sMeleeClass           [MELEE_CLASS_COUNT][MELEE_CLASS_LENGTH];            // available melee class-strings
 new     Handle:         g_hSteamIds                                         = INVALID_HANDLE;       // store players so we know who's already been welcomed
+new     bool:           g_bReadyUpAvailable                                 = false;                // whether crox's readyup plugin is used
 
 new     bool:           g_bDefaultCvarsLoaded                               = false;                // if not loaded, check if they can be loaded and load them
 new     bool:           g_bVeryFirstMapLoad                                 = true;                 // for preventing a first-map problem with item randomization
@@ -36,6 +37,11 @@ new                     g_iSpecialEventToForce                              = -1
 new                     g_iSpecialEventToForceAlways                        = -1;                   // same but forever
 new     bool:           g_bT2Nerfed                                         = true;                 // true when you can't have > single pistol while holding t2
 new     bool:           g_bSurvivorsLoadedIn                                = false;                // to check for calling EVENT_AllSurvivorsLoadedIn()
+
+new     bool:           g_bFreezeDistanceOnTank                             = false;                // if true, freezes distance during tanks
+new     bool:           g_bReportFreezing                                   = true;                 // if true, reports when freezing
+new     bool:           g_bFrozenPoints                                     = false;                // true if distance points are frozen (for tank)
+new                     g_iRememberFrozenDistance                           = 0;                    // distance before freezing distance points
 
 // Menu handling
 new                     g_iEventMenu            [MAXPLAYERS+1]              = {0,...};              // what menu to use
@@ -79,6 +85,7 @@ new                     g_iHadTanks             [MAXPLAYERS+1]              = {0
 new     bool:           g_bIsTankInPlay                                     = false;
 new     bool:           g_bTankFirstRound                                   = false;
 new     bool:           g_bFirstTankSpawned                                 = false;
+new     bool:           g_bSecondTankSpawned                                = false;
 new                     g_iTankClient                                       = 0;
 new     Float:          g_fTankPreviousPass                                 = 0.0;                  // when did the tank previously pass to a player?
 new                     g_iTankPass                                         = 0;                    // which (human) tank pass we're on
@@ -116,8 +123,6 @@ new                     g_oAbility                                          = 0;
 new     Handle:         g_CallPushPlayer                                    = INVALID_HANDLE;       // for CreateExplosion() push
 new     Handle:         g_CallBileJarPlayer                                 = INVALID_HANDLE;       // for biling infected at will
 new     Handle:         g_CallVomitSurvivor                                 = INVALID_HANDLE;       // for biling survivors at will
-new     Handle:         g_CallSHS                                           = INVALID_HANDLE;       // infected
-new     Handle:         g_CallTOB                                           = INVALID_HANDLE;       // survivor
 
 // Sack-exploitation checks and Death order effect
 new                     g_iClassTimeout         [7]                         = 0;                    // the 'level' / counter for the timeout
@@ -326,7 +331,8 @@ new     Handle:         g_hCvarNoSupportSI                                  = IN
 new     Handle:         g_hCvarTeamSize                                     = INVALID_HANDLE;       // cvar how many survivors in a team? used for balancing item spread (convar survivor_limit)
 new     Handle:         g_hCvarRestrictMelee                                = INVALID_HANDLE;       // cvar whether to restrict melee weapons to normal l4d2-material
 new     Handle:         g_hCvarRandomTank                                   = INVALID_HANDLE;       // cvar whether player selection for tank is random
-new     Handle:         g_hCvarNoSpitterDuringTank                          = INVALID_HANDLE;       // cvar
+new     Handle:         g_hCvarNoSpitterDuringTank                          = INVALID_HANDLE;       // cvar like it says
+new     Handle:         g_hCvarFreezeDistanceTank                           = INVALID_HANDLE;       // cvar whether distance points should be frozen during tank
 new     Handle:         g_hCvarBoomedTime                                   = INVALID_HANDLE;       // cvar boomed window in seconds
 new     Handle:         g_hCvarGnomeBonus                                   = INVALID_HANDLE;       // cvar how many points for a full gnome start->end delivery
 new     Handle:         g_hCvarGnomeFinaleFactor                            = INVALID_HANDLE;       // cvar scaling gnome bonus for finale maps
@@ -373,6 +379,7 @@ new     Handle:         g_hCvarFinaleAmmoChance                             = IN
 new     Handle:         g_hCvarAlarmedCarChance                             = INVALID_HANDLE;       // cvar the odds that a car is alarmed
 new     Handle:         g_hCvarT2StartChance                                = INVALID_HANDLE;       // cvar odds that t2's are allowed in start saferoom
 
+new     Handle:         g_hCvarStaticBonus                                  = INVALID_HANDLE;       // cvar: the static survival bonus to use
 new     Handle:         g_hCvarRandDistance                                 = INVALID_HANDLE;       // cvar whether we're using random distance points (mode)
 new     Handle:         g_hCvarRandDistVar                                  = INVALID_HANDLE;       // cvar the variance when using normal map distances
 new     Handle:         g_hCvarRandDistMin                                  = INVALID_HANDLE;       // cvar the minimum random distance points for a map

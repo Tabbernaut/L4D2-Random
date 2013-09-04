@@ -45,6 +45,7 @@ INIT_DefineCVars()
     g_hCvarRestrictMelee = CreateConVar(                    "rand_restrict_melee",           "1",       "If set, only allows normal l4d2 melee weapons to spawn.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarRandomTank = CreateConVar(                       "rand_tank",                     "1",       "Whether player selection for tank is purely random.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarNoSpitterDuringTank = CreateConVar(              "rand_tank_nospitter",           "1",       "Block spitter while tank is up?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarFreezeDistanceTank = CreateConVar(               "rand_tank_freezepoints",        "0",       "Whether to always block distance points when a tank is alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarBoomedTime = CreateConVar(                       "rand_boomed_time",             "10.0",     "The time window in seconds that boomer team-ups are rewarded (2+ boomers getting booms on different survivors). 0 = boomer combos are not rewarded.", FCVAR_PLUGIN, true, 0.0, true, 20.0);
     g_hCvarGnomeBonus = CreateConVar(                       "rand_gnome_bonus",              "0.25",    "The bonus given for bringing a gnome from start to end saferoom. (lower than 10 = amount of times distance, greater = static bonus)", FCVAR_PLUGIN, true, 0.0);
     g_hCvarGnomeFinaleFactor = CreateConVar(                "rand_gnome_finale_factor",      "0.5",     "The gnome bonus is worth this factor on finales.", FCVAR_PLUGIN, true, 0.0);
@@ -103,7 +104,7 @@ INIT_DefineCVars()
     g_hCvarRandBonusMax = CreateConVar(                     "rand_bonus_max",               "800",      "For fully random bonus: the maximum.", FCVAR_PLUGIN, true, 100.0, true, 4000.0);
     g_hCvarRandBonusSolidFactor = CreateConVar(             "rand_bonus_solid_factor",        "2.0",    "How much solid health is worth for the damage bonus.", FCVAR_PLUGIN, true, 0.0);
     g_hCvarRandBonusScaleMode = CreateConVar(               "rand_bonus_scale_mode",          "2",      "1 = scale; 2 = reduce.", FCVAR_PLUGIN, true, 0.0);
-    
+    g_hCvarStaticBonus = CreateConVar(                      "rand_bonus_static_surv",        "25",      "Static survival bonus (on top of damage bonus).", FCVAR_PLUGIN, true, 0.0);
     
     
     g_hCvarAmmoAk = CreateConVar(                           "rand_ammo_ak",                 "250",      "Ammo for the AK47 in Random.", FCVAR_PLUGIN, true, 0.0, false);
@@ -578,24 +579,8 @@ INIT_PrepareAllSDKCalls()
             LogMessage("[r init] SDKPrep failed: Unable to find the \"CTerrorPlayer_OnVomitedUpon\" signature.");
     
     
-    new Handle: confRaw_b = LoadGameConfigFile("left4downtown.l4d2");
-    StartPrepSDKCall(SDKCall_Player);
-    PrepSDKCall_SetFromConf(confRaw_b, SDKConf_Signature, "SetHumanSpec");
-    PrepSDKCall_AddParameter(SDKType_CBasePlayer, SDKPass_Pointer);
-    g_CallSHS = EndPrepSDKCall();
-    if (g_CallSHS == INVALID_HANDLE)
-            LogMessage("[r init] SDKPrep failed: Unable to find the \"SetHumanSpec\" signature.");
-    
-    StartPrepSDKCall(SDKCall_Player);
-    PrepSDKCall_SetFromConf(confRaw_b, SDKConf_Signature, "TakeOverBot");
-    PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
-    g_CallTOB = EndPrepSDKCall();
-    if (g_CallTOB == INVALID_HANDLE)
-            LogMessage("[r init] SDKPrep failed: Unable to find the \"TakeOverBot\" signature.");
-
-    
     CloseHandle(confRaw);
-    CloseHandle(confRaw_b);
+    //CloseHandle(confRaw_b);
 }
 
 

@@ -780,6 +780,10 @@ RANDOM_DetermineRandomStuff()
                     SetConVarInt(FindConVar("defibrillator_use_duration"), 2);
                     bDoItemRePrep = true;
                     g_iDifficultyRating += 2;
+                    // block tank unless it's forced
+                    if (fTankChance < 1.0) {
+                        bBlockTank = true;
+                    }
                 }
                 case EVT_ADREN: {
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
@@ -881,6 +885,7 @@ RANDOM_DetermineRandomStuff()
                     g_bWitchWillSpawn = false;
                     g_bTankWillSpawn = true;
                     bBlockDoubleTank = true;
+                    g_bFreezeDistanceOnTank = true;
                     
                     SUPPORT_MultiTankRandomization();
                     
@@ -1063,7 +1068,7 @@ RANDOM_DetermineRandomStuff()
         g_bWitchWillSpawn = true;
     }
     
-    if (g_bTankWillSpawn)
+    if (g_bTankWillSpawn && g_iSpecialEvent != EVT_MINITANKS)
     {
         g_iDifficultyRating += 2;
         
@@ -1135,6 +1140,7 @@ RANDOM_DetermineRandomStuff()
                     )
             ) {
                 g_bDoubleTank = true;
+                g_bFreezeDistanceOnTank = true;
                 
                 new Float: fTmpVarLess = 1.0 - GetConVarFloat(g_hCvarTankFlowVariance);
                 new Float: fTmpVarMore = 1.0 + GetConVarFloat(g_hCvarTankFlowVariance);
@@ -2476,8 +2482,10 @@ RandomizeSurvivorItems()
         }
         // only give melees for women event
         else if (g_iSpecialEvent == EVT_WOMEN) {
-            randomPick = INDEX_SURV_MELEE;
-            secondaryPick = -1;
+            // force melee weapon as specified
+            randomPick = -1;
+            secondaryPick = INDEX_SURV_MELEE;
+            bSecondaryForced = true;
         }
         else if (g_iSpecialEvent == EVT_WITCHES) {
             randomPick = INDEX_SURV_T1SHOT;
@@ -3316,30 +3324,35 @@ ChangeSurvivorSetup(index, client)
         GiveItem(client, "weapon_grenade_launcher", g_RC_iEventBadComboAmmo, GRENADE_LAUNCHER_OFFSET_IAMMO);
         return;
     }
+    else if (g_iSpecialEvent == EVT_WOMEN) {
+        // safeguard (seems it's gnomes only otherwise)
+        typeSec = PCK_MELEE;
+    }
     
     new String:weaponname[STR_MAX_ITEMGIVEN] = "";
     
     // add secondary (if required)
     if (typeSec != PCK_NOITEM)
-    {        
+    {
         switch (typeSec)
         {
             case PCK_DUALS: {           weaponname = "weapon_pistol"; }
             case PCK_PISTOL_MAGNUM: {   weaponname = "weapon_pistol_magnum"; }
             case PCK_MELEE: {
                 // special case
-                PrintDebug(2, "[rand] Handed [sec] melee weapon (%s) to %N.", g_sMeleeClass[(g_iArStorageSurvMelee[index])], client);
-                
                 if (g_iSpecialEvent == EVT_WOMEN) {
                     // don't use stored, use whatever the event requires
+                    PrintDebug(2, "[rand] Handed [sec] melee weapon (women event) to %N.", client);
                     switch (g_iSpecialEventExtra)
                     {
                         case EVTWOMEN_TYPE_AXE:     { GiveItemMelee(client, "fireaxe"); }
                         case EVTWOMEN_TYPE_ROCK:    { GiveItemMelee(client, "electric_guitar"); }
-                        default:                    { GiveItemMelee(client, g_sMeleeClass[(g_iArStorageSurvMelee[index])]); }
+                        default:                    { GiveItemMelee(client, g_sMeleeClass[(GetRandomInt(0, sizeof(g_iMeleeClassCount) - 1))]); }
                     }
                 }
                 else {
+                    
+                    PrintDebug(2, "[rand] Handed [sec] melee weapon (%s) to %N.", g_sMeleeClass[(g_iArStorageSurvMelee[index])], client);
                     GiveItemMelee(client, g_sMeleeClass[(g_iArStorageSurvMelee[index])]);
                 }
                 weaponname = "";
@@ -4212,8 +4225,8 @@ DetermineSpawnClass(any:client, any:iClass)
         if (iSmokers) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_SMOKER); }
         if (iBoomers) { RemoveSpawnClass(acceptClasses, acceptCount, ZC_BOOMER); }
     }
-    // prevent double smoker in 2v2
-    else if (GetConVarInt(g_hCvarTeamSize) < 3) {
+    // prevent double smoker in 2v2 / 3v3
+    else if (GetConVarInt(g_hCvarTeamSize) < 4) {
         if (CountInfectedClass(ZC_SMOKER, client)) {
             RemoveSpawnClass(acceptClasses, acceptCount, ZC_SMOKER);
         }

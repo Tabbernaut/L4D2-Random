@@ -18,20 +18,35 @@ L4D2_Random
             - Made some SDKCalls optional (vomit: breaks boomer flu event, team switching: teamshuffle). Random will load, but disable the relevant functions.
             - Update: Changed z_spawn calls to z_spawn_old (cvar controlled, in case it breaks).
             - Update: Updated gamedata.
-
             - Uncapped pounce damage (50 dmg max, 1729... range max) for Skeet Shoot event.
+        -----
+            - Removed infected bots in randhard, randbasic, rand2v2 and rand3v3
+            - Fixed gifts being openable in unfrozen readyup.
+            - Slightly increased ammo counts all around. Way too many people running out of ammo halfway through a map.
+            - Made Sudden Death event easier: fewer common around, no tanks (unless forced).
+            - Added static survival bonus: 25 points for making saferoom.
+            - Fixed problems with damage bonus & gnome bonus, negative bonus results and incorrect reporting.
+            - Fixed Lots of Women event (hilariously) giving survivors only gnomes.
+            - Fixed teamshuffle (the old SDKCall approach didn't work anymore).
+            - Freezes distance points while tank is alive for Minitanks event and double tanks.
+            - Fixed Minitanks event (now only spawns new tanks after one has died). [needs testing]
+            - Blocked more than 1 smoker in 2v2 & 3v3. [needs testing]
 
     to-do:
     ------  
             - wait:     gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
                         but hey, windows sigs are broken anyway
             
-            - later:    email Chet, see if maybe he likes Random at all...
             - later:    test and include stabby's random map stuff so people can launch random campaigns after loading random
             
             - test:     still jockey in l4d1 mode ... sigh - can't reproduce
+            - test:     paused / unpaused => can't open presents
+            - test:     double smokers in 2v2/3v3?
+            - test:     shell count wrong on shotgun @ firepower event -- dunno why? code looks fine
             
+            - tweak:    no hittables in c12m1 if there is a tank...
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
+            - tweak:    tell infected when survivors (first) find a gnome and how much points it's worth
             
 
     minor cleanup / details

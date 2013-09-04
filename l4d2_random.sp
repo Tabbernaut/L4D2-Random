@@ -8,6 +8,9 @@
 #include <l4d2_random_bonus>
 #include <l4d2_penalty_bonus>
 #include <l4d2_saferoom_detect>
+#undef REQUIRE_PLUGIN
+#include <readyup>
+#define REQUIRE_PLUGIN
 
 #include "includes/random_constants.sp"
 #include "includes/random_globals.sp"
@@ -17,6 +20,7 @@
 #include "includes/random_thirdparty.sp"
 
 
+
 // note: these must also be defined in includes/random_init
 #define FIRE_PARTICLE           "gas_explosion_ground_fire"
 #define EXPLOSION_PARTICLE      "FluidExplosion_fps"
@@ -24,7 +28,7 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.56"
+#define PLUGIN_VERSION "1.0.57"
 
 /*
         L4D2 Random
@@ -94,9 +98,33 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
     MarkNativeAsOptional("PBONUS_ReSetRoundBonus");
     MarkNativeAsOptional("PBONUS_SetRoundBonus");
     MarkNativeAsOptional("PBONUS_AddRoundBonus");
+    // crox readyup:
+    MarkNativeAsOptional("IsInReady");
+
     
     return APLRes_Success;
 }
+
+// crox readyup usage
+public OnAllPluginsLoaded()
+{
+    g_bReadyUpAvailable = LibraryExists("readyup");
+}
+
+public OnLibraryRemoved(const String:name[])
+{
+    if (StrEqual(name, "readyup")) {
+        g_bReadyUpAvailable = false;
+    }
+}
+
+public OnLibraryAdded(const String:name[])
+{
+    if (StrEqual(name, "readyup")) {
+        g_bReadyUpAvailable = true;
+    }
+}
+
 
 
 public Native_GetGnomeBonus(Handle:plugin, numParams)
@@ -724,11 +752,6 @@ public Action: RandomEventInfo_Cmd(client, args)
 }
 public Action: RandomTeamShuffle_Cmd(client, args)
 {
-    if (g_CallTOB == INVALID_HANDLE || g_CallSHS) {
-        PrintToChat(client, "\x01[\x05r\x01] Server/Config problem: cannot move players (SDKCall TakeOverBot or SetHumanSpec missing signature).");
-        return Plugin_Handled;
-    }
-    
     if (g_bCampaignMode)
     {
         PrintToChat(client, "\x01[\x05r\x01] This only works in versus games.");
@@ -740,11 +763,6 @@ public Action: RandomTeamShuffle_Cmd(client, args)
 }
 public Action: RandomForceTeamShuffle_Cmd(client, args)
 {
-    if (g_CallTOB == INVALID_HANDLE || g_CallSHS) {
-        PrintToChat(client, "\x01[\x05r\x01] Server/Config problem: cannot move players (SDKCall TakeOverBot or SetHumanSpec missing signature).");
-        return Plugin_Handled;
-    }
-    
     if (g_bCampaignMode)
     {
         PrintToChat(client, "\x01[\x05r\x01] This only works in versus games.");
@@ -1002,6 +1020,9 @@ public OnMapStart()
     }
     
     RI_KV_UpdateRandomMapInfo();        // get this map's random-related info
+    
+    // update static survival bonus
+    RNDBNS_SetStatic( GetConVarInt(g_hCvarStaticBonus) );
     
     CreateTimer(0.1, SUPPORT_RoundPreparation, _, TIMER_FLAG_NO_MAPCHANGE);
     
@@ -1447,7 +1468,7 @@ public Action: OnTakeDamage_Witch(victim, &attacker, &inflictor, &Float:damage, 
     return Plugin_Changed;
 }
 
-/*      see note @ hooking car in random_support spawnalarmcar
+/*      see note @ hooking car in random_thirdparty spawnalarmcar
 public Action: OnTakeDamage_AlarmedCar(victim, &attacker, &inflictor, &Float:damage, &damagetype)
 {
     // alarmed car gets punched
@@ -2826,6 +2847,11 @@ public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBro
     
     PrintDebug(4, "[rand si] Tank spawned: %N.", client);
     
+    // freeze points?
+    if ( g_bFreezeDistanceOnTank ) {
+        SUPPORT_FreezePoints( g_bReportFreezing );
+    }
+    
     // tank and ghost stuff:
     g_iTankClient = client;
     
@@ -2833,9 +2859,12 @@ public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBro
     if (g_iSpecialEvent == EVT_MINITANKS)
     {
         // only when it's the first pass
+        /*
+            try when tank dies, to avoid 2 tanks at the same time...
         if (!g_bIsTankInPlay) {
             CreateTimer(1.0, Timer_PrepareNextTank, _, TIMER_FLAG_NO_MAPCHANGE);
         }
+        */
         //CreateTimer(1.0, Timer_SetTankMiniScale, client, TIMER_FLAG_NO_MAPCHANGE);
     }
     else if (!g_bFirstTankSpawned)  // double tank ?
@@ -2844,11 +2873,17 @@ public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBro
         {
             g_bFirstTankSpawned = true;
         
+            /*
+                done on death
             // spawn second
             if (g_bDoubleTank) {
                 CreateTimer(1.0, Timer_PrepareNextTank, _, TIMER_FLAG_NO_MAPCHANGE);
             }
+            */
         }
+    }
+    else if (g_bDoubleTank && !g_bSecondTankSpawned) {
+        g_bSecondTankSpawned = true;
     }
     
     if (!g_bIsTankInPlay) { g_bIsTankInPlay = true; }
@@ -2880,6 +2915,17 @@ public Action:Timer_CheckTankDeath(Handle:hTimer, any:client_oldTank)
     g_fTankPreviousPass = 0.0;
     g_iTankPass = 0;
     g_bIsTankInPlay = false;
+    
+    // spawn/set next tank
+    if (g_iSpecialEvent == EVT_MINITANKS || (g_bDoubleTank && !g_bSecondTankSpawned) )
+    {
+        CreateTimer(0.5, Timer_PrepareNextTank, _, TIMER_FLAG_NO_MAPCHANGE);
+    }
+    
+    // unfreeze points (if no further tanks in play)
+    if ( g_bFreezeDistanceOnTank && FindTankClient() == 0 ) {
+        SUPPORT_UnFreezePoints( g_bReportFreezing );
+    }
     
     // drop stuff?
     if (g_iSpecialEvent != EVT_MINITANKS) {
