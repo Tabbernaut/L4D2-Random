@@ -18,6 +18,9 @@ native RNDBNS_SetScaleMode(value);
 // set gnome bonus
 native RNDBNS_SetExtra(value);
 
+// set extra penalty bonus value (for display purposes only)
+native RNDBNS_SetPenaltyBonus(value);
+
 // adjust starting health by checking each survivor
 // sets the portion of solid health in the max damage value
 native RNDBNS_CheckStartHealth();

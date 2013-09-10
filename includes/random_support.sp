@@ -90,6 +90,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     
     // do post-randomization prep
     RNDBNS_SetExtra(0);                 // clear extra round bonus
+    RNDBNS_SetPenaltyBonus( 0 );        // clear pbonus display value
     
     // penalty bonus (only enable when required)
     if (g_bUsingPBonus) {
@@ -526,6 +527,12 @@ HUDRestoreClient(client)
 }
 
 
+// whenever PBONUS changes
+EVENT_PBonusChanged()
+{
+    // transfer current bonus to random bonus plugin, so it can display it
+    RNDBNS_SetPenaltyBonus( PBONUS_GetRoundBonus() );
+}
 // only for penalties
 EVENT_ReportPenalty(client = -1, extraInfo = -1)
 {
@@ -647,6 +654,7 @@ public Action: Timer_TimePenalty(Handle:timer)
         
         g_iBonusCount++;
         PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyTime );
+        EVENT_PBonusChanged();
         EVENT_ReportPenalty();
     }
     
@@ -746,6 +754,7 @@ EVENT_HandleSkeet(skeeter=-1, victim=-1, meleeSkeet=false)
         } else {
             PBONUS_AddRoundBonus( g_RC_iEventBonusSkeet );
         }
+        EVENT_PBonusChanged();
         
         if (skeeter == -2) {    // team skeet sets to -2
             if (IsClientAndInGame(victim)) {

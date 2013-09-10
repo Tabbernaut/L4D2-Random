@@ -28,7 +28,7 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.57"
+#define PLUGIN_VERSION "1.0.58"
 
 /*
         L4D2 Random
@@ -2206,6 +2206,7 @@ public Action:Timer_CheckItemPickup(Handle:hTimer, any:client)
     {
         g_iBonusCount++;
         PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyItem );
+        EVENT_PBonusChanged();
         EVENT_ReportPenalty(client);
     }
     
@@ -2248,6 +2249,7 @@ public Action:OnWeaponEquip(client, weapon)
         {
             g_iBonusCount++;
             PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyItem );
+            EVENT_PBonusChanged();
             EVENT_ReportPenalty(client);
         }
     }
@@ -2371,6 +2373,7 @@ public Action:Event_PlayerDefibbed(Handle:event, const String:name[], bool:dontB
     if (g_iSpecialEvent == EVT_PEN_HEALTH) {
         g_iBonusCount++;
         PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyHealth );
+        EVENT_PBonusChanged();
         EVENT_ReportPenalty(user);
     }
     
@@ -2386,6 +2389,7 @@ public Action:Event_MedkitUsed(Handle:event, const String:name[], bool:dontBroad
     if (g_iSpecialEvent == EVT_PEN_HEALTH) {
         g_iBonusCount++;
         PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyHealth );
+        EVENT_PBonusChanged();
         EVENT_ReportPenalty(user);
     }
     else if (g_iSpecialEvent == EVT_MEDIC) {
@@ -2400,6 +2404,7 @@ public Action:Event_PillsUsed(Handle:event, const String:name[], bool:dontBroadc
     if (g_iSpecialEvent == EVT_PEN_HEALTH) {
         g_iBonusCount++;
         PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyHealth );
+        EVENT_PBonusChanged();
         EVENT_ReportPenalty(user);
     }
     else if (g_iSpecialEvent == EVT_MEDIC && user == g_iSpecialEventRole) {
@@ -2426,6 +2431,7 @@ public Action:Event_ShovedPlayer(Handle:event, const String:name[], bool:dontBro
         {
             g_iBonusCount++;
             PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyM2SI );
+            EVENT_PBonusChanged();
             EVENT_ReportPenalty(client, classType);
         }
     }
@@ -2453,6 +2459,7 @@ public Action:Event_ShovedEntity(Handle:event, const String:name[], bool:dontBro
         {
             g_iBonusCount++;
             PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_M2_CI );
+            EVENT_PBonusChanged();
             EVENT_ReportPenalty(client);
         }
     }
@@ -2495,6 +2502,7 @@ public Event_WitchDeath(Handle:event, const String:name[], bool:dontBroadcast)
     
     g_iBonusCount++;
     PBONUS_AddRoundBonus( g_RC_iEventBonusWitch );
+    EVENT_PBonusChanged();
     PrintToChatAll("\x01[\x05r\x01] A witch was killed for \x04%i\x01 points.", g_RC_iEventBonusWitch);
     
 }

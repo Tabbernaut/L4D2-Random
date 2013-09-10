@@ -379,7 +379,7 @@ const           VOMIT_TYPE_SUR          = 1;
 const           VOMIT_TYPE_SI           = 2;
 const           VOMIT_TYPE_CI           = 4;
 
-const           BLIND_AMOUNT            = 230;          // can still see some stuff up close
+const           BLIND_AMOUNT            = 254;          // super blind
 
 // Resources
 // ---------

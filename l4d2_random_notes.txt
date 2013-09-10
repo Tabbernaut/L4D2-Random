@@ -20,6 +20,7 @@ L4D2_Random
             - Update: Updated gamedata.
             - Uncapped pounce damage (50 dmg max, 1729... range max) for Skeet Shoot event.
         -----
+            - Added custom map transition's (Stabby's plugin) to Random by default. Type "!mapset random" to play 5 random maps.
             - Removed infected bots in randhard, randbasic, rand2v2 and rand3v3
             - Fixed gifts being openable in unfrozen readyup.
             - Slightly increased ammo counts all around. Way too many people running out of ammo halfway through a map.
@@ -29,24 +30,39 @@ L4D2_Random
             - Fixed Lots of Women event (hilariously) giving survivors only gnomes.
             - Fixed teamshuffle (the old SDKCall approach didn't work anymore).
             - Freezes distance points while tank is alive for Minitanks event and double tanks.
+            - Made temporary blindness more effective.
             - Fixed Minitanks event (now only spawns new tanks after one has died). [needs testing]
             - Blocked more than 1 smoker in 2v2 & 3v3. [needs testing]
+        -----
+            - Tweaked event weights: it is less likely that the same events will appear many times.
+            - Now displays penalty bonus in !damage/!health reports, so !bonus isn't required to see it.
+            
 
     to-do:
     ------  
             - wait:     gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
                         but hey, windows sigs are broken anyway
             
-            - later:    test and include stabby's random map stuff so people can launch random campaigns after loading random
-            
             - test:     still jockey in l4d1 mode ... sigh - can't reproduce
             - test:     paused / unpaused => can't open presents
             - test:     double smokers in 2v2/3v3?
-            - test:     shell count wrong on shotgun @ firepower event -- dunno why? code looks fine
             
             - tweak:    no hittables in c12m1 if there is a tank...
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    tell infected when survivors (first) find a gnome and how much points it's worth
+            - tweak:    shove penalty: more forgiving for rapid shoves on the same target by the same survivor (1.5 second cooldown?)
+                            + show a list of penalty causers
+            
+            - tweak:    add bonus value to !damage/!health printout (and make bonus do the same thing)
+            - tweak:    readyup: don't teleport entire team if someone leaves saferoom (but just 1)
+            - tweak:    no more boobytrap on gnomes/cola
+
+            - bugfix:   ammo count wrong on weapons @ firepower event -- dunno why? code looks fine
+            - bugfix:   block event votes if the next map is one in which that event would be broken (finales etc)
+            - bugfix:   got adrenaline @ start in l4d1 mode
+            
+            - event:    'firestarter': fire does insane amounts of damage to everything (mostly survivors), and there are fire items everywhere.
+            - event:    exploding infected: every special infected explodes when killed?
             
 
     minor cleanup / details

@@ -30,7 +30,7 @@
 /*
     Scoring mechanism chosen:
         - 800 base distance => max damage reduced from that base -- reduced to the actual bonus, if larger than maxdamage: scaled instead 
-        - solid health is worth 2x
+        - solid health is worth 1.5x
 */
 
 public Plugin:myinfo =
@@ -38,7 +38,7 @@ public Plugin:myinfo =
     name = "Random - Damage Scoring",
     author = "CanadaRox, Tabun",
     description = "Custom damage scoring based on damage. Adjusted for use with Random config.",
-    version = "1.2",
+    version = "1.3",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 };
 
@@ -46,6 +46,7 @@ public Plugin:myinfo =
 // plugin internals
 new     bool:       g_bLateLoad;
 //new     bool:       g_bReadyUpAvailable;
+new     bool:       g_bInRound;
 
 // game cvars
 new     Handle:     g_hCvarTeamSize;
@@ -64,6 +65,7 @@ new     bool:       bRoundOver[2];                          // whether the bonus
 new                 iStoreBonus[2];                         // what was the actual bonus?
 new                 iStoreSurvivors[2];                     // how many survived that round?
 new                 iStoreExtra[2];                         // what was the 'extra bonus'?
+new                 iStorePBonus[2];                        // what was the extra bonus for penaltybonus plugin?
 new                 iPlayerDamage[MAX_CHARACTERS];          // the damage a player has taken individually (for finding solid health damage)
 new     bool:       bPlayerHasBeenIncapped[MAX_CHARACTERS]; // only true after the survivor has been incapped at least once
 
@@ -74,6 +76,7 @@ new                 g_iSettingStatic =      0;              // same
 new     Float:      g_fSettingSolid =       2.0;            // same (solid health factor)
 new                 g_iSettingScaleMode =   2;              // same (distance/base scaling: 1 = scale; 2 = reduce)
 new                 g_iRoundExtra =         0;              // this amount of points (total, so scaled back against alive-survivor) gets added (for random scoring fun)
+new                 g_iPenaltyBonus =       0;              // another extra set of points to award to the survivors // THIS DOES NOT GET ADDED TO THE SCORE BY THIS PLUGIN!
 
 new                 g_iStartHealth[2][MAX_CHARACTERS];      // starting health per survivor character
 
@@ -96,13 +99,12 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
     CreateNative("RNDBNS_SetScaleMode",     Native_SetScaleMode);
     
     CreateNative("RNDBNS_SetExtra",         Native_SetExtra);
+    CreateNative("RNDBNS_SetPenaltyBonus",  Native_SetPenaltyBonus);
     
     CreateNative("RNDBNS_CheckStartHealth", Native_CheckStartHealth);
     
     MarkNativeAsOptional("RNDMAIN_GetGnomeBonus");  // so we can load this plugin before main
     MarkNativeAsOptional("RNDMAIN_ShowGnomeBonus");
-    // crox readyup:
-    //MarkNativeAsOptional("IsInReady");
     
     return APLRes_Success;
 }
@@ -161,6 +163,13 @@ public Native_SetExtra(Handle:plugin, numParams)
     return;
 }
 
+public Native_SetPenaltyBonus(Handle:plugin, numParams)
+{
+    new value = GetNativeCell(1);
+    g_iPenaltyBonus = value;
+    return;
+}
+
 public Native_CheckStartHealth(Handle:plugin, numParams)
 {
     // for each character, find their starting health
@@ -168,6 +177,8 @@ public Native_CheckStartHealth(Handle:plugin, numParams)
     CheckStartHealth();
     return;
 }
+
+
 
 /*
 // crox readyup usage
@@ -244,6 +255,8 @@ public OnMapStart()
         iSolidHealthDamage[i] = 0;
         iStoreBonus[i] = 0;
         iStoreSurvivors[i] = 0;
+        iStoreExtra[i] = 0;
+        iStorePBonus[i] = 0;
         bRoundOver[i] = false;
         bHasWiped[i] = false;
         
@@ -299,6 +312,8 @@ public RoundStart_Event(Handle:event, const String:name[], bool:dontBroadcast)
         iPlayerDamage[i] = 0;
         bPlayerHasBeenIncapped[i] = false;
     }
+    
+    g_bInRound = true;
 }
 
 public RoundEnd_Event(Handle:event, const String:name[], bool:dontBroadcast)
@@ -309,6 +324,7 @@ public RoundEnd_Event(Handle:event, const String:name[], bool:dontBroadcast)
     }
     
     // when round is over, 
+    g_bInRound = false;
     bRoundOver[GameRules_GetProp("m_bInSecondHalfOfRound")] = true;
 
     new reason = GetEventInt(event, "reason");
@@ -334,6 +350,8 @@ public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
     if (client && IsSurvivor(client))
     {
         SetBonus(CalculateSurvivalBonus());
+        
+        if (!g_bInRound) { return; }
         
         // check solid health
         if (g_fSettingSolid != 1.0)
@@ -364,6 +382,7 @@ public FinaleVehicleLeaving_Event(Handle:event, const String:name[], bool:dontBr
 
 public OnTakeDamage(victim, attacker, inflictor, Float:damage, damagetype)
 {
+    if ( !g_bInRound ) { return; }
     if (!IsSurvivor(victim)) { return; }
     
     new srvchr = GetPlayerCharacter(victim);
@@ -373,6 +392,8 @@ public OnTakeDamage(victim, attacker, inflictor, Float:damage, damagetype)
 
 public PlayerLedgeGrab_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
+    if ( !g_bInRound ) { return; }
+    
     new client = GetClientOfUserId(GetEventInt(event, "userid"));
     if (!IsSurvivor(client)) { return; }
     
@@ -396,6 +417,8 @@ public PlayerLedgeGrab_Event(Handle:event, const String:name[], bool:dontBroadca
 
 public PlayerIncap_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
+    if ( !g_bInRound ) { return; }
+    
     new client = GetClientOfUserId(GetEventInt(event, "userid"));
     if (!IsSurvivor(client)) { return; }
     
@@ -418,6 +441,7 @@ public PlayerIncap_Event(Handle:event, const String:name[], bool:dontBroadcast)
 
 public Action:L4D2_OnRevived(client)
 {
+    if ( !g_bInRound ) { return; }
     if (!IsSurvivor(client)) { return; }
     
     new health = GetSurvivorPermanentHealth(client);
@@ -439,6 +463,7 @@ public Action:L4D2_OnRevived(client)
 
 public OnTakeDamagePost(victim, attacker, inflictor, Float:damage, damagetype)
 {
+    if ( !g_bInRound ) { return; }
     if (!IsSurvivor(victim)) { return; }
     
     new srvchr = GetPlayerCharacter(victim);
@@ -490,12 +515,13 @@ stock StoreBonus(iBonus)
     iStoreBonus[round] = iBonus;
     iStoreSurvivors[round] = aliveSurvs;
     iStoreExtra[round] = g_iRoundExtra;
+    iStorePBonus[round] = g_iPenaltyBonus;
 }
 
 stock DisplayBonus(client=-1)
 {
     new String:msgPartHdr[48];
-    new String:msgPartDmg[48];
+    new String:msgPartDmg[64];
     
     new curRound = GameRules_GetProp("m_bInSecondHalfOfRound");
     
@@ -549,6 +575,15 @@ stock DisplayBonus(client=-1)
                 }
             } else if (g_iRoundExtra) {
                 Format(msgPartDmg, sizeof(msgPartDmg), "%s + \x05%d\x01", msgPartDmg, g_iRoundExtra);
+            }
+            
+            // add extra bonus for penaltybonus scoring
+            if (bRoundOver[round]) {
+                if (iStorePBonus[round]) {
+                    Format(msgPartDmg, sizeof(msgPartDmg), "%s %s \x03%d\x01", msgPartDmg, (iStorePBonus[round] < 0) ? "-" : "+", iStorePBonus[round]);
+                }
+            } else if (g_iPenaltyBonus) {
+                Format(msgPartDmg, sizeof(msgPartDmg), "%s %s \x03%d\x01", msgPartDmg, (g_iPenaltyBonus < 0) ? "-" : "+", g_iPenaltyBonus);
             }
         }
         
