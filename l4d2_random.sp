@@ -28,7 +28,7 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.58"
+#define PLUGIN_VERSION "1.0.59"
 
 /*
         L4D2 Random
@@ -1149,7 +1149,7 @@ public Action:OnPlayerRunCmd(client, &buttons)
         {
             if (!g_bPlayerIsBlinded[client]) {
                 g_bPlayerIsBlinded[client] = true;
-                DoBlindSurvivor(client, 240, false);
+                DoBlindSurvivor(client, 254, false);
             }
         }
         else if (g_bPlayerIsBlinded[client])
@@ -1163,7 +1163,7 @@ public Action:OnPlayerRunCmd(client, &buttons)
     {
         // note: only human players get blocked this way (bots don't fire IN_USE)
         // block all use button use before items are ready
-        if (!g_bItemsFullyRandomized) { return Plugin_Handled; }
+        if (!g_bItemsFullyRandomized && !g_bCampaignMode) { return Plugin_Handled; }
         
         // handle item use on gifts
         new check = RANDOM_CheckPlayerGiftUse(client);
@@ -1465,6 +1465,34 @@ public Action: OnTakeDamage_Witch(victim, &attacker, &inflictor, &Float:damage, 
     if (!StrEqual(classname, "weapon_melee", false)) { return Plugin_Continue; }
     
     damage = g_RC_fEventWomenMeleeDmg;
+    return Plugin_Changed;
+}
+
+public Action: OnTakeDamage_Door(victim, &attacker, &inflictor, &Float:damage, &damagetype)
+{
+    // only hooked on EVT_WOMEN, for making melees do diff. damage to witches
+    if ( g_iSpecialEvent != EVT_KEYMASTER && g_iSpecialEvent != EVT_DOORCIRCUS ) { return Plugin_Continue; }
+    
+    if ( g_iSpecialEvent == EVT_DOORCIRCUS ) {
+        // nothing can damage doors
+        // block all damage to doors
+        damage = 0.0;
+        return Plugin_Changed;
+    }
+    
+    // only infected can damage doors
+    // KEYMASTER
+    if (    damage == 0.0
+        ||  !IsClientAndInGame(attacker)
+        ||  GetClientTeam(attacker) != TEAM_SURVIVOR
+        ||  !IsValidEntity(victim)
+    ) {
+        return Plugin_Continue;
+    }
+    
+
+    // block damage survivors do to doors
+    damage = 0.0;
     return Plugin_Changed;
 }
 
@@ -1990,18 +2018,15 @@ public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadc
                     return Plugin_Continue;
                 } else {
                     
-                    new doorState = GetEntProp(entity, Prop_Data, "m_eDoorState");
-                    
-                    AcceptEntityInput(entity, "Unlock");
-                    if (doorState == 0) {   // closed
-                        AcceptEntityInput(entity, "Open");
-                    } else {
-                        AcceptEntityInput(entity, "Close");
-                    }
-                    AcceptEntityInput(entity, "Lock");
+                    SUPPORT_ToggleDoor( entity );
                     return Plugin_Continue;
                 }
-            } else {
+            }
+            else if (g_iSpecialEvent == EVT_DOORCIRCUS) {
+                EmitSoundToAll(DOOR_SOUND, entity);
+                PrintToChat(client, "\x01[\x05r\x01] This door opens and closes by itself...");
+            }
+            else {
                 EmitSoundToAll(DOOR_SOUND, entity);
                 PrintToChat(client, "\x01[\x05r\x01] This door is locked, break it down.");
             }

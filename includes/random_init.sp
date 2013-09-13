@@ -20,9 +20,9 @@ INIT_DefineCVars()
     g_hCvarLoaded = CreateConVar(                           "rand_cvars_loaded",             "0",       "For checking whether the config files are all properly loaded. ", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarSimplePauseCheck = CreateConVar(                 "rand_simplepausecheck",         "1",       "Uses sv_pausable for a simple pause check.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarStripperMode = CreateConVar(                     "rand_stripper_mode",            "2",       "When using Stripper:Source: mode 0 = don't change dir; 1 = toggle standard and _alt (50%); 2 = standard + _alt (33%); 3 = same, but (25%).", FCVAR_PLUGIN, true, 0.0, true, 2.0);
-    g_hCvarStripperPath = CreateConVar(                     "rand_stripper_path",            "addons/stripper", "The Stripper:Source directory random uses as its base.", FCVAR_PLUGIN);
-    g_hCvarRIKeyValuesPath = CreateConVar(                  "rand_randominfo_path",          "configs/randommapinfo.txt", "The path to the randommap.txt with keyvalues for per-map random settings.", FCVAR_PLUGIN);
-    g_hCvarRCKeyValuesPath = CreateConVar(                  "rand_randomconfig_path",        "configs/randomconfig.txt", "The path to the randomconfig.txt with keyvalues for its base settings.", FCVAR_PLUGIN);
+    g_hCvarStripperPath = CreateConVar(                     "rand_stripper_path",            "addons/stripper",             "The Stripper:Source directory random uses as its base.", FCVAR_PLUGIN);
+    g_hCvarRIKeyValuesPath = CreateConVar(                  "rand_randominfo_path",          "configs/randommapinfo.txt",   "The path to the randommap.txt with keyvalues for per-map random settings.", FCVAR_PLUGIN);
+    g_hCvarRCKeyValuesPath = CreateConVar(                  "rand_randomconfig_path",        "configs/randomconfig.txt",    "The path to the randomconfig.txt with keyvalues for its base settings.", FCVAR_PLUGIN);
     g_hCvarWelcomeMode = CreateConVar(                      "rand_welcome",                  "3",       "Whether to display welcome messages (1 = only in first round; 2 = always, 3 = each client only once).", FCVAR_PLUGIN, true, 0.0, true, 3.0);
     g_hCvarBlockL4D1Common = CreateConVar(                  "rand_no_l4d1_common",           "3",       "Whether to block L4D1 common. (2 = block all appearing l4d1 common; 3 = block only problematic skins)", FCVAR_PLUGIN, true, 0.0, true, 3.0);
     g_hCvarNerfT2 = CreateConVar(                           "rand_nerf_t2",                  "1",       "Whether to nerf t2 weapons (disallow anything better than single pistol for secondary)", FCVAR_PLUGIN, true, 0.0, true, 2.0);
@@ -106,7 +106,6 @@ INIT_DefineCVars()
     g_hCvarRandBonusScaleMode = CreateConVar(               "rand_bonus_scale_mode",          "2",      "1 = scale; 2 = reduce.", FCVAR_PLUGIN, true, 0.0);
     g_hCvarStaticBonus = CreateConVar(                      "rand_bonus_static_surv",        "25",      "Static survival bonus (on top of damage bonus).", FCVAR_PLUGIN, true, 0.0);
     
-    
     g_hCvarAmmoAk = CreateConVar(                           "rand_ammo_ak",                 "250",      "Ammo for the AK47 in Random.", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarAmmoScout = CreateConVar(                        "rand_ammo_scout",              "150",      "Ammo for the Scout rifle in Random.", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarAmmoAWP = CreateConVar(                          "rand_ammo_awp",                 "90",      "Ammo for the AWP rifle in Random.", FCVAR_PLUGIN, true, 0.0, false);
@@ -175,6 +174,7 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_BADSANTA] = CreateConVar(        "rand_weight_evt_badgifts",      "4",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_MEDIC] = CreateConVar(           "rand_weight_evt_medic",         "6",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_BOOMFLU] = CreateConVar(         "rand_weight_evt_boomerflu",     "6",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_DOORCIRCUS] = CreateConVar(      "rand_weight_evt_doorcircus",    "4",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     g_hArCvarGiftWeight[GIFT_POS_HEALTH] = CreateConVar(    "rand_weight_gift_health",       "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_POS_HEALTH_T] = CreateConVar(  "rand_weight_gift_temphealth",   "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );

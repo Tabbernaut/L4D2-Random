@@ -634,6 +634,8 @@ SpawnAlarmCar(index) {
         DispatchKeyValue(carEntity, "rendercolor", tmpStr);
     }
     
+    // try to disable this keyvalue set.. and then add it only after
+    // the round goes live?
     Format(tempString, 256, "%s,Enable,,0,-1", alarmTimerName);
     DispatchKeyValue(carEntity, "OnCarAlarmStart", tempString);
     Format(tempString, 256, "%s,Disable,,0,-1", alarmTimerName);
@@ -773,6 +775,11 @@ SpawnAlarmCar(index) {
     
     // allow car moving
     CreateTimer(0.2, Timer_CarMove, carEntity, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+CreateAlarmDamageFilter() {
+    // create a damage filter for all alarm cars,
+    // that's only disabled when the round goes live?
 }
 
 CreateAlarmCar() {

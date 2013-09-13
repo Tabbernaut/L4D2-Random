@@ -488,6 +488,9 @@ DoEventInfo(client, event)
             PrintToChat(client, "\x05One survivor has a bad case of \"boomer flu\". He will cough, burp and regularly have to vomit.\x01");
             PrintToChat(client, "\x05Anyone he vomits on (survivors, special infected and common infected) will be covered with boomer bile, with all its usual consequences.\x01");
         }
+        case EVT_DOORCIRCUS: {
+            PrintToChat(client, "\x05The doors on this map cannot be controlled or broken by players. Instead, they open and close automatically.\x01");
+        }
         default: {
             PrintToChat(client, "\x01(no extra information available)\x01");
         }
@@ -894,6 +897,7 @@ RANDOM_DetermineRandomStuff()
                 }
                 case EVT_KEYMASTER: {
                     g_bSpecialEventPlayerCheck = true;
+                    //SUPPORT_CreateDoorDamageFilter();
                 }
                 case EVT_BADCOMBO: {
                     // not sure about difficulty.. it's only the start, but still
@@ -912,11 +916,16 @@ RANDOM_DetermineRandomStuff()
                     EVENT_SetDifficulty(DIFFICULTY_HARD, DIFFICULTY_HARD);
                     g_iDifficultyRating -= 2;
                     
-                    SetConVarInt(FindConVar("ammo_assaultrifle_max"), RoundFloat( GetConVarFloat(FindConVar("ammo_assaultrifle_max")) * EVENT_FIREPOWER_AMMO) );
-                    SetConVarInt(FindConVar("ammo_autoshotgun_max"), RoundFloat( GetConVarFloat(FindConVar("ammo_autoshotgun_max")) * EVENT_FIREPOWER_AMMO) );
+                    new iRifle, iShot;
+                    iRifle = RoundFloat( GetConVarFloat(FindConVar("ammo_assaultrifle_max")) * EVENT_FIREPOWER_AMMO);
+                    iShot = RoundFloat( GetConVarFloat(FindConVar("ammo_autoshotgun_max")) * EVENT_FIREPOWER_AMMO);
+                    SetConVarInt(FindConVar("ammo_assaultrifle_max"), iRifle );
+                    SetConVarInt(FindConVar("ammo_autoshotgun_max"), iShot );
                     g_iActiveAmmoAk = RoundFloat( GetConVarFloat(g_hCvarAmmoAk) * EVENT_FIREPOWER_AMMO);
                     g_iActiveAmmoScout = RoundFloat( GetConVarFloat(g_hCvarAmmoScout) * EVENT_FIREPOWER_AMMO);
                     g_iActiveAmmoAWP = RoundFloat( GetConVarFloat(g_hCvarAmmoAWP) * EVENT_FIREPOWER_AMMO);
+                    
+                    PrintDebug(3, "[rand] Firepower event: Weapon maxima: rifle: %i; shotgun: %i; AK: %i; Scout: %i; AWP: %i", iRifle, iShot, g_iActiveAmmoAk, g_iActiveAmmoScout, g_iActiveAmmoAWP);
                 }
                 case EVT_AMMO: {
                     g_bNoAmmo = true;
@@ -993,6 +1002,9 @@ RANDOM_DetermineRandomStuff()
                 case EVT_BOOMFLU: {
                     g_bSpecialEventPlayerCheck = true;
                     g_iDifficultyRating++;
+                }
+                case EVT_DOORCIRCUS: {
+                    //SUPPORT_CreateDoorDamageFilter();
                 }
             }
             PrintDebug(1, "[rand] Picked Special Event: %i (%s) [extra, %i, sub: %i, str: %s]", g_iSpecialEvent, g_csEventText[g_iSpecialEvent], g_iSpecialEventExtra, g_iSpecialEventExtraSub, g_sSpecialEventExtra);
@@ -1485,7 +1497,7 @@ RandomizeItems()
                         }
                     }
                     
-                    // some hittables are forced cars with alarms
+                    // some hittables are forced cars with alarms, or should just not be touched
                     if (GetEntProp(i, Prop_Data, "m_iHammerID") == 1)
                     {
                         randType = HITTAB_CAR95;
@@ -2587,6 +2599,9 @@ RandomizeSurvivorItems()
         else if ( GetRandomFloat(0.001, 1.0) <= fPillsChance || (GetConVarBool(g_hCvarStartBalanceSurv) && GetConVarBool(g_hCvarDifficultyBalance) && g_iDifficultyRating > DIFF_RATING_PILL_THRESH) ) {
             // randomly picked.. or difficulty forced
             randomPick = GetRandomInt(0, RATE_ADREN);
+            
+            // l4d1 event, only pills
+            if (g_iSpecialEvent == EVT_L4D1) { randomPick = 1; }
             
             switch (randomPick)  {
                 case 0:  { g_iArStorageSurvPills[i] = PCK_ADRENALINE; iCountAdren++; }
@@ -4453,8 +4468,8 @@ RandomizeDoors()
     } else if ( g_iSpecialEvent == EVT_L4D1) {
         // can't lock doors in l4d1 mode, no melees!
         fLockedChance = 0.0;
-    } else if (g_iSpecialEvent == EVT_KEYMASTER) {
-        // with keymaster, all doors are locked
+    } else if (g_iSpecialEvent == EVT_KEYMASTER || g_iSpecialEvent == EVT_DOORCIRCUS) {
+        // with keymaster/doorcircus, all doors are locked
         fLockedChance = 1.0;
     } else {
         fLockedChance = GetConVarFloat(g_hCvarDoorLockedChance);
@@ -4645,12 +4660,29 @@ LockDoors()
     // lock doors by entity-index
     new tmpDoor = 0;
     
+    for (new i=0; i < 3; i++) {
+        g_iDoorCircusCount[i] = 0;
+    }
+    
     for (new i=0; i < g_iDoorsLockedTotal; i++)
     {
         tmpDoor = g_iDoorsLocked[i];
         
         AcceptEntityInput(tmpDoor, "Close");
         AcceptEntityInput(tmpDoor, "Lock");
+        
+        // for some events, also make them unbreakable
+        if ( g_iSpecialEvent == EVT_KEYMASTER || g_iSpecialEvent == EVT_DOORCIRCUS ) {
+            // hook for breaking check?
+            SDKHook(tmpDoor, SDKHook_OnTakeDamage, OnTakeDamage_Door);
+        }
+        
+        // pick door type for special event
+        if ( g_iSpecialEvent == EVT_DOORCIRCUS ) {
+            new rnd = GetRandomInt(0, 2);
+            g_iDoorCircusType[rnd][ g_iDoorCircusTypeCount[rnd] ] = tmpDoor;
+            g_iDoorCircusTypeCount[rnd]++;
+        }
     }
 }
 
@@ -4719,7 +4751,7 @@ RANDOM_PrepareChoicesEvents()
         }
         
         // many or no doors? change event availability
-        if ( i == EVT_DOORS || i == EVT_KEYMASTER )
+        if ( i == EVT_DOORS || i == EVT_KEYMASTER || i == EVT_DOORCIRCUS )
         {
             if (g_RI_iDoors == 0) {
                 continue;
@@ -4750,7 +4782,6 @@ RANDOM_PrepareChoicesEvents()
         {
             continue;
         }
-        
         
         
         for (new j=0; j < count; j++)

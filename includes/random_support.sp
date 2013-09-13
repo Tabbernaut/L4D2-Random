@@ -414,6 +414,15 @@ EVENT_RoundStartPreparation()
             g_iBoomFluCounter = 0;
             g_hBoomFluTimer = CreateTimer( 1.0 , Timer_BoomFlu, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
         }
+        
+        case EVT_DOORCIRCUS: {
+            // start timer to autospawn witches
+            if (g_hDoorCircusTimer != INVALID_HANDLE)
+            {
+                CloseHandle(g_hDoorCircusTimer);
+            }
+            g_hDoorCircusTimer = CreateTimer(1.0, Timer_DoorCircus, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+        }
     }
 }
 
@@ -2554,6 +2563,44 @@ SUPPORT_FixNerfTier2(client, tierType)
 }
 
 
+
+/* doors */
+
+// damage filter that makes doors unbreakable
+/*
+    not used, using hook for damage instead
+SUPPORT_CreateDoorDamageFilter( bool: onlyInfected = false ) {
+    
+    // check if there is not already one
+    if ( g_iDamageFilterDoors > 0 && IsValidEntity( g_iDamageFilterDoors ) ) {
+        new String:classname[64];
+        GetEdictClassname(g_iDamageFilterDoors, classname, sizeof(classname));
+        if ( StrEqual(classname, "filter_damage_type") ) {
+            return g_iDamageFilterDoors;
+        }
+    }
+    
+    // make a new one, since none was found
+    new fEnt = CreateEntityByName("filter_damage_type");
+    if (fEnt == -1) return -1;
+    
+    DispatchKeyValue(fEnt, "targetname", "damage_filter_doors");
+    DispatchKeyValue(fEnt, "Negated", "0");
+    
+    if ( !onlyInfected ) {
+        // no-one is allowed to break them..
+        DispatchKeyValue(fEnt, "damagetype", "13");    // drowning only
+    } else {
+        // only infected are allowed to break them
+        DispatchKeyValue(fEnt, "damagetype", "13");    // drowning only
+    }
+    
+    g_iDamageFilterDoors = fEnt;
+    
+    return g_iDamageFilterDoors;
+}
+*/
+
 /*  Gnomes
     ------ */
 ResetGnomes()
@@ -3688,6 +3735,76 @@ public Action:Timer_RestartMap(Handle:timer)
     ServerCommand("changelevel %s", currentMap);
 }
 
+
+
+/* Door Circus */
+
+public SUPPORT_ToggleDoor( entity )
+{
+    new doorState = GetEntProp(entity, Prop_Data, "m_eDoorState");
+    
+    AcceptEntityInput(entity, "Unlock");
+    if (doorState == 0) {   // closed
+        AcceptEntityInput(entity, "Open");
+    } else {
+        AcceptEntityInput(entity, "Close");
+    }
+    AcceptEntityInput(entity, "Lock");
+}
+
+public Action:Timer_DoorCircus(Handle:timer)
+{
+    if (g_iSpecialEvent != EVT_DOORCIRCUS) {
+        g_hDoorCircusTimer = INVALID_HANDLE;
+        return Plugin_Stop;
+    }
+    
+    if (g_bIsPaused || !g_bPlayersLeftStart)
+    {
+        return Plugin_Continue;
+    }
+    
+    // tick counter(s) down
+    // if counter is ready do something!
+    new String:classname[64];
+    
+    for (new i=0; i < 3; i++) {
+        
+        g_iDoorCircusCount[i]--;
+        
+        if (g_iDoorCircusCount[i] >= 0 ) {
+            continue;
+        }
+    
+        // new time
+        if ( !g_bDoorCircusState[i] ) {
+            // how long to stay open?
+            g_iDoorCircusCount[i] = GetRandomInt( DOORCIRC_MIN_OPEN, DOORCIRC_MAX_OPEN );
+        } else {
+            g_iDoorCircusCount[i] = GetRandomInt( DOORCIRC_MIN_OPEN, DOORCIRC_MAX_OPEN );
+        }
+        
+        if (!g_bDoorCircusState[i]) {
+            // true = open (or should be)
+            g_bDoorCircusState[i] = true;
+        } else {
+            g_bDoorCircusState[i] = false;
+        }
+
+        for (new j=0; j < g_iDoorCircusTypeCount[i]; j++)
+        {
+            if (IsValidEntity( g_iDoorCircusType[i][j] )) {
+                // just to be on the safe side:
+                GetEdictClassname(g_iDoorCircusType[i][j], classname, sizeof(classname));
+                if (StrEqual(classname, "prop_door_rotating")) {
+                    SUPPORT_ToggleDoor( g_iDoorCircusType[i][j] );
+                }
+            }
+        }
+    }
+    
+    return Plugin_Continue;
+}
 
 /*  CRox multiwitch plugin
     ---------------------- */

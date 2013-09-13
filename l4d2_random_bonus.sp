@@ -583,7 +583,7 @@ stock DisplayBonus(client=-1)
                     Format(msgPartDmg, sizeof(msgPartDmg), "%s %s \x03%d\x01", msgPartDmg, (iStorePBonus[round] < 0) ? "-" : "+", iStorePBonus[round]);
                 }
             } else if (g_iPenaltyBonus) {
-                Format(msgPartDmg, sizeof(msgPartDmg), "%s %s \x03%d\x01", msgPartDmg, (g_iPenaltyBonus < 0) ? "-" : "+", g_iPenaltyBonus);
+                Format(msgPartDmg, sizeof(msgPartDmg), "%s %s \x03%d\x01", msgPartDmg, (g_iPenaltyBonus < 0) ? "+" : "-", (g_iPenaltyBonus < 0) ? g_iPenaltyBonus * -1 : g_iPenaltyBonus );
             }
         }
         

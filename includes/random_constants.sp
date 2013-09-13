@@ -260,8 +260,9 @@ const           EVT_WITCHES             = 33;
 const           EVT_BADSANTA            = 34;
 const           EVT_MEDIC               = 35;
 const           EVT_BOOMFLU             = 36;
+const           EVT_DOORCIRCUS          = 37;
 
-const           EVT_TOTAL               = 37;
+const           EVT_TOTAL               = 38;
 
 const           EVTMNU_INFO             = 1;
 const           EVTMNU_PICK             = 2;
@@ -354,6 +355,10 @@ const           NERFTYPE_NONE           = 0;
 const           NERFTYPE_SNIPER         = 1;
 const           NERFTYPE_T2             = 2;
 
+const           DOORCIRC_MIN            = 3;            // min and max times for door state remaining unchanged
+const           DOORCIRC_MAX            = 10;
+const           DOORCIRC_MIN_OPEN       = 1;            // min and max times for door state remaining unchanged when open
+const           DOORCIRC_MAX_OPEN       = 3;
 
 // Third-party and mechanics configuration
 // ---------------------------------------
@@ -722,7 +727,8 @@ new const String: g_csEventText[][] =
     "\x04Witch Hunt\x01 - Kill witches for \x0425\x01 bonus points.",
     "\x04Lousy Gifts\x01 - All gifts are bad! \x0415\x01 bonus for unwrapping anyway.",
     "\x04MEDIC!\x01 - There is one medic with a limited supply of healing items.",
-    "\x04Boomer Flu\x01 - One survivor caught the boomer flu and is prone to vomit."
+    "\x04Boomer Flu\x01 - One survivor caught the boomer flu and is prone to vomit.",
+    "\x04Haunted Doors\x01 - Evil spirits randomly open and close the doors on this map."
 };
 
 new const String: g_csEventTextShort[][] =
@@ -763,7 +769,8 @@ new const String: g_csEventTextShort[][] =
     "Witch Hunt",
     "Lousy Gifts",
     "MEDIC!",
-    "Boomer Flu"
+    "Boomer Flu",
+    "Haunted Doors"
 };
 
 new const JUNK_FIRSTNONSOLID = 4;

@@ -36,7 +36,14 @@ L4D2_Random
         -----
             - Tweaked event weights: it is less likely that the same events will appear many times.
             - Now displays penalty bonus in !damage/!health reports, so !bonus isn't required to see it.
+            - Increased witch spawn frequency for Witch Hunt event.
+            - !damage/!health report now also shows special event bonus/penalty.
+            - Removed (randomized) hittables from Blood Harvest 1.
+            - Keymaster event: doors can not be broken by survivors anymore (except with explosives). Infected can still break them at will.
+            - Fixed survivors getting adrenaline at start for L4D1 event (sometimes).
+            - Added Haunted Doors event.
             
+            - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
 
     to-do:
     ------  
@@ -46,20 +53,21 @@ L4D2_Random
             - test:     still jockey in l4d1 mode ... sigh - can't reproduce
             - test:     paused / unpaused => can't open presents
             - test:     double smokers in 2v2/3v3?
+            - test:     boobytraps on cola/gnome? shouldn't happen.
             
-            - tweak:    no hittables in c12m1 if there is a tank...
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
-            - tweak:    tell infected when survivors (first) find a gnome and how much points it's worth
+            - tweak:    tell infected when survivors (first) find a gnome and how many points it's worth
             - tweak:    shove penalty: more forgiving for rapid shoves on the same target by the same survivor (1.5 second cooldown?)
                             + show a list of penalty causers
             
-            - tweak:    add bonus value to !damage/!health printout (and make bonus do the same thing)
-            - tweak:    readyup: don't teleport entire team if someone leaves saferoom (but just 1)
-            - tweak:    no more boobytrap on gnomes/cola
+            - tweak:    block car alarms triggering before readyup
+            - tweak:    witch hunt: only give bonus on crowns or non-incapped?
+            - tweak:    make it less likely that the same player gets 2 tanks in a row
 
             - bugfix:   ammo count wrong on weapons @ firepower event -- dunno why? code looks fine
             - bugfix:   block event votes if the next map is one in which that event would be broken (finales etc)
-            - bugfix:   got adrenaline @ start in l4d1 mode
+            
+            - gift:     temporary deafness
             
             - event:    'firestarter': fire does insane amounts of damage to everything (mostly survivors), and there are fire items everywhere.
             - event:    exploding infected: every special infected explodes when killed?

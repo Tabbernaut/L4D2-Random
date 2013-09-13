@@ -261,6 +261,12 @@ new                     g_iBoomFluCounter                                   = 0;
 new                     g_iBoomFluActivate                                  = 0;                    // after how many seconds the boomer flu should activate (again)
 new     bool:           g_bPlayerIsBlinded      [MAXPLAYERS+1]              = {false,...};          // whether player blinded (NOHUD event)
 new     Float:          g_fAmmoDeploySpot       [3]                         = {0.0,...};            // where ammo was last deployed
+new                     g_iDamageFilterDoors                                = -1;                   // if positive, an entity that holds the damage filter
+new     Handle:         g_hDoorCircusTimer                                  = INVALID_HANDLE;       // for the EVT_DOORCIRCUS
+new                     g_iDoorCircusCount      [3]                         = 0;
+new     bool:           g_bDoorCircusState      [3]                         = false;                // door open closed state
+new                     g_iDoorCircusType       [3][MAX_DOORS];                                     // list of all doors per type (for different timings)
+new                     g_iDoorCircusTypeCount  [3]                         = 0;                    // amount of doors per type
 
 // T2 nerf
 new     Float:          g_fNerfMsgTimeout       [MAXPLAYERS+1]              = {0.0,...};            // time when player will get a t2 nerf msg again
