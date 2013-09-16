@@ -450,6 +450,8 @@ INIT_FillTries()
     SetTrieValue(g_hTrieBlindable, "instanced_scripted_scene",      ENTITY_NOT_BLINDABLE);
     SetTrieValue(g_hTrieBlindable, "func_occluder",                 ENTITY_NOT_BLINDABLE);
     SetTrieValue(g_hTrieBlindable, "ability_vomit",                 ENTITY_NOT_BLINDABLE);
+    SetTrieValue(g_hTrieBlindable, "ability_spit",                  ENTITY_NOT_BLINDABLE);
+    SetTrieValue(g_hTrieBlindable, "ability_lunge",                 ENTITY_NOT_BLINDABLE);
     
     g_hTriePenaltyItems = CreateTrie();
     SetTrieValue(g_hTriePenaltyItems, "melee",                      ITEM_PICKUP_PENALTY_MELEE);

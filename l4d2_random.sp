@@ -28,7 +28,7 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.59"
+#define PLUGIN_VERSION "1.0.60"
 
 /*
         L4D2 Random
@@ -136,8 +136,6 @@ public Native_ShowGnomeBonus(Handle:plugin, numParams)
 {
     GetGnomeBonus(true); // ignore what it returns, but do printout
 }
-
-
 
 
 public OnPluginStart()
@@ -1269,6 +1267,8 @@ public Action: L4D_OnGetCrouchTopSpeed(target, &Float:retVal)
 // sound catching for silence special event
 public Action: Event_SoundPlayed(clients[64], &numClients, String:sample[PLATFORM_MAX_PATH], &entity, &channel, &Float:volume, &level, &pitch, &flags)
 {
+    // temporary deafness: remove the client from the clients list, reduce numclients by one?
+    
     if (g_iSpecialEvent == EVT_SILENCE)
     {
         // hush

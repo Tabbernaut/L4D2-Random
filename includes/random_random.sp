@@ -350,7 +350,7 @@ DoEventInfo(client, event)
         bShowInfo = true;
         event = g_iSpecialEvent;
     }
-    else if (event < 1 || event > 37) {
+    else if (event < 1 || event > EVT_TOTAL - 1) {
         PrintToChat(client, "\x01[\x05r\x01] Incorrect argument. Use \"list\" or any number from 1 to %i.", EVT_TOTAL);
         return;
     }
@@ -881,6 +881,7 @@ RANDOM_DetermineRandomStuff()
                         SetConVarInt(FindConVar("hc_haybale_standing_damage"), tmpDmg);
                         SetConVarInt(FindConVar("hc_baggage_standing_damage"), tmpDmg);
                         SetConVarInt(FindConVar("hc_incap_standard_damage"), tmpDmg);
+                        PrintDebug(3, "[rand] Minitanks event: Hittable damage: %i", tmpDmg);
                     }
                     
                     L4D2Direct_SetVSWitchToSpawnThisRound(0, false);
@@ -3932,6 +3933,7 @@ RANDOM_DoGiftEffect(client, entity)
     {
         g_iBonusCount++;
         PBONUS_AddRoundBonus( g_RC_iEventBonusBadSanta );
+        EVENT_PBonusChanged();
         PrintToChatAll("\x01[\x05r\x01] %N unwrapped a lousy gift for \x04%i\x01 points.", client, g_RC_iEventBonusBadSanta);
     }
 }
@@ -4794,6 +4796,14 @@ RANDOM_PrepareChoicesEvents()
     
     PrintDebug(0, "[rand] Prepared special event weight array: %i total weight over %i events.", total, EVT_TOTAL);
 }
+
+/*
+RANDOM_CheckEventOkayForNextMap( event )
+{
+    // figure out what next map is going to be
+    // determine whether the chosen event is allowed
+}
+*/
 
 // preparation of choice-hat (gift effects)
 RANDOM_PrepareChoicesGiftEffects()

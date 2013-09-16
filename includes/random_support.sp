@@ -2250,11 +2250,19 @@ PickTankPlayer()
     new pickCount = 0;
     new pickArray[96];
     new tickets = 5;
+    new playerCount = 0;
     
     for (new i=1; i < MaxClients+1; i++)
     {
-        if (IsInfected(i) && !IsFakeClient(i))
+        if ( IsInfected(i) && !IsFakeClient(i) )
         {
+            playerCount++;
+            
+            // if the player had the previous tank, exclude him from the next pick
+            if ( g_iPreviousTankClient[ GameRules_GetProp("m_bAreTeamsFlipped", 4, 0) ] == i ) {
+                continue;
+            }
+            
             // if you didn't get one before, 5 entries
             tickets = 5;
             
@@ -2270,10 +2278,29 @@ PickTankPlayer()
         }
     }
     
+    // safeguard, if there's only one player, allow them the pick
+    if ( playerCount && !pickCount ) {
+        for (new i=1; i < MaxClients+1; i++)
+        {
+            if ( IsInfected(i) && !IsFakeClient(i) )
+            {
+                pickArray[pickCount] = i;
+                pickCount++;
+            }
+        }
+    }
+    
+    
     pick = GetRandomInt(0, pickCount - 1);
     pick = pickArray[pick];
     
     PrintDebug(3, "[rand tank] Randomly picking tank player %i (%N) (had %i tanks before).", pick, pick, g_iHadTanks[pick]);
+    
+    if ( IsClientAndInGame(pick) && !IsFakeClient(pick) ) {
+        g_iPreviousTankClient[ GameRules_GetProp("m_bAreTeamsFlipped", 4, 0) ] = pick;
+    } else {
+        g_iPreviousTankClient[ GameRules_GetProp("m_bAreTeamsFlipped", 4, 0) ] = 0;
+    }
     
     return pick;
 }
@@ -3343,7 +3370,7 @@ SUPPORT_ShuffleTeams(client=-1)
 
 stock bool:ChangePlayerTeam(client, team /*, bool:force */)
 {
-    if (GetClientTeam(client) == team)
+    if ( !IsClientAndInGame(client) || GetClientTeam(client) == team )
     {
         return true;
     }
@@ -3744,10 +3771,10 @@ public SUPPORT_ToggleDoor( entity )
     new doorState = GetEntProp(entity, Prop_Data, "m_eDoorState");
     
     AcceptEntityInput(entity, "Unlock");
-    if (doorState == 0) {   // closed
-        AcceptEntityInput(entity, "Open");
-    } else {
+    if (doorState != 0) {   // closed
         AcceptEntityInput(entity, "Close");
+    } else {
+        AcceptEntityInput(entity, "Open");
     }
     AcceptEntityInput(entity, "Lock");
 }

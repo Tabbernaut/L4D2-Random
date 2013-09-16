@@ -82,6 +82,7 @@ new     bool:           g_bClientHoldingUse     [MAXPLAYERS+1]              = {f
 
 // Tanks
 new                     g_iHadTanks             [MAXPLAYERS+1]              = {0,...};              // how many tanks did the player get this game?
+new                     g_iPreviousTankClient   [2];                                                // what was the previous player to get a (first) tank?, per team
 new     bool:           g_bIsTankInPlay                                     = false;
 new     bool:           g_bTankFirstRound                                   = false;
 new     bool:           g_bFirstTankSpawned                                 = false;

@@ -42,6 +42,9 @@ L4D2_Random
             - Keymaster event: doors can not be broken by survivors anymore (except with explosives). Infected can still break them at will.
             - Fixed survivors getting adrenaline at start for L4D1 event (sometimes).
             - Added Haunted Doors event.
+            - Fixed a problem with defib penalty not resetting if a match ended with a Sudden Death event.
+            - Tweaked amount of ammo on firepower event.
+            - Prevented the same player getting assigned two tanks in a row.
             
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
 
@@ -54,6 +57,7 @@ L4D2_Random
             - test:     paused / unpaused => can't open presents
             - test:     double smokers in 2v2/3v3?
             - test:     boobytraps on cola/gnome? shouldn't happen.
+            - test:     hittable damage in minitanks event (looks ok.. why wrong sometimes?)
             
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    tell infected when survivors (first) find a gnome and how many points it's worth
@@ -62,15 +66,14 @@ L4D2_Random
             
             - tweak:    block car alarms triggering before readyup
             - tweak:    witch hunt: only give bonus on crowns or non-incapped?
-            - tweak:    make it less likely that the same player gets 2 tanks in a row
+            - tweak:    haunted doors: synchronize double doors... (bit annoying, can't easily use current methods to 'track' these)
 
-            - bugfix:   ammo count wrong on weapons @ firepower event -- dunno why? code looks fine
             - bugfix:   block event votes if the next map is one in which that event would be broken (finales etc)
             
             - gift:     temporary deafness
             
-            - event:    'firestarter': fire does insane amounts of damage to everything (mostly survivors), and there are fire items everywhere.
-            - event:    exploding infected: every special infected explodes when killed?
+            - event:    'firestarter': fire does insane amounts of damage to everything (mostly survivors), and there are fire items everywhere. fire ammo always
+            - event:    exploding infected: every special infected explodes when killed? boomers? jockeys only?
             
 
     minor cleanup / details

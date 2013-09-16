@@ -544,7 +544,8 @@ stock DisplayBonus(client=-1)
 
         if (bHasWiped[round]) {
             FormatEx(msgPartDmg, sizeof(msgPartDmg), "\x03wipe\x01 (\x05%4d\x01 damage)", iTotalDamage[round]);
-        } else {
+        }
+        else {
             new tmpAlive = GetAliveSurvivors();
             new tmpBonus = (bRoundOver[round]) ? iStoreBonus[round] * iStoreSurvivors[round] : CalculateSurvivalBonus() * tmpAlive;
             new tmpStatic = g_iSettingStatic * ( (bRoundOver[round]) ? iStoreSurvivors[round] : tmpAlive );
@@ -576,15 +577,15 @@ stock DisplayBonus(client=-1)
             } else if (g_iRoundExtra) {
                 Format(msgPartDmg, sizeof(msgPartDmg), "%s + \x05%d\x01", msgPartDmg, g_iRoundExtra);
             }
-            
-            // add extra bonus for penaltybonus scoring
-            if (bRoundOver[round]) {
-                if (iStorePBonus[round]) {
-                    Format(msgPartDmg, sizeof(msgPartDmg), "%s %s \x03%d\x01", msgPartDmg, (iStorePBonus[round] < 0) ? "-" : "+", iStorePBonus[round]);
-                }
-            } else if (g_iPenaltyBonus) {
-                Format(msgPartDmg, sizeof(msgPartDmg), "%s %s \x03%d\x01", msgPartDmg, (g_iPenaltyBonus < 0) ? "-" : "+", (g_iPenaltyBonus < 0) ? g_iPenaltyBonus * -1 : g_iPenaltyBonus );
+        }
+        
+        // add extra bonus for penaltybonus scoring
+        if (bRoundOver[round]) {
+            if (iStorePBonus[round]) {
+                Format(msgPartDmg, sizeof(msgPartDmg), "%s %s \x03%d\x01", msgPartDmg, (iStorePBonus[round] < 0) ? "-" : "+", iStorePBonus[round]);
             }
+        } else if (g_iPenaltyBonus) {
+            Format(msgPartDmg, sizeof(msgPartDmg), "%s %s \x03%d\x01", msgPartDmg, (g_iPenaltyBonus < 0) ? "-" : "+", (g_iPenaltyBonus < 0) ? g_iPenaltyBonus * -1 : g_iPenaltyBonus );
         }
         
         if (client == -1) {
