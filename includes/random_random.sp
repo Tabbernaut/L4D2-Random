@@ -4714,9 +4714,9 @@ RANDOM_PrepareChoicesEvents()
         //      EVT_ADREN: because most finales are campfests, which doesn't rush well
         //      EVT_MINITANKS: because distance works differently
         //      EVT_AMMO: because of fancy way ammo is handled in finales anyway
-        //      EVT_WITCHES: don't mix it with tanks
+        //      EVT_WITCHES: don't mix it with tanks, and it doesn't work as well on finales, so skip it there too
         if (    g_RI_bIsFinale
-            &&  ( i == EVT_ADREN || i == EVT_MINITANKS || i == EVT_AMMO || i == EVT_WOMEN || i == EVT_WITCHES || i == EVT_PEN_TIME )
+            &&  ( i == EVT_ADREN || i == EVT_MINITANKS || i == EVT_AMMO || i == EVT_WOMEN || i == EVT_WITCHES || i == EVT_PEN_TIME || i == EVT_WITCHES )
         ) {
             continue;
         }

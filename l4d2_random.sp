@@ -28,7 +28,7 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.60"
+#define PLUGIN_VERSION "1.0.61"
 
 /*
         L4D2 Random
@@ -1340,11 +1340,10 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
     }
     
     // skeets, where skeeted hunters should give points
-    if (g_iSpecialEvent == EVT_SKEET)
-    {
-        if (    !IsClientAndInGame(victim) || !IsClientAndInGame(attacker) || GetClientTeam(attacker) != TEAM_SURVIVOR || GetClientTeam(victim) != TEAM_INFECTED
-            ||  GetEntProp(victim, Prop_Send, "m_zombieClass") != ZC_HUNTER
-        ) { return Plugin_Continue; }
+    // always 'handle' skeets, but only give points on event!
+    if (    IsClientAndInGame(victim) && IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_SURVIVOR
+        &&  GetClientTeam(victim) == TEAM_INFECTED && GetEntProp(victim, Prop_Send, "m_zombieClass") != ZC_HUNTER
+    ) {
         
         // handle old shotgun blast, if there was one
         if (iHunterShotDmg[victim][attacker] > 0 && FloatSub(GetGameTime(), fHunterShotStart[victim][attacker]) > SHOTGUN_BLAST_TIME) {
@@ -1377,11 +1376,19 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
     // women, where the witch should die more easily to melee swings
     else if ( g_iSpecialEvent == EVT_WOMEN || g_iSpecialEvent == EVT_WITCHES )
     {
-        if (!IsClientAndInGame(attacker) && IsValidEdict(attacker))
+        if (!IsClientAndInGame(attacker) && IsValidEdict(attacker) )
         {
+            // only change damage for swings at upright survivors
+            if ( !IsClientAndInGame(victim) || GetClientTeam(attacker) != TEAM_SURVIVOR || IsIncapacitated( victim ) ) { return Plugin_Continue; }
+        
             decl String:attackClass[64];
             GetEdictClassname(attacker, attackClass, 64);
             if (!StrEqual(attackClass, "witch")) { return Plugin_Continue; }
+            
+            // survivors bungled the witch!
+            if ( g_iSpecialEvent == EVT_WITCHES ) {
+                g_bWitchBungled[attacker] = true;
+            }
             
             damage = (g_iSpecialEvent == EVT_WOMEN) ? g_RC_fEventWomenWitchDmg : g_RC_fEventWitchesWitchDmg;
             return Plugin_Changed;
@@ -1928,7 +1935,7 @@ stock ClearBoomerTracking()
 
 public Event_LungePounce(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    if (g_iSpecialEvent != EVT_SKEET) { return; }
+    //if (g_iSpecialEvent != EVT_SKEET) { return; }
     
     new attacker = GetClientOfUserId(GetEventInt(event, "userid"));
 
@@ -1939,7 +1946,7 @@ public Event_LungePounce(Handle:event, const String:name[], bool:dontBroadcast)
 // hunters pouncing / tracking
 public Event_AbilityUse(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    if (g_iSpecialEvent != EVT_SKEET) { return; }
+    //if (g_iSpecialEvent != EVT_SKEET) { return; }
     
     // track hunters pouncing
     new client = GetClientOfUserId(GetEventInt(event, "userid"));
@@ -2515,22 +2522,6 @@ public Action:Event_WeaponFire(Handle:event, const String:name[], bool:dontBroad
 }
 
 
-public Event_WitchDeath(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    if (g_iSpecialEvent != EVT_WITCHES) { return; }
-    
-    new client = GetClientOfUserId(GetEventInt(event, "userid"));
-    //new witchEnt = GetEventInt(event, "witchid");
-    
-    // witch was killed, give bonus to survivors (if killer was a survivor)
-    if (!IsClientAndInGame(client) || GetClientTeam(client) != TEAM_SURVIVOR) { return; }
-    
-    g_iBonusCount++;
-    PBONUS_AddRoundBonus( g_RC_iEventBonusWitch );
-    EVENT_PBonusChanged();
-    PrintToChatAll("\x01[\x05r\x01] A witch was killed for \x04%i\x01 points.", g_RC_iEventBonusWitch);
-    
-}
 /*
     Ghosts and spawning events
     -------------------------- */
@@ -2786,7 +2777,7 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
     new zClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
     
     // track hunter skeets?
-    if (g_iSpecialEvent == EVT_SKEET && zClass == ZC_HUNTER)
+    if (zClass == ZC_HUNTER)
     {
         //PrintToChatAll("hunter died: %i dmg / %i team dmg", iHunterShotDmg[victim][attacker], iHunterShotDmgTeam[victim]);             
         
@@ -2900,24 +2891,19 @@ public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBro
         */
         //CreateTimer(1.0, Timer_SetTankMiniScale, client, TIMER_FLAG_NO_MAPCHANGE);
     }
-    else if (!g_bFirstTankSpawned)  // double tank ?
+    else if ( !g_bFirstTankSpawned )  // double tank ?
     {
         if (!g_bIsTankInPlay)
         {
             g_bFirstTankSpawned = true;
-        
-            /*
-                done on death
-            // spawn second
-            if (g_bDoubleTank) {
-                CreateTimer(1.0, Timer_PrepareNextTank, _, TIMER_FLAG_NO_MAPCHANGE);
-            }
-            */
         }
     }
-    else if (g_bDoubleTank && !g_bSecondTankSpawned) {
+    /*
+    else if ( g_bDoubleTank && g_bSecondTankSet )
+    {
         g_bSecondTankSpawned = true;
     }
+    */
     
     if (!g_bIsTankInPlay) { g_bIsTankInPlay = true; }
     
@@ -2949,8 +2935,14 @@ public Action:Timer_CheckTankDeath(Handle:hTimer, any:client_oldTank)
     g_iTankPass = 0;
     g_bIsTankInPlay = false;
     
+    if ( !g_bFirstTankDied ) {
+        g_bFirstTankDied = true;
+        g_bSecondTankSet = false;       // safeguard
+        //g_bSecondTankSpawned = false;   // safeguard
+    }
+    
     // spawn/set next tank
-    if (g_iSpecialEvent == EVT_MINITANKS || (g_bDoubleTank && !g_bSecondTankSpawned) )
+    if (g_iSpecialEvent == EVT_MINITANKS || (g_bDoubleTank && !g_bSecondTankSet) )
     {
         CreateTimer(0.5, Timer_PrepareNextTank, _, TIMER_FLAG_NO_MAPCHANGE);
     }
@@ -2970,6 +2962,28 @@ public Action:Timer_CheckTankDeath(Handle:hTimer, any:client_oldTank)
 
 
 /* Witch events */
+public Event_WitchDeath(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    if (g_iSpecialEvent != EVT_WITCHES) { return; }
+    
+    new client = GetClientOfUserId(GetEventInt(event, "userid"));
+    new witchEnt = GetEventInt(event, "witchid");
+    
+    // witch was killed, give bonus to survivors (if killer was a survivor)
+    if (!IsClientAndInGame(client) || GetClientTeam(client) != TEAM_SURVIVOR) { return; }
+    
+    // only give points if not bungled
+    if ( g_bWitchBungled[witchEnt] ) {
+        PrintToChatAll("\x01[\x05r\x01] Survivors bungled the witch kill. Bonus points denied.");
+        g_bWitchBungled[witchEnt] = false;
+    }
+    else {
+        g_iBonusCount++;
+        PBONUS_AddRoundBonus( g_RC_iEventBonusWitch );
+        EVENT_PBonusChanged();
+        PrintToChatAll("\x01[\x05r\x01] Survivors killed a witch for \x04%i\x01 points.", g_RC_iEventBonusWitch);
+    }
+}
 public Event_WitchSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
     if (g_iSpecialEvent != EVT_WITCHES) { return; }
@@ -2977,6 +2991,12 @@ public Event_WitchSpawn(Handle:event, const String:name[], bool:dontBroadcast)
     new witch = GetEventInt(event, "witchid");
     SetEntProp(witch, Prop_Send, "m_iGlowType", 3);
     SetEntProp(witch, Prop_Send, "m_glowColorOverride", 0xFFFFFF);
+    
+    if ( witch > 0 && witch < ENTITY_COUNT ) {
+        g_bWitchBungled[witch] = false;
+    }
+    
+    PrintDebug(3, "[rand] Witch spawned (entity %i)", witch);
 }
 
 public Event_WitchHarasserSet(Handle:event, const String:name[], bool:dontBroadcast)
@@ -3172,6 +3192,7 @@ public Action:Timer_PipeCheck(Handle:timer, any:entity)
     //  affected by boomer combo
     new Float: fDudChance = GetConVarFloat(g_hCvarPipeDudChance);
     if (fDudChance > 0.0 && GetGameTime() < g_fDudTimeExpire) { fDudChance = g_RC_fBoomComboDudChance; }
+    PrintDebug(3, "[rand] Dud chance: %.3f...", fDudChance);
     
     if (GetRandomFloat(0.001,1.0) <= fDudChance) {
         CreateTimer( PIPEDUD_MINTIME + GetRandomFloat(0.0, PIPEDUD_ADDTIME) , Timer_PipeDud, entity);

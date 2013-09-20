@@ -36,16 +36,21 @@ L4D2_Random
         -----
             - Tweaked event weights: it is less likely that the same events will appear many times.
             - Now displays penalty bonus in !damage/!health reports, so !bonus isn't required to see it.
-            - Increased witch spawn frequency for Witch Hunt event.
             - !damage/!health report now also shows special event bonus/penalty.
             - Removed (randomized) hittables from Blood Harvest 1.
             - Keymaster event: doors can not be broken by survivors anymore (except with explosives). Infected can still break them at will.
-            - Fixed survivors getting adrenaline at start for L4D1 event (sometimes).
+            - L4D1 event: fixed survivors getting adrenaline at start (sometimes).
             - Added Haunted Doors event.
             - Fixed a problem with defib penalty not resetting if a match ended with a Sudden Death event.
-            - Tweaked amount of ammo on firepower event.
+            - Firepower event: tweaked amount of ammo available.
             - Prevented the same player getting assigned two tanks in a row.
-            
+            - Slightly increased odds of getting double tanks.
+            - Witch Hunt event: increased witch spawn frequency.
+            - Witch Hunt event: increased damage witches do per swing to upright survivors to 75.
+            - Witch Hunt event: bonus points for killing witch now only given if witch did no damage to survivors.
+            - Skeets are now always reported (but still only worth points in Skeet Shoot event).
+            - Booby Traps event: slightly increased odds of things being booby traps.
+        -----    
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
 
     to-do:
@@ -61,13 +66,14 @@ L4D2_Random
             
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    tell infected when survivors (first) find a gnome and how many points it's worth
-            - tweak:    shove penalty: more forgiving for rapid shoves on the same target by the same survivor (1.5 second cooldown?)
-                            + show a list of penalty causers
+            - tweak:    shove penalty: more forgiving for rapid shoves on the same target by the same survivor (1.5 second cooldown?) 
+            - tweak:    show a list of penalty causers / bonus getters -- at round end
+            - tweak:    haunted doors: synchronize double doors... (bit annoying, can't easily use current methods to 'track' these)
+            - tweak:    [consider] give points for surviving longer during DT3 event (and maybe other events in specific maps too?)
+                        holdout bonus.. (and deduct the total you're able to get from the total distance points)
             
             - tweak:    block car alarms triggering before readyup
-            - tweak:    witch hunt: only give bonus on crowns or non-incapped?
-            - tweak:    haunted doors: synchronize double doors... (bit annoying, can't easily use current methods to 'track' these)
-
+            
             - bugfix:   block event votes if the next map is one in which that event would be broken (finales etc)
             
             - gift:     temporary deafness

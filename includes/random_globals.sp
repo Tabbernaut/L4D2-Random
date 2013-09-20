@@ -86,7 +86,9 @@ new                     g_iPreviousTankClient   [2];                            
 new     bool:           g_bIsTankInPlay                                     = false;
 new     bool:           g_bTankFirstRound                                   = false;
 new     bool:           g_bFirstTankSpawned                                 = false;
-new     bool:           g_bSecondTankSpawned                                = false;
+new     bool:           g_bFirstTankDied                                    = false;
+//new     bool:           g_bSecondTankSpawned                                = false;
+new     bool:           g_bSecondTankSet                                    = false;
 new                     g_iTankClient                                       = 0;
 new     Float:          g_fTankPreviousPass                                 = 0.0;                  // when did the tank previously pass to a player?
 new                     g_iTankPass                                         = 0;                    // which (human) tank pass we're on
@@ -268,6 +270,7 @@ new                     g_iDoorCircusCount      [3]                         = 0;
 new     bool:           g_bDoorCircusState      [3]                         = false;                // door open closed state
 new                     g_iDoorCircusType       [3][MAX_DOORS];                                     // list of all doors per type (for different timings)
 new                     g_iDoorCircusTypeCount  [3]                         = 0;                    // amount of doors per type
+new                     g_bWitchBungled         [ENTITY_COUNT];                                     // stores, per witch entity, whether survivors bungled her
 
 // T2 nerf
 new     Float:          g_fNerfMsgTimeout       [MAXPLAYERS+1]              = {0.0,...};            // time when player will get a t2 nerf msg again

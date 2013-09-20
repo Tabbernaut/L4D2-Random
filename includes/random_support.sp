@@ -50,7 +50,9 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     g_bTeamInfectedVotedEvent = false;
     
     g_bFirstTankSpawned = false;
-    g_bSecondTankSpawned = false;
+    g_bFirstTankDied = false;
+    g_bSecondTankSet = false;
+    //g_bSecondTankSpawned = false;
     g_bIsTankInPlay = false;
     g_fTankPreviousPass = 0.0;
     g_iTankPass = 0;
@@ -384,12 +386,12 @@ EVENT_RoundStartPreparation()
         }
         
         case EVT_WITCHES: {
-            // start timer to autospawn witches
+            // start timer to autospawn witches (don't destroy on mapchange, it destroys itself as soon as it sees there is no witch event)
             if (g_hWitchSpawnTimer != INVALID_HANDLE)
             {
                 CloseHandle(g_hWitchSpawnTimer);
             }
-            g_hWitchSpawnTimer = CreateTimer(g_RC_fEventWitchesSpawnFreq, Timer_WitchSpawn, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+            g_hWitchSpawnTimer = CreateTimer(g_RC_fEventWitchesSpawnFreq, Timer_WitchSpawn, _, TIMER_REPEAT);
             
             // respawn timer too (only once, destroyed at mapchange)
             if (!g_bSecondHalf)
@@ -440,6 +442,8 @@ EVENT_AllSurvivorsLoadedIn()
 
 public Action: EVENT_SurvivorsLeftSaferoom(Handle:timer)
 {
+    PrintDebug(2, "[rand] Survivors left saferoom (doing special event business).");
+    
     switch (g_iSpecialEvent)
     {
         case EVT_ADREN: {
@@ -785,15 +789,43 @@ EVENT_HandleSkeet(skeeter=-1, victim=-1, meleeSkeet=false)
             PrintToChatAll("\x01[\x05r\x01] A hunter was %sskeeted for \x04%i\x01 points.", (meleeSkeet)?"melee-":"", g_RC_iEventBonusSkeet);
         }
     }
+    else
+    {
+        // only report
+        if (skeeter == -2) {    // team skeet sets to -2
+            if (IsClientAndInGame(victim)) {
+                PrintToChatAll("\x01[\x05r\x01] %N was team-skeeted.", victim);
+            } else {
+                PrintToChatAll("\x01[\x05r\x01] A hunter was team-skeeted.");
+            }
+        }
+        else if (IsClientAndInGame(skeeter) && IsClientAndInGame(victim)) {
+            PrintToChatAll("\x01[\x05r\x01] %N %sskeeted %N.", skeeter, (meleeSkeet)?"melee-":"", victim);
+        }
+        else if (IsClientAndInGame(skeeter)) {
+            PrintToChatAll("\x01[\x05r\x01] %N %sskeeted a hunter.", skeeter, (meleeSkeet)?"melee-":"");
+        }
+        /*
+        else if (IsClientAndInGame(victim)) {
+            PrintToChatAll("\x01[\x05r\x01] %N was %sskeeted.", victim, (meleeSkeet)?"melee-":"");
+        }
+        else {
+            PrintToChatAll("\x01[\x05r\x01] A hunter was %sskeeted.", (meleeSkeet)?"melee-":"");
+        }
+        */
+    }
 }
 EVENT_HandleNonSkeet(victim, damage)
 {
-    if (IsClientAndInGame(victim)) {
-        PrintToChatAll("\x01[\x05r\x01] %N was \x04not\x01 skeeted (\x03%i\x01 damage).", victim, damage);
-    }
-    else {
-        PrintToChatAll("\x01[\x05r\x01] Hunter was \x04not\x01 skeeted (\x03%i\x01 damage).", damage);
-    }
+    //if (g_iSpecialEvent == EVT_SKEET)
+    //{
+        if (IsClientAndInGame(victim)) {
+            PrintToChatAll("\x01[\x05r\x01] %N was \x04not\x01 skeeted (\x03%i\x01 damage).", victim, damage);
+        }
+        else {
+            PrintToChatAll("\x01[\x05r\x01] Hunter was \x04not\x01 skeeted (\x03%i\x01 damage).", damage);
+        }
+    //}
 }
 
 // magic guns wap
@@ -1338,10 +1370,14 @@ public Action: Timer_PrepareNextTank(Handle:timer)
     }
     else        // 'normal' doubletank
     {
+        PrintDebug(3, "[rand] preparing second tank...");
+        
         L4D2Direct_SetVSTankToSpawnThisRound(0, true);
         L4D2Direct_SetVSTankToSpawnThisRound(1, true);
         L4D2Direct_SetVSTankFlowPercent(0, g_fTankFlowLate);
         L4D2Direct_SetVSTankFlowPercent(1, g_fTankFlowLate);
+        
+        g_bSecondTankSet = true;
     }
 }
 
@@ -2260,6 +2296,7 @@ PickTankPlayer()
             
             // if the player had the previous tank, exclude him from the next pick
             if ( g_iPreviousTankClient[ GameRules_GetProp("m_bAreTeamsFlipped", 4, 0) ] == i ) {
+                PrintDebug(3, "[rand tank] Prevented tank pick for %N (had previous tank).", i);
                 continue;
             }
             
@@ -3855,6 +3892,7 @@ public Action:Timer_WitchSpawn(Handle:timer)
             if (IsClientInGame(i))
             {
                 g_iWitchesSpawned++;
+                PrintDebug(5, "[rand] Witch Timer: spawning witch!");
                 
                 if (GetConVarBool(g_hCvarUseOldSpawn)) {
                     CheatCommand(i, "z_spawn_old", "witch auto");
