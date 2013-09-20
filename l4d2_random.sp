@@ -28,7 +28,7 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.61"
+#define PLUGIN_VERSION "1.0.62"
 
 /*
         L4D2 Random
@@ -1635,6 +1635,9 @@ SurvivorsReallyLeftSaferoom()
     {
         g_bPlayersLeftStart = true;
         CreateTimer(0.1, EVENT_SurvivorsLeftSaferoom, _, TIMER_FLAG_NO_MAPCHANGE);
+        
+        // enable all car alarms
+        EnableAllCarAlarms();
     }
 }
 
@@ -1654,14 +1657,7 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
     // count survivors joined after round start
     if (!g_bPlayersLeftStart && !g_bSurvivorsLoadedIn && newTeam == TEAM_SURVIVOR && !IsFakeClient(client))
     {
-        //PrintDebug(3, "[rand] Survivor loaded in (%N). %i / %i", client, GetConVarInt(g_hCvarTeamSize), CountHumanSurvivors());
-        if (CountHumanSurvivors() + 1 >= GetConVarInt(g_hCvarTeamSize))
-        {
-            g_bSurvivorsLoadedIn = true;
-            g_bBotsAllowedPickup = true;
-            if (GetConVarBool(g_hCvarStopBotsAtStart)) { SetConVarInt(g_hCvarBotStop, 0); }
-            EVENT_AllSurvivorsLoadedIn();
-        }
+        CreateTimer( DELAY_SURVLOADEDCHECK, Timer_CheckSurvivorsLoadedIn, client, TIMER_FLAG_NO_MAPCHANGE );
     }
     
     // survivor-based events
@@ -1723,6 +1719,22 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
     if (oldTeam == TEAM_INFECTED) {
         g_bHasGhost[client] = false;
         g_bHasSpawned[client] = false;
+    }
+    
+    return Plugin_Continue;
+}
+
+public Action:Timer_CheckSurvivorsLoadedIn(Handle:hTimer, any:client)
+{
+    if ( !IsClientAndInGame(client) ) { return Plugin_Continue; }
+    
+    PrintDebug(5, "[rand] Survivor loaded in (%N). %i / %i", client, GetConVarInt(g_hCvarTeamSize), CountHumanSurvivors());
+    if (CountHumanSurvivors() >= GetConVarInt(g_hCvarTeamSize))
+    {
+        g_bSurvivorsLoadedIn = true;
+        g_bBotsAllowedPickup = true;
+        if (GetConVarBool(g_hCvarStopBotsAtStart)) { SetConVarInt(g_hCvarBotStop, 0); }
+        EVENT_AllSurvivorsLoadedIn();
     }
     
     return Plugin_Continue;

@@ -220,6 +220,7 @@ new                     g_iCountItemGnomes                                  = 0;
 new                     g_iCountItemCola                                    = 0;
 new                     g_iCountItemMedkits                                 = 0;
 new                     g_iCountItemDefibs                                  = 0;
+new     bool:           g_bCarAlarmsDisabled                                = false;                // already disabled all alarms for this team?
 
 // Gnome / bonus scoring
 new                     g_iJustPickedItemUp                                 = 0;                    // player_use => item_pickup (so we can exclude non-picked up gnomes)
@@ -264,7 +265,6 @@ new                     g_iBoomFluCounter                                   = 0;
 new                     g_iBoomFluActivate                                  = 0;                    // after how many seconds the boomer flu should activate (again)
 new     bool:           g_bPlayerIsBlinded      [MAXPLAYERS+1]              = {false,...};          // whether player blinded (NOHUD event)
 new     Float:          g_fAmmoDeploySpot       [3]                         = {0.0,...};            // where ammo was last deployed
-new                     g_iDamageFilterDoors                                = -1;                   // if positive, an entity that holds the damage filter
 new     Handle:         g_hDoorCircusTimer                                  = INVALID_HANDLE;       // for the EVT_DOORCIRCUS
 new                     g_iDoorCircusCount      [3]                         = 0;
 new     bool:           g_bDoorCircusState      [3]                         = false;                // door open closed state

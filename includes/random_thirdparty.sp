@@ -577,7 +577,27 @@ public OnSceneCompletion(const String:s_Output[], i_Caller, i_Activator, Float:f
 #define DISTANCE_UPBACK     31.0
 #define DISTANCE_UPFRONT    29.0
 
+public EnableAllCarAlarms() {
+    // find all alarmed cars and enable them
+    for (new x = 0; x < g_iStoredHittables; x++) {
+        if ( g_strArHittableStorage[x][hitIsAlarmed] && IsValidEntity(g_strArHittableStorage[x][hitNumber]) ) {
+            AcceptEntityInput( g_strArHittableStorage[x][hitNumber], "Enable");
+        }
+    }
+}
+public DisableAllCarAlarms() {
+    // find all alarmed cars and disable them
+    for (new x = 0; x < g_iStoredHittables; x++) {
+        if ( g_strArHittableStorage[x][hitIsAlarmed] && IsValidEntity(g_strArHittableStorage[x][hitNumber]) ) {
+            AcceptEntityInput( g_strArHittableStorage[x][hitNumber], "Disable");
+            // also hide glass if still in on position?
+            DisableAlarmCarEffects(x);
+        }
+    }
+}
+
 SpawnAlarmCar(index) {
+    
     // init
     new carEntity, glassEntity, glassOffEntity, alarmTimer, chirpSound, alarmSound;
     new carLights[6], gameEventInfo;
@@ -654,6 +674,10 @@ SpawnAlarmCar(index) {
     DispatchKeyValue(carEntity, "OnCarAlarmStart", tempString);
     Format(tempString, 256, "%s,Enable,,0,-1", glassOffName);
     DispatchKeyValue(carEntity, "OnCarAlarmStart", tempString);
+    
+    // only enable car alarms after the survivors leave the saferoom
+    DispatchKeyValue(carEntity, "StartDisabled", "1");
+    
     
     // this works for tank-car interaction
     Format(tempString, 256, "%s,Kill,,0,-1", carLightsName);
@@ -773,15 +797,12 @@ SpawnAlarmCar(index) {
         //SDKHook(carEntity, SDKHook_OnTakeDamage, OnTakeDamage_AlarmedCar);
     */
     
+    // remember car entity
+    
+    
     // allow car moving
     CreateTimer(0.2, Timer_CarMove, carEntity, TIMER_FLAG_NO_MAPCHANGE);
 }
-
-CreateAlarmDamageFilter() {
-    // create a damage filter for all alarm cars,
-    // that's only disabled when the round goes live?
-}
-
 CreateAlarmCar() {
     new carEntity = CreateEntityByName("prop_car_alarm");
     if (carEntity == -1) return -1;
@@ -1075,7 +1096,7 @@ CopyVector(const Float:original[3], Float:copy[3]) {
 }
 
 
-/*  DisableAlarmCar(index) {
+DisableAlarmCarEffects(index) {
     g_strArHittableStorage[index][hitAlarmOff] = true;
     if (IsValidEntity(g_strArHittableStorage[index][hitGlassEntity]))   { AcceptEntityInput(g_strArHittableStorage[index][hitGlassEntity], "Kill"); }
     if (IsValidEntity(g_strArHittableStorage[index][hitLightEntity_a])) { AcceptEntityInput(g_strArHittableStorage[index][hitLightEntity_a], "Kill"); }
@@ -1085,7 +1106,6 @@ CopyVector(const Float:original[3], Float:copy[3]) {
     if (IsValidEntity(g_strArHittableStorage[index][hitLightEntity_e])) { AcceptEntityInput(g_strArHittableStorage[index][hitLightEntity_e], "Kill"); }
     if (IsValidEntity(g_strArHittableStorage[index][hitLightEntity_f])) { AcceptEntityInput(g_strArHittableStorage[index][hitLightEntity_f], "Kill"); }
 }
-*/
 
 /*  L4D2 Hats plugin
     -------------------------- */

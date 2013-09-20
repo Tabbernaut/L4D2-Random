@@ -43,6 +43,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     
     g_bInsightSurvDone = false;         // so we only get the insight effect from a gift once per roundhalf
     g_bInsightInfDone = false;
+    g_bCarAlarmsDisabled = false;
     
     g_bTeamSurvivorVoted = false;       // for teamshuffle
     g_bTeamInfectedVoted = false;
@@ -430,6 +431,8 @@ EVENT_RoundStartPreparation()
 
 EVENT_AllSurvivorsLoadedIn()
 {
+    // THIS IS NOT CALLED
+    
     // called once, when all survivors are loaded in
     PrintDebug(3, "[rand] All survivors loaded in...");
     

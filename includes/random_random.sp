@@ -898,7 +898,6 @@ RANDOM_DetermineRandomStuff()
                 }
                 case EVT_KEYMASTER: {
                     g_bSpecialEventPlayerCheck = true;
-                    //SUPPORT_CreateDoorDamageFilter();
                 }
                 case EVT_BADCOMBO: {
                     // not sure about difficulty.. it's only the start, but still
@@ -1004,9 +1003,11 @@ RANDOM_DetermineRandomStuff()
                     g_bSpecialEventPlayerCheck = true;
                     g_iDifficultyRating++;
                 }
+                /*
                 case EVT_DOORCIRCUS: {
-                    //SUPPORT_CreateDoorDamageFilter();
+                    // nothing
                 }
+                */
             }
             PrintDebug(1, "[rand] Picked Special Event: %i (%s) [extra, %i, sub: %i, str: %s]", g_iSpecialEvent, g_csEventText[g_iSpecialEvent], g_iSpecialEventExtra, g_iSpecialEventExtraSub, g_sSpecialEventExtra);
         }
@@ -3629,6 +3630,16 @@ RANDOM_DoGiftEffect(client, entity)
         
         //PrintToChatAll("client: %i, Entity: %i: pos pick: %i", client, entity, randomPick);
         
+        // if car alarms already disabled, pick a different one
+        if ( randomPick == GIFT_POS_ALARMS && g_bCarAlarmsDisabled )
+        {
+            while ( randomPick == GIFT_POS_ALARMS ) {
+                // so, don't mess with gift weights so much that we'll create endless loops here
+                randomIndex = GetRandomInt( (inSaferoom) ? g_iGiftWeightedChoicesStartPosSaferoom : 0, (g_bInsightSurvDone) ? g_iGiftWeightedChoicesStartPosInsight - 1 : g_iGiftWeightedChoicesStartNegative - 1 );    
+                randomPick = g_iArGiftWeightedChoices[randomIndex];
+            }
+        }
+        
         switch (randomPick)
         {
             case GIFT_POS_HEALTH: {   // give some solid health
@@ -3756,6 +3767,15 @@ RANDOM_DoGiftEffect(client, entity)
                     CheatCommand(client, "upgrade_add", "LASER_SIGHT");
                 }
                 Vocalize_Random(client, "lasersights");
+            }
+            case GIFT_POS_ALARMS: {     // disable all car alarms
+                PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x05car alarms disabled\x01.", client);
+                DisableAllCarAlarms();
+                
+                switch (GetRandomInt(0,1)) {
+                    case 0: { Vocalize_Random(client, "hurrah"); }
+                    case 1: { Vocalize_Random(client, "positivenoise"); }
+                }
             }
             case GIFT_POS_AMMO: {   // give ammo
                 if (GetRandomInt(0, 2) == 0) {

@@ -82,7 +82,7 @@ INIT_DefineCVars()
     g_hCvarPipeDudChance = CreateConVar(                    "rand_pipedud_chance",           "0.35",    "Chances of a pipebomb being a dud.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarAvoidIncapsChance = CreateConVar(                "rand_moreincaps_chance",        "0.35",    "If the incap count is only 1 (33%), odds that it gets set to 2 anyway.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarFinaleAmmoChance = CreateConVar(                 "rand_finale_ammo",              "0.0",     "Chances of finale ammo piles being randomized.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    g_hCvarAlarmedCarChance = CreateConVar(                 "rand_caralarm_chance",          "0.25",    "Chances of a car being alarmed.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarAlarmedCarChance = CreateConVar(                 "rand_caralarm_chance",          "0.2",     "Chances of a car being alarmed.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarT2StartChance = CreateConVar(                    "rand_t2saferoom_chance",        "0.0",     "Chances of allowing tier 2 in start saferoom.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     
     g_hCvarFinaleItemUseful =  CreateConVar(                "rand_item_finale_useful",       "0.25",    "Factor by which non-useful items are adjusted for finale maps (lower = easier map).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -181,6 +181,7 @@ INIT_DefineCVars()
     g_hArCvarGiftWeight[GIFT_POS_AMMO] = CreateConVar(      "rand_weight_gift_getammo",      "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_POS_ITEMS] = CreateConVar(     "rand_weight_gift_getitems",     "7",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_POS_LASER] = CreateConVar(     "rand_weight_gift_getlaser",     "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarGiftWeight[GIFT_POS_ALARMS] = CreateConVar(    "rand_weight_gift_alarmsoff",    "1",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_POS_INSIGHT] = CreateConVar(   "rand_weight_gift_survinsight",  "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_NEG_VOMIT] = CreateConVar(     "rand_weight_gift_vomit",        "3",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_NEG_PANIC] = CreateConVar(     "rand_weight_gift_panic",        "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
