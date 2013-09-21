@@ -798,7 +798,13 @@ SpawnAlarmCar(index) {
     */
     
     // remember car entity
+    g_strArHittableStorage[index][hitNumber] = carEntity;
     
+    // michael bay event: if it's something that might explode, hook it for damage checks
+    if ( g_iSpecialEvent == EVT_BAY ) {
+        g_strArHittableStorage[index][hitDamageRcvd] = 0;
+        SDKHook( carEntity, SDKHook_OnTakeDamage, OnTakeDamage_Hittable );
+    }
     
     // allow car moving
     CreateTimer(0.2, Timer_CarMove, carEntity, TIMER_FLAG_NO_MAPCHANGE);
@@ -1218,6 +1224,36 @@ bool:IsValidEntRef(entity) {
 
 
 
+
+/* car flying */
+public LaunchCar(car)
+{
+	decl Float:vel[3];
+	GetEntPropVector(car, Prop_Data, "m_vecVelocity", vel);
+	vel[0]+= GetRandomFloat( 75.0, 400.0 );
+	vel[1]+= GetRandomFloat( 75.0, 400.0 );
+	vel[2]+= GetRandomFloat( EVENT_BAY_CARFLYLOW, EVENT_BAY_CARFLYHIGH );
+	
+	TeleportEntity(car, NULL_VECTOR, NULL_VECTOR, vel);
+	CreateTimer(2.5, timerNormalVelocity, car, TIMER_FLAG_NO_MAPCHANGE);
+    /*
+	new Float:burnTime = GetConVarFloat(g_cvarBurnTimeout);
+	if(burnTime > 0.0)
+	{
+		CreateTimer(burnTime, timerRemoveCarFire, car, TIMER_FLAG_NO_MAPCHANGE);
+	}
+    */
+}
+
+public Action:timerNormalVelocity(Handle:timer, any:car)
+{
+	if(IsValidEntity(car))
+	{
+		new Float:vel[3];
+		SetEntPropVector(car, Prop_Data, "m_vecVelocity", vel);
+		TeleportEntity(car, NULL_VECTOR, NULL_VECTOR, vel);
+	}
+}
 /*  Explosions and fire
     ------------------- */
 // create explosion (delayed)
@@ -1230,19 +1266,47 @@ public Action: Timer_CreateExplosion(Handle:timer, any:pack)
     targetPos[0] = ReadPackFloat(pack);
     targetPos[1] = ReadPackFloat(pack);
     targetPos[2] = ReadPackFloat(pack);
+    new fire = ReadPackCell(pack);
     CloseHandle(pack);
     
-    CreateExplosion(targetPos, power);
+    if ( power == -2.0 ) {
+        power = g_RC_fExplosionPowerLow;
+        CreateExplosion(targetPos, power, false, true );    // small explosion
+    } else {
+        CreateExplosion(targetPos, power, (fire) ? true : false );
+    }
+    
     
     return Plugin_Continue;
 }
 // create explosion
-CreateExplosion(Float:carPos[3], Float:power, bool:fire = false)
+CreateExplosion(Float:carPos[3], Float:power, bool:fire = false, bool:small = false)
 {
     decl String:sRadius[256];
     decl String:sPower[256];
+    new bool: bJustForShow = false;
     new Float:flMxDistance = float(EXPLOSION_RADIUS);
     if (!power) { power = g_RC_fExplosionPowerLow; }
+    
+    if (power == -1.0) {
+        bJustForShow = true;
+        power = 5.0;
+    }
+    
+    if ( small ) {
+        // special case: just make one small explosion (propane tank exploding)
+        
+        new ent = CreateEntityByName("prop_physics");
+        DispatchKeyValue(ent, "physdamagescale", "0.0");
+        DispatchKeyValue(ent, "model", MODEL_PROPANE);
+        DispatchSpawn(ent);
+        if (IsValidEntity(ent)) {
+            TeleportEntity(ent, carPos, NULL_VECTOR, NULL_VECTOR);
+            SetEntityMoveType(ent, MOVETYPE_VPHYSICS);
+            AcceptEntityInput(ent, "Break");
+        }
+        return;
+    }
     
     IntToString(EXPLOSION_RADIUS, sRadius, sizeof(sRadius));
     IntToString(RoundFloat(power), sPower, sizeof(sPower));
@@ -1250,7 +1314,10 @@ CreateExplosion(Float:carPos[3], Float:power, bool:fire = false)
     new exParticle3 = CreateEntityByName("info_particle_system");
     new exPhys = CreateEntityByName("env_physexplosion");
     new exTrace = 0;
-    new exHurt = CreateEntityByName("point_hurt");
+    new exHurt = 0;
+    if (!bJustForShow) {
+        exHurt = CreateEntityByName("point_hurt");
+    }
     new exParticle = CreateEntityByName("info_particle_system");
     new exEntity = CreateEntityByName("env_explosion");
     /*new exPush = CreateEntityByName("point_push");*/
@@ -1295,12 +1362,14 @@ CreateExplosion(Float:carPos[3], Float:power, bool:fire = false)
     
     
     //Set up hurt point
-    DispatchKeyValue(exHurt, "DamageRadius", sRadius);
-    DispatchKeyValue(exHurt, "DamageDelay", "0.5");
-    DispatchKeyValue(exHurt, "Damage", "5");
-    DispatchKeyValue(exHurt, "DamageType", "8");
-    DispatchSpawn(exHurt);
-    TeleportEntity(exHurt, carPos, NULL_VECTOR, NULL_VECTOR);
+    if (!bJustForShow) {
+        DispatchKeyValue(exHurt, "DamageRadius", sRadius);
+        DispatchKeyValue(exHurt, "DamageDelay", "0.5");
+        DispatchKeyValue(exHurt, "Damage", "5");
+        DispatchKeyValue(exHurt, "DamageType", "8");
+        DispatchSpawn(exHurt);
+        TeleportEntity(exHurt, carPos, NULL_VECTOR, NULL_VECTOR);
+    }
     
     switch(GetRandomInt(1,3)) {
         case 1: {
@@ -1341,42 +1410,45 @@ CreateExplosion(Float:carPos[3], Float:power, bool:fire = false)
     if (fire) { WritePackCell(pack2, exHurt); } else { WritePackCell(pack2, -1); }
     CreateTimer(EXPLOSION_DURATION + 1.5, Timer_DeleteParticles, pack2, TIMER_FLAG_NO_MAPCHANGE);
     
-    if (!fire) { 
-        new Handle:pack3 = CreateDataPack();
-        WritePackCell(pack3, exHurt);
-        CreateTimer(EXPLOSION_DURATION_MIN, Timer_DeleteParticlesMin, pack3, TIMER_FLAG_NO_MAPCHANGE);
-    }
-    
-    if (fire) {
-        new Handle:pack = CreateDataPack();
-        WritePackCell(pack, exTrace);
-        WritePackCell(pack, exHurt);
-        CreateTimer(EXPLOSION_DURATION, Timer_StopFire, pack, TIMER_FLAG_NO_MAPCHANGE);
-    }
-    
-    decl Float:survivorPos[3], Float:traceVec[3], Float:resultingFling[3], Float:currentVelVec[3];
-    for(new i=1; i<=MaxClients; i++)
-    {
-        if(!IsClientAndInGame(i) || !IsPlayerAlive(i) || GetClientTeam(i) != TEAM_SURVIVOR) { continue; }
-
-        GetEntPropVector(i, Prop_Data, "m_vecOrigin", survivorPos);
+    // no fire/pain effects when it's just for show, and don't fling players
+    if (!bJustForShow) {
+        if (!fire) {
+            new Handle:pack3 = CreateDataPack();
+            WritePackCell(pack3, exHurt);
+            CreateTimer(EXPLOSION_DURATION_MIN, Timer_DeleteParticlesMin, pack3, TIMER_FLAG_NO_MAPCHANGE);
+        }
         
-        //Vector and radius distance calcs by AtomicStryker!
-        if(GetVectorDistance(carPos, survivorPos) <= flMxDistance)
+        if (fire) {
+            new Handle:pack = CreateDataPack();
+            WritePackCell(pack, exTrace);
+            WritePackCell(pack, exHurt);
+            CreateTimer(EXPLOSION_DURATION, Timer_StopFire, pack, TIMER_FLAG_NO_MAPCHANGE);
+        }
+    
+        decl Float:survivorPos[3], Float:traceVec[3], Float:resultingFling[3], Float:currentVelVec[3];
+        for (new i=1; i<=MaxClients; i++)
         {
-            MakeVectorFromPoints(carPos, survivorPos, traceVec);                // draw a line from car to Survivor
-            GetVectorAngles(traceVec, resultingFling);                            // get the angles of that line
+            if(!IsClientAndInGame(i) || !IsPlayerAlive(i) || GetClientTeam(i) != TEAM_SURVIVOR) { continue; }
+
+            GetEntPropVector(i, Prop_Data, "m_vecOrigin", survivorPos);
             
-            resultingFling[0] = Cosine(DegToRad(resultingFling[1])) * power;    // use trigonometric magic
-            resultingFling[1] = Sine(DegToRad(resultingFling[1])) * power;
-            resultingFling[2] = power;
-            
-            GetEntPropVector(i, Prop_Data, "m_vecVelocity", currentVelVec);        // add whatever the Survivor had before
-            resultingFling[0] += currentVelVec[0];
-            resultingFling[1] += currentVelVec[1];
-            resultingFling[2] += currentVelVec[2];
-            
-            FlingPlayer(i, resultingFling, i);
+            //Vector and radius distance calcs by AtomicStryker!
+            if(GetVectorDistance(carPos, survivorPos) <= flMxDistance)
+            {
+                MakeVectorFromPoints(carPos, survivorPos, traceVec);                // draw a line from car to Survivor
+                GetVectorAngles(traceVec, resultingFling);                            // get the angles of that line
+                
+                resultingFling[0] = Cosine(DegToRad(resultingFling[1])) * power;    // use trigonometric magic
+                resultingFling[1] = Sine(DegToRad(resultingFling[1])) * power;
+                resultingFling[2] = power;
+                
+                GetEntPropVector(i, Prop_Data, "m_vecVelocity", currentVelVec);        // add whatever the Survivor had before
+                resultingFling[0] += currentVelVec[0];
+                resultingFling[1] += currentVelVec[1];
+                resultingFling[2] += currentVelVec[2];
+                
+                FlingPlayer(i, resultingFling, i);
+            }
         }
     }
 }

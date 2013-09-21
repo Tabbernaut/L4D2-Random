@@ -43,6 +43,7 @@ L4D2_Random
             - Keymaster event: doors can not be broken by survivors anymore (except with explosives). Infected can still break them at will.
             - L4D1 event: fixed survivors getting adrenaline at start (sometimes).
             - Added Haunted Doors event.
+            - Added Directed by Michael Bay event.
             - Fixed a problem with defib penalty not resetting if a match ended with a Sudden Death event.
             - Firepower event: tweaked amount of ammo available.
             - Prevented the same player getting assigned two tanks in a row.
@@ -82,7 +83,9 @@ L4D2_Random
             - gift:     temporary deafness
             
             - event:    'firestarter': fire does insane amounts of damage to everything (mostly survivors), and there are fire items everywhere. fire ammo always
-            - event:    exploding infected: every special infected explodes when killed? boomers? jockeys only?
+            - event:    extend bay event
+                        - defibs have chance of exploding when used
+                        - tank rock explodes when shot?
             
 
     minor cleanup / details

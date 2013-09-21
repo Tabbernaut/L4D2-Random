@@ -49,6 +49,7 @@ const           REPORT_PANEL_LIFETIME   = 20;           // how long to show the 
 const Float:    DELAY_MAPRESTART        = 5.0;
 const Float:    DELAY_T2_NERF_TIMEOUT   = 3.0;          // how many seconds between spam about t2 nerfs
 const Float:    DELAY_SURVLOADEDCHECK   = 3.0;          // how long to wait after teamswap before checking the amount of survivors loaded in
+const Float:    CAR_EXPLODE_DELAY       = 0.15;         // time between shooting car and it exploding
 
 const           INCAP_DEFAULT           = 2;
 const           INCAP_MINIMUM           = 1;
@@ -137,6 +138,14 @@ const           EVENT_MEDIC_UNITS_MIN   = 7;            // EVT_MEDIC        mini
 const           EVENT_MEDIC_UNITS_MAX   = 14;           // EVT_MEDIC        maximum mediunits 
 const           EVENT_MEDIC_DIFF_BASE   = 4;            // EVT_MEDIC        use this difficulty for the base value (and scale the rest)
 
+const           EVENT_BAY_CARDAMAGE     = 150;          // EVT_BAY          amount of damage done to a car before it explodes
+const Float:    EVENT_BAY_CARFLYLOW     = 75.0;
+const Float:    EVENT_BAY_CARFLYHIGH    = 400.0;
+const Float:    EVENT_BAY_SIEXPLODE     = 0.75;         // EVT_BAY          odds that SI explode
+const Float:    EVENT_BAY_CIEXPLODE     = 0.05;         // EVT_BAY          odds that SI explode
+const Float:    EVENT_BAY_ITEMFACTOR    = 1.25;         // EVT_BAY          to what to increase odds of exploding items
+const Float:    EVENT_BAY_PIPEDAMAGE    = 5.0;          // EVT_BAY          how much damage small explosions do
+
 const Float:    EVENT_ENC_W_T1          = 1.5;          // EVT_ENCUMBERED   for determining total player weight
 const Float:    EVENT_ENC_W_SNIPER      = 2.5;
 const Float:    EVENT_ENC_W_T2          = 3.0;
@@ -164,6 +173,8 @@ const Float:    BOOMCOMBO_DUDTIME       = 10.0;         // how long after a boom
 
 const Float:    PIPEDUD_MINTIME         = 2.4;          // how much time minimally before dudding pipe
 const Float:    PIPEDUD_ADDTIME         = 2.5;          // how much time to add maximally to mintime
+const Float:    PIPEPRE_MINTIME         = 0.25;         // how much time minimally before preexploding pipe
+const Float:    PIPEPRE_ADDTIME         = 2.5;          // how much time to add maximally to mintime
 
 const Float:    SACKPROT_MARGIN         = 3.0;          // seconds margin: after this time, someone dying counts as the attack someone should join in to not be saving
 const Float:    SACKPROT_OFFENCE_GRACE  = 5.0;          // seconds between offences before we add them up (for reporting after 3 strikes)
@@ -262,8 +273,9 @@ const           EVT_BADSANTA            = 34;
 const           EVT_MEDIC               = 35;
 const           EVT_BOOMFLU             = 36;
 const           EVT_DOORCIRCUS          = 37;
+const           EVT_BAY                 = 38;
 
-const           EVT_TOTAL               = 38;
+const           EVT_TOTAL               = 39;
 
 const           EVTMNU_INFO             = 1;
 const           EVTMNU_PICK             = 2;
@@ -403,6 +415,7 @@ new const String: GIFTUNWRAP_SOUND[]    = "player/ammo_pack_use.wav";
 new const String: MODEL_GASCAN[]        = "models/props_junk/gascan001a.mdl";
 new const String: MODEL_FIREWORKS[]     = "models/props_junk/explosive_box001.mdl";
 new const String: MODEL_L4D1AMMO[]      = "models/props_unique/spawn_apartment/coffeeammo.mdl";
+new const String: MODEL_PROPANE[]       = "models/props_junk/propanecanister001a.mdl";
 
 new const String: MODEL_BOOMETTE[]      = "models/infected/boomette.mdl";
 
@@ -533,7 +546,8 @@ enum CreatedEntityType          // for use with tries to determine whether to ha
     CREATED_PIPEBOMB,
     CREATED_PROP_PHYSICS,
     CREATED_AMMO_DEPLOYED,      // explosive/incendiary
-    CREATED_WITCH
+    CREATED_WITCH,
+    CREATED_TANKROCK
 }
 
 enum RandomizableOrNot          // for use with tries to determine ent's random-replaceableness
@@ -599,6 +613,8 @@ enum _:strHittableData              // everything required to recreate the hitta
     bool:   hitIsColored,               // if true, it also has rendercolors
     bool:   hitIsAlarmed,
     bool:   hitAlarmOff,                // if true, alarm has already been disabled
+            hitDamageRcvd,
+    bool:   hitBlownUp,                 // if true, car has been blown up
             hitGlassEntity,             // all parts of the alarm car
             hitGlassOffEntity,
             hitLightEntity_a,
@@ -730,7 +746,8 @@ new const String: g_csEventText[][] =
     "\x04Lousy Gifts\x01 - All gifts are bad! \x0415\x01 bonus for unwrapping anyway.",
     "\x04MEDIC!\x01 - There is one medic with a limited supply of healing items.",
     "\x04Boomer Flu\x01 - One survivor caught the boomer flu and is prone to vomit.",
-    "\x04Haunted Doors\x01 - Evil spirits randomly open and close the doors on this map."
+    "\x04Haunted Doors\x01 - Evil spirits randomly open and close the doors on this map.",
+    "\x04Directed by Michael Bay\x01 - Explosions everywhere."
 };
 
 new const String: g_csEventTextShort[][] =
@@ -772,7 +789,8 @@ new const String: g_csEventTextShort[][] =
     "Lousy Gifts",
     "MEDIC!",
     "Boomer Flu",
-    "Haunted Doors"
+    "Haunted Doors",
+    "Directed by Michael Bay"
 };
 
 new const JUNK_FIRSTNONSOLID = 4;

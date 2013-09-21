@@ -28,7 +28,7 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.62"
+#define PLUGIN_VERSION "1.0.63"
 
 /*
         L4D2 Random
@@ -176,6 +176,7 @@ public OnPluginStart()
     HookEvent("witch_spawn",                Event_WitchSpawn,               EventHookMode_Post);
     HookEvent("witch_harasser_set",         Event_WitchHarasserSet,         EventHookMode_Post);
     HookEvent("witch_killed",               Event_WitchDeath,               EventHookMode_Post);
+    
     
     // version convar
     CreateConVar("rand_version", PLUGIN_VERSION, "Random plugin version.", FCVAR_PLUGIN|FCVAR_NOTIFY|FCVAR_REPLICATED|FCVAR_DONTRECORD);
@@ -1342,7 +1343,7 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
     // skeets, where skeeted hunters should give points
     // always 'handle' skeets, but only give points on event!
     if (    IsClientAndInGame(victim) && IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_SURVIVOR
-        &&  GetClientTeam(victim) == TEAM_INFECTED && GetEntProp(victim, Prop_Send, "m_zombieClass") != ZC_HUNTER
+        &&  GetClientTeam(victim) == TEAM_INFECTED && GetEntProp(victim, Prop_Send, "m_zombieClass") == ZC_HUNTER
     ) {
         
         // handle old shotgun blast, if there was one
@@ -1370,6 +1371,19 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
                     // melee skeet
                     EVENT_HandleSkeet(attacker, victim, true);
                 }
+            }
+        }
+    }
+    // bay event: propane tanks should do less damage to survivors
+    else if ( g_iSpecialEvent == EVT_BAY )
+    {
+        if (IsValidEntity(inflictor))
+        {
+            new String: classnameb[32];
+            GetEdictClassname(inflictor, classnameb, sizeof(classnameb));
+            if (StrEqual(classnameb, "pipe_bomb_projectile", false)) {
+                damage = EVENT_BAY_PIPEDAMAGE;
+                return Plugin_Changed;
             }
         }
     }
@@ -1502,6 +1516,89 @@ public Action: OnTakeDamage_Door(victim, &attacker, &inflictor, &Float:damage, &
     damage = 0.0;
     return Plugin_Changed;
 }
+
+public Action: OnTakeDamage_Hittable(victim, &attacker, &inflictor, &Float:damage, &damagetype)
+{
+    // this is already only hooked on BAY event
+    // wait until round is live
+    if ( SUPPORT_IsInReady() ) { return Plugin_Continue; }
+    
+    if (    damage == 0.0
+        ||  !IsClientAndInGame(attacker)
+        ||  GetClientTeam(attacker) != TEAM_SURVIVOR
+        ||  !IsValidEntity(victim)
+    ) {
+        return Plugin_Continue;
+    }
+    
+    
+    
+    new bool: doBlowUp = false;
+    new index = 0;
+    
+    // if damage is enough, explode car
+    if ( damage >= EVENT_BAY_CARDAMAGE ) {
+        doBlowUp = true;
+    }
+    else {
+        // count up and check
+        // find hittable index
+        for (new i=0; i < g_iStoredHittables; i++) {
+            if ( victim == g_strArHittableStorage[i][hitNumber] ) {
+                index = i;
+                doBlowUp = true;
+                break;
+            }
+        }
+        // only blow up if enough damage total
+        if ( doBlowUp )
+        {
+            g_strArHittableStorage[index][hitDamageRcvd] += RoundFloat( damage );
+            if ( g_strArHittableStorage[index][hitDamageRcvd] < EVENT_BAY_CARDAMAGE ) {
+                doBlowUp = false;
+            }
+        }
+    }
+        
+    if ( doBlowUp )
+    {
+        if ( index == 0 ) {
+            for (new i=0; i < g_iStoredHittables; i++) {
+                if ( victim == g_strArHittableStorage[i][hitNumber] ) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+        
+        SDKUnhook( victim, SDKHook_OnTakeDamage, OnTakeDamage_Hittable );
+        if ( g_strArHittableStorage[index][hitBlownUp] ) { return Plugin_Continue; }
+        
+        
+        
+        PrintDebug(3, "[rand] Michael bay car blowing up!");
+        g_strArHittableStorage[index][hitBlownUp] = true;
+        
+        
+        // get car location
+        new Float: targetPos[3];
+        GetEntPropVector(victim, Prop_Send, "m_vecOrigin", targetPos);
+        
+        new Handle:pack = CreateDataPack();
+        WritePackFloat(pack, g_RC_fExplosionPowerHigh);
+        WritePackFloat(pack, targetPos[0]);
+        WritePackFloat(pack, targetPos[1]);
+        WritePackFloat(pack, targetPos[2]);
+        WritePackCell(pack, (GetRandomInt(0,2) == 0) ? 0 : 1 ); // for fire
+        CreateTimer(CAR_EXPLODE_DELAY, Timer_CreateExplosion, pack, TIMER_FLAG_NO_MAPCHANGE);
+        
+        // push the car upwards to simulate explosion blowup thingy
+        CreateTimer(CAR_EXPLODE_DELAY, Timer_PushCarUpwards, victim, TIMER_FLAG_NO_MAPCHANGE);
+    }
+    
+    return Plugin_Continue;
+}
+
 
 /*      see note @ hooking car in random_thirdparty spawnalarmcar
 public Action: OnTakeDamage_AlarmedCar(victim, &attacker, &inflictor, &Float:damage, &damagetype)
@@ -2741,6 +2838,27 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
             // pick a random item (different list) and spawn it
             SpawnCommonItem(loc, vel);
         }
+        else if ( g_iSpecialEvent == EVT_BAY )
+        {
+            if (GetRandomFloat(0.001,1.0) <= g_RC_fEventBayCIChance)
+            {
+                new Float: targetPos[3];
+                GetEntPropVector(common, Prop_Send, "m_vecOrigin", targetPos);
+                
+                new Handle:pack = CreateDataPack();
+                if ( GetRandomInt(0, 9) == 0 ) { 
+                    WritePackFloat(pack, g_RC_fExplosionPowerLow);
+                } else {
+                    WritePackFloat(pack, -2.0); // -2 = small explosion
+                }
+                WritePackFloat(pack, targetPos[0]);
+                WritePackFloat(pack, targetPos[1]);
+                WritePackFloat(pack, targetPos[2]);
+                WritePackCell(pack, 0); // for fire
+                CreateTimer(0.1, Timer_CreateExplosion, pack, TIMER_FLAG_NO_MAPCHANGE);
+            }
+        }
+        
         
         return Plugin_Continue;
     }
@@ -2780,6 +2898,19 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
             
             g_strArGnomes[gnomeIndex][gnomebHeldByPlayer] = false;
             g_strArGnomes[gnomeIndex][gnomeiHoldingClient] = 0;
+        }
+        
+        if ( g_iSpecialEvent == EVT_BAY ) {
+            new Float: targetPos[3];
+            GetClientAbsOrigin(victim, targetPos);
+            
+            new Handle:pack = CreateDataPack();
+            WritePackFloat(pack, -2.0); // -2 = small explosion
+            WritePackFloat(pack, targetPos[0]);
+            WritePackFloat(pack, targetPos[1]);
+            WritePackFloat(pack, targetPos[2]);
+            WritePackCell(pack, 0); // for fire
+            CreateTimer(0.1, Timer_CreateExplosion, pack, TIMER_FLAG_NO_MAPCHANGE);
         }
     }
     // -------------------
@@ -2863,6 +2994,28 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
         g_bClassPicked[victim] = false;
     }
     
+    // explode?
+    if ( g_iSpecialEvent == EVT_BAY ) {
+        
+        if (GetRandomFloat(0.001,1.0) <=  g_RC_fEventBaySIChance)
+        {
+            new Float: targetPos[3];
+            GetClientAbsOrigin(victim, targetPos);
+            
+            new Handle:pack = CreateDataPack();
+            if ( GetRandomInt(0, 9) == 0 ) { 
+                WritePackFloat(pack, g_RC_fExplosionPowerLow);
+            } else {
+                WritePackFloat(pack, -2.0); // -2 = small explosion
+            }
+            WritePackFloat(pack, targetPos[0]);
+            WritePackFloat(pack, targetPos[1]);
+            WritePackFloat(pack, targetPos[2]);
+            WritePackCell(pack, 0); // for fire
+            CreateTimer(0.1, Timer_CreateExplosion, pack, TIMER_FLAG_NO_MAPCHANGE);
+        }
+    }
+    
     // tank stuff:
     if (!g_bIsTankInPlay || victim != g_iTankClient) { return Plugin_Continue; }
     
@@ -2874,8 +3027,6 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
     
     return Plugin_Continue;
 }
-
-
 
 public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBroadcast)
 {
@@ -2969,6 +3120,21 @@ public Action:Timer_CheckTankDeath(Handle:hTimer, any:client_oldTank)
         RANDOM_TankDropItems();
     }
     
+    // explode?
+    if ( g_iSpecialEvent == EVT_BAY ) {
+        
+        if (GetRandomFloat(0.001,1.0) <= g_RC_fEventBaySIChance)
+        {
+            new Handle:pack = CreateDataPack();
+            WritePackFloat(pack, g_RC_fExplosionPowerHigh);
+            WritePackFloat(pack, g_fTankDeathLocation[0]);
+            WritePackFloat(pack, g_fTankDeathLocation[1]);
+            WritePackFloat(pack, g_fTankDeathLocation[2]);
+            WritePackCell(pack, GetRandomInt(0,1) ); // for fire
+            CreateTimer(0.1, Timer_CreateExplosion, pack, TIMER_FLAG_NO_MAPCHANGE);
+        }
+    }
+    
     return Plugin_Continue;
 }
 
@@ -3018,6 +3184,8 @@ public Event_WitchHarasserSet(Handle:event, const String:name[], bool:dontBroadc
     new witch = GetEventInt(event, "witchid");
     SetEntProp(witch, Prop_Send, "m_iGlowType", 0);
 }
+
+
 
 /*
     Uncommon infected spawning
@@ -3151,6 +3319,10 @@ public OnEntityCreated(entity, const String:classname[])
         CreateTimer(0.01, EVENT_DeployAmmo, entity, TIMER_FLAG_NO_MAPCHANGE);
         //CreateTimer(0.025, EVENT_CheckDeployedAmmo, entity, TIMER_FLAG_NO_MAPCHANGE);
     }
+    else if (g_iSpecialEvent == EVT_BAY && classnameOEC == CREATED_TANKROCK && GetEntProp(entity, Prop_Send, "m_iTeamNum") >= 0)
+    {
+        SDKHook(entity, SDKHook_Touch, OnTankRockTouchesSomething);
+    }
 }
 
 public Action: Timer_CreatedPropPhysics(Handle:timer, any:entity)
@@ -3184,6 +3356,22 @@ public OnEntityDestroyed(entity)
 }
 
 
+public Action:Timer_PipePreExplode(Handle:timer, any:entity)
+{
+    new Float: targetPos[3];
+    GetEntPropVector(entity, Prop_Send, "m_vecOrigin", targetPos);
+    
+    // dudding pipebomb (simple kill)
+    AcceptEntityInput(entity, "Kill");
+    
+    new Handle:pack = CreateDataPack();
+    WritePackFloat(pack, g_RC_fExplosionPowerLow);
+    WritePackFloat(pack, targetPos[0]);
+    WritePackFloat(pack, targetPos[1]);
+    WritePackFloat(pack, targetPos[2]);
+    WritePackCell(pack, (GetRandomInt(0,5) == 0) ? 1 : 0 ); // for fire
+    CreateTimer(0.1, Timer_CreateExplosion, pack, TIMER_FLAG_NO_MAPCHANGE);
+}
 public Action:Timer_PipeDud(Handle:timer, any:entity)
 {
     // dudding pipebomb (simple kill)
@@ -3200,6 +3388,13 @@ public Action:Timer_PipeCheck(Handle:timer, any:entity)
     GetEdictClassname(entity, classname, sizeof(classname));
     if (!StrEqual(classname, "pipe_bomb_projectile", false)) { return; }
     
+    // bay event
+    if ( g_iSpecialEvent == EVT_BAY )
+    {
+        CreateTimer( PIPEPRE_MINTIME + GetRandomFloat(0.0, PIPEPRE_ADDTIME) , Timer_PipePreExplode, entity);
+        return;
+    }
+    
     // dud chance...
     //  affected by boomer combo
     new Float: fDudChance = GetConVarFloat(g_hCvarPipeDudChance);
@@ -3208,10 +3403,29 @@ public Action:Timer_PipeCheck(Handle:timer, any:entity)
     
     if (GetRandomFloat(0.001,1.0) <= fDudChance) {
         CreateTimer( PIPEDUD_MINTIME + GetRandomFloat(0.0, PIPEDUD_ADDTIME) , Timer_PipeDud, entity);
-    }    
+    }
 }
 
 
+
+
+
+// hooked for BAY
+public OnTankRockTouchesSomething(entity)
+{
+    new Float: targetPos[3];
+    GetEntPropVector(entity, Prop_Send, "m_vecOrigin", targetPos);
+    
+    new Handle:pack = CreateDataPack();
+    WritePackFloat(pack, -1.0); // no damage just graphics
+    WritePackFloat(pack, targetPos[0]);
+    WritePackFloat(pack, targetPos[1]);
+    WritePackFloat(pack, targetPos[2]);
+    WritePackCell(pack, 0 ); // for fire
+    CreateTimer(0.1, Timer_CreateExplosion, pack, TIMER_FLAG_NO_MAPCHANGE);
+    
+    SDKUnhook(entity, SDKHook_Touch, OnTankRockTouchesSomething);
+}
 
 
 // hooked on EVT_WOMEN

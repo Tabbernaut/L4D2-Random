@@ -2630,43 +2630,19 @@ SUPPORT_FixNerfTier2(client, tierType)
 }
 
 
-
-/* doors */
-
-// damage filter that makes doors unbreakable
-/*
-    not used, using hook for damage instead
-SUPPORT_CreateDoorDamageFilter( bool: onlyInfected = false ) {
+public Action: Timer_PushCarUpwards(Handle:timer, any:car)
+{
+    // send it flying
+    if ( !IsValidEntity(car) ) { return Plugin_Continue; }
     
-    // check if there is not already one
-    if ( g_iDamageFilterDoors > 0 && IsValidEntity( g_iDamageFilterDoors ) ) {
-        new String:classname[64];
-        GetEdictClassname(g_iDamageFilterDoors, classname, sizeof(classname));
-        if ( StrEqual(classname, "filter_damage_type") ) {
-            return g_iDamageFilterDoors;
-        }
-    }
+    LaunchCar(car);
     
-    // make a new one, since none was found
-    new fEnt = CreateEntityByName("filter_damage_type");
-    if (fEnt == -1) return -1;
-    
-    DispatchKeyValue(fEnt, "targetname", "damage_filter_doors");
-    DispatchKeyValue(fEnt, "Negated", "0");
-    
-    if ( !onlyInfected ) {
-        // no-one is allowed to break them..
-        DispatchKeyValue(fEnt, "damagetype", "13");    // drowning only
-    } else {
-        // only infected are allowed to break them
-        DispatchKeyValue(fEnt, "damagetype", "13");    // drowning only
-    }
-    
-    g_iDamageFilterDoors = fEnt;
-    
-    return g_iDamageFilterDoors;
+    return Plugin_Continue;
 }
-*/
+
+
+
+
 
 /*  Gnomes
     ------ */

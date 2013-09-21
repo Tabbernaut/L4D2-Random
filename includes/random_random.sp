@@ -491,6 +491,10 @@ DoEventInfo(client, event)
         case EVT_DOORCIRCUS: {
             PrintToChat(client, "\x05The doors on this map cannot be controlled or broken by players. Instead, they open and close automatically.\x01");
         }
+        case EVT_BAY: {
+            PrintToChat(client, "\x05This round has been directed by Michael Bay. Small explosions only do 5 damage to survivors. Tank rock explosions are just for show, and do no damage.\x01");
+            PrintToChat(client, "\x05Style points for anyone walking away from explosions without flinching or looking back!\x01");
+        }
         default: {
             PrintToChat(client, "\x01(no extra information available)\x01");
         }
@@ -1008,6 +1012,9 @@ RANDOM_DetermineRandomStuff()
                     // nothing
                 }
                 */
+                case EVT_BAY: {
+                    g_iDifficultyRating += 2;
+                }
             }
             PrintDebug(1, "[rand] Picked Special Event: %i (%s) [extra, %i, sub: %i, str: %s]", g_iSpecialEvent, g_csEventText[g_iSpecialEvent], g_iSpecialEventExtra, g_iSpecialEventExtraSub, g_sSpecialEventExtra);
         }
@@ -1468,6 +1475,7 @@ RandomizeItems()
                     g_strArHittableStorage[curHit][hitIsColored] = false;
                     g_strArHittableStorage[curHit][hitIsAlarmed] = false;
                     g_strArHittableStorage[curHit][hitAlarmOff] = false;
+                    g_strArHittableStorage[curHit][hitBlownUp] = false;
                     
                     decl Float: horigin[3];
                     decl Float: hangles[3];
@@ -1844,6 +1852,7 @@ RandomizeItems()
                 case INDEX_T3:
                 {
                     new tmpRnd = GetRandomInt(0, 2);
+                    if (g_iSpecialEvent == EVT_BAY ) { tmpRnd = 1; } // boom
                     switch (tmpRnd)  {
                         case 0: {
                             g_strArStorage[curEnt][entPickedType] = PCK_CHAINSAW;
@@ -1863,20 +1872,33 @@ RandomizeItems()
                 
                 case INDEX_CANISTER:
                 {
-                    if (GetRandomInt(0, RATE_CAN_BARREL - 1) == 0) {
-                        g_strArStorage[curEnt][entPickedType] = PCK_EXPLOSIVE_BARREL;
+                    if (g_iSpecialEvent == EVT_BAY ) {
+                        if (GetRandomInt(0, RATE_CAN_BARREL - 1) == 0) {
+                            g_strArStorage[curEnt][entPickedType] = PCK_EXPLOSIVE_BARREL;
 
-                    } else if (GetRandomInt(0, RATE_CAN_GAS - 1) == 0) {
-                        if (GetRandomInt(0, 1) == 0) {
-                            g_strArStorage[curEnt][entPickedType] = PCK_PROPANETANK;
                         } else {
-                            g_strArStorage[curEnt][entPickedType] = PCK_OXYGENTANK;
+                            if (GetRandomInt(0, 1) == 0) {
+                                g_strArStorage[curEnt][entPickedType] = PCK_PROPANETANK;
+                            } else {
+                                g_strArStorage[curEnt][entPickedType] = PCK_OXYGENTANK;
+                            }
                         }
                     } else {
-                        if (GetRandomInt(0, 1) == 0) {
-                            g_strArStorage[curEnt][entPickedType] = PCK_GASCAN;
+                        if (GetRandomInt(0, RATE_CAN_BARREL - 1) == 0) {
+                            g_strArStorage[curEnt][entPickedType] = PCK_EXPLOSIVE_BARREL;
+
+                        } else if (GetRandomInt(0, RATE_CAN_GAS - 1) == 0) {
+                            if (GetRandomInt(0, 1) == 0) {
+                                g_strArStorage[curEnt][entPickedType] = PCK_PROPANETANK;
+                            } else {
+                                g_strArStorage[curEnt][entPickedType] = PCK_OXYGENTANK;
+                            }
                         } else {
-                            g_strArStorage[curEnt][entPickedType] = PCK_FIREWORKCRATE;
+                            if (GetRandomInt(0, 1) == 0) {
+                                g_strArStorage[curEnt][entPickedType] = PCK_GASCAN;
+                            } else {
+                                g_strArStorage[curEnt][entPickedType] = PCK_FIREWORKCRATE;
+                            }
                         }
                     }
                 }
@@ -1893,6 +1915,7 @@ RandomizeItems()
                 case INDEX_THROWABLE:
                 {
                     new tmpRnd = GetRandomInt(0, (g_iSpecialEvent == EVT_L4D1) ? 1 : 2 );
+                    if (g_iSpecialEvent == EVT_BAY ) { tmpRnd = 0; }
                     switch (tmpRnd)  {
                         case 0: {
                             g_strArStorage[curEnt][entPickedType] = PCK_PIPEBOMB;
@@ -1924,12 +1947,16 @@ RandomizeItems()
                 
                 case INDEX_UPGRADE:
                 {
-                    if (GetRandomInt(0, RATE_UPG_LASER - 1) == 0) {
-                        g_strArStorage[curEnt][entPickedType] = PCK_UPG_LASER;
-                    } else if (GetRandomInt(0, RATE_UPG_EXPLOSIVE - 1) == 0) {
+                    if (g_iSpecialEvent == EVT_BAY ) {
                         g_strArStorage[curEnt][entPickedType] = PCK_UPG_EXPLOSIVE;
                     } else {
-                        g_strArStorage[curEnt][entPickedType] = PCK_UPG_INCENDIARY;
+                        if (GetRandomInt(0, RATE_UPG_LASER - 1) == 0) {
+                            g_strArStorage[curEnt][entPickedType] = PCK_UPG_LASER;
+                        } else if (GetRandomInt(0, RATE_UPG_EXPLOSIVE - 1) == 0) {
+                            g_strArStorage[curEnt][entPickedType] = PCK_UPG_EXPLOSIVE;
+                        } else {
+                            g_strArStorage[curEnt][entPickedType] = PCK_UPG_INCENDIARY;
+                        }
                     }
                     //ammo_ammo_pack_max (required?)
                 }
@@ -2342,6 +2369,7 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
         
         case INDEX_T3: {
             new tmpRnd = GetRandomInt(0, 2);
+            if (g_iSpecialEvent == EVT_BAY ) { tmpRnd = 1; }
             switch (tmpRnd)  {
                 case 0: { randomPick = PCK_CHAINSAW; }
                 case 1: { randomPick = PCK_GRENADE_LAUNCHER;
@@ -2354,6 +2382,7 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
         case INDEX_CANISTER: {
             new tmpRnd = GetRandomInt(0, 3);
             if (tmpRnd == 4 && onlyUseful) { tmpRnd = 0; }
+            if (g_iSpecialEvent == EVT_BAY ) { GetRandomInt(1, 2); }
             switch (tmpRnd) {
                 case 0: { randomPick = PCK_GASCAN; }
                 case 1: { randomPick = PCK_PROPANETANK; }
@@ -2369,6 +2398,7 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
         
         case INDEX_THROWABLE: {
             new tmpRnd = GetRandomInt(0, (g_iSpecialEvent == EVT_L4D1) ? 1 : 2 );
+            if (g_iSpecialEvent == EVT_BAY ) { tmpRnd = 0; }
             switch (tmpRnd)  {
                 case 0: { randomPick = PCK_PIPEBOMB; }
                 case 1: { randomPick = PCK_MOLOTOV; }
@@ -2385,6 +2415,7 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
         case INDEX_UPGRADE: {
             new tmpRnd = GetRandomInt(0, 2);
             if (tmpRnd == 0 && noLaserSight) { tmpRnd = 2; }
+            if (g_iSpecialEvent == EVT_BAY ) { tmpRnd = 1; }
             switch (tmpRnd)  {
                 case 0: { randomPick = PCK_UPG_LASER; }
                 case 1: { randomPick = PCK_UPG_EXPLOSIVE; }
@@ -3214,15 +3245,29 @@ CreateHittable(index)
  
     if (type == -1) { return -1; }
 
-    Format(targetName, sizeof(targetName), "RandomHittable%i", index+1);
-    
     ent = CreateEntityByName("prop_physics");
+    
+    Format(targetName, sizeof(targetName), "RandomHittable%i", ent);
+    
     DispatchKeyValue(ent, "model", g_csHittableModels[type]);
     DispatchKeyValue(ent, "spawnflags", "256");
     DispatchKeyValue(ent, "targetname", targetName);
     DispatchKeyValueVector(ent, "origin", itemOrigin);
     DispatchKeyValueVector(ent, "angles", itemAngles);
     
+    // michael bay event: if it's something that might explode, hook it for damage checks
+    // plus mild chance normally of it being possible
+    if (    g_iSpecialEvent == EVT_BAY &&
+            (   type == HITTAB_FORKLIFT || type == HITTAB_BUMPERCAR || type == HITTAB_GENERATOR ||
+                g_strArHittableStorage[index][hitIsCar]
+            ) ||
+            GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarCarExplodeChance)
+    ) {
+        g_strArHittableStorage[index][hitDamageRcvd] = 0;
+        SDKHook( ent, SDKHook_OnTakeDamage, OnTakeDamage_Hittable );
+    }
+    
+    // color cars
     if (g_strArHittableStorage[index][hitIsColored])
     {
         decl String: tmpStr[24];
@@ -3234,6 +3279,8 @@ CreateHittable(index)
         g_strArHittableStorage[index][hitNumber] = 0;
         PrintDebug(0, "[rand] Random pick resulted in invalid hittable entity! (index: %d, ent: %d, type: %d).", index, ent, type);
         return -1;
+    } else {
+        g_strArHittableStorage[index][hitNumber] = ent;
     }
     
     // create the actual replacement entity
@@ -3811,6 +3858,9 @@ RANDOM_DoGiftEffect(client, entity)
         randomPick = g_iArGiftWeightedChoices[randomIndex];
         
         //PrintToChatAll("client: %i, Entity: %i: neg pick: %i", client, entity, randomPick);
+        if ( g_iSpecialEvent == EVT_BAY ) {
+            randomPick = GIFT_NEG_EXPLODE;
+        }
         
         switch (randomPick)
         {
@@ -3818,10 +3868,11 @@ RANDOM_DoGiftEffect(client, entity)
                 PrintToChatAll("\x01[\x05r\x01] %N opened gift: \x04explosive surprise\x01!", client);
                 
                 new Handle:pack = CreateDataPack();
-                WritePackFloat(pack, (GetRandomInt(0, 3)) ? g_RC_fExplosionPowerLow : g_RC_fExplosionPowerLow );
+                WritePackFloat(pack, (GetRandomInt(0, 3)) ? g_RC_fExplosionPowerLow : g_RC_fExplosionPowerHigh );
                 WritePackFloat(pack, targetPos[0]);
                 WritePackFloat(pack, targetPos[1]);
                 WritePackFloat(pack, targetPos[2]);
+                WritePackCell(pack, 0); // no fire
                 CreateTimer(GIFT_EXPLODE_DELAY, Timer_CreateExplosion, pack, TIMER_FLAG_NO_MAPCHANGE);
             }
             case GIFT_NEG_PANIC: {   // panic event (sound siren of some sort)
@@ -5073,6 +5124,11 @@ RANDOM_PrepareChoices()
             else if (g_iSpecialEvent == EVT_L4D1) {
                 // no l4d2-only items
                 if (i == INDEX_UPGRADE || i == INDEX_MELEE || i == INDEX_T3) { count = 0; }
+            }
+            else if (g_iSpecialEvent == EVT_BAY) {
+                if ( i == INDEX_THROWABLE || i == INDEX_T3 || i == INDEX_CANISTER ) {
+                    count = RoundFloat( float(count) * EVENT_BAY_ITEMFACTOR );
+                }
             }
             total_items += count;
         }

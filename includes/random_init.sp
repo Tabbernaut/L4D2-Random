@@ -84,6 +84,7 @@ INIT_DefineCVars()
     g_hCvarFinaleAmmoChance = CreateConVar(                 "rand_finale_ammo",              "0.0",     "Chances of finale ammo piles being randomized.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarAlarmedCarChance = CreateConVar(                 "rand_caralarm_chance",          "0.2",     "Chances of a car being alarmed.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarT2StartChance = CreateConVar(                    "rand_t2saferoom_chance",        "0.0",     "Chances of allowing tier 2 in start saferoom.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarCarExplodeChance = CreateConVar(                 "rand_carexplode_chance",        "0.1",     "Chances of spawned cars being able to explode when shot.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     
     g_hCvarFinaleItemUseful =  CreateConVar(                "rand_item_finale_useful",       "0.25",    "Factor by which non-useful items are adjusted for finale maps (lower = easier map).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarStartItemNoJunk =  CreateConVar(                 "rand_item_start_nojunk",        "0.25",    "Chances items in start saferoom will be converted to something useful.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -142,7 +143,7 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_HORDE_NONE] = CreateConVar(      "rand_weight_evt_nohorde",       "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_UNCOMMON] = CreateConVar(        "rand_weight_evt_uncommon",      "4",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_CLOWNS] = CreateConVar(          "rand_weight_evt_circus",        "3",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_DOORS] = CreateConVar(           "rand_weight_evt_doors",         "4",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_DOORS] = CreateConVar(           "rand_weight_evt_doors",         "3",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_QUADS] = CreateConVar(           "rand_weight_evt_quads",         "6",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_WEATHER] = CreateConVar(         "rand_weight_evt_storm",         "6",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_FOG] = CreateConVar(             "rand_weight_evt_fog",           "6",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -174,7 +175,8 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_BADSANTA] = CreateConVar(        "rand_weight_evt_badgifts",      "3",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_MEDIC] = CreateConVar(           "rand_weight_evt_medic",         "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_BOOMFLU] = CreateConVar(         "rand_weight_evt_boomerflu",     "6",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_DOORCIRCUS] = CreateConVar(      "rand_weight_evt_doorcircus",    "4",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_DOORCIRCUS] = CreateConVar(      "rand_weight_evt_doorcircus",    "3",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_BAY] = CreateConVar(             "rand_weight_evt_bay",           "4",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     g_hArCvarGiftWeight[GIFT_POS_HEALTH] = CreateConVar(    "rand_weight_gift_health",       "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_POS_HEALTH_T] = CreateConVar(  "rand_weight_gift_temphealth",   "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -356,6 +358,7 @@ INIT_FillTries()
     SetTrieValue(g_hTrieEntityCreated, "upgrade_ammo_explosive",                    CREATED_AMMO_DEPLOYED);
     SetTrieValue(g_hTrieEntityCreated, "upgrade_ammo_incendiary",                   CREATED_AMMO_DEPLOYED);
     SetTrieValue(g_hTrieEntityCreated, "witch",                                     CREATED_WITCH);
+    SetTrieValue(g_hTrieEntityCreated, "tank_rock",                                 CREATED_TANKROCK);
     
     g_hTrieRandomizableEntity = CreateTrie();                                                                                       // classname trie for finding randomizable items
     SetTrieValue(g_hTrieRandomizableEntity, "weapon_spawn",                         RANDOMIZABLE_ITEM);
