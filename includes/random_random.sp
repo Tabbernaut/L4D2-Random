@@ -1013,6 +1013,8 @@ RANDOM_DetermineRandomStuff()
                 }
                 */
                 case EVT_BAY: {
+                    // slightly easier common-wise
+                    EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
                     g_iDifficultyRating += 2;
                 }
             }

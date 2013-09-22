@@ -78,14 +78,20 @@ L4D2_Random
                         holdout bonus.. (and deduct the total you're able to get from the total distance points)
             
             - bugfix:   block event votes if the next map is one in which that event would be broken (finales etc)
-            - bugfix:   'all survivors loaded in' not fired
+            - bugfix:   witches event 'bungled' check not working.
             
             - gift:     temporary deafness
             
+            - misc:     add haunted doors & directed by bay to random webpage
+            - misc:     add bay RC data to actual KV file setup
+            
+            - event:    commons making survivor sounds - and SI say 'smoker!' etc
+                            only the sounds though! this is a just for fun type of thing: name: 'ventriloquism'
             - event:    'firestarter': fire does insane amounts of damage to everything (mostly survivors), and there are fire items everywhere. fire ammo always
             - event:    extend bay event
                         - defibs have chance of exploding when used
                         - tank rock explodes when shot?
+                        - propane tanks/etc should blow up cars
             
 
     minor cleanup / details

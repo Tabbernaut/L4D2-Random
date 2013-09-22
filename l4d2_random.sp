@@ -173,7 +173,7 @@ public OnPluginStart()
     HookEvent("ability_use",                Event_AbilityUse,               EventHookMode_Post);
     HookEvent("lunge_pounce",               Event_LungePounce,              EventHookMode_Post);
     
-    HookEvent("witch_spawn",                Event_WitchSpawn,               EventHookMode_Post);
+    //HookEvent("witch_spawn",                Event_WitchSpawn,               EventHookMode_Post);  // done through created entity now (since that listens to witches anyway)
     HookEvent("witch_harasser_set",         Event_WitchHarasserSet,         EventHookMode_Post);
     HookEvent("witch_killed",               Event_WitchDeath,               EventHookMode_Post);
     
@@ -1393,7 +1393,7 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
         if (!IsClientAndInGame(attacker) && IsValidEdict(attacker) )
         {
             // only change damage for swings at upright survivors
-            if ( !IsClientAndInGame(victim) || GetClientTeam(attacker) != TEAM_SURVIVOR || IsIncapacitated( victim ) ) { return Plugin_Continue; }
+            if ( !IsClientAndInGame(victim) || GetClientTeam(victim) != TEAM_SURVIVOR ) { return Plugin_Continue; }
         
             decl String:attackClass[64];
             GetEdictClassname(attacker, attackClass, 64);
@@ -1401,8 +1401,11 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
             
             // survivors bungled the witch!
             if ( g_iSpecialEvent == EVT_WITCHES ) {
+                PrintDebug(4, "[rand] witch bungled: entity: %i; victim: %i", attacker, victim);
                 g_bWitchBungled[attacker] = true;
             }
+            
+            if ( IsIncapacitated( victim ) ) { return Plugin_Continue; }
             
             damage = (g_iSpecialEvent == EVT_WOMEN) ? g_RC_fEventWomenWitchDmg : g_RC_fEventWitchesWitchDmg;
             return Plugin_Changed;
@@ -2045,7 +2048,6 @@ stock ClearBoomerTracking()
 public Event_LungePounce(Handle:event, const String:name[], bool:dontBroadcast)
 {
     //if (g_iSpecialEvent != EVT_SKEET) { return; }
-    
     new attacker = GetClientOfUserId(GetEventInt(event, "userid"));
 
     // clear hunter-hit stats (not skeeted)
@@ -3150,6 +3152,8 @@ public Event_WitchDeath(Handle:event, const String:name[], bool:dontBroadcast)
     // witch was killed, give bonus to survivors (if killer was a survivor)
     if (!IsClientAndInGame(client) || GetClientTeam(client) != TEAM_SURVIVOR) { return; }
     
+    PrintDebug(4, "[rand] witch died: entity: %i; bungled: %i", witchEnt, g_bWitchBungled[witchEnt]);
+    
     // only give points if not bungled
     if ( g_bWitchBungled[witchEnt] ) {
         PrintToChatAll("\x01[\x05r\x01] Survivors bungled the witch kill. Bonus points denied.");
@@ -3162,20 +3166,9 @@ public Event_WitchDeath(Handle:event, const String:name[], bool:dontBroadcast)
         PrintToChatAll("\x01[\x05r\x01] Survivors killed a witch for \x04%i\x01 points.", g_RC_iEventBonusWitch);
     }
 }
-public Event_WitchSpawn(Handle:event, const String:name[], bool:dontBroadcast)
+/* public Event_WitchSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    if (g_iSpecialEvent != EVT_WITCHES) { return; }
-    
-    new witch = GetEventInt(event, "witchid");
-    SetEntProp(witch, Prop_Send, "m_iGlowType", 3);
-    SetEntProp(witch, Prop_Send, "m_glowColorOverride", 0xFFFFFF);
-    
-    if ( witch > 0 && witch < ENTITY_COUNT ) {
-        g_bWitchBungled[witch] = false;
-    }
-    
-    PrintDebug(3, "[rand] Witch spawned (entity %i)", witch);
-}
+} */
 
 public Event_WitchHarasserSet(Handle:event, const String:name[], bool:dontBroadcast)
 {
@@ -3208,6 +3201,16 @@ public OnEntityCreated(entity, const String:classname[])
             // hook witch for damage
             SDKHook(entity, SDKHook_OnTakeDamage, OnTakeDamage_Witch);
         }
+        else if (g_iSpecialEvent == EVT_WITCHES)
+        {
+            CreateTimer(0.1, Timer_WitchSetGlows, entity, TIMER_FLAG_NO_MAPCHANGE);
+        }
+        
+        if ( entity > 0 && entity < ENTITY_COUNT ) {
+            g_bWitchBungled[entity] = false;
+        }
+        
+        PrintDebug(3, "[rand] Witch spawned: entity %i", entity);
     }
     else if (classnameOEC == CREATED_INFECTED) 
     {
@@ -3356,6 +3359,14 @@ public OnEntityDestroyed(entity)
 }
 
 
+public Action:Timer_WitchSetGlows(Handle:timer, any:entity)
+{
+    // set glows for witch hunt
+    if (IsValidEntity(entity)) {
+        SetEntProp(entity, Prop_Send, "m_iGlowType", 3);
+        SetEntProp(entity, Prop_Send, "m_glowColorOverride", 0xFFFFFF);
+    }
+}
 public Action:Timer_PipePreExplode(Handle:timer, any:entity)
 {
     new Float: targetPos[3];
