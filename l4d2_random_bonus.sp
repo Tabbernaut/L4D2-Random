@@ -570,21 +570,21 @@ stock DisplayBonus(client=-1)
             }
             
             // add extra bonus for random
-            if (bRoundOver[round]) {
-                if (iStoreExtra[round]) {
+            if ( bRoundOver[round] ) {
+                if ( iStoreExtra[round] ) {
                     Format(msgPartDmg, sizeof(msgPartDmg), "%s + \x05%d\x01", msgPartDmg, iStoreExtra[round]);
                 }
-            } else if (g_iRoundExtra) {
+            } else if ( g_iRoundExtra ) {
                 Format(msgPartDmg, sizeof(msgPartDmg), "%s + \x05%d\x01", msgPartDmg, g_iRoundExtra);
             }
         }
         
         // add extra bonus for penaltybonus scoring
-        if (bRoundOver[round]) {
-            if (iStorePBonus[round]) {
+        if ( bRoundOver[round] ) {
+            if ( iStorePBonus[round] ) {
                 Format(msgPartDmg, sizeof(msgPartDmg), "%s %s \x03%d\x01", msgPartDmg, (iStorePBonus[round] < 0) ? "-" : "+", (iStorePBonus[round] < 0) ? iStorePBonus[round] * -1 : iStorePBonus[round]);
             }
-        } else if (g_iPenaltyBonus) {
+        } else if ( g_iPenaltyBonus ) {
             Format(msgPartDmg, sizeof(msgPartDmg), "%s %s \x03%d\x01", msgPartDmg, (g_iPenaltyBonus < 0) ? "-" : "+", (g_iPenaltyBonus < 0) ? g_iPenaltyBonus * -1 : g_iPenaltyBonus );
         }
         

@@ -43,6 +43,9 @@ new     bool:           g_bReportFreezing                                   = tr
 new     bool:           g_bFrozenPoints                                     = false;                // true if distance points are frozen (for tank)
 new                     g_iRememberFrozenDistance                           = 0;                    // distance before freezing distance points
 
+new                     g_iCampaignFailStreak                               = 0;                    // how many times in a row the mission was lost
+new     bool:           g_bCampaignForceRandom                              = false;                // force rerandomization
+
 // Menu handling
 new                     g_iEventMenu            [MAXPLAYERS+1]              = {0,...};              // what menu to use
 
@@ -325,6 +328,7 @@ new     Handle:         g_hCvarBlockL4D1Common                              = IN
 new     Handle:         g_hCvarNerfT2                                       = INVALID_HANDLE;       // cvar whether to nerf t2 weapons in the game (allowed other weapons)
 new     Handle:         g_hCvarStopBotsAtStart                              = INVALID_HANDLE;       // cvar whether to stop bots doing anything before humans are ready
 new     Handle:         g_hCvarBlockEventVotes                              = INVALID_HANDLE;       // cvar whether to block event / gameevent votes
+new     Handle:         g_hCvarCampaignStreak                               = INVALID_HANDLE;       // cvar how many times in a row no changed event
 
 new     Handle:         g_hCvarEqual                                        = INVALID_HANDLE;       // cvar flags what to equalize between teams
 new     Handle:         g_hCvarDoReport                                     = INVALID_HANDLE;       // cvar whether to report anything at all

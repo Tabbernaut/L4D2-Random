@@ -44,6 +44,7 @@ L4D2_Random
             - L4D1 event: fixed survivors getting adrenaline at start (sometimes).
             - Added Haunted Doors event.
             - Added Directed by Michael Bay event.
+            - Added Bunnyhop Professionals event.
             - Fixed a problem with defib penalty not resetting if a match ended with a Sudden Death event.
             - Firepower event: tweaked amount of ammo available.
             - Prevented the same player getting assigned two tanks in a row.
@@ -53,7 +54,10 @@ L4D2_Random
             - Witch Hunt event: bonus points for killing witch now only given if witch did no damage to survivors.
             - Skeets are now always reported (but still only worth points in Skeet Shoot event).
             - Booby Traps event: slightly increased odds of things being booby traps.
+            - Some cars have gas in their tank and will explode when shot.
             - Added gift effect: all car alarms disabled.
+            - Health Penalty event: increased penalty to 25 points per heal.
+            - Fixed skeet detection (though chipping with non-shotguns still doesn't count).
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
 
@@ -78,21 +82,20 @@ L4D2_Random
                         holdout bonus.. (and deduct the total you're able to get from the total distance points)
             
             - bugfix:   block event votes if the next map is one in which that event would be broken (finales etc)
-            - bugfix:   witches event 'bungled' check not working.
             
-            - gift:     temporary deafness
+            - bugfix:   still not the right penalty counts on double round end..
+            - bugfix:   tanks still being handed to people who get too many
             
-            - misc:     add haunted doors & directed by bay to random webpage
+            - misc:     add haunted doors & directed by bay, pro-hops to random webpage
             - misc:     add bay RC data to actual KV file setup
             
-            - event:    commons making survivor sounds - and SI say 'smoker!' etc
-                            only the sounds though! this is a just for fun type of thing: name: 'ventriloquism'
-            - event:    'firestarter': fire does insane amounts of damage to everything (mostly survivors), and there are fire items everywhere. fire ammo always
             - event:    extend bay event
-                        - defibs have chance of exploding when used
                         - tank rock explodes when shot?
                         - propane tanks/etc should blow up cars
             
+            - coop:     better round-handling: (optional) re-randomization on round failure
+                        more fun stuff? better SI spawning? hard-eight-like?
+              
 
     minor cleanup / details
     -----------------------
@@ -106,7 +109,6 @@ L4D2_Random
                         }
             - nitpick:  MORE ammo than max in clip doesn't work for map-spawned weapons (stays at max when picked up)
                         check + overwrite netprop for client picking it up? what goes on here?
-            - nitpick:  melee skeets don't seem to be detected yet..
             - nitpick:  if penalty values change (if they ever do), the reported !rand/event values don't change with
             - nitpick:  when gifts spawn inside walls etc, fire effects will not spawn
                             and items might disappear
@@ -131,17 +133,31 @@ L4D2_Random
         
     ideas:
     ------
-            - event:    bunnyhop pros: prodigysim's plugin: easy bhops
             - event:    tank waves: every 30 seconds, all infected players spawn as mini-tanks?
-    
-            - gift  - gift idea: blindess for entire team (shorter)
+            - event:    commons making survivor sounds - and SI say 'smoker!' etc
+                            only the sounds though! this is a just for fun type of thing: name: 'ventriloquism'
+            - event:    'colour coded': survivors and infected players each get a color assigned (maybe switching each attack for inf)
+                            only equal-color can pin (/damage?) the survivor
+            - event:    bonus round: no distance points, only bonus points for things -- making saferoom = multiplied bonus
+                        => problem: SI need incentive to do damage!
+                            - skeets
+                            - crowns
+                            - bhop streaks
+                            - charger levels
+                            - deadstop penalty?
+                            - high pounces (penalty)
+                            - common hops
+            - event:    'firestarter': fire does insane amounts of damage to everything (mostly survivors), and there are fire items everywhere. fire ammo always  
+            
+            - gift:     temporary deafness
+            - gift  - gift idea: blindness for entire team (shorter)
             - gift  - gift idea: X second slowdown (like EVT_ENCUMBERED)
             - gift  - gift idea: ghost-effect for survivors for X seconds (no outlines for SI) (even if running)
             - gift  - gift idea: see outlines on infected for X seconds ('telepathy')
             - gift  - steal weapon / ammo (on condition of not breaking event)
             
+            
             - MAYBE - mini-scavenge for specific rounds (decide per map) / do the research (how well possible? how much work? has anyone done it already?)
-            - MAYBE - when cars are done (a minimal amount of) damage, they have a chance to explode
             - MAYBE - add 'rerandom' function, working on live round [ for testing / bad starts ]
 
             

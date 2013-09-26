@@ -16,6 +16,7 @@
 #include "includes/random_globals.sp"
 #include "includes/random_init.sp"
 #include "includes/random_random.sp"
+#include "includes/random_support_basics.sp"
 #include "includes/random_support.sp"
 #include "includes/random_thirdparty.sp"
 
@@ -28,7 +29,7 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.63"
+#define PLUGIN_VERSION "1.0.64"
 
 /*
         L4D2 Random
@@ -146,7 +147,7 @@ public OnPluginStart()
     HookEvent("player_team",                Event_PlayerTeam,               EventHookMode_Post);
     HookEvent("player_left_start_area",     Event_PlayerLeftStartArea,      EventHookMode_PostNoCopy);
     
-    //HookEvent("player_hurt",                Event_PlayerHurt,               EventHookMode_Pre);
+    HookEvent("player_hurt",                Event_PlayerHurt,               EventHookMode_Pre);
     HookEvent("player_death",               Event_PlayerDeath,              EventHookMode_Pre);
     HookEvent("player_spawn",               Event_PlayerSpawn,              EventHookMode_Post);
     HookEvent("tank_spawn",                 Event_TankSpawned,              EventHookMode_Post);
@@ -176,6 +177,8 @@ public OnPluginStart()
     //HookEvent("witch_spawn",                Event_WitchSpawn,               EventHookMode_Post);  // done through created entity now (since that listens to witches anyway)
     HookEvent("witch_harasser_set",         Event_WitchHarasserSet,         EventHookMode_Post);
     HookEvent("witch_killed",               Event_WitchDeath,               EventHookMode_Post);
+    
+    HookEvent("mission_lost",               Event_MissionLostCampaign,      EventHookMode_Post);
     
     
     // version convar
@@ -965,6 +968,25 @@ public Action: Unpause_Cmd(client, args)
     Round management
     -------------------------- */
 
+public Event_MissionLostCampaign(Handle:hEvent, const String:name[], bool:dontBroadcast)
+{
+    if (!g_bCampaignMode) { return; }
+    
+    g_iCampaignFailStreak++;
+    
+    PrintDebug(1, "[rand] Survivors failed (%i time(s) in a row).", g_iCampaignFailStreak );
+    
+    // reroll if tried too many times
+    new max = GetConVarInt(g_hCvarCampaignStreak);
+    if ( max && g_iCampaignFailStreak > max ) {
+        g_iCampaignFailStreak = 0;
+        g_bCampaignForceRandom = true;
+    }
+    else {
+        g_bCampaignForceRandom = false;
+    }
+}
+
 public OnMapStart()
 {
     g_bItemsFullyRandomized = false;
@@ -1131,15 +1153,31 @@ public Action:OnTransmit(entity, client)
 // for making hats invisible to wearer
 public Action:Hat_Hook_SetTransmit(entity, client)
 {
-	if( EntIndexToEntRef(entity) == g_iHatIndex[client] )
-		return Plugin_Handled;
-	return Plugin_Continue;
+    if( EntIndexToEntRef(entity) == g_iHatIndex[client] )
+        return Plugin_Handled;
+    return Plugin_Continue;
 }
     
 // for detecting when a player uses a gift box:
-public Action:OnPlayerRunCmd(client, &buttons)
+public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon)
 {
+    if (g_iSpecialEvent == EVT_PROHOPS)
+    {
+        // automatic pro bunnyhops
+        if (!(GetEntityFlags(client) & FL_ONGROUND))
+        {
+            if (!(GetEntityMoveType(client) & MOVETYPE_LADDER))
+            {
+                if (GetEntProp(client, Prop_Data, "m_nWaterLevel") <= 1)
+                {
+                    buttons &= ~IN_JUMP;
+                }
+            }
+        }
+    }
+    
     if (!IsSurvivor(client) || !IsPlayerAlive(client)) { return Plugin_Continue; }
+
 
     if (g_iSpecialEvent == EVT_NOHUD)
     {
@@ -1314,7 +1352,14 @@ public Action: Event_SoundPlayed(clients[64], &numClients, String:sample[PLATFOR
         }
     }
     return Plugin_Continue;
-}  
+}
+
+
+/* public Action: TraceAttack(victim, &attacker, &inflictor, &Float:damage, &damagetype, &ammotype, hitbox, hitgroup)
+{
+    if (!IsClientAndInGame(victim) || !IsClientAndInGame(attacker)) { return; }
+}
+*/
 
 public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype)
 {
@@ -1342,6 +1387,9 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
     
     // skeets, where skeeted hunters should give points
     // always 'handle' skeets, but only give points on event!
+    /*
+        done in player hurt now
+    
     if (    IsClientAndInGame(victim) && IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_SURVIVOR
         &&  GetClientTeam(victim) == TEAM_INFECTED && GetEntProp(victim, Prop_Send, "m_zombieClass") == ZC_HUNTER
     ) {
@@ -1374,8 +1422,9 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
             }
         }
     }
+    */
     // bay event: propane tanks should do less damage to survivors
-    else if ( g_iSpecialEvent == EVT_BAY )
+    if ( g_iSpecialEvent == EVT_BAY )
     {
         if (IsValidEntity(inflictor))
         {
@@ -1465,6 +1514,60 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
     }
     
     return Plugin_Continue;
+}
+
+public Event_PlayerHurt (Handle:event, const String:name[], bool:dontBroadcast)
+{
+    new zombieClass = 0;
+    
+    new victim = GetClientOfUserId(GetEventInt(event, "userid"));
+    new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+    
+    if (    !IsClientAndInGame(attacker) || GetClientTeam(attacker) != TEAM_SURVIVOR ||
+            !IsClientAndInGame(victim) ||GetClientTeam(victim) != TEAM_INFECTED
+    ) {
+        return;
+    }
+    
+    new damage =        GetEventInt(event, "dmg_health");
+    new damagetype =    GetEventInt(event, "type");
+    //new hitgroup =      GetEventInt(event, "hitgroup");
+    
+    zombieClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
+    
+    // track damage (per hit)
+    if (zombieClass == ZC_HUNTER)
+    {
+        
+        // handle old shotgun blast, if there was one
+        if ( iHunterShotDmg[victim][attacker] > 0 && FloatSub(GetGameTime(), fHunterShotStart[victim][attacker]) > SHOTGUN_BLAST_TIME )
+        {
+            fHunterShotStart[victim][attacker] = 0.0;
+        }
+            
+        // handle new hit (only shotgun), and only on pouncing hunters
+        if ( GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce") )
+        {
+            if ( damagetype & DMG_BUCKSHOT ) {
+                // first pellet hit?
+                if ( fHunterShotStart[victim][attacker] == 0.0 )
+                {
+                    // new shotgun blast
+                    fHunterShotStart[victim][attacker] = GetGameTime();
+                    iHunterShotDmg[victim][attacker] = 0;
+                }
+                iHunterShotDmg[victim][attacker] += damage;
+                iHunterShotDmgTeam[victim] += damage;
+            }
+            else if ( damagetype & DMG_SLASH || damagetype & DMG_CLUB )
+            {
+                if ( damage >= 190 ) {
+                    // melee skeet
+                    EVENT_HandleSkeet( attacker, victim, true );
+                }
+            }
+        }
+    }
 }
 
 public Action: OnTakeDamage_Witch(victim, &attacker, &inflictor, &Float:damage, &damagetype)

@@ -29,6 +29,7 @@ INIT_DefineCVars()
     g_hCvarStopBotsAtStart = CreateConVar(                  "rand_stop_bots",                "1",       "Whether to stop bots from doing anything before humans are ready.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarBlockEventVotes = CreateConVar(                  "rand_block_event_votes",        "0",       "Whether to block event votes.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarUseOldSpawn = CreateConVar(                      "rand_use_old_spawn",            "1",       "Whether to use z_spawn_old rather than z_spawn.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarCampaignStreak = CreateConVar(                   "rand_campaign_streak",          "3",       "How many times a map should be tried before the event changes (0 = never changes).", FCVAR_PLUGIN, true, 0.0, false);
     
     g_hCvarEqual = CreateConVar(                            "rand_equal",                 "2047",       "[Flags] What to keep equal between each team's survivor round (1: items; 2: doors; 4: glows; 8: event; 16: incaps; 32: horde; 64: item weighting; 128: starting health; 256: first attack; 512: tanks; 1024: scoring).", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarDoReport = CreateConVar(                         "rand_report",                   "1",       "Whether to do automatic reports at the start of a round.", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
@@ -84,7 +85,7 @@ INIT_DefineCVars()
     g_hCvarFinaleAmmoChance = CreateConVar(                 "rand_finale_ammo",              "0.0",     "Chances of finale ammo piles being randomized.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarAlarmedCarChance = CreateConVar(                 "rand_caralarm_chance",          "0.2",     "Chances of a car being alarmed.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarT2StartChance = CreateConVar(                    "rand_t2saferoom_chance",        "0.0",     "Chances of allowing tier 2 in start saferoom.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    g_hCvarCarExplodeChance = CreateConVar(                 "rand_carexplode_chance",        "0.1",     "Chances of spawned cars being able to explode when shot.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarCarExplodeChance = CreateConVar(                 "rand_carexplode_chance",        "0.05",    "Chances of spawned cars being able to explode when shot.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     
     g_hCvarFinaleItemUseful =  CreateConVar(                "rand_item_finale_useful",       "0.25",    "Factor by which non-useful items are adjusted for finale maps (lower = easier map).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarStartItemNoJunk =  CreateConVar(                 "rand_item_start_nojunk",        "0.25",    "Chances items in start saferoom will be converted to something useful.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -177,6 +178,7 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_BOOMFLU] = CreateConVar(         "rand_weight_evt_boomerflu",     "6",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_DOORCIRCUS] = CreateConVar(      "rand_weight_evt_doorcircus",    "3",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_BAY] = CreateConVar(             "rand_weight_evt_bay",           "4",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_PROHOPS] = CreateConVar(         "rand_weight_evt_hops",          "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     
     g_hArCvarGiftWeight[GIFT_POS_HEALTH] = CreateConVar(    "rand_weight_gift_health",       "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_POS_HEALTH_T] = CreateConVar(  "rand_weight_gift_temphealth",   "2",       "Weight for picking gift effects.",         FCVAR_PLUGIN, true, 0.0, true, 100.0 );
@@ -854,6 +856,41 @@ INIT_GetScriptName( const String:Class[MELEE_CLASS_LENGTH], String:ScriptName[ME
     Format(ScriptName, MELEE_CLASS_LENGTH, "%s", g_sMeleeClass[0]);     // waarom dit?
 }
 */
+
+// find out whether a hard path is loaded
+bool: SUPPORT_StripperDetectAlt()
+{
+    if (!g_bStripperPresent) { return false; }
+    
+    // the marker is a prop_dynamic(_override) with 999999 hammerid and targetname "random_detect_alt"
+    
+    new entityCount = GetEntityCount();
+    new String: classname[64] = "";
+    
+    for (new i=0; i < entityCount; i++)
+    {
+        if (IsValidEntity(i)) {
+            GetEdictClassname(i, classname, sizeof(classname));
+            
+            if (StrEqual(classname, "prop_dynamic", false))
+            {
+                if (GetEntProp(i, Prop_Data, "m_iHammerID") == 999999)
+                {
+                    new String:name[20] = "";
+                    GetEntPropString(i, Prop_Data, "m_iName", name, sizeof(name));
+                    
+                    //PrintDebug(3, "[rand] prop_dynamic: ent: %i; hamid: %i; name: %s", i, GetEntProp(i, Prop_Data, "m_iHammerID"), name);
+                    
+                    if (StrEqual(name, "random_detect_alt", false)) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    
+    return false;
+}
 
 
 // Precaching

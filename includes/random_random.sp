@@ -424,7 +424,7 @@ DoEventInfo(client, event)
             PrintToChat(client, "\x05Every time a survivor picks up any useful inventory item (pills, weapons, throwables, etc), their team loses 5 points. Type \"!bonus\" to see the current total penalty.\x01");
         }
         case EVT_PEN_HEALTH: {
-            PrintToChat(client, "\x05Every time a survivor uses a health item (pills, adrenaline, medkits and defibs), their team loses 15 points. Type \"!bonus\" to see the current total penalty.\x01");
+            PrintToChat(client, "\x05Every time a survivor uses a health item (pills, adrenaline, medkits and defibs), their team loses 25 points. Type \"!bonus\" to see the current total penalty.\x01");
         }
         case EVT_PEN_M2: {
             PrintToChat(client, "\x05Every time a survivor shoves (m2's) a special infected, their team loses 10 points. Only shovable capping infected count (\x03jockey, hunter, smoker\x05), there are no penalties for shoving boomers or spitters. Type \"!bonus\" to see the current total penalty.\x01");
@@ -495,6 +495,9 @@ DoEventInfo(client, event)
             PrintToChat(client, "\x05This round has been directed by Michael Bay. Small explosions only do 5 damage to survivors. Tank rock explosions are just for show, and do no damage.\x01");
             PrintToChat(client, "\x05Style points for anyone walking away from explosions without flinching or looking back!\x01");
         }
+        case EVT_PROHOPS: {
+            PrintToChat(client, "\x05Automatic bunnyhopping is enabled for this round. Just hold your JUMP button to bunnyhop like a professional. Everyone can hop!\x01");
+        }
         default: {
             PrintToChat(client, "\x01(no extra information available)\x01");
         }
@@ -519,12 +522,12 @@ RANDOM_DetermineRandomStuff()
     new Float: fTankChance = GetConVarFloat(FindConVar("versus_tank_chance"));
     
     // prepare random choices (if required)
-    if (!g_bSecondHalf) {
+    if (!g_bSecondHalf || g_bCampaignForceRandom) {
         RANDOM_PrepareChoicesEvents();      // rebuild events weighted choices array
     }
     
     // keep old difficulty-rating if it's the second half
-    if (!g_bSecondHalf)
+    if (!g_bSecondHalf || (g_bCampaignMode && g_bCampaignForceRandom) )
     {
         g_iDifficultyRating = g_RI_iDifficulty;
         
@@ -537,7 +540,7 @@ RANDOM_DetermineRandomStuff()
     }
     
     // what stripper alt is loaded?
-    if (g_bStripperPresent && !g_bSecondHalf)
+    if (g_bStripperPresent && ( !g_bSecondHalf || (g_bCampaignMode && g_bCampaignForceRandom) ) )
     {
         g_bStripperAltDetected = SUPPORT_StripperDetectAlt();
         
@@ -660,7 +663,7 @@ RANDOM_DetermineRandomStuff()
     g_bWitchWillSpawn = L4D2Direct_GetVSWitchToSpawnThisRound( (g_bSecondHalf) ? 1 : 0 );
     
     // pick special event for the map:
-    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_EVENT))
+    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_EVENT) || (g_bCampaignMode && g_bCampaignForceRandom))
     {
         // reset cvars for previous events (g_iSpecialEvent == old event)
         
@@ -1013,9 +1016,12 @@ RANDOM_DetermineRandomStuff()
                 }
                 */
                 case EVT_BAY: {
-                    // slightly easier common-wise
-                    EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
+                    EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);  // slightly easier common-wise
                     g_iDifficultyRating += 2;
+                }
+                case EVT_PROHOPS: {
+                    // shift focus towards SI
+                    EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_HARD);
                 }
             }
             PrintDebug(1, "[rand] Picked Special Event: %i (%s) [extra, %i, sub: %i, str: %s]", g_iSpecialEvent, g_csEventText[g_iSpecialEvent], g_iSpecialEventExtra, g_iSpecialEventExtraSub, g_sSpecialEventExtra);
@@ -1038,7 +1044,7 @@ RANDOM_DetermineRandomStuff()
     
     // determine tank spawn
     // handle own 'chances' based on cvars
-    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
+    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS) || (g_bCampaignMode && g_bCampaignForceRandom))
     {
         if (fTankChance < ( (g_bStripperAltDetected) ? g_RI_fTankOddsHard : g_RI_fTankOddsNormal ) ) {
             fTankChance = (g_bStripperAltDetected) ? g_RI_fTankOddsHard : g_RI_fTankOddsNormal;
@@ -1303,7 +1309,7 @@ RANDOM_DetermineRandomStuff()
     }
     
     // survivor outlines
-    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_GLOWS))
+    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_GLOWS) || (g_bCampaignMode && g_bCampaignForceRandom))
     {
         // fog of war event forces no outlines (unless 0 chance)
         if (g_iSpecialEvent == EVT_FOG && GetConVarFloat(g_hCvarOutlineChance) > 0.0)
@@ -1340,7 +1346,7 @@ RANDOM_DetermineRandomStuff()
     }
     
     // incaps
-    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_INCAPS))
+    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_INCAPS) || (g_bCampaignMode && g_bCampaignForceRandom))
     {
         if (g_iSpecialEvent == EVT_DEFIB) {
             g_iIncaps = 0;
@@ -1377,25 +1383,27 @@ RANDOM_DetermineRandomStuff()
     }
     
     // item randomization preparation
-    if (!g_bSecondHalf || bDoItemRePrep) {
+    if (!g_bSecondHalf || bDoItemRePrep || (g_bCampaignMode && g_bCampaignForceRandom)) {
         RANDOM_PrepareChoices();            // rebuild weighted choices array (convars might be updated)
     }
     
     
     // survivor setup (health, items)
-    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_SURV_HEALTH)) {
+    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_SURV_HEALTH) || (g_bCampaignMode && g_bCampaignForceRandom)) {
         RandomizeSurvivorHealth();
     }
     
-    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_ITEMS)) {
-        if (g_bSecondHalf && !(GetConVarInt(g_hCvarEqual) & EQ_ITEM_WEIGHTS)) { RANDOM_PrepareChoices(); }
+    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_ITEMS) || (g_bCampaignMode && g_bCampaignForceRandom)) {
+        if (g_bSecondHalf && !(GetConVarInt(g_hCvarEqual) & EQ_ITEM_WEIGHTS) || (g_bCampaignMode && g_bCampaignForceRandom)) {
+            RANDOM_PrepareChoices();
+        }
         RandomizeSurvivorItems();
     } else {
         RestoreSurvivorItems();
     }
     
     // randomize witches standing/sitting (time of day)
-    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS))
+    if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_TANKS) || (g_bCampaignMode && g_bCampaignForceRandom))
     {
         if (g_iSpecialEvent != EVT_WITCHES && ( (g_bMultiWitch && g_bArWitchSitting[0] == false) || GetRandomInt(0, 3) == 0 ) )
         { 
@@ -1406,7 +1414,7 @@ RANDOM_DetermineRandomStuff()
     }
     
     // debug report difficulty rating (only display on first roundhalf or if something's changed)
-    if (!g_bSecondHalf || GetConVarInt(g_hCvarEqual) < EQ_EVERYTHING)
+    if (!g_bSecondHalf || GetConVarInt(g_hCvarEqual) < EQ_EVERYTHING || (g_bCampaignMode && g_bCampaignForceRandom))
     {
         PrintDebug(1, "[rand] Round difficulty rating: %i", g_iDifficultyRating);
     }
@@ -3259,12 +3267,14 @@ CreateHittable(index)
     
     // michael bay event: if it's something that might explode, hook it for damage checks
     // plus mild chance normally of it being possible
-    if (    g_iSpecialEvent == EVT_BAY &&
+    if (    (   g_iSpecialEvent == EVT_BAY ||
+                GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarCarExplodeChance)
+            ) &&
             (   type == HITTAB_FORKLIFT || type == HITTAB_BUMPERCAR || type == HITTAB_GENERATOR ||
                 g_strArHittableStorage[index][hitIsCar]
-            ) ||
-            GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarCarExplodeChance)
+            )
     ) {
+        g_strArHittableStorage[index][hitBlownUp] = false;
         g_strArHittableStorage[index][hitDamageRcvd] = 0;
         SDKHook( ent, SDKHook_OnTakeDamage, OnTakeDamage_Hittable );
     }
@@ -5108,6 +5118,9 @@ RANDOM_PrepareChoices()
             if (g_iSpecialEvent == EVT_ABUNDANCE && (i == INDEX_JUNK || i == INDEX_CANISTER || i == INDEX_SILLY)) {
                 // change count for abundance event:
                 count = RoundFloat(float(count) * EVENT_ABUND_JUNKWGHT);
+            }
+            if (g_iSpecialEvent == EVT_BAY && (i == INDEX_JUNK || i == INDEX_CANISTER || i == INDEX_SILLY)) {
+                count = RoundFloat(float(count) * EVENT_BAY_JUNKWGHT);
             }
             else if ( (g_iSpecialEvent == EVT_ITEM || g_iSpecialEvent == EVT_GIFTS || g_iSpecialEvent == EVT_BADSANTA) && i == g_iSpecialEventExtra) {
                 count = 0;  // set to 0 for now, insert real value later

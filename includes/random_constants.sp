@@ -143,8 +143,9 @@ const Float:    EVENT_BAY_CARFLYLOW     = 75.0;
 const Float:    EVENT_BAY_CARFLYHIGH    = 400.0;
 const Float:    EVENT_BAY_SIEXPLODE     = 0.75;         // EVT_BAY          odds that SI explode
 const Float:    EVENT_BAY_CIEXPLODE     = 0.05;         // EVT_BAY          odds that SI explode
-const Float:    EVENT_BAY_ITEMFACTOR    = 1.25;         // EVT_BAY          to what to increase odds of exploding items
+const Float:    EVENT_BAY_ITEMFACTOR    = 1.35;         // EVT_BAY          to what to increase odds of exploding items
 const Float:    EVENT_BAY_PIPEDAMAGE    = 5.0;          // EVT_BAY          how much damage small explosions do
+const Float:    EVENT_BAY_JUNKWGHT      = 0.75;         // EVT_BAY          by what factor to change junk amount
 
 const Float:    EVENT_ENC_W_T1          = 1.5;          // EVT_ENCUMBERED   for determining total player weight
 const Float:    EVENT_ENC_W_SNIPER      = 2.5;
@@ -274,8 +275,9 @@ const           EVT_MEDIC               = 35;
 const           EVT_BOOMFLU             = 36;
 const           EVT_DOORCIRCUS          = 37;
 const           EVT_BAY                 = 38;
+const           EVT_PROHOPS             = 39;
 
-const           EVT_TOTAL               = 39;
+const           EVT_TOTAL               = 40;
 
 const           EVTMNU_INFO             = 1;
 const           EVTMNU_PICK             = 2;
@@ -747,7 +749,8 @@ new const String: g_csEventText[][] =
     "\x04MEDIC!\x01 - There is one medic with a limited supply of healing items.",
     "\x04Boomer Flu\x01 - One survivor caught the boomer flu and is prone to vomit.",
     "\x04Haunted Doors\x01 - Evil spirits randomly open and close the doors on this map.",
-    "\x04Directed by Michael Bay\x01 - Explosions everywhere."
+    "\x04Directed by Michael Bay\x01 - Explosions everywhere.",
+    "\x04Bunnyhop Pros\x01 - Hold JUMP for automatic perfect bunnyhops."
 };
 
 new const String: g_csEventTextShort[][] =
@@ -790,7 +793,8 @@ new const String: g_csEventTextShort[][] =
     "MEDIC!",
     "Boomer Flu",
     "Haunted Doors",
-    "Directed by Michael Bay"
+    "Directed by Michael Bay",
+    "Bunnyhop Pros"
 };
 
 new const JUNK_FIRSTNONSOLID = 4;
