@@ -58,6 +58,7 @@ L4D2_Random
             - Added gift effect: all car alarms disabled.
             - Health Penalty event: increased penalty to 25 points per heal.
             - Fixed skeet detection (though chipping with non-shotguns still doesn't count).
+            - Fixed a bunch of problems in campaign mode. Now makes survivors try 3 times, then rerandomizes the map.
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
 
@@ -72,6 +73,7 @@ L4D2_Random
             - test:     boobytraps on cola/gnome? shouldn't happen.
             - test:     hittable damage in minitanks event (looks ok.. why wrong sometimes?)
                             maybe for car alarm props? some props not taken into account by hittablecontrol plugin?
+            - test:      skeet detection with human hunters?
             
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    tell infected when survivors (first) find a gnome and how many points it's worth
@@ -84,7 +86,6 @@ L4D2_Random
             - bugfix:   block event votes if the next map is one in which that event would be broken (finales etc)
             
             - bugfix:   still not the right penalty counts on double round end..
-            - bugfix:   tanks still being handed to people who get too many
             
             - misc:     add haunted doors & directed by bay, pro-hops to random webpage
             - misc:     add bay RC data to actual KV file setup
@@ -93,8 +94,9 @@ L4D2_Random
                         - tank rock explodes when shot?
                         - propane tanks/etc should blow up cars
             
-            - coop:     better round-handling: (optional) re-randomization on round failure
-                        more fun stuff? better SI spawning? hard-eight-like?
+            - coop:     more fun stuff? better SI spawning? hard-eight-like?
+                        - encounters: hunter parties, charge-spit combo's, sudden witch event, minitank surprise
+                            
               
 
     minor cleanup / details

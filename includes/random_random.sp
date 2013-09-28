@@ -453,8 +453,8 @@ DoEventInfo(client, event)
             PrintToChat(client, "\x05Randomly selected items and doors are booby trapped and may explode when touched. (Not necessarily equal between teams.)\x01");
         }
         case EVT_SKEET: {
-            PrintToChat(client, "\x05There's a lot of hunters around. Survivors get 15 bonus points for skeeting them with shotguns.\x01");
-            PrintToChat(client, "\x05Only full skeets (150+ damage in a single leap) count, but team skeets give bonus too. \x01");
+            PrintToChat(client, "\x05There's a lot of hunters around. Survivors get 15 bonus points for skeeting them with shotguns or getting headshots with snipers.\x01");
+            PrintToChat(client, "\x05Only full skeets (150+ damage in a single leap) count, but shotgun only team skeets give bonus too. \x01");
         }
         case EVT_FIREPOWER: {
             PrintToChat(client, "\x05No tier-1 weapons are available, only tier-2 and stronger. There will be more common infected and faster SI spawns to compensate.\x01");

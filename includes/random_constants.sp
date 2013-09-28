@@ -43,6 +43,7 @@ const Float:    DELAY_SECONDHALF        = 1.0;          // how long to wait on s
 const Float:    DELAY_SECONDHALF_REP    = 1.25;         // how long to wait on secondroundhalf before doing the report
 const Float:    DELAY_SURVSETUP         = 0.25;         // how long to wait after team switch/join to set survivor startup (for GetPlayerSlot check)
 const Float:    DELAY_TEAMSWAP          = 0.1;          // how long to wait before applying changes after team swap..
+const Float:    TIMER_POUNCECHECK       = 0.1;          // interval to check for hunters being in-pounce
 const Float:    DELAY_WELCOMEMSG        = 10.0;         // wait time between connect & message
 const Float:    DELAY_PANELAFTERLIVE    = 2.5;          // wait time between OnRoundIsLive and drawn panel report
 const           REPORT_PANEL_LIFETIME   = 20;           // how long to show the panel for
@@ -428,6 +429,8 @@ const           TEAM_SPECTATOR          = 1;
 const           TEAM_SURVIVOR           = 2;
 const           TEAM_INFECTED           = 3;
 
+const           HITGROUP_HEAD           = 1;
+
 const           PLAYER_SLOT_PRIMARY     = 0;
 const           PLAYER_SLOT_SECONDARY   = 1;
 const           PLAYER_SLOT_THROWABLE   = 2;
@@ -739,12 +742,12 @@ new const String: g_csEventText[][] =
     "\x04Babysitting\x01 - The 'baby' takes double damage from SI (the others 3/4th).",
     "\x04Encumbered\x01 - Carrying more stuff makes you slower. (try '!drop')",
     "\x04Booby Traps\x01 - Doors and items may be wired with explosives.",
-    "\x04Skeet Shoot\x01 - Skeet hunters for \x0415\x01 bonus points. Only shotguns count.",
+    "\x04Skeet Shoot\x01 - Skeet hunters for \x0415\x01 bonus points. Only shotguns and sniper headshots count.",
     "\x04Firepower\x01 - Tier 2 weapons everywhere.",
     "\x04Ammo Shortage\x01 - Deploy and repack your team's ammo.",
     "[women event]",                                                                            // two variants: Axe Effect and Rock Stars, replace name in report (plus backup variant)
     "\x04Magic Gun Swap\x01 - Empty your clip to get a new weapon.",
-    "\x04Witch Hunt\x01 - Kill witches for \x0425\x01 bonus points.",
+    "\x04Witch Hunt\x01 - Kill witches for \x0425\x01 bonus points. No bonus if they hurt you.",
     "\x04Lousy Gifts\x01 - All gifts are bad! \x0415\x01 bonus for unwrapping anyway.",
     "\x04MEDIC!\x01 - There is one medic with a limited supply of healing items.",
     "\x04Boomer Flu\x01 - One survivor caught the boomer flu and is prone to vomit.",

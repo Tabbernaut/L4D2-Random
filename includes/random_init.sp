@@ -202,6 +202,7 @@ INIT_DefineCVars()
     g_hCvarBotStop = FindConVar("sb_stop");
     
     // pounce uncap
+    g_hCvarPounceInterrupt = FindConVar("z_pounce_damage_interrupt");
     g_hCvarPounceUncapDamage = FindConVar("z_hunter_max_pounce_bonus_damage");
     g_hCvarPounceUncapRange = FindConVar("z_pounce_damage_range_max");
     
@@ -493,6 +494,13 @@ INIT_FillTries()
     SetTrieValue(g_hTriePenaltyItems, "weapon_sniper_scout",        ITEM_PICKUP_PENALTY_PRIMARY_SNIPER);
     SetTrieValue(g_hTriePenaltyItems, "weapon_grenade_launcher",    ITEM_PICKUP_PENALTY_PRIMARY_T3);
     SetTrieValue(g_hTriePenaltyItems, "weapon_rifle_m60",           ITEM_PICKUP_PENALTY_PRIMARY_T3);
+    
+    g_hTrieEventWeapons = CreateTrie();
+    SetTrieValue(g_hTrieEventWeapons, "hunting_rifle",              ITEM_PICKUP_PENALTY_PRIMARY_SNIPER);
+    SetTrieValue(g_hTrieEventWeapons, "sniper_military",            ITEM_PICKUP_PENALTY_PRIMARY_SNIPER);
+    SetTrieValue(g_hTrieEventWeapons, "sniper_awp",                 ITEM_PICKUP_PENALTY_PRIMARY_SNIPER);
+    SetTrieValue(g_hTrieEventWeapons, "sniper_scout",               ITEM_PICKUP_PENALTY_PRIMARY_SNIPER);
+    SetTrieValue(g_hTrieEventWeapons, "pistol_magnum",              ITEM_PICKUP_PENALTY_MAGNUM);
     
     g_hTriePropItems = CreateTrie();
     SetTrieValue(g_hTriePropItems, "weapon_gnome",                  ITEM_PROP_GNOME);
