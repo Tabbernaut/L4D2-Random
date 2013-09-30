@@ -152,6 +152,7 @@ new     Float:          g_fRewardTime                                       = 0.
 new                     iHunterShotDmgTeam      [MAXPLAYERS + 1];                                   // counting shotgun blast damage for hunter, counting entire survivor team's damage
 new                     iHunterShotDmg          [MAXPLAYERS + 1][MAXPLAYERS + 1];                   // counting shotgun blast damage for hunter / skeeter combo
 new     Float:          fHunterShotStart        [MAXPLAYERS + 1][MAXPLAYERS + 1];                   // when the last shotgun blast on hunter started (if at any time) by an attacker
+new     Float:          fHunterLastShot         [MAXPLAYERS + 1];                                   // when the last shotgun damage was done (by anyone) on a hunter
 new     bool:           bHunterPouncing         [MAXPLAYERS + 1];                                   // whether the hunter should be considered pouncing with lame onground check (only for snipers)
 new     bool:           bHunterPouncingShot     [MAXPLAYERS + 1];                                   // whether the shotgun should be considered to be pouncing when damage-checking
 new                     iHunterLastHealth       [MAXPLAYERS + 1];                                   // last time hunter took any damage, how much health did it have left?

@@ -30,7 +30,7 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.64"
+#define PLUGIN_VERSION "1.0.65"
 
 /*
         L4D2 Random
@@ -1525,98 +1525,110 @@ public Event_PlayerHurt (Handle:event, const String:name[], bool:dontBroadcast)
     if ( !IsClientAndInGame(victim) ||GetClientTeam(victim) != TEAM_INFECTED ) { return; }
     
     new zombieClass =   GetEntProp(victim, Prop_Send, "m_zombieClass");
-    new health =        GetEventInt(event, "health");
     
     if ( zombieClass == ZC_HUNTER )
     {
-        if ( !IsClientAndInGame(attacker) || GetClientTeam(attacker) != TEAM_SURVIVOR ) { return; }
+        
+        new health =        GetEventInt(event, "health");
+        
+        // if it's not a survivor doing the work, only get the remaining health
+        if ( !IsClientAndInGame(attacker) || GetClientTeam(attacker) != TEAM_SURVIVOR )
+        {
+            iHunterLastHealth[victim] = health;
+            return;
+        }
     
         new damage =        GetEventInt(event, "dmg_health");
         new damagetype =    GetEventInt(event, "type");
         new hitgroup =      GetEventInt(event, "hitgroup");
         
         
+        // if the damage done is greater than the health we know the hunter to have remaining, reduce the damage done
+        if ( iHunterLastHealth[victim] > 0 && damage > iHunterLastHealth[victim] ) {
+            damage = iHunterLastHealth[victim];
+            iHunterOverkill[victim] = iHunterLastHealth[victim] - damage;
+            iHunterLastHealth[victim] = 0;
+        }
         
-        // track damage (per hit)
-        if ( zombieClass == ZC_HUNTER )
+        // handle old shotgun blast: previous shotgun damage done by a player that was too long ago to be still this (new) blast
+        // bHunterPouncingShot[] is used to remember whether the first pellet of a blast did damage while the hunter was
+        //  still pouncing: if the last pellet (killing the hunter) reports as not pouncing, it's NOT TRUE. LIES.
+        //  this must be reset whenever a new shotgun blast takes place (no matter who shoots this)
+        if ( iHunterShotDmg[victim][attacker] > 0 && FloatSub(GetGameTime(), fHunterShotStart[victim][attacker]) > SHOTGUN_BLAST_TIME )
         {
-            // correct damage
-            if ( iHunterLastHealth[victim] > 0 && damage > iHunterLastHealth[victim] ) {
-                damage = iHunterLastHealth[victim];
-                iHunterOverkill[victim] = iHunterLastHealth[victim] - damage;
-                iHunterLastHealth[victim] = 0;
-            }
-            
-            // handle old shotgun blast, if there was one
-            if ( iHunterShotDmg[victim][attacker] > 0 && FloatSub(GetGameTime(), fHunterShotStart[victim][attacker]) > SHOTGUN_BLAST_TIME )
+            bHunterPouncingShot[victim] = false;
+            fHunterShotStart[victim][attacker] = 0.0;
+        }
+        else if ( FloatSub(GetGameTime(), fHunterLastShot[victim]) > SHOTGUN_BLAST_TIME )
+        {
+            // make sure any shotgun damage from other attackers will also reset
+            bHunterPouncingShot[victim] = false;
+        }
+        
+        new isPouncingShotgun = ( bHunterPouncingShot[victim] || GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce") );
+        new iPounceInterrupt = GetConVarInt( g_hCvarPounceInterrupt );
+        
+        // handle new hit (only shotgun), and only on pouncing hunters
+        //  flag is reset before killing damage is actually recorded, so count the remaining shotgun blast
+        if ( bHunterPouncing[victim] || isPouncingShotgun )
+        {
+            if ( damagetype & DMG_BUCKSHOT && isPouncingShotgun )
             {
-                bHunterPouncingShot[victim] = false;
-                fHunterShotStart[victim][attacker] = 0.0;
-            }
-            
-            new isPouncingShotgun = ( bHunterPouncingShot[victim] || GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce") );
-            new iPounceInterrupt = GetConVarInt( g_hCvarPounceInterrupt );
-            
-            // handle new hit (only shotgun), and only on pouncing hunters
-            //  flag is reset before killing damage is actually recorded, so count the remaining shotgun blast
-            if ( bHunterPouncing[victim] || isPouncingShotgun )
-            {
-                if ( damagetype & DMG_BUCKSHOT && isPouncingShotgun )
+                // first pellet hit?
+                if ( fHunterShotStart[victim][attacker] == 0.0 )
                 {
-                    // first pellet hit?
-                    if ( fHunterShotStart[victim][attacker] == 0.0 )
-                    {
-                        // new shotgun blast
-                        fHunterShotStart[victim][attacker] = GetGameTime();
-                        //PrintToChatAll( "new blast: %i (total blast %i )", damage, iHunterShotDmgTeam[victim] );
-                        bHunterPouncingShot[victim] = ( GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce") > 0);
-                        //iHunterShotDmg[victim][attacker] = 0;
-                    }
-                    iHunterShotDmg[victim][attacker] += damage;
-                    iHunterShotDmgTeam[victim] += damage;
-                    
-                    if ( health == 0 ) {
-                        bHunterKilledPouncing[victim] = true;
-                    }
+                    // new shotgun blast
+                    fHunterShotStart[victim][attacker] = GetGameTime();
+                    fHunterLastShot[victim] = fHunterShotStart[victim][attacker];
+                    bHunterPouncingShot[victim] = ( GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce") > 0);
+                    //iHunterShotDmg[victim][attacker] = 0;
                 }
-                else if (   damagetype & DMG_BULLET &&
-                            damage >= iPounceInterrupt &&
-                            health == 0 &&
-                            hitgroup == HITGROUP_HEAD
-                ) {
-                    // headshot with bullet based weapon (only single shots)
-                    
-                    // only allow snipers
-                    new String: weapon[64];
-                    GetEventString(event, "weapon", weapon, sizeof(weapon));
-                    
-                    new itemPickupPenalty: weaponCheck;
-                    if ( GetTrieValue(g_hTrieEventWeapons, weapon, weaponCheck) )
-                    {
-                        // no need to check further, only magnum & snipers are in the trie
-                        iHunterShotDmgTeam[victim] = 0;
-                        EVENT_HandleSkeet( attacker, victim, false, true );
-                    }
+                iHunterShotDmg[victim][attacker] += damage;
+                iHunterShotDmgTeam[victim] += damage;
+                
+                if ( health == 0 ) {
+                    bHunterKilledPouncing[victim] = true;
+                }
+            }
+            else if (   damagetype & DMG_BULLET &&
+                        damage >= iPounceInterrupt &&
+                        health == 0 &&
+                        hitgroup == HITGROUP_HEAD
+            ) {
+                // headshot with bullet based weapon (only single shots)
+                
+                // only allow snipers
+                new String: weapon[64];
+                GetEventString(event, "weapon", weapon, sizeof(weapon));
+                
+                new itemPickupPenalty: weaponCheck;
+                if ( GetTrieValue(g_hTrieEventWeapons, weapon, weaponCheck) )
+                {
+                    // no need to check further, only magnum & snipers are in the trie
+                    iHunterShotDmgTeam[victim] = 0;
+                    EVENT_HandleSkeet( attacker, victim, false, true );
+                    ResetHunter(victim);
+                }
+                
+                bHunterKilledPouncing[victim] = true;
+            }
+            else if ( damagetype & DMG_SLASH || damagetype & DMG_CLUB )
+            {
+                // melee skeet
+                if ( damage >= iPounceInterrupt )
+                {
+                    iHunterShotDmgTeam[victim] = 0;
+                    EVENT_HandleSkeet( attacker, victim, true );
+                    ResetHunter(victim);
                     
                     bHunterKilledPouncing[victim] = true;
                 }
-                else if ( damagetype & DMG_SLASH || damagetype & DMG_CLUB )
-                {
-                    // melee skeet
-                    if ( damage >= iPounceInterrupt )
-                    {
-                        iHunterShotDmgTeam[victim] = 0;
-                        EVENT_HandleSkeet( attacker, victim, true );
-                        
-                        bHunterKilledPouncing[victim] = true;
-                    }
-                }
             }
-            else if ( health == 0 )
-            {
-                // make sure we don't mistake non-pouncing hunters as 'not skeeted'-warnable
-                bHunterKilledPouncing[victim] = false;
-            }
+        }
+        else if ( health == 0 )
+        {
+            // make sure we don't mistake non-pouncing hunters as 'not skeeted'-warnable
+            bHunterKilledPouncing[victim] = false;
         }
         
         // store last health seen for next damage event
@@ -2239,6 +2251,7 @@ public Action:groundTouchTimer(Handle:timer, any:client)
     // but it is only killed once it actually hits the ground again!
     // this might create too many timers when a hunter actually pounces
     // around on walls.. build a safeguard to prevent this?
+    /*
     static countTimes = 0;
     
     countTimes++;
@@ -2248,17 +2261,22 @@ public Action:groundTouchTimer(Handle:timer, any:client)
         countTimes = 0;
         KillTimer( timer );
     }
-    else if ( IsClientAndInGame(client) && (GetEntProp(client, Prop_Data, "m_fFlags") & FL_ONGROUND > 0 || !IsPlayerAlive(client)) )
-    {
+    else
+    */
+    if (    IsClientAndInGame(client) &&
+            (GetEntProp(client, Prop_Data, "m_fFlags") & FL_ONGROUND > 0 ||
+            !IsPlayerAlive(client))
+    ) {
         // reached the ground or died in mid-air
-        countTimes = 0;
-        bHunterPouncing[client] = false;
+        //countTimes = 0;
+        ResetHunter( client );
         KillTimer( timer );
     }
 }
 
 public ResetHunter(client)
 {
+    PrintDebug( 3, "[skeet] hunter reset (%i)", client );
     iHunterShotDmgTeam[client] = 0;
     for (new i=1; i <= MaxClients; i++)
     {
@@ -3116,31 +3134,30 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
         //PrintToChatAll("hunter died: %i dmg / %i team dmg", iHunterShotDmg[victim][attacker], iHunterShotDmgTeam[victim]);             
         new iPounceInterrupt = GetConVarInt( g_hCvarPounceInterrupt );
         
-        if ( iHunterShotDmg[victim][attacker] > 0 )
+        if ( iHunterShotDmgTeam[victim] > 0 && bHunterKilledPouncing[victim] )
         {
             // skeet?
-            if (iHunterShotDmg[victim][attacker] >= iPounceInterrupt) {
-                // single player's skeet
-                EVENT_HandleSkeet(attacker, victim);
-            }
-            else if (iHunterShotDmgTeam[victim] >= iPounceInterrupt) {
+            if (    iHunterShotDmgTeam[victim] > iHunterShotDmg[victim][attacker] &&
+                    iHunterShotDmgTeam[victim] >= iPounceInterrupt
+            ) {
                 // team skeet
                 EVENT_HandleSkeet(-2, victim);
             }
+            else if ( iHunterShotDmg[victim][attacker] >= iPounceInterrupt ) {
+                // single player skeet
+                EVENT_HandleSkeet(attacker, victim);
+            }
+            else if ( iHunterOverkill[victim] > 0 ) {
+                // overkill? might've been a skeet
+                EVENT_HandleNonSkeet( victim, iHunterShotDmgTeam[victim], ( iHunterOverkill[victim] + iHunterShotDmgTeam[victim] > iPounceInterrupt ) );
+            }
             else {
+                // not a skeet at all
                 EVENT_HandleNonSkeet(victim, iHunterShotDmg[victim][attacker]);
             }
         }
-        else if ( bHunterKilledPouncing[victim] )
-        {
-            // report if hunter died with shot dmg still on it
-            if ( iHunterShotDmgTeam[victim] > 0 || iHunterOverkill[victim] ) {
-                EVENT_HandleNonSkeet( victim, iHunterShotDmgTeam[victim], ( iHunterOverkill[victim] + iHunterShotDmgTeam[victim] > iPounceInterrupt ) );
-            }
-        }
         
-        iHunterShotDmgTeam[victim] = 0;
-        iHunterShotDmg[victim][attacker] = 0;
+        ResetHunter(victim);
     }
     
     
