@@ -1,0 +1,17 @@
+"mutationrandomcoop"
+{
+	"base"		"coop"
+
+	"DisplayTitle"	"Random Coop Mutation"
+	"ShortDescription"	""
+	"Description"	"Random Coop Mutation for infunsanity."
+
+	"Image"		"maps/any"
+	"Author"	"Tabun"
+
+	convar
+	{
+		// Cvars go here
+	}
+}
+
