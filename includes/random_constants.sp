@@ -51,6 +51,7 @@ const Float:    DELAY_MAPRESTART        = 5.0;
 const Float:    DELAY_T2_NERF_TIMEOUT   = 3.0;          // how many seconds between spam about t2 nerfs
 const Float:    DELAY_SURVLOADEDCHECK   = 3.0;          // how long to wait after teamswap before checking the amount of survivors loaded in
 const Float:    CAR_EXPLODE_DELAY       = 0.15;         // time between shooting car and it exploding
+const Float:    DELAY_DEADSTOPGRACE     = 0.25;         // grace time between m2's for EVT_PEN_M2
 
 const           INCAP_DEFAULT           = 2;
 const           INCAP_MINIMUM           = 1;

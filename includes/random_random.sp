@@ -784,7 +784,7 @@ RANDOM_DetermineRandomStuff()
                     g_iDifficultyRating += 3; // no outlines
                 }
                 case EVT_DEFIB: {
-                    EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_EASY);
+                    EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
                     SetConVarInt(FindConVar("vs_defib_penalty"), 5);
                     PBONUS_SetDefibPenalty(5);
                     SetConVarInt(FindConVar("defibrillator_use_duration"), 2);

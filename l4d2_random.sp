@@ -30,7 +30,7 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.65"
+#define PLUGIN_VERSION "1.0.66"
 
 /*
         L4D2 Random
@@ -993,9 +993,14 @@ public OnMapStart()
     g_bItemsFullyRandomized = false;
     
     // check gamemode for 'coop'
-    new String:tmpStr[16];
+    new String:tmpStr[24];
     GetConVarString(FindConVar("mp_gamemode"), tmpStr, sizeof(tmpStr));
-    if (StrEqual(tmpStr, "coop", false)) {
+    if (    StrEqual(tmpStr, "coop", false) ||
+            StrEqual(tmpStr, "mutation4", false) ||         // hard eight
+            StrEqual(tmpStr, "mutation14", false) ||        // gib fest
+            StrEqual(tmpStr, "mutation20", false) ||        // healing gnome
+            StrEqual(tmpStr, "mutationrandomcoop", false)   // healing gnome
+    ) {
         g_bCampaignMode = true;
         g_bItemsFullyRandomized = true;
         g_bRestartedOnce = true;
@@ -2276,7 +2281,6 @@ public Action:groundTouchTimer(Handle:timer, any:client)
 
 public ResetHunter(client)
 {
-    PrintDebug( 3, "[skeet] hunter reset (%i)", client );
     iHunterShotDmgTeam[client] = 0;
     for (new i=1; i <= MaxClients; i++)
     {
@@ -2777,12 +2781,16 @@ public Action:Event_ShovedPlayer(Handle:event, const String:name[], bool:dontBro
     {
         // only on cappers (except charger)
         new classType = GetEntProp(victim, Prop_Send, "m_zombieClass");
-        if (classType == ZC_JOCKEY || classType == ZC_HUNTER || classType == ZC_SMOKER)
-        {
+        if (
+            ( classType == ZC_JOCKEY || classType == ZC_HUNTER || classType == ZC_SMOKER ) &&
+            ( g_fDeadStopTime[client] == 0.0 || FloatSub( GetGameTime(), g_fDeadStopTime[client] ) > 0 )
+        ) {
             g_iBonusCount++;
             PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyM2SI );
             EVENT_PBonusChanged();
             EVENT_ReportPenalty(client, classType);
+            
+            g_fDeadStopTime[client] = GetGameTime() + DELAY_DEADSTOPGRACE;
         }
     }
 }
@@ -3536,10 +3544,10 @@ public OnEntityCreated(entity, const String:classname[])
         CreateTimer(0.01, EVENT_DeployAmmo, entity, TIMER_FLAG_NO_MAPCHANGE);
         //CreateTimer(0.025, EVENT_CheckDeployedAmmo, entity, TIMER_FLAG_NO_MAPCHANGE);
     }
-    else if (g_iSpecialEvent == EVT_BAY && classnameOEC == CREATED_TANKROCK && GetEntProp(entity, Prop_Send, "m_iTeamNum") >= 0)
+    /* else if (g_iSpecialEvent == EVT_BAY && classnameOEC == CREATED_TANKROCK && GetEntProp(entity, Prop_Send, "m_iTeamNum") >= 0)
     {
         SDKHook(entity, SDKHook_Touch, OnTankRockTouchesSomething);
-    }
+    } */
 }
 
 public Action: Timer_CreatedPropPhysics(Handle:timer, any:entity)
@@ -3636,6 +3644,7 @@ public Action:Timer_PipeCheck(Handle:timer, any:entity)
 
 
 // hooked for BAY
+/* rock hook
 public OnTankRockTouchesSomething(entity)
 {
     new Float: targetPos[3];
@@ -3651,6 +3660,7 @@ public OnTankRockTouchesSomething(entity)
     
     SDKUnhook(entity, SDKHook_Touch, OnTankRockTouchesSomething);
 }
+*/
 
 
 // hooked on EVT_WOMEN
