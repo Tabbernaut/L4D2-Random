@@ -9,7 +9,7 @@ IncludeScript("VSLib");
     Random Coop Mutation
     --------------------
     
-    Version:    1.0.0
+    Version:    1.0.1
     
     
     
@@ -30,10 +30,11 @@ ENC_CHARGESPIT      <- 2
 ENC_WITCHES         <- 3
 ENC_BIGATTACK       <- 4
 ENC_SUPPORT         <- 5
-ENC_PANICHORDE      <- 6        // meh, don't use this for now
+ENC_FALLEN          <- 6
+ENC_PANICHORDE      <- 7        // meh, don't use this for now
 
 ENC_FIRST           <- 0
-ENC_LAST            <- 5
+ENC_LAST            <- 6
 
 ENC_STAGE_NORMAL    <- 0        // 'normal' coop state
 ENC_STAGE_BUILDUP   <- 1        // buildup towards encounter
@@ -51,6 +52,8 @@ ENC_SUPPORT_MIN     <- 10
 ENC_SUPPORT_MAX     <- 12
 ENC_WITCH_MIN       <- 3
 ENC_WITCH_MAX       <- 9
+ENC_FALLEN_MIN      <- 5
+ENC_FALLEN_MAX      <- 20
 
 ENC_SPAWNING_TIMEOUT    <- 9    // how much time the encounter is given to fully time out (after all of its infected have spawned)
 ENC_ENCOUNTER_TIMEOUT   <- 25   // how much time the encounter is given to fully time out (after all of its infected have spawned)
@@ -268,6 +271,14 @@ function Update()
                             case ENC_SUPPORT:
                                 printl( "encounter: support" )
                                 DoEncounter_Support()
+                                break;
+                            
+                            case ENC_FALLEN:
+                                printl( "encounter: fallen" )
+                                DoEncounter_Fallen()
+                                SessionState.EncounterCounter = ENC_GRACETIME
+                                SessionState.CurrentStage = ENC_STAGE_GRACE
+                                SessionState.EncounterActive = false
                                 break;
                         }
                         break;
@@ -586,6 +597,25 @@ function DoEncounter_Support()
         Utils.SayToAll( " .. Support: "+ SessionState.EncounterSpawnCount )
     }
 }
+
+function DoEncounter_Fallen()
+{
+    SessionState.EncounterSpawnCount <- RandomInt( ENC_FALLEN_MIN, ENC_FALLEN_MAX )
+    
+    // fallen = 6
+    ComTimerA2.Input( "Enable" )
+    ComTimerA4.Input( "Enable" )
+    
+    if ( SessionState.EncounterSpawnCount & 1 ) { ComTimerB1.Input( "Enable" ) }
+    if ( SessionState.EncounterSpawnCount & 2 ) { ComTimerB2.Input( "Enable" ) }
+    if ( SessionState.EncounterSpawnCount & 4 ) { ComTimerB4.Input( "Enable" ) }
+    if ( SessionState.EncounterSpawnCount & 8 ) { ComTimerB8.Input( "Enable" ) }
+    
+    if ( SessionState.Debug ) {
+        Utils.SayToAll( " .. Fallen Survivors [through plugin]: "+ SessionState.EncounterSpawnCount )
+    }
+}
+
 
 
 function ForceEncounterSpawns ( type )

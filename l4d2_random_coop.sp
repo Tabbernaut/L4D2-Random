@@ -6,6 +6,7 @@
 
 #define USE_OLD_SPAWN       true            // use z_spawn_old ?
 
+#define FALLEN_MODEL        "models/infected/common_male_fallen_survivor.mdl"
 
 /*
     Make coop more RANDOM FUN.
@@ -15,6 +16,7 @@
     
     - spawn witches
     - force spawns when the director has fallen asleep?
+    - spawn special hordes, such as fallen survivors (or other?)
     
  */
 
@@ -41,6 +43,7 @@ const           ENC_JOCKEYS             = 2;
 const           ENC_CHARGESPIT          = 3;
 const           ENC_SUPPORT             = 4;
 const           ENC_BIGATTACK           = 5;
+const           ENC_FALLEN              = 6;
 const           ENC_WITCHES             = 7;
 
 const Float:    SPAWN_VARY_MAX          = 0.5;      // how much variation between SI/witches spawns, maximum (min = 0.0)
@@ -73,6 +76,8 @@ new     bool:           g_bLogicTimerEntSet                                 = fa
 new                     g_iLogicTimerEntEncounter[3];
 new                     g_iLogicTimerEntAmount[4];
 
+new                     g_iRemainingFallen                                  = 0;                    // how many fallen survivors to spawn
+
 new     Handle:         g_hCvarDebug                                        = INVALID_HANDLE;
 //new     Handle:         g_hCvarTimeIntervalMin                              = INVALID_HANDLE;
 //new     Handle:         g_hCvarTimeIntervalMax                              = INVALID_HANDLE;
@@ -90,7 +95,7 @@ public Plugin:myinfo =
     name = "Randomize the Game - Coop Stuff",
     author = "Tabun",
     description = "Makes L4D2 more fun and harder in coop mode.",
-    version = "0.9.1",
+    version = "0.9.2",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
@@ -150,6 +155,9 @@ public OnPluginStart()
 
     // prepare weights
     //PrepareChoicesEncounters();
+
+    // precache fallen
+    PrecacheModel(FALLEN_MODEL, true);
 
     // start timer
     CreateTimer( 1.0, Timer_CheckLogicTimer, _, TIMER_REPEAT);
@@ -279,6 +287,14 @@ public Action: Timer_CheckLogicTimer (Handle:timer)
                         CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, GetRandomInt(ZC_SMOKER, ZC_CHARGER), TIMER_FLAG_NO_MAPCHANGE );
                     }
                 }
+                case ENC_FALLEN: {
+                    // spawn some commons => fallen
+                    new spawningclient = GetSpawningClient(true);
+                    g_iRemainingFallen = iAmountValue;
+                    if ( IsClientAndInGame(spawningclient) ) {
+                        SpawnCommon( iAmountValue, spawningclient );
+                    }
+                }
                 case ENC_WITCHES: {
                     for ( new i = 0; i < iAmountValue; i++ )
                     {
@@ -384,6 +400,18 @@ public Action: Timer_SpawnSomething (Handle:timer, any:what)
     }
     
     return Plugin_Continue;
+}
+
+
+public OnEntityCreated(entity, const String:classname[])
+{
+	if ( !StrEqual(classname, "infected", false)) { return; }
+	
+	if ( g_iRemainingFallen )
+    {
+        g_iRemainingFallen--;
+        SetEntityModel(entity, FALLEN_MODEL);
+	}
 }
 
 //  Encounter
@@ -669,4 +697,20 @@ SpawnPanicHorde(client, mobs = 1)
         }
         SetCommandFlags("z_spawn", flags);
     }
+}
+
+public Action: SpawnFallen( number, Float:location[3] )
+{
+	new zombie = CreateEntityByName("infected");
+	
+	SetEntityModel( zombie, FALLEN_MODEL );
+	
+	new ticktime = RoundToNearest( FloatDiv( GetGameTime() , GetTickInterval() ) ) + 5;
+	SetEntProp( zombie, Prop_Data, "m_nNextThinkTick", ticktime );
+
+	DispatchSpawn( zombie );
+	ActivateEntity( zombie );
+	
+	location[2] -= 25.0; //reduce the 'drop' effect
+	TeleportEntity( zombie, location, NULL_VECTOR, NULL_VECTOR );
 }
