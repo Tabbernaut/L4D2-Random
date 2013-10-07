@@ -61,6 +61,10 @@ L4D2_Random
             - Fixed skeet detection (though chipping with non-shotguns still doesn't count); added detection for sniper/magnum headshot skeets.
             - Fixed a bunch of problems in campaign mode. Now makes survivors try 3 times, then rerandomizes the map.
         -----
+            - Added randomcoop config: Random Coop Mutation gameplay! Much fun for campaign mode added plusplus.
+            - Set minimum health for survivors in campaign mode, at round start (50 solid).
+            - Added encounters with insane amounts of hunters, jockeys, witches, etc.
+        -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
             - [ added friendly fire stats table printout ]
 
@@ -90,9 +94,9 @@ L4D2_Random
             
             - misc:     add bay RC data to actual KV file setup
             
-            - coop:     more fun stuff? better SI spawning? hard-eight-like?
-                        - encounters: hunter parties, charge-spit combo's, sudden witch event, minitank surprise
-                            
+            - coop:     fallen survivors encounter
+            - coop:     optional !igiveup command: rerandomizes the event/items the next time survivors fail
+            
               
     minor cleanup / details
     -----------------------

@@ -38,7 +38,7 @@ const Float:    TIMER_HUMANCHECK        = 2.0;          // interval for checking
 const Float:    TIMER_STARTCHECK        = 0.25;         // interval for checking whether survivors have left saferoom (used if PlayersLeftStartArea while in readyup)
 const Float:    DELAY_FIRSTMAPLOAD      = 5.0;          // how long to wait before doing round prep on the very first map loading
 const Float:    DELAY_ROUNDPREP         = 1.0;          // how long between actual round prep and item handling etc
-const Float:    DELAY_ROUNDPREP_COOP    = 8.0;          // coop 'transitions' items, so make sure we randomize after that happens
+const Float:    DELAY_ROUNDPREP_COOP    = 6.5;          // coop 'transitions' items, so make sure we randomize after that happens (was 8)
 const Float:    DELAY_SECONDHALF        = 1.0;          // how long to wait on secondroundhalf before restoring items
 const Float:    DELAY_SECONDHALF_REP    = 1.25;         // how long to wait on secondroundhalf before doing the report
 const Float:    DELAY_SURVSETUP         = 0.25;         // how long to wait after team switch/join to set survivor startup (for GetPlayerSlot check)
@@ -57,6 +57,8 @@ const           INCAP_DEFAULT           = 2;
 const           INCAP_MINIMUM           = 1;
 const           INCAP_MAXIMUM           = 3;
 const           HEALTH_MAXIMUM          = 100;
+
+const           COOP_MIN_STARTHEALTH    = 50;           // how much solid you should start with, at least
 
 const Float:    ITEM_PICKUP_DISTANCE    = 64.0;         // how far can a survivor 'reach' for a gift box?
 const Float:    ITEM_PICKUP_EYECHECKDST = 128.0;        // how far from gift maximally if we are to check eyes too?

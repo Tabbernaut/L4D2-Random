@@ -218,6 +218,26 @@ CountHumanSurvivors()
     return count;
 }
 
+// make sure survivors have at least 50h solid
+SetMinimumHealthSurvivors()
+{
+    new health = 0;
+    
+    for ( new i = 1; i <= GetMaxClients(); i++ )
+    {
+        if ( IsClientConnected(i) && IsSurvivor(i) && IsPlayerAlive(i) )
+        {
+            // check health
+            health = GetClientHealth(i);
+            if ( health < COOP_MIN_STARTHEALTH )
+            {
+                SetEntityHealth( i, COOP_MIN_STARTHEALTH );
+                //SetEntData( i, FindDataMapOffs(i, "m_iHealth"), COOP_MIN_STARTHEALTH, 4, true);
+            }
+        }
+    }
+}
+
 /*
     Scoring manipulation
     -----------------

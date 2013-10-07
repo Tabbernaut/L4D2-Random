@@ -151,6 +151,11 @@ public Action: Timer_DelayedRoundPrep(Handle:timer)
         EVENT_PickBoobyTraps();
     }
     
+    // coop mode: set health to a minimum value
+    if ( g_bCampaignMode ) {
+        SetMinimumHealthSurvivors();
+    }
+    
     // blind infected to items generated
     ItemsBlindInfected();
     

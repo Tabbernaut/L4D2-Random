@@ -22,7 +22,6 @@
 #include "includes/random_thirdparty.sp"
 
 
-
 // note: these must also be defined in includes/random_init
 #define FIRE_PARTICLE           "gas_explosion_ground_fire"
 #define EXPLOSION_PARTICLE      "FluidExplosion_fps"
@@ -30,7 +29,8 @@
 #define EXPLOSION_PARTICLE3     "explosion_huge_b"
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
-#define PLUGIN_VERSION "1.0.66"
+
+#define PLUGIN_VERSION "1.0.67"
 
 /*
         L4D2 Random
