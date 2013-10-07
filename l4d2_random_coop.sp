@@ -292,7 +292,7 @@ public Action: Timer_CheckLogicTimer (Handle:timer)
                     new spawningclient = GetSpawningClient(true);
                     g_iRemainingFallen = iAmountValue;
                     if ( IsClientAndInGame(spawningclient) ) {
-                        SpawnCommon( iAmountValue, spawningclient );
+                        SpawnCommon( spawningclient, iAmountValue );
                     }
                 }
                 case ENC_WITCHES: {
