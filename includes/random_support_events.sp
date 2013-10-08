@@ -398,13 +398,15 @@ public Action: Timer_BoomFlu(Handle:timer)
         g_iBoomFluActivate = GetRandomInt(g_RC_iEventBoomFluMinInt, g_RC_iEventBoomFluMaxInt);
         g_iBoomFluCounter = 1;
         
+        // repick if it's not okay
+        if ( !EVENT_IsSpecialRoleOkay(true) ) {
+            EVENT_PickSpecialEventRole(-1);
+        }
+        
         // only boom after we really got going
-        if (g_bPlayersLeftStart)
+        if ( g_bPlayersLeftStart && EVENT_IsSpecialRoleOkay(true) )
         {
-            if (EVENT_IsSpecialRoleOkay(true))
-            {
-                PlayerDoVomit(g_iSpecialEventRole);
-            }
+            PlayerDoVomit(g_iSpecialEventRole);
         }
     }
     else if (g_iBoomFluCounter >= g_iBoomFluActivate - 4)

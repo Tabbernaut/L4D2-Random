@@ -48,8 +48,9 @@ const           ENC_WITCHES             = 7;
 
 const Float:    SPAWN_VARY_MAX          = 0.5;      // how much variation between SI/witches spawns, maximum (min = 0.0)
 
-//const           STORED_MAX_COUNT        = 1024;
 /*
+const           STORED_MAX_COUNT        = 1024;
+
 const           ENC_HUNTERS             = 0;
 const           ENC_CHARGESPIT          = 1;
 const           ENC_WITCHES             = 2;
@@ -69,8 +70,7 @@ const           FALLEN_MAX              = 6;
 const           JOCKEYS_MIN             = 4;
 const           JOCKEYS_MAX             = 6;
 */
-new     bool:           g_bLateLoad                                         = false;
-new     bool:           g_bPlayersLeftStart                                 = false;                // true once the first survivor has left the start saferoom
+
 
 new     bool:           g_bLogicTimerEntSet                                 = false;                // whether we can trust the logic timers
 new                     g_iLogicTimerEntEncounter[3];
@@ -79,15 +79,21 @@ new                     g_iLogicTimerEntAmount[4];
 new                     g_iRemainingFallen                                  = 0;                    // how many fallen survivors to spawn
 
 new     Handle:         g_hCvarDebug                                        = INVALID_HANDLE;
-//new     Handle:         g_hCvarTimeIntervalMin                              = INVALID_HANDLE;
-//new     Handle:         g_hCvarTimeIntervalMax                              = INVALID_HANDLE;
-//new     Handle:         g_hArCvarWeight             [ENC_TOTAL];                                    // cvar, per randomize-type, that sets an integer weight 
 
-//new                     g_iArWeightedChoices        [STORED_MAX_COUNT];                             // all the choices (every category * its weight)
-//new                     g_iWeightedChoicesTotal;                                                    // total of WeightedChoices 'hat' filled
+/*
+new     bool:           g_bLateLoad                                         = false;
+new     bool:           g_bPlayersLeftStart                                 = false;                // true once the first survivor has left the start saferoom
 
-//new                     g_iEncounterCounter                                 = 0;                    // seconds since last enounter
-//new                     g_iNextEncounterCount                               = 0;                    // seconds since last enounter
+new     Handle:         g_hCvarTimeIntervalMin                              = INVALID_HANDLE;
+new     Handle:         g_hCvarTimeIntervalMax                              = INVALID_HANDLE;
+new     Handle:         g_hArCvarWeight             [ENC_TOTAL];                                    // cvar, per randomize-type, that sets an integer weight 
+
+new                     g_iArWeightedChoices        [STORED_MAX_COUNT];                             // all the choices (every category * its weight)
+new                     g_iWeightedChoicesTotal;                                                    // total of WeightedChoices 'hat' filled
+
+new                     g_iEncounterCounter                                 = 0;                    // seconds since last enounter
+new                     g_iNextEncounterCount                               = 0;                    // seconds since last enounter
+*/
 
 
 public Plugin:myinfo = 
@@ -95,20 +101,21 @@ public Plugin:myinfo =
     name = "Randomize the Game - Coop Stuff",
     author = "Tabun",
     description = "Makes L4D2 more fun and harder in coop mode.",
-    version = "0.9.2",
+    version = "0.9.3",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
+/*
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
     g_bLateLoad = late;
     return APLRes_Success;
 }
-
+*/
 
 public OnPluginStart()
 {
-
+    /*
     // hooks
     HookEvent("round_start",                Event_RoundStart,               EventHookMode_PostNoCopy);
     HookEvent("round_end",                  Event_RoundEnd,                 EventHookMode_PostNoCopy);
@@ -116,7 +123,8 @@ public OnPluginStart()
     HookEvent("door_close",                 Event_DoorClose,                EventHookMode_PostNoCopy );
     HookEvent("finale_vehicle_leaving",     Event_FinaleVehicleLeaving,     EventHookMode_PostNoCopy );
     HookEvent("mission_lost",               Event_MissionLostCampaign,      EventHookMode_Post);
-
+    */
+    
     /*
     new Handle:tmpHandle = INVALID_HANDLE;
     tmpHandle = FindConVar("z_max_player_zombies");
@@ -162,11 +170,13 @@ public OnPluginStart()
     // start timer
     CreateTimer( 1.0, Timer_CheckLogicTimer, _, TIMER_REPEAT);
     
+    /*
     if ( g_bLateLoad )
     {
         // assume survivors left start
         g_bPlayersLeftStart = true;
     }
+    */
 }
 
 /*
@@ -318,7 +328,7 @@ public Action: Timer_CheckLogicTimer (Handle:timer)
     return Plugin_Continue;
 }
 
-
+/*
 public Event_RoundStart (Handle:event, const String:name[], bool:dontBroadcast)
 {
     g_bPlayersLeftStart = false;
@@ -351,7 +361,7 @@ public Event_DoorClose (Handle:event, const String:name[], bool:dontBroadcast)
 {
     g_bPlayersLeftStart = false;
 }
-
+*/
 
 //  Timer
 //  ------------------------------
@@ -562,18 +572,22 @@ public PrintDebug(debugLevel, const String:Message[], any:...)
         decl String:DebugBuff[256];
         VFormat(DebugBuff, sizeof(DebugBuff), Message, 3);
         LogMessage(DebugBuff);
-        //PrintToServer(DebugBuff);
-        //PrintToChatAll(DebugBuff);
     }
 }
 
 bool: IsClientAndInGame(index) return (index > 0 && index <= MaxClients && IsClientInGame(index));
-bool: IsSurvivor(client) { if (IsClientAndInGame(client)) { return GetClientTeam(client) == TEAM_SURVIVOR; } return false; }
-bool: IsInfected(client) { if (IsClientAndInGame(client)) { return GetClientTeam(client) == TEAM_INFECTED; } return false; }
-bool: IsTank(any:client) { new iClass = GetEntProp(client, Prop_Send, "m_zombieClass"); if (IsPlayerAlive(client) && iClass == ZC_TANK) { return true; } return false; }
-bool:IsHangingFromLedge(client) { return bool:(GetEntProp(client, Prop_Send, "m_isHangingFromLedge") || GetEntProp(client, Prop_Send, "m_isFallingFromLedge")); }
-bool:IsIncapacitated(client) { return bool:GetEntProp(client, Prop_Send, "m_isIncapacitated"); }
-bool: IsPlayerGhost(any:client) { if (GetEntProp(client, Prop_Send, "m_isGhost")) { return true; } return false; }
+bool: IsSurvivor(client) {
+    if (IsClientAndInGame(client)) { return GetClientTeam(client) == TEAM_SURVIVOR; }
+    return false;
+}
+bool: IsInfected(client) {
+    if (IsClientAndInGame(client)) { return GetClientTeam(client) == TEAM_INFECTED; }
+    return false;
+}
+//bool: IsTank(any:client) { new iClass = GetEntProp(client, Prop_Send, "m_zombieClass"); if (IsPlayerAlive(client) && iClass == ZC_TANK) { return true; } return false; }
+//bool:IsHangingFromLedge(client) { return bool:(GetEntProp(client, Prop_Send, "m_isHangingFromLedge") || GetEntProp(client, Prop_Send, "m_isFallingFromLedge")); }
+//bool:IsIncapacitated(client) { return bool:GetEntProp(client, Prop_Send, "m_isIncapacitated"); }
+//bool: IsPlayerGhost(any:client) { if (GetEntProp(client, Prop_Send, "m_isGhost")) { return true; } return false; }
 
 
 // get just any survivor client (param = false = switch to infected too)
@@ -677,6 +691,7 @@ SpawnWitch(client)
 }
 
 // spawning a horde (cheap way.. damnit)
+/*
 SpawnPanicHorde(client, mobs = 1)
 {
     if ( USE_OLD_SPAWN )
@@ -698,7 +713,7 @@ SpawnPanicHorde(client, mobs = 1)
         SetCommandFlags("z_spawn", flags);
     }
 }
-
+*/
 public Action: SpawnFallen( number, Float:location[3] )
 {
 	new zombie = CreateEntityByName("infected");

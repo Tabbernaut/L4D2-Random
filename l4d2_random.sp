@@ -235,6 +235,8 @@ public OnPluginStart()
     RegConsoleCmd("sm_event",       RandomPickEvent_Cmd,    "Vote for a special event to appear next round (use number in list on website).");
     RegConsoleCmd("sm_gameevent",   RandomPickGameEvent_Cmd, "Vote for a special event for all rounds (use number in list on website).");
     
+    RegConsoleCmd("sm_rerandom",    RandomCoopRerandom_Cmd, "Force a re-randomization of this round, if the survivors fail.");
+    
     // Admin and test commands
     RegAdminCmd("forceteamshuffle",  RandomForceTeamShuffle_Cmd,    ADMFLAG_CHEATS, "Shuffle the teams! Only works during readyup. Admins only.");
     RegAdminCmd("forceevent",        RandomForcePickEvent_Cmd,      ADMFLAG_CHEATS, "Force a special event for next round (use number in list on website).");
@@ -868,6 +870,18 @@ public Action: RandomForcePickGameEvent_Cmd(client, args)
     
     return Plugin_Handled;
 }
+public Action: RandomCoopRerandom_Cmd(client, args)
+{
+    if ( !g_bCampaignMode ) {
+        PrintToChat(client, "\x01[\x05r\x01] This only works in campaign mode.");
+        return Plugin_Handled;
+    }
+    
+    PrintToChatAll("\x01[\x05r\x01] If you fail (again), the game will be re-randomized.");
+    g_bCampaignReRandomPlease = true;
+    
+    return Plugin_Handled;
+}
 public Action: Spectate_Cmd(client, args)
 {
     if (g_bHasGhost[client]) { g_bSpectateDeath[client] = true; }
@@ -979,13 +993,18 @@ public Event_MissionLostCampaign(Handle:hEvent, const String:name[], bool:dontBr
     
     // reroll if tried too many times
     new max = GetConVarInt(g_hCvarCampaignStreak);
-    if ( max && g_iCampaignFailStreak > max ) {
+    if ( g_bCampaignReRandomPlease || ( max && g_iCampaignFailStreak > max ) ) {
         g_iCampaignFailStreak = 0;
         g_bCampaignForceRandom = true;
     }
     else {
         g_bCampaignForceRandom = false;
     }
+    
+    g_bCampaignReRandomPlease = false;
+    
+    // safeguards?
+    g_bPlayersLeftStart = false;
 }
 
 public OnMapStart()
@@ -1034,6 +1053,10 @@ public OnMapStart()
         PrintDebug(0, "[rand] Default cvars were not loaded. OnMapStart preparation halted. Restart map.");
         return;
     }
+    
+    // campaign mode
+    g_iCampaignFailStreak = 0;
+    g_bCampaignReRandomPlease = false;
     
     INIT_EventCycleTimeout();           // cycle event timeout, so we know what we can pick
     SUPPORT_StormReset();               // safety to catch plugin acting on its own

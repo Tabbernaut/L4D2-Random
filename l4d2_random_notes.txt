@@ -62,8 +62,11 @@ L4D2_Random
             - Fixed a bunch of problems in campaign mode. Now makes survivors try 3 times, then rerandomizes the map.
         -----
             - Added randomcoop config: Random Coop Mutation gameplay! Much fun for campaign mode added plusplus.
-            - Set minimum health for survivors in campaign mode, at round start (50 solid).
-            - Added encounters with insane amounts of hunters, jockeys, witches, etc.
+            - Coop: After 3 failures, the round will automatically be re-randomized.
+            - Coop: Added !rerandom command to force re-randomization of the round if players fail to make it.
+            - Coop: Sets minimum health for survivors in campaign mode, at round start (50 solid).
+            - Coop: Added encounters with insane amounts of hunters, jockeys, witches, etc.
+            - Coop: Removed common-size related events (they wouldn't work right with the mutation anyway).
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
             - [ added friendly fire stats table printout ]
@@ -85,6 +88,7 @@ L4D2_Random
             - tweak:    haunted doors: synchronize double doors... (bit annoying, can't easily use current methods to 'track' these)
             - tweak:    [consider] give points for surviving longer during DT3 event (and maybe other events in specific maps too?)
                         holdout bonus.. (and deduct the total you're able to get from the total distance points)
+            - tweak:    if paused during temporary blindness, re-blind on resume (for as much time as should be remaining..)
             
             - bugfix:   block event votes if the next map is one in which that event would be broken (finales etc)
             - bugfix:   still not the right penalty counts on double round end.. (only display)
@@ -94,8 +98,10 @@ L4D2_Random
             
             - misc:     add bay RC data to actual KV file setup
             
-            - coop:     fallen survivors encounter
-            - coop:     optional !igiveup command: rerandomizes the event/items the next time survivors fail
+            - coop:     figure out what server events get fired exactly when changing rounds/maps...
+            - coop:     boomer flu doesn't work -- survivor never booms (special role problem too, with hats)
+            - coop:     bug: medic sometimes doesn't get supplies on failing a round
+            
             
               
     minor cleanup / details

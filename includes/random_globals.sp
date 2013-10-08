@@ -46,6 +46,7 @@ new                     g_iRememberFrozenDistance                           = 0;
 
 new                     g_iCampaignFailStreak                               = 0;                    // how many times in a row the mission was lost
 new     bool:           g_bCampaignForceRandom                              = false;                // force rerandomization
+new     bool:           g_bCampaignReRandomPlease                           = false;                // players want to rerandom on next failure
 
 // Menu handling
 new                     g_iEventMenu            [MAXPLAYERS+1]              = {0,...};              // what menu to use

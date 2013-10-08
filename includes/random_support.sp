@@ -763,7 +763,7 @@ public Action: Timer_CheckSpecialEventRole(Handle:timer, any:pack)
     }
 }
 
-EVENT_PickSpecialEventRole(notClient=-1, bool:notLeftStart=false)
+EVENT_PickSpecialEventRole( notClient=-1, bool:notLeftStart=false )
 {
     // remove hats
     HatsRemoveAll();
@@ -822,7 +822,7 @@ EVENT_PickSpecialEventRole(notClient=-1, bool:notLeftStart=false)
     }
 }
 
-bool: EVENT_IsSpecialRoleOkay(bool:allowBots=false)
+bool: EVENT_IsSpecialRoleOkay( bool:allowBots=false )
 {
     // check if a living survivor has the special role
     if ( g_iSpecialEventRole < 1 ) { return false; }

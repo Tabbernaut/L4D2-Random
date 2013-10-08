@@ -223,9 +223,12 @@ SetMinimumHealthSurvivors()
 {
     new health = 0;
     
+    PrintDebug(3, "SetMinimumHealthSurvivors()");
+    
     for ( new i = 1; i <= GetMaxClients(); i++ )
     {
-        if ( IsClientConnected(i) && IsSurvivor(i) && IsPlayerAlive(i) )
+        PrintDebug( 3, "%i: client in game: %i, survivor: %i, alive: %i", i, IsClientInGame(i), (IsClientInGame(i)) ? IsSurvivor(i) : false, (IsClientInGame(i)) ? IsPlayerAlive(i) : false );
+        if ( IsClientInGame(i) && IsSurvivor(i) && IsPlayerAlive(i) )
         {
             // check health
             health = GetClientHealth(i);
