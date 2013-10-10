@@ -30,7 +30,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.0.67"
+#define PLUGIN_VERSION "1.0.68"
 
 /*
         L4D2 Random
@@ -1885,9 +1885,22 @@ public Action: Timer_PlayerJoinedSurvivor(Handle:timer, any:pack)
     CheckSurvivorSetup();
 }
 
+public Action: L4D_OnFirstSurvivorLeftSafeArea( client )
+{
+    // the normal event only fires for every actual saferoom exit in versus mode..
+    if ( g_bCampaignMode )
+    {
+        PrintDebug(2, "[rand] Survivors left saferoom [L4DT forward].");
+        SurvivorsReallyLeftSaferoom();
+    }
+}
+
 public Action: Event_PlayerLeftStartArea(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    SurvivorsReallyLeftSaferoom();
+    if ( !g_bCampaignMode )
+    {
+        SurvivorsReallyLeftSaferoom();
+    }
     
     /*
         the following is not really necessary.

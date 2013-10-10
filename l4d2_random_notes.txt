@@ -61,6 +61,8 @@ L4D2_Random
             - Fixed skeet detection (though chipping with non-shotguns still doesn't count); added detection for sniper/magnum headshot skeets.
             - Fixed a bunch of problems in campaign mode. Now makes survivors try 3 times, then rerandomizes the map.
         -----
+            ^ all posted (on SPUF only)
+        -----
             - Added randomcoop config: Random Coop Mutation gameplay! Much fun for campaign mode added plusplus.
             - Coop: After 3 failures, the round will automatically be re-randomized.
             - Coop: Added !rerandom command to force re-randomization of the round if players fail to make it.
@@ -70,6 +72,8 @@ L4D2_Random
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
             - [ added friendly fire stats table printout ]
+            
+        
 
     to-do:
     ------  

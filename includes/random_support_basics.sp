@@ -227,7 +227,6 @@ SetMinimumHealthSurvivors()
     
     for ( new i = 1; i <= GetMaxClients(); i++ )
     {
-        PrintDebug( 3, "%i: client in game: %i, survivor: %i, alive: %i", i, IsClientInGame(i), (IsClientInGame(i)) ? IsSurvivor(i) : false, (IsClientInGame(i)) ? IsPlayerAlive(i) : false );
         if ( IsClientInGame(i) && IsSurvivor(i) && IsPlayerAlive(i) )
         {
             // check health
@@ -235,6 +234,9 @@ SetMinimumHealthSurvivors()
             if ( health < COOP_MIN_STARTHEALTH )
             {
                 SetEntityHealth( i, COOP_MIN_STARTHEALTH );
+                SetEntProp(i, Prop_Send, "m_currentReviveCount", 0);
+                SetEntProp(i, Prop_Send, "m_bIsOnThirdStrike", 0);
+                SetEntProp(i, Prop_Send, "m_isGoingToDie", 0);
                 //SetEntData( i, FindDataMapOffs(i, "m_iHealth"), COOP_MIN_STARTHEALTH, 4, true);
             }
         }

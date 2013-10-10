@@ -403,6 +403,7 @@ public Action: Timer_BoomFlu(Handle:timer)
             EVENT_PickSpecialEventRole(-1);
         }
         
+        PrintDebug( 3, "[rand] BoomFlu attempt: left saferoom: %i - role okay: %i (player: %i)", g_bPlayersLeftStart, EVENT_IsSpecialRoleOkay(true), g_iSpecialEventRole );
         // only boom after we really got going
         if ( g_bPlayersLeftStart && EVENT_IsSpecialRoleOkay(true) )
         {
