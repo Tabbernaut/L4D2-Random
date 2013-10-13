@@ -100,12 +100,12 @@ L4D2_Random
             
             - bugfix:   event vote / teamvoting -> need to take team switch on round half over into account.
             
+            - bugfix:   if you hold nothing, then get picked up, you get to keep the pistol
+            - bugfix:   !drop doesn't work on magnum
+            
             - misc:     add bay RC data to actual KV file setup
             
             - coop:     figure out what server events get fired exactly when changing rounds/maps...
-            - coop:     boomer flu doesn't work -- survivor never booms (special role problem too, with hats)
-            - coop:     bug: medic sometimes doesn't get supplies on failing a round
-            
             
               
     minor cleanup / details

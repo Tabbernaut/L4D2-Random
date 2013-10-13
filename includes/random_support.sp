@@ -179,9 +179,6 @@ SUPPORT_CleanArrays()
         g_bClientHoldingUse[i] = false;
         g_bAlreadyVomitedUpon[i] = false;
         g_bPlayerIsBlinded[i] = false;
-        
-        // skeet tracking
-        ResetHunter(i);
     }
     
     for (new i=ZC_SMOKER; i <= ZC_CHARGER; i++)
@@ -682,7 +679,7 @@ EVENT_HandleSkeet( skeeter=-1, victim=-1, meleeSkeet=false, sniperSkeet=false )
         */
     }
 }
-EVENT_HandleNonSkeet( victim, damage, bOverKill=false )
+EVENT_HandleNonSkeet( victim, damage, bool:bOverKill=false )
 {
     //if (g_iSpecialEvent == EVT_SKEET)
     //{

@@ -147,8 +147,8 @@ public OnPluginStart()
     HookEvent("round_end",                  Event_RoundEnd,                 EventHookMode_PostNoCopy);
     HookEvent("player_team",                Event_PlayerTeam,               EventHookMode_Post);
     HookEvent("player_left_start_area",     Event_PlayerLeftStartArea,      EventHookMode_PostNoCopy);
+    HookEvent("mission_lost",               Event_MissionLostCampaign,      EventHookMode_Post);
     
-    HookEvent("player_hurt",                Event_PlayerHurt,               EventHookMode_Pre);
     HookEvent("player_death",               Event_PlayerDeath,              EventHookMode_Pre);
     HookEvent("player_spawn",               Event_PlayerSpawn,              EventHookMode_Post);
     HookEvent("tank_spawn",                 Event_TankSpawned,              EventHookMode_Post);
@@ -172,14 +172,13 @@ public OnPluginStart()
     HookEvent("adrenaline_used",            Event_PillsUsed,                EventHookMode_Post);
     HookEvent("revive_success",             Event_ReviveSuccess,            EventHookMode_Post);
     
-    HookEvent("ability_use",                Event_AbilityUse,               EventHookMode_Post);
-    HookEvent("lunge_pounce",               Event_LungePounce,              EventHookMode_Post);
+    //HookEvent("player_hurt",                Event_PlayerHurt,               EventHookMode_Pre);
+    //HookEvent("ability_use",                Event_AbilityUse,               EventHookMode_Post);
+    //HookEvent("lunge_pounce",               Event_LungePounce,              EventHookMode_Post);
     
     //HookEvent("witch_spawn",                Event_WitchSpawn,               EventHookMode_Post);  // done through created entity now (since that listens to witches anyway)
     HookEvent("witch_harasser_set",         Event_WitchHarasserSet,         EventHookMode_Post);
     HookEvent("witch_killed",               Event_WitchDeath,               EventHookMode_Post);
-    
-    HookEvent("mission_lost",               Event_MissionLostCampaign,      EventHookMode_Post);
     
     
     // version convar
@@ -242,7 +241,7 @@ public OnPluginStart()
     RegAdminCmd("forceevent",        RandomForcePickEvent_Cmd,      ADMFLAG_CHEATS, "Force a special event for next round (use number in list on website).");
     RegAdminCmd("forcegameevent",    RandomForcePickGameEvent_Cmd,  ADMFLAG_CHEATS, "Force a special event for all rounds (use number in list on website).");
     
-    //  disable when debugging is done
+    // disable when debugging is done
     #if DEBUG_MODE
         RegAdminCmd("rand_test_gnomes", TestGnomes_Cmd, ADMFLAG_CHEATS, "...");
         RegAdminCmd("rand_test_swap",   TestSwap_Cmd,   ADMFLAG_CHEATS, "...");
@@ -253,16 +252,15 @@ public OnPluginStart()
         RegAdminCmd("sm_voc_this", Cmd_Vocalize_Specified, ADMFLAG_CHEATS, "...");
     #endif
     
-    /*  Listen for specating */
+    // Listen for specating
     RegConsoleCmd("spectate",   Spectate_Cmd,   "...");
     RegConsoleCmd("say",        Say_Cmd,        "...");
     RegConsoleCmd("say_team",   Say_Cmd,        "...");
     
-    /*  Listen for pausing & unpausing */
+    // Listen for pausing & unpausing
     RegConsoleCmd("unpause",    Unpause_Cmd,    "...");
     AddCommandListener(Listener_Pause, "pause");
     AddCommandListener(Listener_Pause, "set_pause");
-    
     
     // Blind infected
     g_hBlockedEntities = CreateArray(_:EntInfo);
@@ -1414,44 +1412,6 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
         }
     }
     
-    // skeets, where skeeted hunters should give points
-    // always 'handle' skeets, but only give points on event!
-    /*
-        done in player hurt now
-    
-    if (    IsClientAndInGame(victim) && IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_SURVIVOR
-        &&  GetClientTeam(victim) == TEAM_INFECTED && GetEntProp(victim, Prop_Send, "m_zombieClass") == ZC_HUNTER
-    ) {
-        
-        // handle old shotgun blast, if there was one
-        if (iHunterShotDmg[victim][attacker] > 0 && FloatSub(GetGameTime(), fHunterShotStart[victim][attacker]) > SHOTGUN_BLAST_TIME) {
-            fHunterShotStart[victim][attacker] = 0.0;
-        }
-            
-        // handle new hit (only shotgun), and only on pouncing hunters
-        if (GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce"))
-        {
-            if (damagetype & DMG_BUCKSHOT) {
-                // first pellet hit?
-                if (fHunterShotStart[victim][attacker] == 0.0)
-                {
-                    // new shotgun blast
-                    fHunterShotStart[victim][attacker] = GetGameTime();
-                    iHunterShotDmg[victim][attacker] = 0;
-                }
-                iHunterShotDmg[victim][attacker] += RoundToFloor(damage);
-                iHunterShotDmgTeam[victim] += RoundToFloor(damage);
-            }
-            else if (damagetype & DMG_SLASH || damagetype & DMG_CLUB)
-            {
-                if (damage >= 190.0) {
-                    // melee skeet
-                    EVENT_HandleSkeet(attacker, victim, true);
-                }
-            }
-        }
-    }
-    */
     // bay event: propane tanks should do less damage to survivors
     if ( g_iSpecialEvent == EVT_BAY )
     {
@@ -1543,125 +1503,6 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
     }
     
     return Plugin_Continue;
-}
-
-public Event_PlayerHurt (Handle:event, const String:name[], bool:dontBroadcast)
-{
-    new victim = GetClientOfUserId(GetEventInt(event, "userid"));
-    new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
-    
-    if ( !IsClientAndInGame(victim) ||GetClientTeam(victim) != TEAM_INFECTED ) { return; }
-    
-    new zombieClass =   GetEntProp(victim, Prop_Send, "m_zombieClass");
-    
-    if ( zombieClass == ZC_HUNTER )
-    {
-        
-        new health =        GetEventInt(event, "health");
-        
-        // if it's not a survivor doing the work, only get the remaining health
-        if ( !IsClientAndInGame(attacker) || GetClientTeam(attacker) != TEAM_SURVIVOR )
-        {
-            iHunterLastHealth[victim] = health;
-            return;
-        }
-    
-        new damage =        GetEventInt(event, "dmg_health");
-        new damagetype =    GetEventInt(event, "type");
-        new hitgroup =      GetEventInt(event, "hitgroup");
-        
-        
-        // if the damage done is greater than the health we know the hunter to have remaining, reduce the damage done
-        if ( iHunterLastHealth[victim] > 0 && damage > iHunterLastHealth[victim] ) {
-            damage = iHunterLastHealth[victim];
-            iHunterOverkill[victim] = iHunterLastHealth[victim] - damage;
-            iHunterLastHealth[victim] = 0;
-        }
-        
-        // handle old shotgun blast: previous shotgun damage done by a player that was too long ago to be still this (new) blast
-        // bHunterPouncingShot[] is used to remember whether the first pellet of a blast did damage while the hunter was
-        //  still pouncing: if the last pellet (killing the hunter) reports as not pouncing, it's NOT TRUE. LIES.
-        //  this must be reset whenever a new shotgun blast takes place (no matter who shoots this)
-        if ( iHunterShotDmg[victim][attacker] > 0 && FloatSub(GetGameTime(), fHunterShotStart[victim][attacker]) > SHOTGUN_BLAST_TIME )
-        {
-            bHunterPouncingShot[victim] = false;
-            fHunterShotStart[victim][attacker] = 0.0;
-        }
-        else if ( FloatSub(GetGameTime(), fHunterLastShot[victim]) > SHOTGUN_BLAST_TIME )
-        {
-            // make sure any shotgun damage from other attackers will also reset
-            bHunterPouncingShot[victim] = false;
-        }
-        
-        new isPouncingShotgun = ( bHunterPouncingShot[victim] || GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce") );
-        new iPounceInterrupt = GetConVarInt( g_hCvarPounceInterrupt );
-        
-        // handle new hit (only shotgun), and only on pouncing hunters
-        //  flag is reset before killing damage is actually recorded, so count the remaining shotgun blast
-        if ( bHunterPouncing[victim] || isPouncingShotgun )
-        {
-            if ( damagetype & DMG_BUCKSHOT && isPouncingShotgun )
-            {
-                // first pellet hit?
-                if ( fHunterShotStart[victim][attacker] == 0.0 )
-                {
-                    // new shotgun blast
-                    fHunterShotStart[victim][attacker] = GetGameTime();
-                    fHunterLastShot[victim] = fHunterShotStart[victim][attacker];
-                    bHunterPouncingShot[victim] = ( GetEntProp(victim, Prop_Send, "m_isAttemptingToPounce") > 0);
-                    //iHunterShotDmg[victim][attacker] = 0;
-                }
-                iHunterShotDmg[victim][attacker] += damage;
-                iHunterShotDmgTeam[victim] += damage;
-                
-                if ( health == 0 ) {
-                    bHunterKilledPouncing[victim] = true;
-                }
-            }
-            else if (   damagetype & DMG_BULLET &&
-                        damage >= iPounceInterrupt &&
-                        health == 0 &&
-                        hitgroup == HITGROUP_HEAD
-            ) {
-                // headshot with bullet based weapon (only single shots)
-                
-                // only allow snipers
-                new String: weapon[64];
-                GetEventString(event, "weapon", weapon, sizeof(weapon));
-                
-                new itemPickupPenalty: weaponCheck;
-                if ( GetTrieValue(g_hTrieEventWeapons, weapon, weaponCheck) )
-                {
-                    // no need to check further, only magnum & snipers are in the trie
-                    iHunterShotDmgTeam[victim] = 0;
-                    EVENT_HandleSkeet( attacker, victim, false, true );
-                    ResetHunter(victim);
-                }
-                
-                bHunterKilledPouncing[victim] = true;
-            }
-            else if ( damagetype & DMG_SLASH || damagetype & DMG_CLUB )
-            {
-                // melee skeet
-                if ( damage >= iPounceInterrupt )
-                {
-                    iHunterShotDmgTeam[victim] = 0;
-                    EVENT_HandleSkeet( attacker, victim, true );
-                    ResetHunter(victim);
-                    
-                    bHunterKilledPouncing[victim] = true;
-                }
-            }
-        }
-        else if ( health == 0 )
-        {
-            // make sure we don't mistake non-pouncing hunters as 'not skeeted'-warnable
-            bHunterKilledPouncing[victim] = false;
-        }
-        
-        // store last health seen for next damage event
-        iHunterLastHealth[victim] = health;
-    }
 }
 
 public Action: OnTakeDamage_Witch(victim, &attacker, &inflictor, &Float:damage, &damagetype)
@@ -1951,11 +1792,6 @@ SurvivorsReallyLeftSaferoom()
     }
 }
 
-
-
-
-
-
 public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroadcast)
 {
     new client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
@@ -2236,7 +2072,7 @@ public Action: Timer_CheckEndBoomComboReward(Handle:timer)
 {
     if (GetGameTime() - g_fRewardTime > EVENT_WOMEN_LIMITTIME || !g_bInRound)
     {
-        SetConVarInt(FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * g_RC_fEventCILimVeryHard) );
+        SetConVarInt( FindConVar("z_common_limit"), RoundFloat(float(g_iDefCommonLimit) * g_RC_fEventCILimVeryHard) );
         return Plugin_Stop;
     }
     return Plugin_Continue;
@@ -2254,80 +2090,6 @@ stock ClearBoomerTracking()
         g_fBoomTime[i] = 0.0;
     }
 }
-
-public Event_LungePounce(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    //if (g_iSpecialEvent != EVT_SKEET) { return; }
-    new attacker = GetClientOfUserId(GetEventInt(event, "userid"));
-
-    // clear hunter-hit stats (not skeeted)
-    ResetHunter(attacker);
-}
-
-// hunters pouncing / tracking
-public Event_AbilityUse(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    //if (g_iSpecialEvent != EVT_SKEET) { return; }
-    
-    // track hunters pouncing
-    new client = GetClientOfUserId(GetEventInt(event, "userid"));
-    
-    new String:abilityName[64];
-    GetEventString(event, "ability", abilityName, sizeof(abilityName));
-    
-    if (IsClientAndInGame(client) && strcmp(abilityName, "ability_lunge", false) == 0)
-    {
-        // hunter started a pounce
-        ResetHunter(client);
-        // hunter started a pounce
-        bHunterPouncing[client] = true;
-        CreateTimer(TIMER_POUNCECHECK, groundTouchTimer, client, TIMER_REPEAT);
-        // check every TIMER whether the pounce has ended
-        // if the hunter lands on another player's head, they're technically grounded.
-    }
-}
-public Action:groundTouchTimer(Handle:timer, any:client)
-{
-    // note: a new timer gets started every time a hunter pounces
-    // but it is only killed once it actually hits the ground again!
-    // this might create too many timers when a hunter actually pounces
-    // around on walls.. build a safeguard to prevent this?
-    /*
-    static countTimes = 0;
-    
-    countTimes++;
-    
-    if ( countTimes > 150 ) {
-        // reached the ground or died in mid-air
-        countTimes = 0;
-        KillTimer( timer );
-    }
-    else
-    */
-    if (    IsClientAndInGame(client) &&
-            (GetEntProp(client, Prop_Data, "m_fFlags") & FL_ONGROUND > 0 ||
-            !IsPlayerAlive(client))
-    ) {
-        // reached the ground or died in mid-air
-        //countTimes = 0;
-        ResetHunter( client );
-        KillTimer( timer );
-    }
-}
-
-public ResetHunter(client)
-{
-    iHunterShotDmgTeam[client] = 0;
-    for (new i=1; i <= MaxClients; i++)
-    {
-        iHunterShotDmg[client][i] = 0;
-        fHunterShotStart[client][i] = 0.0;
-    }
-    bHunterPouncingShot[client] = false;
-    bHunterPouncing[client] = false;
-    iHunterOverkill[client] = 0;
-}
-
 
 /*  Player use & item pickup
     ------------------------ */
@@ -2808,8 +2570,8 @@ public Action:Event_ShovedPlayer(Handle:event, const String:name[], bool:dontBro
 {
     new client = GetClientOfUserId(GetEventInt(event, "attacker"));
     new victim = GetClientOfUserId(GetEventInt(event, "userid"));
-    if (!IsClientAndInGame(client) || GetClientTeam(client) != TEAM_SURVIVOR) { return; }
-    if (!IsClientAndInGame(victim) || GetClientTeam(victim) != TEAM_INFECTED) { return; }
+    
+    if ( !IsClientAndInGame(client) || GetClientTeam(client) != TEAM_SURVIVOR || !IsClientAndInGame(victim) || GetClientTeam(victim) != TEAM_INFECTED) { return; }
     
     //PrintToChatAll("%N shoved player %N.", client, victim);
     
@@ -2944,6 +2706,8 @@ public Action:Timer_GhostStateCheck(Handle:timer, any:client)
 // l4downtown forward - tank selection
 public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
 {
+    if ( g_bCampaignMode ) { return Plugin_Continue; }
+    
     // debug output
     new String: tmpPass[32];
     if (g_fTankPreviousPass != 0.0) {
@@ -3048,7 +2812,7 @@ public Action:Event_PlayerSpawn(Handle:hEvent, const String:name[], bool:dontBro
     new iClass = GetEntProp(client, Prop_Send, "m_zombieClass");
     
     // for special women event, replace male with female boomer
-    if (g_iSpecialEvent == EVT_WOMEN && iClass == ZC_BOOMER )
+    if ( g_iSpecialEvent == EVT_WOMEN && iClass == ZC_BOOMER )
     {
         new String:model[64];
         GetEntPropString(client, Prop_Data, "m_ModelName", model, sizeof(model));
@@ -3068,12 +2832,14 @@ public Action:Event_PlayerSpawn(Handle:hEvent, const String:name[], bool:dontBro
 
     return Plugin_Continue;
 }
+
 public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBroadcast)
 {
     new victim = GetClientOfUserId(GetEventInt(hEvent, "userid"));
     new attacker = GetClientOfUserId(GetEventInt(hEvent, "attacker")); 
     
-    if (!victim) {
+    if ( !victim )
+    {
         // common infected died
         new common = GetEventInt(hEvent, "entityid");
         
@@ -3112,12 +2878,10 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
             }
         }
         
-        
         return Plugin_Continue;
     }
     
-    if (!IsClientAndInGame(victim)) { return Plugin_Continue; }
-
+    if ( !IsClientAndInGame(victim) ) { return Plugin_Continue; }
     
     // survivor dies
     // -------------------
@@ -3168,42 +2932,9 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
     }
     // -------------------
     
-    if (!IsClientAndInGame(attacker) || GetClientTeam(victim) != TEAM_INFECTED) { return Plugin_Continue; }
+    if ( !IsClientAndInGame(attacker) || GetClientTeam(victim) != TEAM_INFECTED ) { return Plugin_Continue; }
     
     new zClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
-    
-    // track hunter skeets?
-    if ( zClass == ZC_HUNTER )
-    {
-        //PrintToChatAll("hunter died: %i dmg / %i team dmg", iHunterShotDmg[victim][attacker], iHunterShotDmgTeam[victim]);             
-        new iPounceInterrupt = GetConVarInt( g_hCvarPounceInterrupt );
-        
-        if ( iHunterShotDmgTeam[victim] > 0 && bHunterKilledPouncing[victim] )
-        {
-            // skeet?
-            if (    iHunterShotDmgTeam[victim] > iHunterShotDmg[victim][attacker] &&
-                    iHunterShotDmgTeam[victim] >= iPounceInterrupt
-            ) {
-                // team skeet
-                EVENT_HandleSkeet(-2, victim);
-            }
-            else if ( iHunterShotDmg[victim][attacker] >= iPounceInterrupt ) {
-                // single player skeet
-                EVENT_HandleSkeet(attacker, victim);
-            }
-            else if ( iHunterOverkill[victim] > 0 ) {
-                // overkill? might've been a skeet
-                EVENT_HandleNonSkeet( victim, iHunterShotDmgTeam[victim], ( iHunterOverkill[victim] + iHunterShotDmgTeam[victim] > iPounceInterrupt ) );
-            }
-            else {
-                // not a skeet at all
-                EVENT_HandleNonSkeet(victim, iHunterShotDmg[victim][attacker]);
-            }
-        }
-        
-        ResetHunter(victim);
-    }
-    
     
     if (!IsFakeClient(victim))
     {
@@ -3383,7 +3114,7 @@ public Action:Timer_CheckTankDeath(Handle:hTimer, any:client_oldTank)
     // explode?
     if ( g_iSpecialEvent == EVT_BAY ) {
         
-        if (GetRandomFloat(0.001,1.0) <= g_RC_fEventBaySIChance)
+        if ( GetRandomFloat(0.001,1.0) <= g_RC_fEventBaySIChance )
         {
             new Handle:pack = CreateDataPack();
             WritePackFloat(pack, g_RC_fExplosionPowerHigh);
@@ -3698,6 +3429,32 @@ public OnTankRockTouchesSomething(entity)
 }
 */
 
+// from skill_detect
+public OnSkeet ( attacker, victim )
+{
+    EVENT_HandleSkeet( attacker, victim );
+}
+public OnSkeetHurt ( attacker, victim, damage, bool:overkill )
+{
+    EVENT_HandleNonSkeet( victim, damage, overkill );
+}
+public OnSkeetMelee ( attacker, victim )
+{
+    EVENT_HandleSkeet( attacker, victim, true );
+}
+/* public OnSkeetMeleeHurt ( attacker, victim, damage )
+{
+    EVENT_HandleNonSkeet( victim, damage, overkill );
+}
+*/
+public OnSkeetSniper ( attacker, victim )
+{
+    EVENT_HandleSkeet( attacker, victim, false, true );
+}
+public OnSkeetSniperHurt ( attacker, victim, damage, bool:overkill )
+{
+    EVENT_HandleNonSkeet( victim, damage, overkill );
+}
 
 // hooked on EVT_WOMEN
 public OnCommonInfectedSpawned(entity)

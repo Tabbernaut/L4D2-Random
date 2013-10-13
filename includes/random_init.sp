@@ -202,7 +202,7 @@ INIT_DefineCVars()
     g_hCvarBotStop = FindConVar("sb_stop");
     
     // pounce uncap
-    g_hCvarPounceInterrupt = FindConVar("z_pounce_damage_interrupt");
+    //g_hCvarPounceInterrupt = FindConVar("z_pounce_damage_interrupt");
     g_hCvarPounceUncapDamage = FindConVar("z_hunter_max_pounce_bonus_damage");
     g_hCvarPounceUncapRange = FindConVar("z_pounce_damage_range_max");
     

@@ -2,7 +2,6 @@
 
 #include <sourcemod>
 #include <sdktools>
-//#include <sdkhooks>
 
 #define USE_OLD_SPAWN       true            // use z_spawn_old ?
 
@@ -17,7 +16,6 @@
     - spawn witches
     - force spawns when the director has fallen asleep?
     - spawn special hordes, such as fallen survivors (or other?)
-    
  */
 
 const           TEAM_SPECTATOR          = 1;
@@ -48,29 +46,6 @@ const           ENC_WITCHES             = 7;
 
 const Float:    SPAWN_VARY_MAX          = 0.5;      // how much variation between SI/witches spawns, maximum (min = 0.0)
 
-/*
-const           STORED_MAX_COUNT        = 1024;
-
-const           ENC_HUNTERS             = 0;
-const           ENC_CHARGESPIT          = 1;
-const           ENC_WITCHES             = 2;
-const           ENC_UNCOMMON_HORDE      = 3;
-const           ENC_FALLEN_SURV         = 4;
-const           ENC_JOCKEYS             = 5;
-const           ENC_HARDEIGHT           = 6;
-const           ENC_DOUBLEALL           = 7;
-const           ENC_TOTAL               = 8;
-
-const           HUNTERS_MIN             = 4;
-const           HUNTERS_MAX             = 8;
-const           WITCHES_MIN             = 2;
-const           WITCHES_MAX             = 5;
-const           FALLEN_MIN              = 3;
-const           FALLEN_MAX              = 6;
-const           JOCKEYS_MIN             = 4;
-const           JOCKEYS_MAX             = 6;
-*/
-
 
 new     bool:           g_bLogicTimerEntSet                                 = false;                // whether we can trust the logic timers
 new                     g_iLogicTimerEntEncounter[3];
@@ -80,20 +55,6 @@ new                     g_iRemainingFallen                                  = 0;
 
 new     Handle:         g_hCvarDebug                                        = INVALID_HANDLE;
 
-/*
-new     bool:           g_bLateLoad                                         = false;
-new     bool:           g_bPlayersLeftStart                                 = false;                // true once the first survivor has left the start saferoom
-
-new     Handle:         g_hCvarTimeIntervalMin                              = INVALID_HANDLE;
-new     Handle:         g_hCvarTimeIntervalMax                              = INVALID_HANDLE;
-new     Handle:         g_hArCvarWeight             [ENC_TOTAL];                                    // cvar, per randomize-type, that sets an integer weight 
-
-new                     g_iArWeightedChoices        [STORED_MAX_COUNT];                             // all the choices (every category * its weight)
-new                     g_iWeightedChoicesTotal;                                                    // total of WeightedChoices 'hat' filled
-
-new                     g_iEncounterCounter                                 = 0;                    // seconds since last enounter
-new                     g_iNextEncounterCount                               = 0;                    // seconds since last enounter
-*/
 
 
 public Plugin:myinfo = 
@@ -105,61 +66,10 @@ public Plugin:myinfo =
     url = "https://github.com/Tabbernaut/L4D2-Random"
 }
 
-/*
-public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
-{
-    g_bLateLoad = late;
-    return APLRes_Success;
-}
-*/
-
 public OnPluginStart()
 {
-    /*
-    // hooks
-    HookEvent("round_start",                Event_RoundStart,               EventHookMode_PostNoCopy);
-    HookEvent("round_end",                  Event_RoundEnd,                 EventHookMode_PostNoCopy);
-    HookEvent("player_left_start_area",     Event_PlayerLeftStartArea,      EventHookMode_PostNoCopy);
-    HookEvent("door_close",                 Event_DoorClose,                EventHookMode_PostNoCopy );
-    HookEvent("finale_vehicle_leaving",     Event_FinaleVehicleLeaving,     EventHookMode_PostNoCopy );
-    HookEvent("mission_lost",               Event_MissionLostCampaign,      EventHookMode_Post);
-    */
-    
-    /*
-    new Handle:tmpHandle = INVALID_HANDLE;
-    tmpHandle = FindConVar("z_max_player_zombies");
-    if ( tmpHandle != INVALID_HANDLE ) {
-        SetConVarBounds( tmpHandle, ConVarBound_Upper, true, 12.0);
-        SetConVarInt( tmpHandle, 12 );
-    } else { PrintDebug(0, "Not found: max player zombies"); }
-    tmpHandle = FindConVar("z_minion_limit");
-    if ( tmpHandle != INVALID_HANDLE ) {
-        SetConVarBounds( tmpHandle, ConVarBound_Upper, true, 12.0);
-        SetConVarInt( tmpHandle, 12 );
-    } else { PrintDebug(0, "Not found: minion limit"); }
-    tmpHandle = FindConVar("survival_max_specials");
-    if ( tmpHandle != INVALID_HANDLE ) {
-        SetConVarBounds( tmpHandle, ConVarBound_Upper, true, 12.0);
-        SetConVarInt( tmpHandle, 12 );
-    } else { PrintDebug(0, "Not found: survival max"); }
-    */
-    
     // cvars
     g_hCvarDebug = CreateConVar(                "rand_debug_coop",               "2",           "Random debug mode (coop plugin). (0: only error reporting, -1: disable all reports, 1+: set debug report level)", FCVAR_PLUGIN, true, -1.0, true, 5.0);
-    //g_hCvarTimeIntervalMin = CreateConVar(      "rand_enc_interval_min",        "15",           "Min interval between encounters.",                 FCVAR_PLUGIN, true, 0.0, false );
-    //g_hCvarTimeIntervalMax = CreateConVar(      "rand_enc_interval_max",        "30",           "Max interval between encounters.",                 FCVAR_PLUGIN, true, 0.0, false );
-    
-    /*
-    // encounter weights
-    g_hArCvarWeight[ENC_HUNTERS] = CreateConVar(            "rand_enc_wgt_hunters",      "9",       "Weight for picking encounters.",           FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarWeight[ENC_CHARGESPIT] = CreateConVar(         "rand_enc_wgt_chargespit",   "6",       "Weight for picking encounters.",           FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarWeight[ENC_WITCHES] = CreateConVar(            "rand_enc_wgt_witches",      "6",       "Weight for picking encounters.",           FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarWeight[ENC_UNCOMMON_HORDE] = CreateConVar(     "rand_enc_wgt_uncommon",     "0",       "Weight for picking encounters.",           FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarWeight[ENC_FALLEN_SURV] = CreateConVar(        "rand_enc_wgt_fallen",       "0",       "Weight for picking encounters.",           FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarWeight[ENC_JOCKEYS] = CreateConVar(            "rand_enc_wgt_jockeys",      "6",       "Weight for picking encounters.",           FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarWeight[ENC_HARDEIGHT] = CreateConVar(          "rand_enc_wgt_hardeight",    "5",       "Weight for picking encounters.",           FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarWeight[ENC_DOUBLEALL] = CreateConVar(          "rand_enc_wgt_doubleall",    "4",       "Weight for picking encounters.",           FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    */
 
     // prepare weights
     //PrepareChoicesEncounters();
@@ -169,25 +79,8 @@ public OnPluginStart()
 
     // start timer
     CreateTimer( 1.0, Timer_CheckLogicTimer, _, TIMER_REPEAT);
-    
-    /*
-    if ( g_bLateLoad )
-    {
-        // assume survivors left start
-        g_bPlayersLeftStart = true;
-    }
-    */
 }
 
-/*
-public OnEntityCreated ( entity, const String:classname[] )
-{
-    // if it's the logic entity we're looking for, make hook its think
-    if ( classname == "logic_script" )
-    {
-    }
-}
-*/
 
 
 public Action: Timer_CheckLogicTimer (Handle:timer)
@@ -328,63 +221,6 @@ public Action: Timer_CheckLogicTimer (Handle:timer)
     return Plugin_Continue;
 }
 
-/*
-public Event_RoundStart (Handle:event, const String:name[], bool:dontBroadcast)
-{
-    g_bPlayersLeftStart = false;
-}
-
-public Event_RoundEnd (Handle:event, const String:name[], bool:dontBroadcast)
-{
-    g_bPlayersLeftStart = false;
-}
-
-public Action: Event_PlayerLeftStartArea (Handle:event, const String:name[], bool:dontBroadcast)
-{
-    g_bPlayersLeftStart = true;
-    
-    // force random coop nut (if we can)
-    
-}
-
-public Event_MissionLostCampaign (Handle:hEvent, const String:name[], bool:dontBroadcast)
-{
-    g_bPlayersLeftStart = false;
-}
-
-public Event_FinaleVehicleLeaving (Handle:event, const String:name[], bool:dontBroadcast)
-{
-    g_bPlayersLeftStart = false;
-}
-
-public Event_DoorClose (Handle:event, const String:name[], bool:dontBroadcast)
-{
-    g_bPlayersLeftStart = false;
-}
-*/
-
-//  Timer
-//  ------------------------------
-/*
-public Action: Timer_Encounter (Handle:timer)
-{
-    // only work in live round: do nothing until survivors have started
-    if ( !g_bPlayersLeftStart ) { return Plugin_Continue; }
-    
-    g_iEncounterCounter++;
-    
-    if ( g_iEncounterCounter >= g_iNextEncounterCount )
-    {
-        g_iEncounterCounter = 0;
-        g_iNextEncounterCount = GetRandomInt( GetConVarInt(g_hCvarTimeIntervalMin), GetConVarInt(g_hCvarTimeIntervalMax) );
-        
-        DoEncounter();
-    }
-    
-    return Plugin_Continue;
-}
-*/
-
 public Action: Timer_SpawnSomething (Handle:timer, any:what)
 {
     // relay to spawn function
@@ -424,144 +260,6 @@ public OnEntityCreated(entity, const String:classname[])
 	}
 }
 
-//  Encounter
-//  ------------------------------
-/*
-stock DoEncounter()
-{
-    // pick a random one from the hat
-    new randomIndex = GetRandomInt( 0, (g_iWeightedChoicesTotal - 1) );
-    new randomPick = g_iArWeightedChoices[ randomIndex ];
-    new amount = 1;
-    
-    PrintDebug(1, "[rand-coop] Encounter! Index: %i.", randomPick);
-    
-    // execute it
-    switch ( randomPick )
-    {
-        case ENC_HUNTERS:
-        {
-            amount = GetRandomInt( HUNTERS_MIN, HUNTERS_MAX );
-            
-            for ( new i = 0; i < amount; i++ )
-            {
-                CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_HUNTER, TIMER_FLAG_NO_MAPCHANGE );
-            }
-        }
-        
-        case ENC_CHARGESPIT:
-        {
-            if ( GetRandomInt( 0, 1 ) )
-            {
-                CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_CHARGER, TIMER_FLAG_NO_MAPCHANGE );
-                CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_CHARGER, TIMER_FLAG_NO_MAPCHANGE );
-                CreateTimer( GetRandomFloat( 1.0, SPAWN_VARY_MAX + 1.0 ), Timer_SpawnSomething, ZC_SPITTER, TIMER_FLAG_NO_MAPCHANGE );
-                CreateTimer( GetRandomFloat( 1.0, SPAWN_VARY_MAX + 1.0 ), Timer_SpawnSomething, ZC_SPITTER, TIMER_FLAG_NO_MAPCHANGE );
-            }
-            else
-            {
-                CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_CHARGER, TIMER_FLAG_NO_MAPCHANGE );
-                CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_CHARGER, TIMER_FLAG_NO_MAPCHANGE );
-                CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_CHARGER, TIMER_FLAG_NO_MAPCHANGE );
-                CreateTimer( GetRandomFloat( 1.0, SPAWN_VARY_MAX + 1.0 ), Timer_SpawnSomething, ZC_SPITTER, TIMER_FLAG_NO_MAPCHANGE );
-            }
-        }
-        
-        case ENC_WITCHES:
-        {
-            amount = GetRandomInt( WITCHES_MIN, WITCHES_MAX );
-            
-            for ( new i = 0; i < amount; i++ )
-            {
-                CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_WITCH, TIMER_FLAG_NO_MAPCHANGE );
-            }
-        }
-        
-        case ENC_UNCOMMON_HORDE:
-        {
-            // TO DO
-        }
-        
-        case ENC_FALLEN_SURV:
-        {
-            amount = GetRandomInt( FALLEN_MIN, FALLEN_MAX );
-            
-            for ( new i = 0; i < amount; i++ )
-            {
-                // TO DO
-            }
-        }
-        
-        case ENC_JOCKEYS:
-        {
-            amount = GetRandomInt( JOCKEYS_MIN, JOCKEYS_MAX );
-            
-            for ( new i = 0; i < amount; i++ )
-            {
-                CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_JOCKEY, TIMER_FLAG_NO_MAPCHANGE );
-            }
-        }
-        
-        case ENC_HARDEIGHT:
-        {
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_HUNTER, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_CHARGER, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_JOCKEY, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_SMOKER, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_BOOMER, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_SPITTER, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, GetRandomInt(0,1) ? ZC_CHARGER : ZC_HUNTER, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, GetRandomInt(0,1) ? ZC_JOCKEY : ZC_SMOKER, TIMER_FLAG_NO_MAPCHANGE );
-        }
-        
-        case ENC_DOUBLEALL:
-        {
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_HUNTER, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_CHARGER, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_BOOMER, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_JOCKEY, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_SMOKER, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_SPITTER, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_HUNTER, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_SPITTER, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_JOCKEY, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_BOOMER, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_CHARGER, TIMER_FLAG_NO_MAPCHANGE );
-            CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_SMOKER, TIMER_FLAG_NO_MAPCHANGE );
-        }
-    }
-}
-*/
-
-//  Randomization preparation
-//  ------------------------------
-// preparation of choice-hat (encounters)
-/*
-stock PrepareChoicesEncounters()
-{
-    new total = 0;
-    new count = 0;
-    
-    // encounter choices
-    // ---------------------
-    
-    for ( new i=0; i < ENC_TOTAL; i++ )
-    {
-        count = GetConVarInt( g_hArCvarWeight[i] );
-        
-        for ( new j=0; j < count; j++ )
-        {
-            g_iArWeightedChoices[total+j] = i;
-        }
-        total += count;
-    }
-    g_iWeightedChoicesTotal = total;
-    
-    PrintDebug(0, "[rand-coop] Prepared encounters weight array: %i total weight over %i encounters.", total, ENC_TOTAL);
-}
-*/
-
-
 //  General functions
 //  ------------------------------
 
@@ -584,11 +282,6 @@ bool: IsInfected(client) {
     if (IsClientAndInGame(client)) { return GetClientTeam(client) == TEAM_INFECTED; }
     return false;
 }
-//bool: IsTank(any:client) { new iClass = GetEntProp(client, Prop_Send, "m_zombieClass"); if (IsPlayerAlive(client) && iClass == ZC_TANK) { return true; } return false; }
-//bool:IsHangingFromLedge(client) { return bool:(GetEntProp(client, Prop_Send, "m_isHangingFromLedge") || GetEntProp(client, Prop_Send, "m_isFallingFromLedge")); }
-//bool:IsIncapacitated(client) { return bool:GetEntProp(client, Prop_Send, "m_isIncapacitated"); }
-//bool: IsPlayerGhost(any:client) { if (GetEntProp(client, Prop_Send, "m_isGhost")) { return true; } return false; }
-
 
 // get just any survivor client (param = false = switch to infected too)
 GetSpawningClient ( bool:onlySurvivors=false )
@@ -690,30 +383,6 @@ SpawnWitch(client)
     }
 }
 
-// spawning a horde (cheap way.. damnit)
-/*
-SpawnPanicHorde(client, mobs = 1)
-{
-    if ( USE_OLD_SPAWN )
-    {
-        new flags = GetCommandFlags("z_spawn_old");
-        SetCommandFlags("z_spawn_old", flags & ~FCVAR_CHEAT);
-        for(new i=0; i < mobs; i++) {
-            FakeClientCommand(client, "z_spawn_old mob auto");
-        }
-        SetCommandFlags("z_spawn_old", flags);
-    }
-    else
-    {
-        new flags = GetCommandFlags("z_spawn");
-        SetCommandFlags("z_spawn", flags & ~FCVAR_CHEAT);
-        for(new i=0; i < mobs; i++) {
-            FakeClientCommand(client, "z_spawn mob auto");
-        }
-        SetCommandFlags("z_spawn", flags);
-    }
-}
-*/
 public Action: SpawnFallen( number, Float:location[3] )
 {
 	new zombie = CreateEntityByName("infected");

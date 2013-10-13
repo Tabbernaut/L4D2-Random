@@ -225,6 +225,9 @@ SetMinimumHealthSurvivors()
     
     PrintDebug(3, "SetMinimumHealthSurvivors()");
     
+    // exceptions?
+    if ( g_iSpecialEvent == EVT_DEFIB ) { return; }
+    
     for ( new i = 1; i <= GetMaxClients(); i++ )
     {
         if ( IsClientInGame(i) && IsSurvivor(i) && IsPlayerAlive(i) )

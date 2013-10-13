@@ -149,17 +149,6 @@ new     Float:          g_fBoomTime             [TEAM_SIZE]                 = {0
 new     Float:          g_fDudTimeExpire                                    = 0.0;                  // time when pipeboms will work again after a 2+ boom combo
 new     Float:          g_fRewardTime                                       = 0.0;                  // for how long the reward should work (common limit change for women event)
 
-// Hunter and skeet tracking
-new                     iHunterShotDmgTeam      [MAXPLAYERS + 1];                                   // counting shotgun blast damage for hunter, counting entire survivor team's damage
-new                     iHunterShotDmg          [MAXPLAYERS + 1][MAXPLAYERS + 1];                   // counting shotgun blast damage for hunter / skeeter combo
-new     Float:          fHunterShotStart        [MAXPLAYERS + 1][MAXPLAYERS + 1];                   // when the last shotgun blast on hunter started (if at any time) by an attacker
-new     Float:          fHunterLastShot         [MAXPLAYERS + 1];                                   // when the last shotgun damage was done (by anyone) on a hunter
-new     bool:           bHunterPouncing         [MAXPLAYERS + 1];                                   // whether the hunter should be considered pouncing with lame onground check (only for snipers)
-new     bool:           bHunterPouncingShot     [MAXPLAYERS + 1];                                   // whether the shotgun should be considered to be pouncing when damage-checking
-new                     iHunterLastHealth       [MAXPLAYERS + 1];                                   // last time hunter took any damage, how much health did it have left?
-new                     iHunterOverkill         [MAXPLAYERS + 1];                                   // how much more damage a hunter would've taken if it wasn't already dead
-new     bool:           bHunterKilledPouncing   [MAXPLAYERS + 1];                                   // whether the hunter was killed when actually pouncing
-
 // Blind infected
 new                     g_iArCreatedEntities    [ENTITY_COUNT];                                     // Stored entity ids for this roundhalf
 new                     g_iCreatedEntities                                  = 0;                    // size of CreatedEntities list
@@ -426,7 +415,7 @@ new     Handle:         g_hCvarReadyUp                                      = IN
 new     Handle:         g_hCvarPausable                                     = INVALID_HANDLE;       // cvar handle for pausable/pausing checking
 new     Handle:         g_hCvarBotStop                                      = INVALID_HANDLE;       // cvar handle for sb_stop
 
-new     Handle:         g_hCvarPounceInterrupt                              = INVALID_HANDLE;       // pounce interrupt (150)
+//new     Handle:         g_hCvarPounceInterrupt                              = INVALID_HANDLE;       // pounce interrupt (150)
 new     Handle:         g_hCvarPounceUncapDamage                            = INVALID_HANDLE;       // z_pounce_max_bonus_damage
 new     Handle:         g_hCvarPounceUncapRange                             = INVALID_HANDLE;       // z_pounce_damage_range_max
 
