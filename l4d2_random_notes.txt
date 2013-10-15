@@ -103,6 +103,8 @@ L4D2_Random
             - bugfix:   if you hold nothing, then get picked up, you get to keep the pistol
             - bugfix:   !drop doesn't work on magnum
             
+            - bugfix:   solve problem with custom map distance not working?
+            
             - misc:     add bay RC data to actual KV file setup
             
             - coop:     figure out what server events get fired exactly when changing rounds/maps...
