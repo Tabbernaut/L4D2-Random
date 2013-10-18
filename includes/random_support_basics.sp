@@ -519,12 +519,13 @@ SUPPORT_FixNerfTier2(client, tierType)
     if (bDropped)
     {
         // report
-        if (tierType == NERFTYPE_T2)
-        {
+        if (tierType == NERFTYPE_T2) {
             PrintToChat(client, "\x01[\x05r\x01] Only single pistol allowed with \x04T2\x01 rifle/shotgun. Dropped secondary.");
+            PrintHintText(client, "Only single pistol allowed with T2 rifle/shotgun. Dropped secondary!");
         }
         else {
-            PrintToChat(client, "\x01[\x05r\x01] Only single or dual pistol allowed with \x04snipers\x01. Dropped secondary.");
+            PrintToChat(client, "\x01[\x05r\x01] Only single or dual pistol allowed with \x04sniper\x01. Dropped secondary.");
+            PrintHintText(client, "Only single or dual pistol allowed with sniper. Dropped secondary!");
         }
     }
 }

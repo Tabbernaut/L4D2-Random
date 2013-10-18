@@ -222,6 +222,10 @@ bool: SUPPORT_DropItemSlot(client, slot, bool:throwItem=false)
                 dual = bool: GetEntProp(oldweapon, Prop_Send, "m_hasDualWeapons"); 
                 if(dual)clip=0;
             }
+            else if (StrEqual(weapon, "weapon_pistol_magnum"))
+            {
+                clip = GetEntProp(oldweapon, Prop_Send, "m_iClip1");
+            }
             else { return false; }
         }
         
@@ -252,7 +256,7 @@ bool: SUPPORT_DropItemSlot(client, slot, bool:throwItem=false)
         }
         else if (slot == 1)
         {
-            if (StrEqual(weapon, "weapon_chainsaw") || StrEqual(weapon, "weapon_pistol"))
+            if (StrEqual(weapon, "weapon_chainsaw") || StrEqual(weapon, "weapon_pistol") || StrEqual(weapon, "weapon_pistol_magnum"))
             {
                 SetEntProp(index, Prop_Send, "m_iClip1", clip);
             }
@@ -293,7 +297,6 @@ SUPPORT_GetCurrentWeaponSlot(client)
     }
     else
     {
-        
         if (StrEqual(weapon, "weapon_pipe_bomb") || StrEqual(weapon, "weapon_molotov") || StrEqual(weapon, "weapon_vomitjar")) {  slot = PLAYER_SLOT_THROWABLE; }
         else if (StrEqual(weapon, "weapon_first_aid_kit") || StrEqual(weapon, "weapon_defibrillator") || StrEqual(weapon, "weapon_upgradepack_explosive") || StrEqual(weapon, "weapon_upgradepack_incendiary")) { slot = PLAYER_SLOT_KIT; }
         else if (StrEqual(weapon, "weapon_pain_pills") || StrEqual(weapon, "weapon_adrenaline")) { slot = PLAYER_SLOT_PILL; }

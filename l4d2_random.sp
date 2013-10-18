@@ -30,7 +30,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.0.68"
+#define PLUGIN_VERSION "1.0.69"
 
 /*
         L4D2 Random
@@ -2435,8 +2435,10 @@ public Action:OnWeaponCanUse(client, weapon)
         {
             if (iNerfType == NERFTYPE_T2) {
                 PrintToChat(client, "\x01[\x05r\x01] Only single pistol allowed with \x04T2\x01 rifle/shotgun.");
+                PrintHintText(client, "Only single pistol allowed with T2 rifle/shotgun.");
             } else {
                 PrintToChat(client, "\x01[\x05r\x01] Only single or dual pistol allowed with \x04sniper\x01.");
+                PrintHintText(client, "Only single or dual pistol allowed with sniper.");
             }
             g_fNerfMsgTimeout[client] = GetGameTime() + DELAY_T2_NERF_TIMEOUT;
             

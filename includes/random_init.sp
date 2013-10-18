@@ -472,7 +472,6 @@ INIT_FillTries()
     SetTrieValue(g_hTriePenaltyItems, "molotov",                    ITEM_PICKUP_PENALTY);
     SetTrieValue(g_hTriePenaltyItems, "vomitjar",                   ITEM_PICKUP_PENALTY);
     SetTrieValue(g_hTriePenaltyItems, "chainsaw",                   ITEM_PICKUP_PENALTY);
-    
     SetTrieValue(g_hTriePenaltyItems, "weapon_melee",               ITEM_PICKUP_PENALTY_MELEE);
     SetTrieValue(g_hTriePenaltyItems, "weapon_pistol",              ITEM_PICKUP_PENALTY_PISTOL);
     SetTrieValue(g_hTriePenaltyItems, "weapon_pistol_magnum",       ITEM_PICKUP_PENALTY_MAGNUM);
