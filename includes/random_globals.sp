@@ -271,7 +271,6 @@ new     bool:           g_bDoorCircusState      [3]                         = fa
 new                     g_iDoorCircusType       [3][MAX_DOORS];                                     // list of all doors per type (for different timings)
 new                     g_iDoorCircusTypeCount  [3]                         = 0;                    // amount of doors per type
 new                     g_bWitchBungled         [ENTITY_COUNT];                                     // stores, per witch entity, whether survivors bungled her
-new     Float:          g_fDeadStopTime         [MAXPLAYERS+1];                                     // last time the player deadstopped something (EVT_PEN_M2)
 
 // T2 nerf
 new     Float:          g_fNerfMsgTimeout       [MAXPLAYERS+1]              = {0.0,...};            // time when player will get a t2 nerf msg again

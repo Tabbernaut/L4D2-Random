@@ -70,6 +70,9 @@ L4D2_Random
             - Coop: Added encounters with insane amounts of hunters, jockeys, witches, etc.
             - Coop: Removed common-size related events (they wouldn't work right with the mutation anyway).
         -----
+            - Adjusted skeet reports to match l4d2_skill_detect markup more.
+            - Shove Penalty event: now uses l4d2_skill_detect for shove detection.
+        -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
             - [ added friendly fire stats table printout ]
             
@@ -88,21 +91,17 @@ L4D2_Random
                             maybe for car alarm props? some props not taken into account by hittablecontrol plugin?
             
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
-            
             - tweak:    haunted doors: synchronize double doors... (bit annoying, can't easily use current methods to 'track' these)
-            
             - tweak:    if paused during temporary blindness, re-blind on resume (for as much time as should be remaining..)
-            
-            - tweak:    shove report not consistent with m2 detection in random.. best to sync up and use?
             
             - bugfix:   block event votes if the next map is one in which that event would be broken (finales etc)
             - bugfix:   still not the right penalty counts on double round end.. (only display)
             - bugfix:   event vote / teamvoting -> need to take team switch on round half over into account.
             - bugfix:   if you hold nothing, then get picked up, you get to keep the pistol
+            - bugfix:   haunted doors: sometimes doors get stuck.. detect / prevent?
 
             - misc:     add bay RC data to actual KV file setup
             
-            - coop:     figure out what server events get fired exactly when changing rounds/maps...
             - coop:     sudden death event: give everyone full (temp?) health
             - coop:     fix adrenaline rush for coop
             

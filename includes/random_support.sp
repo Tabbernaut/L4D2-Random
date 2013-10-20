@@ -634,20 +634,20 @@ EVENT_HandleSkeet( skeeter=-1, victim=-1, meleeSkeet=false, sniperSkeet=false )
         EVENT_PBonusChanged();
         
         if (skeeter == -2) {    // team skeet sets to -2
-            if (IsClientAndInGame(victim)) {
-                PrintToChatAll("\x01[\x05r\x01] %N was team-skeeted for \x04%i\x01 points.", victim, g_RC_iEventBonusSkeetTeam);
+            if (IsClientAndInGame(victim) && !IsFakeClient(victim)) {
+                PrintToChatAll("\x01[\x05r\x01] \x05%N\x01 was team-skeeted for \x04%i\x01 points.", victim, g_RC_iEventBonusSkeetTeam);
             } else {
                 PrintToChatAll("\x01[\x05r\x01] A hunter was team-skeeted for \x04%i\x01 points.", g_RC_iEventBonusSkeetTeam);
             }
         }
-        else if (IsClientAndInGame(skeeter) && IsClientAndInGame(victim)) {
-            PrintToChatAll("\x01[\x05r\x01] %N %sskeeted %N for \x04%i\x01 points.", skeeter, (meleeSkeet) ? "melee-": ((sniperSkeet) ? "headshot-" : ""), victim, g_RC_iEventBonusSkeet);
+        else if ( IsClientAndInGame(skeeter) && IsClientAndInGame(victim) && !IsFakeClient(victim) ) {
+            PrintToChatAll("\x01[\x05r\x01] \x04%N\x01 %sskeeted \x05%N\x01 for \x04%i\x01 points.", skeeter, (meleeSkeet) ? "melee-": ((sniperSkeet) ? "headshot-" : ""), victim, g_RC_iEventBonusSkeet);
         }
-        else if (IsClientAndInGame(skeeter)) {
-            PrintToChatAll("\x01[\x05r\x01] %N %sskeeted a hunter for \x04%i\x01 points.", skeeter, (meleeSkeet) ? "melee-": ((sniperSkeet) ? "headshot-" : ""), g_RC_iEventBonusSkeet);
+        else if ( IsClientAndInGame(skeeter) ) {
+            PrintToChatAll("\x01[\x05r\x01] \x04%N\x01 %sskeeted a hunter for \x04%i\x01 points.", skeeter, (meleeSkeet) ? "melee-": ((sniperSkeet) ? "headshot-" : ""), g_RC_iEventBonusSkeet);
         }
         else if (IsClientAndInGame(victim)) {
-            PrintToChatAll("\x01[\x05r\x01] %N was %sskeeted for \x04%i\x01 points.", victim, (meleeSkeet) ? "melee-": ((sniperSkeet) ? "headshot-" : ""), g_RC_iEventBonusSkeet);
+            PrintToChatAll("\x01[\x05r\x01] \x05%N\x01 was %sskeeted for \x04%i\x01 points.", victim, (meleeSkeet) ? "melee-": ((sniperSkeet) ? "headshot-" : ""), g_RC_iEventBonusSkeet);
         }
         else {
             PrintToChatAll("\x01[\x05r\x01] A hunter was %sskeeted for \x04%i\x01 points.", (meleeSkeet) ? "melee-": ((sniperSkeet) ? "headshot-" : ""), g_RC_iEventBonusSkeet);
@@ -657,34 +657,26 @@ EVENT_HandleSkeet( skeeter=-1, victim=-1, meleeSkeet=false, sniperSkeet=false )
     {
         // only report
         if (skeeter == -2) {    // team skeet sets to -2
-            if (IsClientAndInGame(victim)) {
-                PrintToChatAll("\x01[\x05r\x01] %N was team-skeeted.", victim);
+            if (IsClientAndInGame(victim) && !IsFakeClient(victim)) {
+                PrintToChatAll("\x01[\x05r\x01] \x05%N\x01 was team-skeeted.", victim);
             } else {
                 PrintToChatAll("\x01[\x05r\x01] A hunter was team-skeeted.");
             }
         }
-        else if (IsClientAndInGame(skeeter) && IsClientAndInGame(victim)) {
-            PrintToChatAll("\x01[\x05r\x01] %N %sskeeted %N.", skeeter, (meleeSkeet) ? "melee-": ((sniperSkeet) ? "headshot-" : ""), victim);
+        else if (IsClientAndInGame(skeeter) && IsClientAndInGame(victim) && !IsFakeClient(victim)) {
+            PrintToChatAll("\x01[\x05r\x01] \x04%N\x01 %sskeeted \x05%N\x01.", skeeter, (meleeSkeet) ? "melee-": ((sniperSkeet) ? "headshot-" : ""), victim);
         }
         else if (IsClientAndInGame(skeeter)) {
-            PrintToChatAll("\x01[\x05r\x01] %N %sskeeted a hunter.", skeeter, (meleeSkeet) ? "melee-": ((sniperSkeet) ? "headshot-" : "") );
+            PrintToChatAll("\x01[\x05r\x01] \x04%N\x01 %sskeeted a hunter.", skeeter, (meleeSkeet) ? "melee-": ((sniperSkeet) ? "headshot-" : "") );
         }
-        /*
-        else if (IsClientAndInGame(victim)) {
-            PrintToChatAll("\x01[\x05r\x01] %N was %sskeeted.", victim, (meleeSkeet) ? "melee-": ((sniperSkeet) ? "headshot-" : "") );
-        }
-        else {
-            PrintToChatAll("\x01[\x05r\x01] A hunter was %sskeeted.", (meleeSkeet) ? "melee-": ((sniperSkeet) ? "headshot-" : "") );
-        }
-        */
     }
 }
 EVENT_HandleNonSkeet( victim, damage, bool:bOverKill=false )
 {
     //if (g_iSpecialEvent == EVT_SKEET)
     //{
-        if (IsClientAndInGame(victim)) {
-            PrintToChatAll("\x01[\x05r\x01] %N was \x04not\x01 skeeted (\x03%i\x01 damage).%s", victim, damage, (bOverKill) ? "(Would've been a skeet if hunter had not been chipped!)" : "" );
+        if ( IsClientAndInGame(victim) && !IsFakeClient(victim) ) {
+            PrintToChatAll("\x01[\x05r\x01] \x05%N\x01 was \x04not\x01 skeeted (\x03%i\x01 damage).%s", victim, damage, (bOverKill) ? "(Would've been a skeet if hunter had not been chipped!)" : "" );
         }
         else {
             PrintToChatAll("\x01[\x05r\x01] Hunter was \x04not\x01 skeeted (\x03%i\x01 damage).%s", damage, (bOverKill) ? "(Would've been a skeet if hunter had not been chipped!)" : "" );

@@ -30,7 +30,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.0.69"
+#define PLUGIN_VERSION "1.0.70"
 
 /*
         L4D2 Random
@@ -162,7 +162,7 @@ public OnPluginStart()
     HookEvent("ammo_pickup",                Event_AmmoPickup,               EventHookMode_Post);
     HookEvent("weapon_drop",                Event_WeaponDrop,               EventHookMode_Post);
     HookEvent("weapon_given",               Event_WeaponGiven,              EventHookMode_Post);    // also works for pills/adren
-    HookEvent("player_shoved",              Event_ShovedPlayer,             EventHookMode_Post);
+    //HookEvent("player_shoved",              Event_ShovedPlayer,             EventHookMode_Post);
     HookEvent("weapon_fire",                Event_WeaponFire,               EventHookMode_Post);
     HookEvent("upgrade_pack_added",         Event_SpecialAmmo,              EventHookMode_Post);
     HookEvent("upgrade_pack_begin",         Event_SpecialAmmoDeploy,        EventHookMode_Post);
@@ -2567,64 +2567,6 @@ public Action:Event_PillsUsed(Handle:event, const String:name[], bool:dontBroadc
 }
 
 
-// shoving
-public Action:Event_ShovedPlayer(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    new client = GetClientOfUserId(GetEventInt(event, "attacker"));
-    new victim = GetClientOfUserId(GetEventInt(event, "userid"));
-    
-    if ( !IsClientAndInGame(client) || GetClientTeam(client) != TEAM_SURVIVOR || !IsClientAndInGame(victim) || GetClientTeam(victim) != TEAM_INFECTED) { return; }
-    
-    //PrintToChatAll("%N shoved player %N.", client, victim);
-    
-    if ( g_iSpecialEvent == EVT_PEN_M2 && !IsFakeClient(client) )
-    {
-        // only on cappers (except charger)
-        new classType = GetEntProp(victim, Prop_Send, "m_zombieClass");
-        if (
-            ( classType == ZC_JOCKEY || classType == ZC_HUNTER || classType == ZC_SMOKER ) &&
-            ( g_fDeadStopTime[client] == 0.0 || FloatSub( GetGameTime(), g_fDeadStopTime[client] ) > 0 )
-        ) {
-            g_iBonusCount++;
-            PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyM2SI );
-            EVENT_PBonusChanged();
-            EVENT_ReportPenalty(client, classType);
-            
-            g_fDeadStopTime[client] = GetGameTime() + DELAY_DEADSTOPGRACE;
-        }
-    }
-}
-
-// not hooked at this time, no need for it (do so if we want to track/penalty common shoving too)
-public Action:Event_ShovedEntity(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    new client = GetClientOfUserId(GetEventInt(event, "attacker"));
-    if (!IsClientAndInGame(client) || GetClientTeam(client) != TEAM_SURVIVOR) { return; }    
-    
-    new entity = GetClientOfUserId(GetEventInt(event, "entityid"));
-    if (!entity || !IsValidEntity(entity)) { return; }
-    
-    //PrintToChatAll("%N shoved entity %i.", client, entity);
-    /*
-    if (EVENT_PENALTY_CI && g_iSpecialEvent == EVT_PEN_M2) {
-        new String: classname[64];
-        GetEdictClassname(entity, classname, sizeof(classname));
-        
-        new CreatedEntityType: classnameShoved;
-        if (!GetTrieValue(g_hTrieEntityCreated, classname, classnameShoved)) { return; }
-        
-        if (classnameShoved == CREATED_INFECTED) 
-        {
-            g_iBonusCount++;
-            PBONUS_AddRoundBonus( -1 * EVENT_PENALTY_M2_CI );
-            EVENT_PBonusChanged();
-            EVENT_ReportPenalty(client);
-        }
-    }
-    */
-}
-
-
 // weaponfire
 public Action:Event_WeaponFire(Handle:event, const String:name[], bool:dontBroadcast)
 {
@@ -3456,6 +3398,25 @@ public OnSkeetSniper ( attacker, victim )
 public OnSkeetSniperHurt ( attacker, victim, damage, bool:overkill )
 {
     EVENT_HandleNonSkeet( victim, damage, overkill );
+}
+
+public OnSpecialShoved ( attacker, victim )
+{
+    if ( !IsClientAndInGame(attacker) || GetClientTeam(attacker) != TEAM_SURVIVOR || !IsClientAndInGame(victim) || GetClientTeam(victim) != TEAM_INFECTED) { return; }
+    
+    // don't count bots shoving...
+    if ( g_iSpecialEvent == EVT_PEN_M2 && !IsFakeClient(attacker) )
+    {
+        // only on cappers (except charger)
+        new classType = GetEntProp(victim, Prop_Send, "m_zombieClass");
+        if ( classType == ZC_JOCKEY || classType == ZC_HUNTER || classType == ZC_SMOKER )
+        {
+            g_iBonusCount++;
+            PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyM2SI );
+            EVENT_PBonusChanged();
+            EVENT_ReportPenalty(attacker, classType);
+        }
+    }
 }
 
 // hooked on EVT_WOMEN
