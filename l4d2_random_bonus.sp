@@ -38,7 +38,7 @@ public Plugin:myinfo =
     name = "Random - Damage Scoring",
     author = "CanadaRox, Tabun",
     description = "Custom damage scoring based on damage. Adjusted for use with Random config.",
-    version = "1.3",
+    version = "1.4",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 };
 
@@ -275,10 +275,19 @@ public OnRoundIsLive()
     
     iTotalDamage[round] = 0;
     iSolidHealthDamage[round] = 0;
+    
     //iStoreBonus[round] = 0;           // don't mess with the stuff that's ok anyway
     //iStoreSurvivors[round] = 0;
     //bRoundOver[round] = false;
     //bHasWiped[round] = false;
+    
+    // also reset player status even if considered 'hanging before'
+    for ( new i = 0; i < 4; i++ )
+    {
+        bPlayerHasBeenIncapped[i] = false;
+        iPlayerDamage[i] = 0;
+        iSolidHealthDamage[round] = 0;
+    }
 }
 
 public OnClientPutInServer(client)
