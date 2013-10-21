@@ -10,3 +10,4 @@ Anyway, this plugin has a single purpose: it is the engine that powers the Rando
 The parts that do serve more general purposes and may well be of use for other projects/configs are separate and found under my L4D2 Plugins repository:
 - Saferoom Detect (to detect whether players, entities or coordinates are inside the bounds of a saferoom)
 - Penalty Bonus (a non-survival bonus system that uses the defib. penalty)
+- Skill Detect (a tracking/detection plugin that is used to detect skeets, crowns, etc)
