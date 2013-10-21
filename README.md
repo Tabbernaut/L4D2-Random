@@ -7,7 +7,7 @@ Yes, I know a lot of this code is ugly. Random started out as a bit of a joke, t
 
 Anyway, this plugin has a single purpose: it is the engine that powers the Random config. It is not designed to be used in other contexts, hence its functions being clumped together and intertwined as they are.
 
-The parts that do serve more general purposes and may well be of use for other projects/configs are separate and found under my L4D2 Plugins repository:
+The parts that do serve more general purposes and may well be of use for other projects/configs are separate and found in my L4D2 Plugins repository:
 - Saferoom Detect (to detect whether players, entities or coordinates are inside the bounds of a saferoom)
 - Penalty Bonus (a non-survival bonus system that uses the defib. penalty)
 - Skill Detect (a tracking/detection plugin that is used to detect skeets, crowns, etc)
