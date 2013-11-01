@@ -978,6 +978,29 @@ public Action: Unpause_Cmd(client, args)
     return Plugin_Continue;
 }
 /*
+    Forwards from custom_map_transitions
+    ------------------------------------- */
+// called when the first map is about to be loaded
+public OnCMTStart( rounds, const String:mapname[] )
+{
+    // reset stats
+    g_bCMTActive = true;
+}
+
+// called when map begins (mapname is the name of the map *after* this)
+public OnCMTNextKnown( const String:mapname[] )
+{
+    // store mapname, so we can block votes for events that shouldn't be
+    // run on that next map...
+}
+
+// called after the last round has ended
+public OnCMTEnd()
+{
+    g_bCMTActive = false;
+}
+
+/*
     Round management
     -------------------------- */
 
@@ -1394,7 +1417,7 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
     
     // chainsaws vs tanks
     if (    damagetype == DMGTYPE_CHAINSAW
-        &&  IsClientAndInGame(victim) && GetClientTeam(victim) == TEAM_INFECTED
+        &&  IsClientAndInGame(victim) && GetClientTeam(victim) == TEAM_INFECTED && IsPlayerAlive(victim)
         &&  GetEntProp(victim, Prop_Send, "m_zombieClass") == ZC_TANK
         &&  IsValidEntity(inflictor)
         &&  IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_SURVIVOR

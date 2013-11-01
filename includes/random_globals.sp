@@ -18,6 +18,7 @@ new                     g_iMeleeClassCount                                  = 0;
 new     String:         g_sMeleeClass           [MELEE_CLASS_COUNT][MELEE_CLASS_LENGTH];            // available melee class-strings
 new     Handle:         g_hSteamIds                                         = INVALID_HANDLE;       // store players so we know who's already been welcomed
 new     bool:           g_bReadyUpAvailable                                 = false;                // whether crox's readyup plugin is used
+new     bool:           g_bCMTActive                                        = false;                // whether custom map transitions is active (and running a mapset)
 
 new     bool:           g_bDefaultCvarsLoaded                               = false;                // if not loaded, check if they can be loaded and load them
 new     bool:           g_bVeryFirstMapLoad                                 = true;                 // for preventing a first-map problem with item randomization

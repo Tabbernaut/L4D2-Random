@@ -574,6 +574,9 @@ RANDOM_DetermineRandomStuff()
         if (g_bStripperAltDetected && g_RI_iDistanceHard > 0) { distNew = g_RI_iDistanceHard; }
         else if (g_RI_iDistance > 0) { distNew = g_RI_iDistance; }
         
+        PrintDebug(2, "[rand] Default distance: %i; Distance found in RI: %i; Distance base set: %i.", g_iDefaultDistance, g_RI_iDistance, distNew );
+        
+        
         if (distMode != 0 && !g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_POINTS))
         {
             if (distMode == 1)
