@@ -73,6 +73,7 @@ L4D2_Random
             - Adjusted skeet reports to match l4d2_skill_detect markup more.
             - Shove Penalty event: now uses l4d2_skill_detect for shove detection.
             - Fixed problem with readyup & ledge-hanging with damage bonus scoring.
+            - Fixed minor event/shuffle voting problem on roundhalf switch.
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -99,7 +100,6 @@ L4D2_Random
             
             - bugfix:   block event votes if the next map is one in which that event would be broken (finales etc)
             - bugfix:   still not the right penalty counts on double round end.. (only display)
-            - bugfix:   event vote / teamvoting -> need to take team switch on round half over into account.
             - bugfix:   if you hold nothing, then get picked up, you get to keep the pistol
             - bugfix:   haunted doors: sometimes doors get stuck.. detect / prevent?
             - bugfix:   scout max ammo still broken / wrong (see rjven) [ doesn't seem to be the case for hunting rifle]
@@ -118,8 +118,8 @@ L4D2_Random
             - tweak:    show a list of penalty causers / bonus getters -- at round end ( just use the skill report in playstats)
             - tweak:    [consider] give points for surviving longer during DT3 event (and maybe other events in specific maps too?)
                         holdout bonus.. (and deduct the total you're able to get from the total distance points)
-            - note:     the netprop m_iVersus(something) for distance seems to actually work pretty will (with minor bug)
-                        CRox reports. try it?`
+            - note:     the netprop m_iVersus(something) for distance seems to actually work pretty well (with minor bug)
+                        CRox reports. try it?
             
     minor cleanup / details
     -----------------------

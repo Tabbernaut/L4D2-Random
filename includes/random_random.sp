@@ -576,7 +576,6 @@ RANDOM_DetermineRandomStuff()
         
         PrintDebug(2, "[rand] Default distance: %i; Distance found in RI: %i; Distance base set: %i.", g_iDefaultDistance, g_RI_iDistance, distNew );
         
-        
         if (distMode != 0 && !g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_POINTS))
         {
             if (distMode == 1)
@@ -586,7 +585,7 @@ RANDOM_DetermineRandomStuff()
                 new Float: varMax = 1.0 + varMin;
                 varMin = 1.0 - varMin;
                 
-                distNew = RoundFloat(float(g_iDefaultDistance) * GetRandomFloat(varMin, varMax));
+                distNew = RoundFloat(float(distNew) * GetRandomFloat(varMin, varMax));
             }
             else if (distMode == 2)
             {
@@ -598,7 +597,7 @@ RANDOM_DetermineRandomStuff()
             distNew = RoundFloat(float(distNew) / 4.0) * 4;
             
             L4D_SetVersusMaxCompletionScore(distNew);
-            PrintDebug(2, "[rand] Distance for this round: %i.", distNew);
+            PrintDebug(2, "[rand] Randomized distance for this round: %i.", distNew);
             
         }
         

@@ -47,8 +47,15 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     
     g_bTeamSurvivorVoted = false;       // for teamshuffle
     g_bTeamInfectedVoted = false;
-    g_bTeamSurvivorVotedEvent = false;  // for picking an event for next round
+    g_fTeamShuffleTimeout = 0.0;
+    
+    g_bTeamSurvivorVotedEvent = false;      // for picking an event for next round
     g_bTeamInfectedVotedEvent = false;
+    g_bTeamSurvivorVotedGameEvent = false;  // for picking an event for entire game
+    g_bTeamInfectedVotedGameEvent = false;
+    g_fPickEventTimeout = 0.0;
+    g_iPickEvent = -1;
+    g_iPickGameEvent = -1;
     
     g_bFirstTankSpawned = false;
     g_bFirstTankDied = false;

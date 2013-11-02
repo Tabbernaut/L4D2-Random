@@ -68,7 +68,7 @@ new                     g_iPickEvent                                        = -1
 new     Float:          g_fPickEventTimeout                                 = 0.0;                  // when we can vote again
 new     bool:           g_bTeamSurvivorVotedGameEvent                       = false;                // whether anyone in survivor team used !teamshuffle or !randteams
 new     bool:           g_bTeamInfectedVotedGameEvent                       = false;
-new                     g_iPickGameEvent                                    = -1;                   // what even we're picking
+new                     g_iPickGameEvent                                    = -1;                   // what event we're picking
 
 // Stripper
 new     bool:           g_bStripperPresent                                  = false;                // whether a cvar-configurable Stripper:Source is present
