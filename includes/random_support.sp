@@ -1046,15 +1046,25 @@ PickTankPlayer()
     new playerCount = 0;
     new round = GameRules_GetProp("m_bAreTeamsFlipped", 4, 0);
     
+    decl String: sSteamId[32];
+    new tankCount;
+        
+        
+    
     for (new i=1; i < MaxClients+1; i++)
     {
         if ( IsInfected(i) && !IsFakeClient(i) )
         {
             playerCount++;
             
+            GetClientAuthString( i, sSteamId, sizeof(sSteamId) );
+            
+            if ( !GetTrieValue(g_hTrieTankPlayers, sSteamId, tankCount) ) { tankCount = 0; }
+            
             // if the player had the previous tank, exclude him from the next pick
-            if ( g_iPreviousTankClient[ round ] == i ) {
-                PrintDebug(3, "[rand tank] Prevented tank pick for %N (had previous tank).", i);
+            if ( StrEqual( g_sPreviousTankClient[ round ], sSteamId, false) )
+            {
+                PrintDebug(3, "[rand tank] Prevented tank pick for %N (had the last tank).", i);
                 continue;
             }
             
@@ -1062,10 +1072,10 @@ PickTankPlayer()
             tickets = 10;
             
             // -4 per tank you had. otherwise, scratch one, minimum of 1
-            if (g_iHadTanks[i] > 0) { tickets -= 4 * g_iHadTanks[i]; }
-            if (tickets < 1) { tickets = 1; }
+            if ( tankCount > 0 ) { tickets -= 2 * tankCount; }
+            if ( tickets < 1 ) { tickets = 1; }
             
-            for (new j=0; j < tickets; j++)
+            for ( new j=0; j < tickets; j++ )
             {
                 pickArray[pickCount] = i;
                 pickCount++;
@@ -1088,14 +1098,18 @@ PickTankPlayer()
     pick = GetRandomInt( 0, pickCount - 1 );
     pick = pickArray[pick];
     
-    PrintDebug(3, "[rand tank] Randomly picking tank player %i (%N) (had %i tanks before).", pick, pick, g_iHadTanks[pick]);
+    
+    
+    PrintDebug(3, "[rand tank] Randomly picking tank player %i (%N).", pick, pick);
     
     if ( IsClientAndInGame(pick) && !IsFakeClient(pick) ) {
+        GetClientAuthString( pick, sSteamId, sizeof(sSteamId) );
+        
         PrintDebug(4, "[rand tank] Previous tank stored: %i for team %i ...", pick, round);
-        g_iPreviousTankClient[ round ] = pick;
+        strcopy( g_sPreviousTankClient[ round ], 32, sSteamId );
     } else {
         PrintDebug(4, "[rand tank] NO previous tank stored: %i for team %i ...", pick, round);
-        g_iPreviousTankClient[ round ] = 0;
+        g_sPreviousTankClient[ round ] = "";
     }
     
     return pick;
@@ -1108,7 +1122,21 @@ ForceTankPlayer()
     
     if (tank == 0) { return; }
     
-    if (g_iHadTanks[tank] < 100) { g_iHadTanks[tank]++; }
+    if ( IsClientAndInGame(tank) )
+    {
+        decl String: sSteamId[32];
+        new tankCount;
+        GetClientAuthString( tank, sSteamId, sizeof(sSteamId) );
+        
+        if ( !GetTrieValue(g_hTrieTankPlayers, sSteamId, tankCount) )
+        {
+            tankCount = 0;
+        }
+        tankCount++;
+        
+        SetTrieValue(g_hTrieTankPlayers, sSteamId, tankCount);
+    }
+    
     
     for (new i = 1; i < MaxClients+1; i++)
     {

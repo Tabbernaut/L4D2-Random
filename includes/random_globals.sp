@@ -14,6 +14,8 @@ new     Handle:         g_hTrieDropItems                                    = IN
 new     Handle:         g_hTrieL4D1Common                                   = INVALID_HANDLE;       // trie for recognizing l4d1 commons
 new     Handle:         g_hTrieCommands                                     = INVALID_HANDLE;       // trie for recognizing typed commands in chat
 new     Handle:         g_hTrieEventWeapons                                 = INVALID_HANDLE;       // trie for recognizing weapons from eventinfo
+new     Handle:         g_hTrieTankPlayers                                  = INVALID_HANDLE;       // trie for checking how many times player got tank
+
 new                     g_iMeleeClassCount                                  = 0;                    // melee weapons available?
 new     String:         g_sMeleeClass           [MELEE_CLASS_COUNT][MELEE_CLASS_LENGTH];            // available melee class-strings
 new     Handle:         g_hSteamIds                                         = INVALID_HANDLE;       // store players so we know who's already been welcomed
@@ -87,8 +89,8 @@ new                     g_iClientUsing          [MAXPLAYERS+1]              = {0
 new     bool:           g_bClientHoldingUse     [MAXPLAYERS+1]              = {false,...};          // for some use fixes: whether player is holding use key (while still blocking it)
 
 // Tanks
-new                     g_iHadTanks             [MAXPLAYERS+1]              = {0,...};              // how many tanks did the player get this game?
-new                     g_iPreviousTankClient   [2];                                                // what was the previous player to get a (first) tank?, per team
+//new                     g_iHadTanks             [MAXPLAYERS+1]              = {0,...};              // how many tanks did the player get this game?
+new     String:         g_sPreviousTankClient   [2][32];                                            // what was the previous player to get a (first) tank?, per team
 new     bool:           g_bIsTankInPlay                                     = false;
 new     bool:           g_bTankFirstRound                                   = false;
 new     bool:           g_bFirstTankSpawned                                 = false;

@@ -535,6 +535,8 @@ INIT_FillTries()
     SetTrieValue(g_hTrieL4D1Common, "models/infected/common_female_nurse01.mdl",    COMMON_L4D1);
     SetTrieValue(g_hTrieL4D1Common, "models/infected/common_male_pilot.mdl",        COMMON_L4D1);
     SetTrieValue(g_hTrieL4D1Common, "models/infected/common_male_baggagehandler_01.mdl", COMMON_L4D1);
+    
+    g_hTrieTankPlayers = CreateTrie();
 }
 
 // SDK Calls
