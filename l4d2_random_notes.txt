@@ -74,6 +74,7 @@ L4D2_Random
             - Shove Penalty event: now uses l4d2_skill_detect for shove detection.
             - Fixed problem with readyup & ledge-hanging with damage bonus scoring.
             - Fixed minor event/shuffle voting problem on roundhalf switch.
+            - Fixed some (potential) problems with tank selection.
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -109,7 +110,7 @@ L4D2_Random
             - coop:     sudden death event: give everyone full (temp?) health
             - coop:     fix adrenaline rush for coop
             - coop:     special role events - mainly medic - still not working right in coop
-            - coop:     sac1: tank door should not be affected by door-affecting events
+            - coop:     sac1: tank door should not be affected by door-affecting events (never seems to work in coop?)
             
     side considerations / 3rd party bugs
     ------------------------------------
