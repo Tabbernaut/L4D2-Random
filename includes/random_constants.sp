@@ -137,9 +137,9 @@ const Float:    EVENT_AMMO_PACKTIME     = 3.0;          // EVT_AMMO         time
 const Float:    EVENT_WOMEN_LIMITTIME   = 7.5;          // EVT_WOMEN        how long per combo-step to keep increased common limit
 const           EVENT_WOMEN_EXTRACOMMON = 5;            // EVT_WOMEN        how many extra common per combo (limit increase)
 const Float:    EVENT_WITCHES_RANGE     = 250000.0;     //                  range for glow removal/addition
-const           EVENT_MEDIC_UNITS_BASE  = 11;           // EVT_MEDIC        how many mediunits to start with (default difficulty) (medkit, pills + 8)
-const           EVENT_MEDIC_UNITS_MIN   = 7;            // EVT_MEDIC        minimum mediunits
-const           EVENT_MEDIC_UNITS_MAX   = 14;           // EVT_MEDIC        maximum mediunits 
+const           EVENT_MEDIC_UNITS_BASE  = 9;            // EVT_MEDIC        how many mediunits to start with (default difficulty) (medkit, pills + 8)
+const           EVENT_MEDIC_UNITS_MIN   = 6;            // EVT_MEDIC        minimum mediunits
+const           EVENT_MEDIC_UNITS_MAX   = 12;           // EVT_MEDIC        maximum mediunits 
 const           EVENT_MEDIC_DIFF_BASE   = 4;            // EVT_MEDIC        use this difficulty for the base value (and scale the rest)
 
 const           EVENT_BAY_CARDAMAGE     = 150;          // EVT_BAY          amount of damage done to a car before it explodes
@@ -736,7 +736,7 @@ new const String: g_csEventText[][] =
     "\x04Friendly Fire\x01 - Be careful where you shoot...",
     "\x04Hush\x01 - silent ",
     "\x04Pickup Penalty\x01 - Any item pickup costs \x045\x01 points.",
-    "\x04Health Penalty\x01 - Using any health item costs \x0415\x01 points.",
+    "\x04Health Penalty\x01 - Using any health item costs \x0420\x01 points.",
     "\x04Shove Penalty\x01 - Using m2 on special infected costs \x0410\x01 points.",
     "\x04Time Penalty\x01 - Every minute spent costs \x0425\x01 points.",
     "\x04Mini-Tanks\x01 - Many small tanks will spawn.",
