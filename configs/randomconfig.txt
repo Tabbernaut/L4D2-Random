@@ -32,7 +32,7 @@
 		"event_cilim_supereasy"		"0.25"
 
 		"event_penalty_item"		"5"
-		"event_penalty_health"		"15"
+		"event_penalty_health"		"20"
 		"event_penalty_m2si"		"10"
 		"event_penalty_time"		"25"
 		"event_bonus_skeet"		"15"
@@ -53,7 +53,7 @@
 		"event_boobytrap_min"		"8"
 		"event_ammo_factor_max"		"0.5"
 		"event_ammo_factor"		"0.12"
-		"event_witches_spawntime"	"24.0"
+		"event_witches_spawntime"	"30.0"
 		"event_boomflu_interval_min"	"20"
 		"event_boomflu_interval_max"	"55"
 
