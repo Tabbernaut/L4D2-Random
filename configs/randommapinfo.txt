@@ -28,11 +28,13 @@
 		"earlydoor_2"	"1875 6364 2656"
 		"earlydoor_3"	"1700 7680 2656"
 		"earlydoor_4"	"1700 7680 2464"
+		"distance"	"500"
 	}
 	"c1m2_streets"
 	{
 		"no_cola"	"1"
 		"difficulty"	"2"
+		"distance"	"700"
 	}
 	"c1m3_mall"
 	{
@@ -48,16 +50,19 @@
 		"difficulty"	"3"
 		"doors"		"0"
 		"finale"	"1"
+		"distance"	"900"
 	}
 	"c2m1_highway"
 	{
 		"intro"		"1"
 		"difficulty"	"1"
+		"distance"	"600"
 	}
 	"c2m2_fairgrounds"
 	{
 		"difficulty"	"2"
 		"doors"		"0"
+		"distance"	"700"
 	}
 	"c2m3_coaster"
 	{
@@ -66,17 +71,20 @@
 		"no_tank_var"	"1"
 		"tank_ban_start"	"55"
 		"tank_ban_end"		"100"
+		"distance"	"700"
 	}
 	"c2m4_barns"
 	{
 		"difficulty"	"1"
 		"doors"		"0"
+		"distance"	"600"
 	}
 	"c2m5_concert"
 	{
 		"difficulty"	"2"
 		"doors"		"0"
 		"finale"	"1"
+		"distance"	"800"
 	}
 	"c3m1_plankcountry"
 	{
@@ -86,25 +94,30 @@
 		"no_tank_var"	"1"
 		"tank_ban_start"	"45"
 		"tank_ban_end"		"60"
+		"distance"	"600"
 	}
 	"c3m2_swamp"
 	{
 		"difficulty"	"1"
 		"doors"		"0"
+		"distance"	"600"
 	}
 	"c3m3_shantytown"
 	{
 		"difficulty"	"2"
 		"doors"		"0"
+		"distance"	"600"
 	}
 	"c3m4_plantation"
 	{
 		"difficulty"	"3"
 		"finale"	"1"
+		"distance"	"800"
 	}
 	"c4m1_milltown_a"
 	{
 		"intro"		"1"
+		"distance"	"400"
 	}
 	"c4m2_sugarmill_a"
 	{
@@ -112,6 +125,7 @@
 		"doors"		"0"
 		"tank_ban_start"	"80"
 		"tank_ban_end"		"100"
+		"distance"	"600"
 	}
 	"c4m3_sugarmill_b"
 	{
@@ -120,6 +134,7 @@
 		"doors"		"0"
 		"tank_ban_start"	"20"
 		"tank_ban_end"		"35"
+		"distance"	"600"
 	}
 	"c4m4_milltown_b"
 	{
@@ -128,7 +143,7 @@
 		"tank_ban_start"	"80"
 		"tank_ban_end"		"100"
 		"distance"		"500"
-		"distance_hard"		"700"
+		"distance_hard"		"550"
 		"tank_odds"		"1.0"
 		"tank_odds_hard"	"1.0"
 	}
@@ -137,6 +152,7 @@
 		"difficulty"	"3"
 		"doors"		"0"
 		"finale"	"1"
+		"distance"	"800"
 	}
 	"c5m1_waterfront"
 	{
@@ -145,11 +161,13 @@
 		"tank_ban_end"		"40"
 		"distance"	"300"
 		"distance_hard"	"400"
+		"distance"	"250"
 	}
 	"c5m2_park"
 	{
 		"difficulty"	"2"
 		"doors"		"0"
+		"distance"	"600"
 	}
 	"c5m3_cemetery"
 	{
@@ -157,8 +175,8 @@
 		"doors"		"0"
 		"tank_ban_start"	"50"
 		"tank_ban_end"		"70"
-		"distance"	"600"
-		"distance_hard"	"700"
+		"distance"	"700"
+		"distance_hard"	"750"
 	}
 	"c5m4_quarter"
 	{
@@ -167,6 +185,7 @@
 		"tank_ban_end"		"100"
 		"earlydoors"	"1"
 		"earlydoor_1"	"-3044 3260 224"
+		"distance"	"700"
 	}
 	"c5m5_bridge"
 	{
@@ -174,6 +193,7 @@
 		"doors"		"0"
 		"weak_hittables" "1"
 		"finale"	"1"
+		"distance"	"600"
 	}
 	"c6m1_riverbank"
 	{
@@ -183,26 +203,31 @@
 		"no_witch"	"1"
 		"earlydoors"	"1"
 		"earlydoor_1"	"3692 2216 107"
+		"distance"	"600"
 	}
 	"c6m2_bedlam"
 	{
 		"difficulty"	"3"
+		"distance"	"800"
 	}
 	"c6m3_port"
 	{
 		"difficulty"	"3"
 		"doors"		"0"
 		"finale"	"1"
+		"distance"	"900"
 	}
 	"c7m1_docks"
 	{
 		"intro"		"1"
 		"difficulty"	"1"
 		"no_tank"	"1"
+		"distance"	"600"
 	}
 	"c7m2_barge"
 	{
 		"difficulty"	"3"
+		"distance"	"800"
 	}
 	"c7m3_port"
 	{
@@ -212,6 +237,7 @@
 		"earlydoors"	"1"
 		"earlydoor_1"	"656 2076 160"
 		"finale"	"1"
+		"distance"	"800"
 	}
 	"c8m1_apartment"
 	{
@@ -229,16 +255,19 @@
 		"earlydoor_5"	"1705 1196 212"
 		"earlydoor_6"	"1604 1196 76"
 		"earlydoor_7"	"1785 801 76"
+		"distance"	"300"
 	}
 	"c8m2_subway"
 	{
 		"difficulty"	"1"
+		"distance"	"600"
 	}
 	"c8m3_sewers"
 	{
 		"difficulty"	"3"
 		"earlydoors"	"1"
 		"earlydoor_1"	"11360 5442 76"
+		"distance"	"700"
 	}
 	"c8m4_interior"
 	{
@@ -255,24 +284,28 @@
 		"earlydoor_5"	"12156 12606 340"
 		"earlydoor_6"	"12274 13074 340"
 		"earlydoor_7"	"12274 13074 476"
+		"distance"	"500"
 	}
 	"c8m5_rooftop"
 	{
 		"difficulty"	"2"
 		"doors"		"0"
 		"finale"	"1"
+		"distance"	"800"
 	}
 	"c9m1_alleys"
 	{
 		"intro"		"1"
 		"difficulty"	"2"
 		"doors"		"2"
+		"distance"	"700"
 	}
 	"c9m2_lots"
 	{
 		"difficulty"	"3"
 		"doors"		"2"
 		"finale"	"1"
+		"distance"	"800"
 	}
 	"c10m1_caves"
 	{
@@ -281,20 +314,26 @@
 		"doors"		"0"
 		"tank_ban_start"	"0"
 		"tank_ban_end"		"70"
+		"distance"	"400"
 	}
 	"c10m2_drainage"
 	{
 		"difficulty"	"1"
 		"doors"		"0"
+		"distance"	"500"
+		"distance_hard"	"550"
 	}
 	"c10m3_ranchhouse"
 	{
 		"difficulty"	"2"
 		"finale"	"0"
+		"distance"	"600"
 	}
 	"c10m4_mainstreet"
 	{
 		"difficulty"	"2"
+		"distance"	"700"
+		"distance_hard"	"750"
 	}
 	"c10m5_houseboat"
 	{
@@ -302,20 +341,24 @@
 		"earlydoors"	"1"
 		"earlydoor_1"	"1952 3782 -12"
 		"finale"	"1"
+		"distance"	"800"
 	}
 	"c11m1_greenhouse"
 	{
 		"intro"		"1"
 		"difficulty"	"0"
+		"distance"	"300"
 	}
 	"c11m2_offices"
 	{
 		"difficulty"	"2"
 		"doors"		"2"
+		"distance"	"600"
 	}
 	"c11m3_garage"
 	{
 		"difficulty"	"3"
+		"distance"	"600"
 	}
 	"c11m4_terminal"
 	{
@@ -324,12 +367,14 @@
 		"earlydoors"	"2"
 		"earlydoor_1"	"721 4112 348"
 		"earlydoor_2"	"80 5482 348"
+		"distance"	"500"
 	}
 	"c11m5_runway"
 	{
 		"difficulty"	"2"
 		"doors"		"0"
 		"finale"	"1"
+		"distance"	"800"
 	}
 	"c12m1_hilltop"
 	{
@@ -339,6 +384,7 @@
 		"no_storm"	"2"
 		"tank_ban_start"	"0"
 		"tank_ban_end"		"57"
+		"distance"	"400"
 	}
 	"c12m2_traintunnel"
 	{
@@ -350,6 +396,8 @@
 		"earlydoor_3"	"-8634 -7266 -12"
 		"tank_odds"		"0.9"
 		"tank_odds_hard"	"0.8"
+		"distance"	"350"
+		"distance_hard"	"400"
 	}
 	"c12m3_bridge"
 	{
@@ -357,6 +405,7 @@
 		"no_storm"	"2"
 		"tank_ban_start"	"70"
 		"tank_ban_end"		"100"
+		"distance"	"600"
 	}
 	"c12m4_barn"
 	{
@@ -367,6 +416,7 @@
 		"distance_hard"	"700"
 		"tank_odds"		"0.9"
 		"tank_odds_hard"	"0.8"
+		"distance"	"600"
 	}
 	"c12m5_cornfield"
 	{
@@ -376,23 +426,28 @@
 		"tank_ban_start"	"80"
 		"tank_ban_end"		"100"
 		"finale"	"1"
+		"distance"	"600"
+		"distance_hard"	"800"
 	}
 	"c13m1_alpinecreek"
 	{
 		"intro"		"1"
 		"difficulty"	"1"
 		"doors"		"0"
+		"distance"	"500"
 	}
 	"c13m2_southpinestream"
 	{
 		"difficulty"	"2"
 		"doors"		"0"
 		"no_tank"	"1"
+		"distance"	"800"
 	}
 	"c13m3_memorialbridge"
 	{
 		"difficulty"	"2"
 		"doors"		"0"
+		"distance"	"700"
 	}
 	"c13m4_cutthroatcreek"
 	{
@@ -400,17 +455,20 @@
 		"doors"		"0"
 		"no_rain"	"1"
 		"finale"	"1"
+		"distance"	"800"
 	}
 	"c5m1_darkwaterfront"
 	{
 		"intro"		"1"
 		"tank_ban_start"	"0"
 		"tank_ban_end"		"38"
+		"distance"	"350"
 	}
 	"c5m2_darkpark"
 	{
 		"difficulty"	"2"
 		"doors"		"0"
+		"distance"	"600"
 	}
 	"c5m3_darkcemetery"
 	{
@@ -418,6 +476,7 @@
 		"doors"		"0"
 		"tank_ban_start"	"50"
 		"tank_ban_end"		"70"
+		"distance"	"700"
 	}
 	"c5m4_darkquarter"
 	{
@@ -427,6 +486,7 @@
 		"tank_ban_end"		"100"
 		"earlydoors"	"1"
 		"earlydoor_1"	"-3044 3260 224"
+		"distance"	"700"
 	}
 	"c5m5_darkbridge"
 	{
@@ -434,23 +494,28 @@
 		"doors"		"0"
 		"weak_hittables" "1"
 		"finale"	"1"
+		"distance"	"600"
 	}
 	"cdta_01detour"
 	{
 		"intro"		"1"
+		"distance"	"500"
 	}
 	"cdta_02road"
 	{
+		"distance"	"600"
 	}
 	"cdta_03warehouse"
 	{
 		"tank_ban_start"	"55"
 		"tank_ban_end"		"78"
+		"distance"	"600"
 	}
 	"cdta_04onarail"
 	{
 		"tank_ban_start"	"0"
 		"tank_ban_end"		"28"
+		"distance"	"600"
 	}
 	"cdta_05finalroad"
 	{
@@ -459,73 +524,87 @@
 		"tank_ban_end"		"70"
 		"weak_hittables" "1"
 		"finale"	"1"
+		"distance"	"600"
 	}
 	"l4d_ihm01_forest"
 	{
 		"intro"		"1"
 		"difficulty" 	"2"
 		"no_rain"	"1"
+		"distance"	"600"
 	}
 	"l4d_ihm02_manor"
 	{
 		"difficulty" 	"3"
 		"no_rain"	"1"
+		"distance"	"700"
 	}
 	"l4d_ihm03_underground"
 	{
 		"difficulty" 	"4"
 		"no_rain"	"1"
+		"distance"	"700"
 	}
 	"l4d_ihm04_lumberyard"
 	{
 		"difficulty" 	"3"
 		"no_rain"	"1"
+		"distance"	"800"
 	}
 	"l4d_ihm05_lakeside"
 	{
 		"difficulty" 	"3"
 		"no_rain"	"1"
 		"finale"	"1"
+		"distance"	"800"
 	}
 	"bloodtracks_01"
 	{
 		"intro"		"1"
 		"difficulty"	"1"
+		"distance"	"500"
 	}
 	"bloodtracks_02"
 	{
 		"difficulty"	"2"
+		"distance"	"600"
 	}
 	"bloodtracks_03"
 	{
 		"difficulty"	"2"
 		"no_tank"	"1"
+		"distance"	"700"
 	}
 	"bloodtracks_04"
 	{
 		"difficulty" 	"3"
 		"finale"	"1"
+		"distance"	"800"
 	}
 	// carried off
 	"cwm1_intro"
 	{
 		"intro"		"1"
 		"difficulty"	"1"
+		"distance"	"500"
 	}
 	"cwm2_warehouse"
 	{
 		"difficulty"	"2"
 		"tank_ban_start"	"72"
 		"tank_ban_end"		"99"
+		"distance"	"700"
 	}
 	"cwm3_drain"
 	{
 		"difficulty"	"2"
+		"distance"	"700"
 	}
 	"cwm4_building"
 	{
 		"difficulty"	"3"
 		"finale"	"1"
+		"distance"	"900"
 	}
 	"l4d2_stadium1_apartment"
 	{
@@ -562,41 +641,52 @@
 	{
 		"intro"		"1"
 		"no_rain"	"1"
+		"doors"		"0"
 	}
 	"hf02_thesteeple"
 	{
 		"difficulty"	"2"
 		"no_rain"	"1"
+		"doors"		"0"
+		"distance"	"800"
 	}
 	"hf03_themansion"
 	{
 		"difficulty"	"2"
 		"no_rain"	"1"
+		"doors"		"2"
+		"distance"	"800"
 	}
 	"hf04_escape"
 	{
 		"difficulty"	"2"
 		"no_rain"	"1"
 		"finale"	"1"
+		"doors"		"0"
+		"distance"	"900"
 	}
 	"srocchurch"
 	{
 		"intro"		"1"
 		"difficulty"	"2"
+		"distance"	"600"
 	}
 	"plaza_espana"
 	{
 		"difficulty"	"2"
+		"distance"	"800"
 	}
 	"maria_cristina"
 	{
 		"difficulty"	"2"
+		"distance"	"800"
 	}
 	"mnac"
 	{
 		"difficulty"	"3"
 		"no_rain"	"1"
 		"finale"	"1"
+		"distance"	"1000"
 	}
 	"l4d2_bts01_forest"
 	{
@@ -639,19 +729,23 @@
 		"difficulty"	"1"
 		"tank_ban_start"	"30"
 		"tank_ban_end"		"50"
+		"distance"	"600"
 	}
 	"l4d2_diescraper2_streets_33"
 	{
 		"difficulty"	"2"
+		"distance"	"600"
 	}
 	"l4d2_diescraper3_mid_33"
 	{
 		"difficulty"	"3"
+		"distance"	"700"
 	}
 	"l4d2_diescraper4_top_33"
 	{
 		"difficulty"	"3"
 		"finale"	"1"
+		"distance"	"900"
 	}
 	"l4d_dbd2dc_anna_is_gone"
 	{
@@ -763,5 +857,32 @@
 	{
 		"difficulty" 	"2"
 		"finale"	"1"
+	}
+	"l4d_tbm_1"
+	{
+		"intro"		"1"
+		"difficulty"	"2"
+		"distance"	"700"
+	}
+	"l4d_tbm_2"
+	{
+		"difficulty"	"3"
+		"distance"	"1000"
+	}
+	"l4d_tbm_3"
+	{
+		"difficulty"	"3"
+		"distance"	"1000"
+	}
+	"l4d_tbm_4"
+	{
+		"difficulty"	"3"
+		"distance"	"900"
+	}
+	"l4d_tbm_5"
+	{
+		"difficulty" 	"2"
+		"finale"	"1"
+		"distance"	"800"
 	}
 }
