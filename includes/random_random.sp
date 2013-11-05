@@ -424,7 +424,7 @@ DoEventInfo(client, event)
             PrintToChat(client, "\x05Every time a survivor picks up any useful inventory item (pills, weapons, throwables, etc), their team loses 5 points. Type \"!bonus\" to see the current total penalty.\x01");
         }
         case EVT_PEN_HEALTH: {
-            PrintToChat(client, "\x05Every time a survivor uses a health item (pills, adrenaline, medkits and defibs), their team loses 25 points. Type \"!bonus\" to see the current total penalty.\x01");
+            PrintToChat(client, "\x05Every time a survivor uses a health item (pills, adrenaline, medkits and defibs), their team loses 20 points. Type \"!bonus\" to see the current total penalty.\x01");
         }
         case EVT_PEN_M2: {
             PrintToChat(client, "\x05Every time a survivor shoves (m2's) a special infected, their team loses 10 points. Only shovable capping infected count (\x03jockey, hunter, smoker\x05), there are no penalties for shoving boomers or spitters. Type \"!bonus\" to see the current total penalty.\x01");
@@ -1438,6 +1438,7 @@ RandomizeItems()
     new iCountStartAmmo = 0;                // how many starting ammo piles?
     new bool: bForceFinaleAmmo;
     new bool: bIsFireExtinguisher;
+    new hamId;
     
     new String:classname[128];
     new curEnt;                             // the entity we're currently storing data for
@@ -1520,10 +1521,19 @@ RandomizeItems()
                     }
                     
                     // some hittables are forced cars with alarms, or should just not be touched
-                    if (GetEntProp(i, Prop_Data, "m_iHammerID") == 1)
+                    hamId = GetEntProp(i, Prop_Data, "m_iHammerID");
+                    if ( hamId == 1 )
                     {
+                        // stabby's car or forced alarm car (c4m4 - stabby's event)
                         randType = HITTAB_CAR95;
                         g_strArHittableStorage[curHit][hitIsAlarmed] = true;
+                    }
+                    else if ( hamId == 2 )
+                    {
+                        // make a relatively harmless hittable, if there is a tank (c12m1)
+                        if ( g_bTankWillSpawn ) {
+                            randType = GetRandomInt(0, 1) ? HITTAB_HANDTRUCK : HITTAB_TABLE;
+                        }
                     }
                     
                     g_strArHittableStorage[curHit][hitPickedType] = randType;
