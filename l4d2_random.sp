@@ -10,6 +10,7 @@
 #include <l4d2_saferoom_detect>
 #undef REQUIRE_PLUGIN
 #include <readyup>
+#include <pause>
 #define REQUIRE_PLUGIN
 
 #include "includes/random_constants.sp"
@@ -112,23 +113,21 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 public OnAllPluginsLoaded()
 {
     g_bReadyUpAvailable = LibraryExists("readyup");
+    g_bPauseAvailable = LibraryExists("pause");
 }
 
 public OnLibraryRemoved(const String:name[])
 {
-    if (StrEqual(name, "readyup")) {
-        g_bReadyUpAvailable = false;
-    }
+    if ( StrEqual(name, "readyup") ) { g_bReadyUpAvailable = false; }
+    if ( StrEqual(name, "pause") ) { g_bPauseAvailable = false; }
 }
 
 public OnLibraryAdded(const String:name[])
 {
-    if (StrEqual(name, "readyup")) {
-        g_bReadyUpAvailable = true;
-    }
+    if ( StrEqual(name, "readyup") ) { g_bReadyUpAvailable = true; }
+    if ( StrEqual(name, "pause") ) { g_bPauseAvailable = true; }
+    
 }
-
-
 
 public Native_GetGnomeBonus(Handle:plugin, numParams)
 {
@@ -923,6 +922,8 @@ public Action: Say_Cmd(client, args)
 // pausing
 public Action:Listener_Pause(client, const String:command[], argc)
 {
+    if ( g_bPauseAvailable ) { return; }
+    
     if (GetConVarBool(FindConVar("sv_pausable")))
     {
         g_fPauseAttemptTime = 0.0;
@@ -936,6 +937,8 @@ public Action:Listener_Pause(client, const String:command[], argc)
 }
 public Action:OnClientCommand(client, args)
 {
+    if ( g_bPauseAvailable ) { return Plugin_Continue; }
+    
     new String:cmd[16];
     GetCmdArg(0, cmd, sizeof(cmd));
     
@@ -956,6 +959,8 @@ public Action:OnClientCommand(client, args)
 
 public OnCvarPausableChanged(Handle:cvar, const String:oldVal[], const String:newVal[])
 {
+    if ( g_bPauseAvailable ) { return; }
+    
     if (StringToInt(newVal))
     {
         // if this happens after pause command, we're paused
@@ -970,14 +975,27 @@ public OnCvarPausableChanged(Handle:cvar, const String:oldVal[], const String:ne
 
 public Action: Unpause_Cmd(client, args)
 {
+    if ( g_bPauseAvailable ) { return Plugin_Continue; }
+    
     // detect if we're in a pause
-    if (GetConVarBool(FindConVar("sv_pausable")))
+    if ( GetConVarBool(FindConVar("sv_pausable")) )
     {
         g_bIsPaused = false;
         PrintDebug(0, "[rand] Unpaused...");
     }
     return Plugin_Continue;
 }
+// if pause library is available:
+public OnPause()
+{
+    g_bIsPaused = true;
+    g_fPauseAttemptTime = GetGameTime();
+}
+
+public OnUnpause()
+{
+    g_bIsPaused = false;}
+
 /*
     Forwards from custom_map_transitions
     ------------------------------------- */

@@ -92,6 +92,7 @@ L4D2_Random
             
             - test:     still jockey in l4d1 mode ... sigh - can't reproduce (happened after pausing!)
             - test:     paused / unpaused => can't open presents (sometimes?)
+                            plus unpausing seems to break some other stuff (event hats, spawns)
             - test:     double smokers in 2v2/3v3?
             - test:     boobytraps on cola/gnome? shouldn't happen.
             - test:     hittable damage in minitanks event (looks ok.. why wrong sometimes?)
