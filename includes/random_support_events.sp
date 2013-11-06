@@ -661,10 +661,8 @@ EVENT_ArrayRemoveBoobyTrap(index)
 }
 
 
-/*
-    Haunted Doors
-    ------------------
-*/
+/*  Haunted Doors
+    ------------------ */
 public SUPPORT_ToggleDoor( entity )
 {
     new doorState = GetEntProp(entity, Prop_Data, "m_eDoorState");
@@ -733,10 +731,8 @@ public Action:Timer_DoorCircus(Handle:timer)
 }
 
 
-/*
-    Witch Hunt [ CanadaRox's WP code ]
-    ------------------
-*/
+/*  Witch Hunt [ CanadaRox's WP code ]
+    ------------------ */
 public Action:Timer_WitchSpawn(Handle:timer)
 {
     if (g_iSpecialEvent != EVT_WITCHES) {
@@ -852,4 +848,100 @@ Float:MULTIWITCH_GetMaxSurvivorCompletion()
         }
     }
     return flow;
+}
+
+
+/*  Event check
+    ------------------ */
+bool: IsEventOkayForMap( const String: sMap[], event )
+{
+    // if no known map, assume all events are okay
+    if ( !strlen(sMap) ) { return true; }
+    
+    // get map data for map name
+    //new bool:bIsIntro = false;
+    new bool:bIsFinale = false;
+    new iDoors = 1;
+    new bool:bNoTank = false;
+    new bool:bNoWitch = false;
+    new iNoStorm = 0;
+    //new bool:bNoRain = false;
+    
+    // assume
+    if (bIsFinale)
+    {
+        iDoors = 0;
+    }
+    
+    // get keyvalues
+    if (g_kRIData != INVALID_HANDLE) { KvRewind(g_kRIData); }
+    if ( KvJumpToKey(g_kRIData, sMap) )
+    {
+        //bIsIntro = bool: (KvGetNum(g_kRIData, "intro", 0));
+        iDoors = KvGetNum(g_kRIData, "doors", iDoors);
+        bNoTank = bool: (KvGetNum(g_kRIData, "no_tank", 0));
+        bNoWitch = bool: (KvGetNum(g_kRIData, "no_witch", 0));
+        iNoStorm = KvGetNum(g_kRIData, "no_storm", iNoStorm);
+        //bNoRain = bool: (KvGetNum(g_kRIData, "no_rain", 0));
+        bIsFinale = bool: (KvGetNum(g_kRIData, "finale", (bIsFinale) ? 1 : 0 ));
+    }
+    
+
+    // compare event with read mapdata
+    
+    if (    bIsFinale
+        &&  ( event == EVT_ADREN || event == EVT_MINITANKS || event == EVT_AMMO || event == EVT_WOMEN || event == EVT_WITCHES || event == EVT_PEN_TIME )
+    ) {
+        return false;
+    }
+    
+    // no tank, because tank is forced (hence the women, etc)
+    if (    bNoTank
+        &&  ( event == EVT_ADREN || event == EVT_MINITANKS || event == EVT_WOMEN || event == EVT_WITCHES )
+    ) {
+        return false;
+    }
+    
+    if (    bNoWitch
+        &&  ( event == EVT_WITCHES )
+    ) {
+        return false;
+    }
+    
+    if (    g_bCampaignMode
+        &&  (   event == EVT_QUADS || event == EVT_L4D1 || event == EVT_FF || event == EVT_MINITANKS
+            ||  event == EVT_NOHUD
+            ||  event == EVT_PEN_ITEM || event == EVT_PEN_HEALTH || event == EVT_PEN_M2 || event == EVT_PEN_TIME || event == EVT_SKEET || event == EVT_WITCHES || event == EVT_BADSANTA )
+    ) {
+        return false;
+    }
+    
+    if ( event == EVT_DOORS || event == EVT_KEYMASTER || event == EVT_DOORCIRCUS )
+    {
+        if ( iDoors == 0 ) {
+            return false;
+        }
+    }
+    
+    if ( iNoStorm == 2 )
+    {
+        if (event == EVT_FOG) {
+            return false;
+        }
+        else if (event == EVT_WEATHER) {
+            return false;
+        }
+    }
+    else if ( g_RI_iNoStorm == 1 && (event == EVT_WEATHER || event == EVT_FOG) )
+    {
+        return false;
+    }
+    
+    // block events if no SDKcalls ready
+    if ( event == EVT_BOOMFLU && (g_CallVomitSurvivor == INVALID_HANDLE || g_CallBileJarPlayer == INVALID_HANDLE) )
+    {
+        return false;
+    }
+    
+    return true;
 }

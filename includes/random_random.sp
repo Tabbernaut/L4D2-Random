@@ -1605,9 +1605,12 @@ RandomizeItems()
                     bIsFireExtinguisher = true;
                 }
             }
-            else if (g_RI_bIsFinale && classnameRoN == RANDOMIZABLE_ITEM_AMMO && GetRandomFloat(0.001,1.0) > GetConVarFloat(g_hCvarFinaleAmmoChance) && !g_bNoAmmo)
-            {
-                // don't touch ammo piles on finales
+            else if (   (   ( g_RI_bIsFinale  && classnameRoN == RANDOMIZABLE_ITEM_AMMO && GetRandomFloat(0.001,1.0) > GetConVarFloat(g_hCvarFinaleAmmoChance) ) || 
+                            ( !g_RI_bIsFinale && classnameRoN == RANDOMIZABLE_ITEM_AMMO && GetRandomFloat(0.001,1.0) > GetConVarFloat(g_hCvarNormalAmmoChance) )
+                        ) &&
+                        !g_bNoAmmo
+            ) {
+                // don't touch ammo piles on finales or on normal maps if odds are matched
                 iCountFinaleAmmo++;
                 bForceFinaleAmmo = true;
             }
@@ -1643,7 +1646,6 @@ RandomizeItems()
             new randomIndex = GetRandomInt(0, (g_iWeightedChoicesTotal-1));
             new randomPick = g_iArWeightedChoices[randomIndex];
             
-            
             // prevent finale flooded with ammo... repick
             if (iCountFinaleAmmo && !bForceFinaleAmmo && randomPick == INDEX_AMMO)
             {
@@ -1660,8 +1662,8 @@ RandomizeItems()
             if (g_strArStorage[curEnt][entInStartSaferoom])
             {
                 // noitem chance for start saferoom?
-                if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarStartSafeItem)) {
-                    
+                if (GetRandomFloat(0.001,1.0) <= GetConVarFloat(g_hCvarStartSafeItem))
+                {
                     if (randomPick == INDEX_NOITEM) {
                         while (randomPick == INDEX_NOITEM) {
                             randomIndex = GetRandomInt(randomIndex + 1, (g_iWeightedChoicesTotal-1));
@@ -1677,7 +1679,8 @@ RandomizeItems()
                         }
                     }
                     
-                } else {
+                }
+                else {
                     randomPick = INDEX_NOITEM;
                 }
                 
@@ -4787,6 +4790,8 @@ LockDoors()
 
 
 
+
+
 //  Randomization preparation
 //  ------------------------------
 // preparation of choice-hat (events)
@@ -4811,7 +4816,7 @@ RANDOM_PrepareChoicesEvents()
         //      EVT_AMMO: because of fancy way ammo is handled in finales anyway
         //      EVT_WITCHES: don't mix it with tanks, and it doesn't work as well on finales, so skip it there too
         if (    g_RI_bIsFinale
-            &&  ( i == EVT_ADREN || i == EVT_MINITANKS || i == EVT_AMMO || i == EVT_WOMEN || i == EVT_WITCHES || i == EVT_PEN_TIME || i == EVT_WITCHES )
+            &&  ( i == EVT_ADREN || i == EVT_MINITANKS || i == EVT_AMMO || i == EVT_WOMEN || i == EVT_WITCHES || i == EVT_PEN_TIME )
         ) {
             continue;
         }

@@ -82,6 +82,7 @@ INIT_DefineCVars()
     g_hCvarGiftPositiveChance = CreateConVar(               "rand_giftgood_chance",          "0.63",    "Chances of opening a gift resulting in something positive.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarPipeDudChance = CreateConVar(                    "rand_pipedud_chance",           "0.35",    "Chances of a pipebomb being a dud.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarAvoidIncapsChance = CreateConVar(                "rand_moreincaps_chance",        "0.35",    "If the incap count is only 1 (33%), odds that it gets set to 2 anyway.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    g_hCvarNormalAmmoChance = CreateConVar(                 "rand_normal_ammo",              "0.65",    "Chances that ammo piles are randomized (if an event doesn't override this).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarFinaleAmmoChance = CreateConVar(                 "rand_finale_ammo",              "0.0",     "Chances of finale ammo piles being randomized.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarAlarmedCarChance = CreateConVar(                 "rand_caralarm_chance",          "0.2",     "Chances of a car being alarmed.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarT2StartChance = CreateConVar(                    "rand_t2saferoom_chance",        "0.0",     "Chances of allowing tier 2 in start saferoom.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -652,10 +653,10 @@ bool: RI_KV_UpdateRandomMapInfo()
     new String: mapname[64];
     GetCurrentMap(mapname, sizeof(mapname));
     
-    if (L4D_IsMissionFinalMap()) { g_RI_bIsFinale = true; }
+    //if (L4D_IsMissionFinalMap()) { g_RI_bIsFinale = true; }   // can't trust this, at all
     
     // get keyvalues
-    if (KvJumpToKey(g_kRIData, mapname))
+    if ( KvJumpToKey(g_kRIData, mapname) )
     {
         g_RI_bIsIntro = bool: (KvGetNum(g_kRIData, "intro", 0));
         g_RI_iDifficulty = KvGetNum(g_kRIData, "difficulty", g_RI_iDifficulty);
@@ -696,6 +697,24 @@ bool: RI_KV_UpdateRandomMapInfo()
         
         
         PrintDebug(1, "[RI] Read data: intro: %i; difficulty: %i; doors; %i; nostorm: %i", g_RI_bIsIntro, g_RI_iDifficulty, g_RI_iDoors, g_RI_iNoStorm);
+        
+        
+        if ( !g_bCMTActive )
+        {
+            // find current map, and if not a finale
+            // set the next keyvalue-key to be the next map
+
+            if ( !g_RI_bIsFinale && !KvGotoNextKey( g_kRIData, true ) )
+            {
+                // store next keyname as next map
+                KvGetSectionName( g_kRIData, g_sNextMap, sizeof(g_sNextMap) );
+            }
+            else
+            {
+                FormatEx( g_sNextMap, sizeof(g_sNextMap), "" );
+            }
+            LogMessage("[RI] Next map expected: '%s'.", g_sNextMap);
+        }
         
         return true;
     }

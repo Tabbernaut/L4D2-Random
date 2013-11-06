@@ -680,10 +680,6 @@ CheatCommand(client, const String:command[], const String:arguments[])
 }
 
 
-
-
-
-
 // hide/show survivor weapon
 /* HideWeapon(client)
 {
@@ -864,4 +860,4 @@ public bool:_TraceFilter(entity, contentsMask, any:data)
     // only check if we're not hitting ourselves
     if (!entity || entity == data || !IsValidEntity(entity)) { return false; }
     return true;
-}   
+}

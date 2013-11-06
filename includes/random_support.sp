@@ -2033,6 +2033,13 @@ SUPPORT_VotePickEventChoose(event, client)
         return;
     }
     
+    // check if it is okay for the next map...
+    if ( !IsEventOkayForMap( g_sNextMap, event ) )
+    {
+        PrintToChat( client, "\x01[\x05r\x01] Can't pick this event for the next map ('\x05%s\x01') (or in this game mode). Try another.", g_sNextMap );
+    }
+    
+    
     if (g_bTeamSurvivorVotedEvent || g_bTeamInfectedVotedEvent)
     {
         if (    (GetClientTeam(client) == TEAM_SURVIVOR && g_bTeamSurvivorVotedEvent)
@@ -2108,6 +2115,11 @@ SUPPORT_PickEvent(event, client=0)
             PrintToChat(client, "\x01[\x05r\x01] Wrong event number: \x04%i\x01. For numbers go from \x041\x01 to \x04%i\x01. For a list, see http://www.tabun.nl/random/.", event, EVT_TOTAL);
         }
         return;
+    }
+    
+    if ( !IsEventOkayForMap( g_sNextMap, event ) )
+    {
+        PrintToChat( client, "\x01[\x05r\x01] \x04Warning\x01, this event is unsuited for the next map ('\x05%s\x01') (or in this game mode). Don't complain if it bugs out!", g_sNextMap );
     }
     
     g_iPickEvent = event - 1;

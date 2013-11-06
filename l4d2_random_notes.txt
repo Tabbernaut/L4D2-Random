@@ -75,6 +75,9 @@ L4D2_Random
             - Fixed problem with readyup & ledge-hanging with damage bonus scoring.
             - Fixed minor event/shuffle voting problem on roundhalf switch.
             - Fixed some (potential) problems with tank selection.
+            - Solved a problem that made Random think every map was a finale map (limiting the available special events).
+            - Now prevents events from being voted for if the next map doesn't suit them.
+            - Made it 33% likely that ammo piles (in non-finale maps) are left alone.
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -99,7 +102,6 @@ L4D2_Random
             - tweak:    if paused during temporary blindness, re-blind on resume (for as much time as should be remaining..)
             - tweak:    make teamshuffle more sensible (force it to be at least X different from before)
             
-            - bugfix:   block event votes if the next map is one in which that event would be broken (finales etc)
             - bugfix:   still not the right penalty counts on double round end.. (only display)
             - bugfix:   if you hold nothing, then get picked up, you get to keep the pistol
             - bugfix:   haunted doors: sometimes doors get stuck.. detect / prevent?
@@ -114,8 +116,6 @@ L4D2_Random
             
     side considerations / 3rd party bugs
     ------------------------------------
-            - hmmmm     make a team-suggester plugin that references playstats db...
-    
             - tweak:    show a list of penalty causers / bonus getters -- at round end ( just use the skill report in playstats)
             - tweak:    [consider] give points for surviving longer during DT3 event (and maybe other events in specific maps too?)
                         holdout bonus.. (and deduct the total you're able to get from the total distance points)

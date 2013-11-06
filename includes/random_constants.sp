@@ -29,7 +29,7 @@ const           EARLYDOOR_MAX           = 10;
 const           STR_MAX_WPCLASSNAME     = 48;
 const           STR_MAX_ITEMGIVEN       = 48;
 const           STR_MAX_MODELNAME       = 64;
-const           STR_MAX_MAPNAME         = 32;
+const           STR_MAX_MAPNAME         = 64;
 
 
 // Random configuration

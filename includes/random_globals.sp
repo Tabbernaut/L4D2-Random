@@ -21,6 +21,7 @@ new     String:         g_sMeleeClass           [MELEE_CLASS_COUNT][MELEE_CLASS_
 new     Handle:         g_hSteamIds                                         = INVALID_HANDLE;       // store players so we know who's already been welcomed
 new     bool:           g_bReadyUpAvailable                                 = false;                // whether crox's readyup plugin is used
 new     bool:           g_bCMTActive                                        = false;                // whether custom map transitions is active (and running a mapset)
+new     String:         g_sNextMap              [STR_MAX_MAPNAME];                                  // what the upcoming map is (if any)
 
 new     bool:           g_bDefaultCvarsLoaded                               = false;                // if not loaded, check if they can be loaded and load them
 new     bool:           g_bVeryFirstMapLoad                                 = true;                 // for preventing a first-map problem with item randomization
@@ -389,6 +390,7 @@ new     Handle:         g_hCvarTankItemDropChance                           = IN
 new     Handle:         g_hCvarGiftPositiveChance                           = INVALID_HANDLE;       // cvar the odds of opening a gift resulting in something good
 new     Handle:         g_hCvarPipeDudChance                                = INVALID_HANDLE;       // cvar the odds of any pipebomb being a dud
 new     Handle:         g_hCvarAvoidIncapsChance                            = INVALID_HANDLE;       // cvar the odds of changing 1-incap-per-round back to 2 (so we can make it easier with a cvar)
+new     Handle:         g_hCvarNormalAmmoChance                             = INVALID_HANDLE;       // cvar the odds that ammo is randomized on normal maps
 new     Handle:         g_hCvarFinaleAmmoChance                             = INVALID_HANDLE;       // cvar the odds that finale ammo is randomized
 new     Handle:         g_hCvarAlarmedCarChance                             = INVALID_HANDLE;       // cvar the odds that a car is alarmed
 new     Handle:         g_hCvarT2StartChance                                = INVALID_HANDLE;       // cvar odds that t2's are allowed in start saferoom

@@ -30,7 +30,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.0.72"
+#define PLUGIN_VERSION "1.0.73"
 
 /*
         L4D2 Random
@@ -59,6 +59,7 @@
         
         Note:
             hittable props with hammerid 1 are always made prop_alarm_cars (to keep events possible)
+            hittable props with hammerid 2 are always made 'weak' hittables (tables, handcarts)
         
         equal flags:
         ------------
@@ -985,6 +986,8 @@ public OnCMTStart( rounds, const String:mapname[] )
 {
     // reset stats
     g_bCMTActive = true;
+    strcopy( g_sNextMap, sizeof(g_sNextMap), mapname );
+    LogMessage("[RI] First map expected (CMT): '%s'.", g_sNextMap);
 }
 
 // called when map begins (mapname is the name of the map *after* this)
@@ -992,12 +995,15 @@ public OnCMTNextKnown( const String:mapname[] )
 {
     // store mapname, so we can block votes for events that shouldn't be
     // run on that next map...
+    strcopy( g_sNextMap, sizeof(g_sNextMap), mapname );
+    LogMessage("[RI] Next map expected (CMT): '%s'.", g_sNextMap);
 }
 
 // called after the last round has ended
 public OnCMTEnd()
 {
     g_bCMTActive = false;
+    FormatEx( g_sNextMap, sizeof(g_sNextMap), "" );
 }
 
 /*
