@@ -60,10 +60,7 @@ new                     g_iEventMenu            [MAXPLAYERS+1]              = {0
 new     bool:           g_bIsPaused                                         = false;                // whether game is paused
 new     Float:          g_fPauseAttemptTime                                 = 0.0;                  // when the !pause command was issued
 
-// Team shuffle handling
-new     bool:           g_bTeamSurvivorVoted                                = false;                // whether anyone in survivor team used !teamshuffle or !randteams
-new     bool:           g_bTeamInfectedVoted                                = false;
-new     Float:          g_fTeamShuffleTimeout                               = 0.0;                  // when we can shuffle again
+
 
 // Event forcing handling
 new     bool:           g_bTeamSurvivorVotedEvent                           = false;                // whether anyone in survivor team used !teamshuffle or !randteams

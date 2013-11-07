@@ -78,6 +78,8 @@ L4D2_Random
             - Solved a problem that made Random think every map was a finale map (limiting the available special events).
             - Now prevents events from being voted for if the next map doesn't suit them.
             - Made it 33% likely that ammo piles (in non-finale maps) are left alone.
+            - Fixed !rand distance print while distance points frozen.
+            - Split off teamshuffling to separate plugin (teamshuffle.sp).
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -101,9 +103,9 @@ L4D2_Random
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             
             - tweak:    if paused during temporary blindness, re-blind on resume (for as much time as should be remaining..)
-            - tweak:    make teamshuffle more sensible (force it to be at least X different from before)
             
             - bugfix:   still not the right penalty counts on double round end.. (only display)
+                        test.. fixed now?
             - bugfix:   if you hold nothing, then get picked up, you get to keep the pistol
             - bugfix:   haunted doors: sometimes doors get stuck.. detect / prevent?
             - bugfix:   scout max ammo still broken / wrong (see rjven) [ doesn't seem to be the case for hunting rifle]

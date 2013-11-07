@@ -228,16 +228,12 @@ public OnPluginStart()
     RegConsoleCmd("sm_drop",        RandomDrop_Cmd,         "Drop your currently selected weapon or item.");
     RegConsoleCmd("sm_eventinfo",   RandomEventInfo_Cmd,    "Show information about the current event. Add number to get information for the event with that number (use number in list on website).");
     
-    RegConsoleCmd("sm_randteams",   RandomTeamShuffle_Cmd,  "Vote for a team shuffle. Only works during readyup.");
-    RegConsoleCmd("sm_teamshuffle", RandomTeamShuffle_Cmd,  "Vote for a team shuffle. Only works during readyup.");
-    
     RegConsoleCmd("sm_event",       RandomPickEvent_Cmd,    "Vote for a special event to appear next round (use number in list on website).");
     RegConsoleCmd("sm_gameevent",   RandomPickGameEvent_Cmd, "Vote for a special event for all rounds (use number in list on website).");
     
     RegConsoleCmd("sm_rerandom",    RandomCoopRerandom_Cmd, "Force a re-randomization of this round, if the survivors fail.");
     
     // Admin and test commands
-    RegAdminCmd("forceteamshuffle",  RandomForceTeamShuffle_Cmd,    ADMFLAG_CHEATS, "Shuffle the teams! Only works during readyup. Admins only.");
     RegAdminCmd("forceevent",        RandomForcePickEvent_Cmd,      ADMFLAG_CHEATS, "Force a special event for next round (use number in list on website).");
     RegAdminCmd("forcegameevent",    RandomForcePickGameEvent_Cmd,  ADMFLAG_CHEATS, "Force a special event for all rounds (use number in list on website).");
     
@@ -753,29 +749,6 @@ public Action: RandomEventInfo_Cmd(client, args)
     }
     return Plugin_Handled;
 }
-public Action: RandomTeamShuffle_Cmd(client, args)
-{
-    if (g_bCampaignMode)
-    {
-        PrintToChat(client, "\x01[\x05r\x01] This only works in versus games.");
-        return Plugin_Handled;
-    }
-    
-    SUPPORT_VoteShuffleTeams(client);
-    return Plugin_Handled;
-}
-public Action: RandomForceTeamShuffle_Cmd(client, args)
-{
-    if (g_bCampaignMode)
-    {
-        PrintToChat(client, "\x01[\x05r\x01] This only works in versus games.");
-        return Plugin_Handled;
-    }
-    
-    SUPPORT_ShuffleTeams(client);
-    return Plugin_Handled;
-}
-
 public Action: RandomPickEvent_Cmd(client, args)
 {
     if (g_bCampaignMode) {

@@ -38,15 +38,15 @@ public Plugin:myinfo =
     name = "Random - Damage Scoring",
     author = "CanadaRox, Tabun",
     description = "Custom damage scoring based on damage. Adjusted for use with Random config.",
-    version = "1.4",
+    version = "1.5",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 };
 
 
 // plugin internals
 new     bool:       g_bLateLoad;
-//new     bool:       g_bReadyUpAvailable;
 new     bool:       g_bInRound;
+new     bool:       g_bSecondHalf;
 
 // game cvars
 new     Handle:     g_hCvarTeamSize;
@@ -179,31 +179,6 @@ public Native_CheckStartHealth(Handle:plugin, numParams)
 }
 
 
-
-/*
-// crox readyup usage
-public OnAllPluginsLoaded()
-{
-    g_bReadyUpAvailable = LibraryExists("readyup");
-}
-
-public OnLibraryRemoved(const String:name[])
-{
-    if (StrEqual(name, "readyup")) {
-        g_bReadyUpAvailable = false;
-    }
-}
-
-public OnLibraryAdded(const String:name[])
-{
-    if (StrEqual(name, "readyup")) {
-        g_bReadyUpAvailable = true;
-    }
-}
-*/
-
-
-
 public OnPluginStart()
 {
     // Score Change Triggers
@@ -267,11 +242,16 @@ public OnMapStart()
     }
 }
 
+public OnMapEnd()
+{
+    g_bSecondHalf = false;
+}
+
 public OnRoundIsLive()
 {
     // crox readyup
     // if round goes live, make sure all the damage stuff is reset
-    new round = GameRules_GetProp("m_bInSecondHalfOfRound");
+    new round = GetCurRound();
     
     iTotalDamage[round] = 0;
     iSolidHealthDamage[round] = 0;
@@ -329,13 +309,15 @@ public RoundEnd_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
     // set whether the round was a wipe or not
     if (!GetUprightSurvivors()) {
-        bHasWiped[GameRules_GetProp("m_bInSecondHalfOfRound")] = true;
+        bHasWiped[GetCurRound()] = true;
     }
     
-    // when round is over, 
+    // when round is over...
+    
     g_bInRound = false;
-    bRoundOver[GameRules_GetProp("m_bInSecondHalfOfRound")] = true;
-
+    bRoundOver[GetCurRound()] = true;
+    g_bSecondHalf = true;
+    
     new reason = GetEventInt(event, "reason");
     if (reason == 5)
     {
@@ -354,7 +336,7 @@ public DoorClose_Event(Handle:event, const String:name[], bool:dontBroadcast)
 public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new client = GetClientOfUserId(GetEventInt(event, "userid"));
-    new round = GameRules_GetProp("m_bInSecondHalfOfRound");
+    new round = GetCurRound();
     
     if (client && IsSurvivor(client))
     {
@@ -408,7 +390,7 @@ public PlayerLedgeGrab_Event(Handle:event, const String:name[], bool:dontBroadca
     
     new health = L4D2Direct_GetPreIncapHealth(client);
     new temphealth = L4D2Direct_GetPreIncapHealthBuffer(client);
-    new round = GameRules_GetProp("m_bInSecondHalfOfRound");
+    new round = GetCurRound();
     
     iTotalDamage[round] += health + temphealth;
     
@@ -432,7 +414,7 @@ public PlayerIncap_Event(Handle:event, const String:name[], bool:dontBroadcast)
     if (!IsSurvivor(client)) { return; }
     
     new srvchr = GetPlayerCharacter(client);
-    new round = GameRules_GetProp("m_bInSecondHalfOfRound");
+    new round = GetCurRound();
     
     bPlayerHasBeenIncapped[srvchr] = true;
     
@@ -455,7 +437,7 @@ public Action:L4D2_OnRevived(client)
     
     new health = GetSurvivorPermanentHealth(client);
     new temphealth = GetSurvivorTempHealth(client);
-    new round = GameRules_GetProp("m_bInSecondHalfOfRound");
+    new round = GetCurRound();
     
     iTotalDamage[round] -= (health + temphealth);
     
@@ -476,7 +458,7 @@ public OnTakeDamagePost(victim, attacker, inflictor, Float:damage, damagetype)
     if (!IsSurvivor(victim)) { return; }
     
     new srvchr = GetPlayerCharacter(victim);
-    new round = GameRules_GetProp("m_bInSecondHalfOfRound");
+    new round = GetCurRound();
     
     if (iHealth[srvchr])
     {
@@ -506,7 +488,7 @@ public OnTakeDamagePost(victim, attacker, inflictor, Float:damage, damagetype)
 
 stock GetDamage(round=-1)
 {
-    return (round == -1) ? iTotalDamage[GameRules_GetProp("m_bInSecondHalfOfRound")] : iTotalDamage[round];
+    return (round == -1) ? iTotalDamage[GetCurRound()] : iTotalDamage[round];
 }
 
 stock SetBonus(iBonus)
@@ -518,7 +500,7 @@ stock SetBonus(iBonus)
 stock StoreBonus(iBonus)
 {
     // store bonus for display
-    new round = GameRules_GetProp("m_bInSecondHalfOfRound");
+    new round = GetCurRound();
     new aliveSurvs = GetAliveSurvivors();
 
     iStoreBonus[round] = iBonus;
@@ -532,7 +514,7 @@ stock DisplayBonus(client=-1)
     new String:msgPartHdr[48];
     new String:msgPartDmg[64];
     
-    new curRound = GameRules_GetProp("m_bInSecondHalfOfRound");
+    new curRound = GetCurRound();
     
     // call for gnome bonus scoring native if we just finished a round
     if ((!curRound && bRoundOver[0]) || (curRound && bRoundOver[1]))
@@ -614,7 +596,7 @@ stock DisplayBonusExplanation(client=-1)
     new String: sReport[MAX_REPORTLINES][STR_REPLINELENGTH];
     new iLine = 0;
     
-    new round = GameRules_GetProp("m_bInSecondHalfOfRound");
+    new round = GetCurRound();
     new living = (bRoundOver[round]) ? iStoreSurvivors[round] : GetAliveSurvivors();
     new iDistMode = g_iSettingScaleMode;
     new iBonusExtra = (bRoundOver[round]) ? RoundToFloor(float(iStoreExtra[round]) / float(living)) : RoundToFloor(float(g_iRoundExtra) / float(living));
@@ -815,7 +797,7 @@ stock GetStartHealthTotal(round = -1)
 {
     new totalHealth = 0;
     
-    if (round == -1) { round = GameRules_GetProp("m_bInSecondHalfOfRound"); }
+    if (round == -1) { round = GetCurRound(); }
     
     for (new j=0; j < MAX_CHARACTERS; j++)
     {
@@ -832,7 +814,7 @@ stock GetStartHealthTotal(round = -1)
 
 stock CheckStartHealth(round = -1)
 {
-    if (round == -1) { round = GameRules_GetProp("m_bInSecondHalfOfRound"); }
+    if (round == -1) { round = GetCurRound(); }
     
     new currentHealth[MAX_CHARACTERS] = {100,...};
     
@@ -860,7 +842,7 @@ stock GetSurvivorPermanentHealth(client) return GetEntProp(client, Prop_Send, "m
 
 stock CalculateSurvivalBonus()
 {
-    new iRound = GameRules_GetProp("m_bInSecondHalfOfRound");
+    new iRound = GetCurRound();
 
     g_iRoundExtra = RNDMAIN_GetGnomeBonus();
     
@@ -956,6 +938,7 @@ stock bool:IsSurvivor(client)
 
 stock bool:IsClientAndInGame(index) return (index > 0 && index <= MaxClients && IsClientInGame(index));
 
+stock GetCurRound() { return (g_bSecondHalf) ? 1 : 0; }
 stock GetPlayerCharacter(client)
 {
     new tmpChr = GetEntProp(client, Prop_Send, "m_survivorCharacter");
