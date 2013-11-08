@@ -101,8 +101,8 @@ L4D2_Random
                             maybe for car alarm props? some props not taken into account by hittablecontrol plugin?
             
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
-            
             - tweak:    if paused during temporary blindness, re-blind on resume (for as much time as should be remaining..)
+            - tweak:    find less annoying way of doing gunswap (reload before swapping?)
             
             - bugfix:   still not the right penalty counts on double round end.. (only display)
                         test.. fixed now?

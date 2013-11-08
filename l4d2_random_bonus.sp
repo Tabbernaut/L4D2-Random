@@ -47,6 +47,7 @@ public Plugin:myinfo =
 new     bool:       g_bLateLoad;
 new     bool:       g_bInRound;
 new     bool:       g_bSecondHalf;
+new     bool:       g_bFirstRoundReallyOver;
 
 // game cvars
 new     Handle:     g_hCvarTeamSize;
@@ -234,6 +235,7 @@ public OnMapStart()
         iStorePBonus[i] = 0;
         bRoundOver[i] = false;
         bHasWiped[i] = false;
+        g_bFirstRoundReallyOver = false;
         
         for (new j=0; j < MAX_CHARACTERS; j++)
         {
@@ -303,6 +305,11 @@ public RoundStart_Event(Handle:event, const String:name[], bool:dontBroadcast)
     }
     
     g_bInRound = true;
+    
+    if (g_bSecondHalf)
+    {
+        g_bFirstRoundReallyOver = true;
+    }
 }
 
 public RoundEnd_Event(Handle:event, const String:name[], bool:dontBroadcast)
@@ -493,6 +500,8 @@ stock GetDamage(round=-1)
 
 stock SetBonus(iBonus)
 {
+    if ( !g_bInRound ) { return; }
+    
     SetConVarInt(g_hCvarSurvivalBonus, iBonus);
     StoreBonus(iBonus);
 }
@@ -938,7 +947,7 @@ stock bool:IsSurvivor(client)
 
 stock bool:IsClientAndInGame(index) return (index > 0 && index <= MaxClients && IsClientInGame(index));
 
-stock GetCurRound() { return (g_bSecondHalf) ? 1 : 0; }
+stock GetCurRound() { return (g_bSecondHalf && g_bFirstRoundReallyOver) ? 1 : 0; }
 stock GetPlayerCharacter(client)
 {
     new tmpChr = GetEntProp(client, Prop_Send, "m_survivorCharacter");
