@@ -885,7 +885,7 @@ bool: IsEventOkayForMap( const String: sMap[], event )
         //bNoRain = bool: (KvGetNum(g_kRIData, "no_rain", 0));
         bIsFinale = bool: (KvGetNum(g_kRIData, "finale", (bIsFinale) ? 1 : 0 ));
     }
-    
+    if (g_kRIData != INVALID_HANDLE) { KvRewind(g_kRIData); }
 
     // compare event with read mapdata
     
