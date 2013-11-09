@@ -567,7 +567,8 @@ RANDOM_DetermineRandomStuff()
         // random distance
         //      but let's not mess with changing distance halfway through a map though...
         new distMode = GetConVarInt(g_hCvarRandDistance);
-        if (!g_bSecondHalf) {
+        if (!g_bSecondHalf)
+        {
             // store default distance for map, so we can recalculate on the same basis for round 2
             g_iDefaultDistance = L4D_GetVersusMaxCompletionScore();
         }
@@ -577,10 +578,10 @@ RANDOM_DetermineRandomStuff()
         if (g_bStripperAltDetected && g_RI_iDistanceHard > 0) { distNew = g_RI_iDistanceHard; }
         else if (g_RI_iDistance > 0) { distNew = g_RI_iDistance; }
         
-        PrintDebug(2, "[rand] Default distance: %i; Distance found in RI: %i; Distance base set: %i.", g_iDefaultDistance, g_RI_iDistance, distNew );
-        
         if (distMode != 0 && !g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_POINTS))
         {
+            PrintDebug(2, "[rand] Default distance: %i; Distance found in RI: %i; Distance base set: %i.", g_iDefaultDistance, g_RI_iDistance, distNew );
+            
             if (distMode == 1)
             {
                 // variance mode
@@ -4112,7 +4113,7 @@ RandomizeFirstSpawns()
         g_iArStorageSpawns[0] = tmpPick;
     }
 
-    PrintDebug(1, "[rand] Picked four classes for first attack (%s, %s, %s, %s).",
+    PrintDebug(6, "[rand] Picked four classes for first attack (%s, %s, %s, %s).",
             g_csSIClassName[g_iArStorageSpawns[0]],
             g_csSIClassName[g_iArStorageSpawns[1]],
             g_csSIClassName[g_iArStorageSpawns[2]],
@@ -4150,7 +4151,7 @@ DetermineSpawnClass(any:client, any:iClass)
         // build first attack
         iClass = GetClassForFirstAttack(client);
         forcedClass = true;
-        PrintDebug(2, "[rand si] first attack spawn assigned: %8s => %N", g_csSIClassName[iClass], client);
+        PrintDebug(6, "[rand si] first attack spawn assigned: %8s => %N", g_csSIClassName[iClass], client);
     }
     else if (g_iSpectateGhostCount && !IsFakeClient(client))
     {
@@ -4158,7 +4159,7 @@ DetermineSpawnClass(any:client, any:iClass)
         g_iSpectateGhostCount--;
         iClass = g_iSpectateGhost[g_iSpectateGhostCount];
         forcedClass = true;
-        PrintDebug(2, "[rand si] spectate ghost reset: %s => %N", g_csSIClassName[iClass], client);
+        PrintDebug(4, "[rand si] spectate ghost reset: %s => %N", g_csSIClassName[iClass], client);
     }
     else if (GetConVarBool(g_hCvarRandomSpawns))
     {
@@ -4186,13 +4187,13 @@ DetermineSpawnClass(any:client, any:iClass)
             }
         }
         
-        PrintDebug(2, "[rand si] picked class: %s => %N", g_csSIClassName[iClass], client);
+        PrintDebug(6, "[rand si] picked class: %s => %N", g_csSIClassName[iClass], client);
         checkSacking = true;
     }
     else
     {
         // nothing changed, return
-        PrintDebug(2, "[rand si] valve pick. (%N = %i)", client, iClass);
+        PrintDebug(4, "[rand si] valve pick. (%N = %i)", client, iClass);
         return;
     }
     
@@ -4382,14 +4383,14 @@ DetermineSpawnClass(any:client, any:iClass)
                 }
             }
         
-            PrintDebug(2, "[rand si] spawn repick for %N: %s => %s instead.", client, g_csSIClassName[oldClass], g_csSIClassName[iClass]);
+            PrintDebug(4, "[rand si] spawn repick for %N: %s => %s instead.", client, g_csSIClassName[oldClass], g_csSIClassName[iClass]);
         }
     }
     
     // debug report for forced spawns
     if (forcedClass)
     {
-        PrintDebug(2, "[rand si] forced class pick: %s => %N", g_csSIClassName[iClass], client);
+        PrintDebug(4, "[rand si] forced class pick: %s => %N", g_csSIClassName[iClass], client);
     }
     
     // special case for skeet event: always 2 hunters in the attack at least
@@ -4399,7 +4400,7 @@ DetermineSpawnClass(any:client, any:iClass)
         
         if (hunters < 2) {
             iClass = ZC_HUNTER;
-            PrintDebug(2, "[rand si] forcing hunter for skeet event (%N).", client);
+            PrintDebug(6, "[rand si] forcing hunter for skeet event (%N).", client);
         }
     }
     

@@ -6,6 +6,7 @@ const           DEBUG_MODE              = 0;
 // -------------------------
 
 const           TEAM_SIZE               = 4;
+const           MAXROLES                = 20;
 const           ENTITY_COUNT            = 2048;
 const           HITTABLE_COUNT          = 128;          // just arbitrary
 const           MELEE_CLASS_COUNT       = 32;
@@ -43,6 +44,7 @@ const Float:    DELAY_SECONDHALF        = 1.0;          // how long to wait on s
 const Float:    DELAY_SECONDHALF_REP    = 1.25;         // how long to wait on secondroundhalf before doing the report
 const Float:    DELAY_SURVSETUP         = 0.25;         // how long to wait after team switch/join to set survivor startup (for GetPlayerSlot check)
 const Float:    DELAY_TEAMSWAP          = 0.1;          // how long to wait before applying changes after team swap..
+const Float:    DELAY_FORCEROLE         = 0.2;          // how long to wait after teamswap to force the special event role
 const Float:    TIMER_POUNCECHECK       = 0.1;          // interval to check for hunters being in-pounce
 const Float:    DELAY_WELCOMEMSG        = 10.0;         // wait time between connect & message
 const Float:    DELAY_PANELAFTERLIVE    = 2.5;          // wait time between OnRoundIsLive and drawn panel report
@@ -493,6 +495,13 @@ const           DMGTYPE_CHAINSAW        = (1<<26);
 
 // structs, enums
 // --------------
+
+// witch array entries (maxplayers+index)
+enum _:strPlayDisco
+{
+    DISC_PAUSE,
+    DISC_CLASS
+};
 
 enum randomCommands             // for use with tries to check if a command was typed in chat
 {

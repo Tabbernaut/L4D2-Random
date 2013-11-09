@@ -753,7 +753,7 @@ public Action:Timer_WitchSpawn(Handle:timer)
             if (IsClientInGame(i))
             {
                 g_iWitchesSpawned++;
-                PrintDebug(5, "[rand] Witch Timer: spawning witch!");
+                //PrintDebug(5, "[rand] Witch Timer: spawning witch!");
                 
                 if (GetConVarBool(g_hCvarUseOldSpawn)) {
                     CheatCommand(i, "z_spawn_old", "witch auto");

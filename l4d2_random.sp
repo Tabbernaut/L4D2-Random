@@ -467,10 +467,19 @@ public OnClientDisconnect_Post(client)
     {
         new Handle:pack = CreateDataPack();
         WritePackCell(pack, g_bPlayersLeftStart);
+        WritePackCell(pack, true);
         WritePackCell(pack, client);
         CreateTimer(0.1, Timer_CheckSpecialEventRole, pack, TIMER_FLAG_NO_MAPCHANGE);
         return;
     }
+    
+    PrintDebug(3, "Client disconnected: %i (hadspawn %i / wasghost %i)", client, g_bHasSpawned[client], g_bHasGhost[client] );
+    
+    // safeguard for SI
+    g_bHasGhost[client] = false;
+    g_bHasSpawned[client] = false;
+    
+    
     
     if (!g_bIsTankInPlay || client != g_iTankClient) { return; }
     CreateTimer(0.1, Timer_CheckTankDeath, client);
@@ -481,6 +490,9 @@ public OnClientPostAdminCheck(client)
     SDKHook(client, SDKHook_WeaponCanUse, OnWeaponCanUse);      // hook for t2 nerfing
     SDKHook(client, SDKHook_WeaponEquipPost, OnWeaponEquip);    // hook for item penalty
     SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);        // hook for events damage changes
+    
+    // safeguard for SI
+    //g_bHasSpawned[client] = false;
     
     // special case: gunswap ammo count
     if (g_iSpecialEvent == EVT_GUNSWAP && IsSurvivor(client))
@@ -978,7 +990,7 @@ public OnCMTStart( rounds, const String:mapname[] )
     // reset stats
     g_bCMTActive = true;
     strcopy( g_sNextMap, sizeof(g_sNextMap), mapname );
-    LogMessage("[RI] First map expected (CMT): '%s'.", g_sNextMap);
+    PrintDebug(3, "[RI] First map expected (CMT): '%s'.", g_sNextMap);
 }
 
 // called when map begins (mapname is the name of the map *after* this)
@@ -987,7 +999,7 @@ public OnCMTNextKnown( const String:mapname[] )
     // store mapname, so we can block votes for events that shouldn't be
     // run on that next map...
     strcopy( g_sNextMap, sizeof(g_sNextMap), mapname );
-    LogMessage("[RI] Next map expected (CMT): '%s'.", g_sNextMap);
+    PrintDebug(3, "[RI] Next map expected (CMT): '%s'.", g_sNextMap);
 }
 
 // called after the last round has ended
@@ -1459,7 +1471,7 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
             
             // survivors bungled the witch!
             if ( g_iSpecialEvent == EVT_WITCHES ) {
-                PrintDebug(4, "[rand] witch bungled: entity: %i; victim: %i", attacker, victim);
+                //PrintDebug(4, "[rand] witch bungled: entity: %i; victim: %i", attacker, victim);
                 g_bWitchBungled[attacker] = true;
             }
             
@@ -1839,12 +1851,19 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
     }
     else if (g_bSpecialEventPlayerCheck)
     {
+        // check if it's a client that should get the special role
+        if ( newTeam == TEAM_SURVIVOR && CheckSpecialRoleMemory(client) && IsPlayerAlive(client) )
+        {
+            CreateTimer(DELAY_FORCEROLE, Timer_ForceSpecialEventRole, client, TIMER_FLAG_NO_MAPCHANGE);
+        }
+        
         if (!g_bSpecialRoleAboutToChange)
         {
             g_bSpecialRoleAboutToChange = true;
             
             new Handle:pack = CreateDataPack();
             WritePackCell(pack, g_bPlayersLeftStart);
+            WritePackCell(pack, true);
             WritePackCell(pack, client);
             CreateTimer(DELAY_TEAMSWAP, Timer_CheckSpecialEventRole, pack, TIMER_FLAG_NO_MAPCHANGE);
         }
@@ -2051,7 +2070,7 @@ public DoBoomerComboReward(combo, victim)
     if (!IsClientAndInGame(victim) && !IsFakeClient(victim)) {
         victim = GetSpawningClient();
     }
-    if (victim == 0) {
+    if ( !IsClientAndInGame(victim) ) {
         PrintDebug(2, "[rand] Couldn't reward %i-way boom combo (no spawning client available).", combo);
         return;
     }
@@ -2617,7 +2636,7 @@ public Action:Event_WeaponFire(Handle:event, const String:name[], bool:dontBroad
 // l4downtown forward - players getting ghosts [warning: doesn't ALWAYS fire]
 public L4D_OnEnterGhostState(client)
 {
-    PrintDebug(4, "[rand si] %N entered ghost state (class %s).%s", client, g_csSIClassName[ GetEntProp(client, Prop_Send, "m_zombieClass") ], (g_bHasSpawned[client]) ? " Was spawned before." : "");
+    PrintDebug( (g_bHasSpawned[client]) ? 4 : 6, "[rand si] %N entered ghost state (class %s).%s", client, g_csSIClassName[ GetEntProp(client, Prop_Send, "m_zombieClass") ], (g_bHasSpawned[client]) ? " Was spawned before." : "");
     
     if (IsInfected(client) && IsPlayerGhost(client))
     {
@@ -2862,6 +2881,7 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
         {
             new Handle:pack = CreateDataPack();
             WritePackCell(pack, true);
+            WritePackCell(pack, false);
             WritePackCell(pack, victim);
             CreateTimer(0.1, Timer_CheckSpecialEventRole, pack, TIMER_FLAG_NO_MAPCHANGE);
         }
@@ -3363,9 +3383,9 @@ public Action:Timer_PipeCheck(Handle:timer, any:entity)
     //  affected by boomer combo
     new Float: fDudChance = GetConVarFloat(g_hCvarPipeDudChance);
     if (fDudChance > 0.0 && GetGameTime() < g_fDudTimeExpire) { fDudChance = g_RC_fBoomComboDudChance; }
-    PrintDebug(3, "[rand] Dud chance: %.3f...", fDudChance);
+    PrintDebug(6, "[rand] Dud chance: %.3f...", fDudChance);
     
-    if (GetRandomFloat(0.001,1.0) <= fDudChance) {
+    if ( GetRandomFloat(0.01,1.0) < fDudChance ) {
         CreateTimer( PIPEDUD_MINTIME + GetRandomFloat(0.0, PIPEDUD_ADDTIME) , Timer_PipeDud, entity);
     }
 }

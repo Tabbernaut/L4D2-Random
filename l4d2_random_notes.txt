@@ -80,6 +80,9 @@ L4D2_Random
             - Made it 33% likely that ammo piles (in non-finale maps) are left alone.
             - Fixed !rand distance print while distance points frozen.
             - Split off teamshuffling to separate plugin (teamshuffle.sp).
+            - Fixed an issue with special infected getting spawns they shouldn't after pauses.
+            - Blocked players dodging/passing on special event roles by going spectator/reconnecting.
+            - Fixed the damage and gnome bonus being displayed incorrectly after round end, sometimes.
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -92,7 +95,14 @@ L4D2_Random
             - wait:     gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
                         but hey, windows sigs are broken anyway
             
+            
+            - test:     should detect people trying to get out of a special role by speccing / disconnecting
+                            give back to same player when they come back, unless: died and got defibbed in between
             - test:     still jockey in l4d1 mode ... sigh - can't reproduce (happened after pausing!)
+                        - crashes seem to cause this: player comes back after pause,
+                            g_bHasSpawned[] is set, so it skips the spawn selection
+            
+            
             - test:     paused / unpaused => can't open presents (sometimes?)
                             plus unpausing seems to break some other stuff (event hats, spawns)
             - test:     double smokers in 2v2/3v3?
@@ -103,9 +113,11 @@ L4D2_Random
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    if paused during temporary blindness, re-blind on resume (for as much time as should be remaining..)
             - tweak:    find less annoying way of doing gunswap (reload before swapping?)
+                            
             
             - bugfix:   still not the right penalty counts on double round end.. (only display)
                         test.. fixed now?
+            
             - bugfix:   if you hold nothing, then get picked up, you get to keep the pistol
             - bugfix:   haunted doors: sometimes doors get stuck.. detect / prevent?
             - bugfix:   scout max ammo still broken / wrong (see rjven) [ doesn't seem to be the case for hunting rifle]
@@ -116,10 +128,10 @@ L4D2_Random
             - coop:     fix adrenaline rush for coop
             - coop:     special role events - mainly medic - still not working right in coop
             - coop:     sac1: tank door should not be affected by door-affecting events (never seems to work in coop?)
-            
+    
+    
     side considerations / 3rd party bugs
     ------------------------------------
-            - tweak:    show a list of penalty causers / bonus getters -- at round end ( just use the skill report in playstats)
             - tweak:    [consider] give points for surviving longer during DT3 event (and maybe other events in specific maps too?)
                         holdout bonus.. (and deduct the total you're able to get from the total distance points)
             - note:     the netprop m_iVersus(something) for distance seems to actually work pretty well (with minor bug)

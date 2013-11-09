@@ -244,6 +244,8 @@ new                     g_iArEventTimeout       [EVT_TOTAL]                 = {0
 new                     g_iNoSpecialEventStreak                             = 0;                    // how many times in a row there wasn't a special event
 new     bool:           g_bSpecialEventPlayerCheck                          = false;                // whether the special event requires player checks on teamswaps, deaths, etc
 new     bool:           g_bSpecialRoleAboutToChange                         = false;                // whether we're already waiting for a timer countdown to do a report (spam prevent)
+new     String:         g_sArHadRoleId          [MAXROLES][32];                                     // the steam id of the special role player
+new                     g_iHadRoleCount                                     = 0;                    // how many players we're remembering that had the special role (and should get it back)
 new                     g_iArGunAmmoCount       [MAXPLAYERS]                = 0;                    // for gun swap event: how many bullets does the survivor have left?
 new     bool:           g_bNoPriWeapons                                     = false;                // whether to allow primary weapons to spawn at all
 new     bool:           g_bNoSecWeapons                                     = false;                // whether to allow secondary weapons to spawn at all

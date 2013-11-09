@@ -69,6 +69,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     
     // basic cleanup
     SUPPORT_CleanArrays();              // clear general arrays
+    ClearSpecialRoleMemory();           // forget who had / should have the special role
     ClearArray(g_hBlockedEntities);     // clear blind infected entities
     ClearBoomerTracking();              // clear arrays for tracking boomer combo's
     ResetGnomes();                      // clear gnome tracking array for bonus scoring
@@ -475,7 +476,7 @@ public Action: EVENT_SurvivorsLeftSaferoom(Handle:timer)
         
         case EVT_KEYMASTER: {
             // first time keymaster gets picked with a visible report
-            if (!EVENT_IsSpecialRoleOkay()) {
+            if ( !EVENT_IsSpecialRoleOkay() ) {
                 EVENT_PickSpecialEventRole(-1, false);
             } else {
                 ReportSpecialEventRole();
@@ -697,6 +698,7 @@ public Action: Timer_CheckSpecialEventRole(Handle:timer, any:pack)
     // read datapack: survivorsLeftSaferoom; client
     ResetPack(pack);
     new bool: leftStart = bool: ReadPackCell(pack);
+    new bool: playerAction = bool: ReadPackCell(pack);      // whether it happened by the player doing something
     //new client = ReadPackCell(pack);
     CloseHandle(pack);
     
@@ -707,7 +709,7 @@ public Action: Timer_CheckSpecialEventRole(Handle:timer, any:pack)
         // upgrade kit should not be in possession of bot
         for (new i=1; i <= MaxClients; i++)
         {
-            if (IsSurvivor(i) && IsFakeClient(i))
+            if ( IsSurvivor(i) && IsFakeClient(i) )
             {
                 new slotKit = GetPlayerWeaponSlot(i, PLAYER_SLOT_KIT);
                 if (IsValidEntity(slotKit))
@@ -737,25 +739,27 @@ public Action: Timer_CheckSpecialEventRole(Handle:timer, any:pack)
         // are there any humans in the survivor team?
         new bool: bNoHumanSurvivors = true;
         for (new i=1; i <= MaxClients; i++) {
-            if (IsSurvivor(i) && !IsFakeClient(i) && IsPlayerAlive(i)) { 
+            if ( IsSurvivor(i) && !IsFakeClient(i) && IsPlayerAlive(i) )
+            { 
                 bNoHumanSurvivors = false;
                 break;
             }
         }
         
         // force new role if the current role's survivor is missing, dead or a bot when there's humans available:
-        if ( !IsSurvivor(g_iSpecialEventRole) || !IsPlayerAlive(g_iSpecialEventRole) || ( IsFakeClient(g_iSpecialEventRole) && !bNoHumanSurvivors ) ) {
+        if ( !IsSurvivor(g_iSpecialEventRole) || !IsPlayerAlive(g_iSpecialEventRole) || ( IsFakeClient(g_iSpecialEventRole) && !bNoHumanSurvivors ) )
+        {
             g_iSpecialEventRole = 0;
         }
         
-        if (!g_iSpecialEventRole)
+        if ( !g_iSpecialEventRole )
         {
-            EVENT_PickSpecialEventRole( -1, (leftStart) ? false : true);
+            EVENT_PickSpecialEventRole( -1, (leftStart) ? false : true, (playerAction) ? false : true );
         }
     }
 }
 
-EVENT_PickSpecialEventRole( notClient=-1, bool:notLeftStart=false )
+EVENT_PickSpecialEventRole( notClient=-1, bool:notLeftStart=false, bool:gameChoice=true )
 {
     // remove hats
     HatsRemoveAll();
@@ -792,13 +796,25 @@ EVENT_PickSpecialEventRole( notClient=-1, bool:notLeftStart=false )
     
     g_iSpecialEventRole = survivors[pick];
     
+    // if it was the game that decided the role should switch, add the player to the memory
+    if ( gameChoice && !IsFakeClient(g_iSpecialEventRole) )
+    {
+        // check if it was already in the memory, otherwise add
+        if ( !CheckSpecialRoleMemory(g_iSpecialEventRole) )
+        {
+            GetClientAuthString( g_iSpecialEventRole, g_sArHadRoleId[g_iHadRoleCount], 32 );
+            g_iHadRoleCount++;
+        }
+    }
+
+    
     // give correct hat to picked survivor
     switch (g_iSpecialEvent)
     {
-        case EVT_PROTECT: { CreateHat(g_iSpecialEventRole, HAT_BABY); }
-        case EVT_KEYMASTER: { CreateHat(g_iSpecialEventRole, HAT_KEYMASTER); }
-        case EVT_MEDIC: { CreateHat(g_iSpecialEventRole, HAT_MEDIC); }
-        case EVT_BOOMFLU: { CreateHat(g_iSpecialEventRole, HAT_BOOMFLU); }
+        case EVT_PROTECT: {     CreateHat(g_iSpecialEventRole, HAT_BABY); }
+        case EVT_KEYMASTER: {   CreateHat(g_iSpecialEventRole, HAT_KEYMASTER); }
+        case EVT_MEDIC: {       CreateHat(g_iSpecialEventRole, HAT_MEDIC); }
+        case EVT_BOOMFLU: {     CreateHat(g_iSpecialEventRole, HAT_BOOMFLU); }
     }
     
     
@@ -812,6 +828,68 @@ EVENT_PickSpecialEventRole( notClient=-1, bool:notLeftStart=false )
     if (!notLeftStart && g_bPlayersLeftStart) {
         ReportSpecialEventRole();
     }
+}
+
+// give special role back to player who should have it
+public Action: Timer_ForceSpecialEventRole(Handle:timer, any:client)
+{
+    if ( !IsClientAndInGame(client) || IsFakeClient(client) || g_iSpecialEvent == -1 ) { return Plugin_Continue; }
+    
+    g_iSpecialEventRole = client;
+    
+    PrintDebug(2, "[rand] Forcing event role (back) to %i (%N).", client, client);
+    
+    // fix hats
+    HatsRemoveAll();
+    switch (g_iSpecialEvent)
+    {
+        case EVT_PROTECT: {     CreateHat(g_iSpecialEventRole, HAT_BABY); }
+        case EVT_KEYMASTER: {   CreateHat(g_iSpecialEventRole, HAT_KEYMASTER); }
+        case EVT_MEDIC: {       CreateHat(g_iSpecialEventRole, HAT_MEDIC); }
+        case EVT_BOOMFLU: {     CreateHat(g_iSpecialEventRole, HAT_BOOMFLU); }
+    }
+    
+    // when picked, do a medic check
+    if (g_iSpecialEvent == EVT_MEDIC)
+    {
+        EVENT_CheckMedic(true);
+    }
+    
+    // report if it's after the saferoom exit (notLeftStart is for timer calls)
+    if ( g_bPlayersLeftStart )
+    {
+        ReportSpecialEventRole();
+    }
+    
+    return Plugin_Continue;
+}
+
+// forget who should have special role
+ClearSpecialRoleMemory()
+{
+    g_iHadRoleCount = 0;
+}
+
+// returns true if the client should have the special role
+// (should be called whenever a client enters the survivor team during a special role event round)
+bool: CheckSpecialRoleMemory( client, bool:dontEmpty=false )
+{
+    if ( !IsClientAndInGame(client) || IsFakeClient(client) || !g_iHadRoleCount ) { return false; }
+    
+    decl String: sSteamId[32];
+    GetClientAuthString( g_iSpecialEventRole, sSteamId, 32 );
+    
+    for ( new i = 0; i < g_iHadRoleCount; i++ )
+    {
+        if ( StrEqual( sSteamId, g_sArHadRoleId[i], false) )
+        {
+            // found them
+            if ( !dontEmpty) { g_iHadRoleCount = i+1; }
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 bool: EVENT_IsSpecialRoleOkay( bool:allowBots=false )
@@ -829,9 +907,6 @@ bool: EVENT_IsSpecialRoleOkay( bool:allowBots=false )
     
     return true;
 }
-
-
-
 
 
 
@@ -1044,8 +1119,6 @@ PickTankPlayer()
     
     decl String: sSteamId[32];
     new tankCount;
-        
-        
     
     for (new i=1; i < MaxClients+1; i++)
     {
@@ -1761,6 +1834,7 @@ GetGnomeBonus(bool:showMessage = false)
 
 
 
+
 /*  votes
     ------------ */
 
@@ -2139,7 +2213,7 @@ SUPPORT_StormReset()
     if (hTmpCVar != INVALID_HANDLE) {
         SetConVarInt(hTmpCVar, 0);
         ServerCommand("sm_stormreset");
-        PrintDebug(2, "[rand] Stopped Storm");
+        PrintDebug(6, "[rand] Stopped Storm");
     }
 }
 
@@ -2149,7 +2223,7 @@ SUPPORT_StormStart()
     if (hTmpCVar != INVALID_HANDLE) {
         SetConVarInt(hTmpCVar, 1);
         ServerCommand("sm_stormrefresh");
-        PrintDebug(2, "[rand] Started Storm");
+        PrintDebug(6, "[rand] Started Storm");
     }
 }
 
