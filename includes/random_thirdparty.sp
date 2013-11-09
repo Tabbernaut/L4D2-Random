@@ -1631,13 +1631,6 @@ DoBlindSurvivor(target, amount, bool:slow=true)
     }
 }
 
-public Action:Timer_UnBlindSurvivor(Handle:timer, any:client)
-{
-    if (IsSurvivor(client)) {
-        DoBlindSurvivor(client, 0);
-    }
-}
-
 public ScreenFade(target, red, green, blue, alpha, duration, type, speed)
 {
 	new Handle:msg = StartMessageOne("Fade", target);

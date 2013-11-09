@@ -31,7 +31,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.0.73"
+#define PLUGIN_VERSION "1.0.74"
 
 /*
         L4D2 Random
@@ -171,6 +171,8 @@ public OnPluginStart()
     HookEvent("pills_used",                 Event_PillsUsed,                EventHookMode_Post);
     HookEvent("adrenaline_used",            Event_PillsUsed,                EventHookMode_Post);
     HookEvent("revive_success",             Event_ReviveSuccess,            EventHookMode_Post);
+    
+    HookEvent("player_incapacitated_start", Event_IncapStart,               EventHookMode_Post);
     
     //HookEvent("player_hurt",                Event_PlayerHurt,               EventHookMode_Pre);
     //HookEvent("ability_use",                Event_AbilityUse,               EventHookMode_Post);
@@ -949,11 +951,10 @@ public OnCvarPausableChanged(Handle:cvar, const String:oldVal[], const String:ne
     if (StringToInt(newVal))
     {
         // if this happens after pause command, we're paused
-        if (!g_bIsPaused && ( (GetConVarBool(g_hCvarSimplePauseCheck)) || (g_fPauseAttemptTime != 0.0 && GetGameTime() - g_fPauseAttemptTime <= 5.0) ) )
-        {
-            g_fPauseAttemptTime = 0.0;
-            g_bIsPaused = true;
-            PrintDebug(0, "[rand] PAUSED.");
+        if (    !g_bIsPaused && ( (GetConVarBool(g_hCvarSimplePauseCheck) ) &&
+                (g_fPauseAttemptTime == 0.0 || FloatSub( GetGameTime(), g_fPauseAttemptTime ) > 5.0) ) 
+        ) {
+            OnPause();
         }
     }
 }
@@ -965,21 +966,30 @@ public Action: Unpause_Cmd(client, args)
     // detect if we're in a pause
     if ( GetConVarBool(FindConVar("sv_pausable")) )
     {
-        g_bIsPaused = false;
-        PrintDebug(0, "[rand] Unpaused...");
+        OnUnpause();
     }
+    
     return Plugin_Continue;
 }
-// if pause library is available:
+// if pause library is available, direct forwards:
 public OnPause()
 {
     g_bIsPaused = true;
     g_fPauseAttemptTime = GetGameTime();
+    g_fPauseStartTime = g_fPauseAttemptTime;
+    PrintDebug( 1, "[rand] Paused." );
 }
 
 public OnUnpause()
 {
-    g_bIsPaused = false;}
+    g_bIsPaused = false;
+    PrintDebug( 1, "[rand] Unpaused. (%.1fs)", FloatSub(GetGameTime(), g_fPauseStartTime) );
+    
+    SUPPORT_CheckBlindSurvivors( FloatSub(GetGameTime(), g_fPauseStartTime) );
+    
+    g_fPauseStartTime = 0.0;
+    g_fPauseAttemptTime = 0.0;
+}
 
 /*
     Forwards from custom_map_transitions
@@ -2546,6 +2556,26 @@ public Action:Event_ReviveSuccess(Handle:event, const String:name[], bool:dontBr
     new client = GetClientOfUserId(GetEventInt(event, "subject"));
     if (!IsClientAndInGame(client)) { return; }
     g_fLastReviveTime[client] = GetGameTime();
+    
+    CreateTimer(0.1, Timer_CheckReviveStatus, client, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action: Timer_CheckReviveStatus ( Handle:timer, any:client )
+{
+    if (!IsClientAndInGame(client)) { return Plugin_Continue; }
+    new chr = GetPlayerCharacter(client);
+    
+    // remove secondary weap if they had none on incapping
+    if ( g_bPlayerIncapNoSecondary[chr] )
+    {
+        new weaponIndex = GetPlayerWeaponSlot(client, PLAYER_SLOT_SECONDARY);
+        if ( weaponIndex > 0 )
+        {
+            RemovePlayerItem(client, weaponIndex);
+        }
+    }
+    
+    return Plugin_Continue;
 }
 
 /*  Weapon fire and item use
@@ -2784,6 +2814,19 @@ public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
     g_iTankPass++;
 
     return Plugin_Continue;
+}
+
+// right before player goes down
+public Action:Event_IncapStart(Handle:hEvent, const String:name[], bool:dontBroadcast)
+{
+    new client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+    
+    // check whether they had a secondary
+    new slotSec = GetPlayerWeaponSlot(client, PLAYER_SLOT_SECONDARY);
+    new chr = GetPlayerCharacter(client);
+    
+    g_bPlayerIncapNoSecondary[chr] = bool:( slotSec < 1 || !IsValidEntity(slotSec) );
+    
 }
 
 public Action:Event_PlayerSpawn(Handle:hEvent, const String:name[], bool:dontBroadcast)
@@ -3599,17 +3642,6 @@ public GetClassForFirstAttack(ignoreClient)
     // shouldn't happen, but just return hunter
     PrintDebug(0, "[rand si] ERROR, no first attack storage entry found. should never happen");
     return ZC_HUNTER;
-}
-
-
-public InitSpawnArrays()
-{
-    for (new i=1; i <= MaxClients; i++)
-    {
-        g_bHasGhost[i] = false;
-        g_bHasSpawned[i] = false;
-        g_bSpectateDeath[i] = false;
-    }
 }
 
 

@@ -53,14 +53,15 @@ new                     g_iCampaignFailStreak                               = 0;
 new     bool:           g_bCampaignForceRandom                              = false;                // force rerandomization
 new     bool:           g_bCampaignReRandomPlease                           = false;                // players want to rerandom on next failure
 
+new     bool:           g_bPlayerIncapNoSecondary[MAX_CHARACTERS];                                  // if player (per character) had a secondary before they were incapped
+
 // Menu handling
 new                     g_iEventMenu            [MAXPLAYERS+1]              = {0,...};              // what menu to use
 
 // Pause tracking
 new     bool:           g_bIsPaused                                         = false;                // whether game is paused
 new     Float:          g_fPauseAttemptTime                                 = 0.0;                  // when the !pause command was issued
-
-
+new     Float:          g_fPauseStartTime                                   = 0.0;                  // when the pause started
 
 // Event forcing handling
 new     bool:           g_bTeamSurvivorVotedEvent                           = false;                // whether anyone in survivor team used !teamshuffle or !randteams
@@ -86,6 +87,7 @@ new     Float:          g_fGiftReportTimeout                                = 0.
 new     Float:          g_fGiftUseTimeout       [MAXPLAYERS+1]              = {0.0,...};            // stores time when player last used gift (to prevent use spam after opening)
 new                     g_iClientUsing          [MAXPLAYERS+1]              = {0,...};              // entity that a client is doing a progress-bar type use action on, if any
 new     bool:           g_bClientHoldingUse     [MAXPLAYERS+1]              = {false,...};          // for some use fixes: whether player is holding use key (while still blocking it)
+new     Float:          g_fGiftBlindTime        [MAX_CHARACTERS];                                   // when the character started being blind
 
 // Tanks
 //new                     g_iHadTanks             [MAXPLAYERS+1]              = {0,...};              // how many tanks did the player get this game?

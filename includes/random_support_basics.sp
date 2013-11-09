@@ -4,8 +4,7 @@
 
 /*
     HUD manipulation
-    ------------------
-*/
+    ------------------ */
 EVENT_HUDRemoveSurvivors()
 {
     for (new i=1; i <= MaxClients; i++) {
@@ -41,6 +40,41 @@ HUDRestoreClient(client)
 
 
 
+
+/*
+    Blindness
+    ------------------ */
+// update blindtimes after pause: add extra time
+SUPPORT_CheckBlindSurvivors( Float: fExtraTime )
+{
+    for ( new i = 0; i < MAX_CHARACTERS; i++ )
+    {
+        if ( g_fGiftBlindTime[i] != 0.0 )
+        {
+            g_fGiftBlindTime[i] += fExtraTime;
+        }
+    }
+}
+
+public Action: Timer_Blindness ( Handle:timer, any:chr )
+{
+    if ( g_bIsPaused ) { return Plugin_Continue; }
+    
+    if ( g_fGiftBlindTime[chr] == 0.0 || FloatSub( g_fGiftBlindTime[chr], GetGameTime() ) <= 0.0 )
+    {
+        // find character and unblind
+        new tmpClient = GetCharacterClient(chr);
+        if ( IsSurvivor(tmpClient) ) {
+            // unblind
+            DoBlindSurvivor(tmpClient, 0);
+        }
+        g_fGiftBlindTime[chr] = 0.0;
+        
+        return Plugin_Stop;
+    }
+    
+    return Plugin_Continue;
+}
 
 /*
     Client status
@@ -244,6 +278,42 @@ SetMinimumHealthSurvivors()
             }
         }
     }
+}
+
+stock GetCharacterClient( chr )
+{
+    for ( new client = 1; client <= MaxClients; client++ )
+    {
+        if ( IsClientInGame(client) && IsFakeClient(client) && GetClientTeam(client) == TEAM_SURVIVOR )
+        {
+            if ( GetPlayerCharacter(client) == chr ) { return client; }
+        }
+    }
+    
+    return 0;
+}
+stock GetPlayerCharacter( client )
+{
+    new tmpChr = GetEntProp(client, Prop_Send, "m_survivorCharacter");
+    
+    // use models when incorrect character returned
+    if (tmpChr < 0 || tmpChr >= MAX_CHARACTERS)
+    {
+        decl String:model[256];
+        GetEntPropString(client, Prop_Data, "m_ModelName", model, sizeof(model));
+        
+        if (StrContains(model, "gambler") != -1) {          tmpChr = 0; }
+        else if (StrContains(model, "coach") != -1) {       tmpChr = 2; }
+        else if (StrContains(model, "mechanic") != -1) {    tmpChr = 3; }
+        else if (StrContains(model, "producer") != -1) {    tmpChr = 1; }
+        else if (StrContains(model, "namvet") != -1) {      tmpChr = 0; }
+        else if (StrContains(model, "teengirl") != -1) {    tmpChr = 1; }
+        else if (StrContains(model, "biker") != -1) {       tmpChr = 3; }
+        else if (StrContains(model, "manager") != -1) {     tmpChr = 2; }
+        else {                                              tmpChr = 0; }
+    }
+    
+    return tmpChr;
 }
 
 /*

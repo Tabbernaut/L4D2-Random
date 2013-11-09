@@ -83,6 +83,8 @@ L4D2_Random
             - Fixed an issue with special infected getting spawns they shouldn't after pauses.
             - Blocked players dodging/passing on special event roles by going spectator/reconnecting.
             - Fixed the damage and gnome bonus being displayed incorrectly after round end, sometimes.
+            - Removed problems/exploits with gift blindness and pauses.
+            
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -102,18 +104,17 @@ L4D2_Random
                         - crashes seem to cause this: player comes back after pause,
                             g_bHasSpawned[] is set, so it skips the spawn selection
             
-            
-            - test:     paused / unpaused => can't open presents (sometimes?)
-                            plus unpausing seems to break some other stuff (event hats, spawns)
             - test:     double smokers in 2v2/3v3?
             - test:     boobytraps on cola/gnome? shouldn't happen.
             - test:     hittable damage in minitanks event (looks ok.. why wrong sometimes?)
                             maybe for car alarm props? some props not taken into account by hittablecontrol plugin?
             
+            - test:     what happens when a blinded players goes spec? does the blindness transfer automatically?
+                        if not, handle it by player character and do a check on teamswitches during blindtime.
+            
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
-            - tweak:    if paused during temporary blindness, re-blind on resume (for as much time as should be remaining..)
             - tweak:    find less annoying way of doing gunswap (reload before swapping?)
-                            
+            
             
             - bugfix:   still not the right penalty counts on double round end.. (only display)
                         test.. fixed now?

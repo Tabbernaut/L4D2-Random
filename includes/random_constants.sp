@@ -6,6 +6,7 @@ const           DEBUG_MODE              = 0;
 // -------------------------
 
 const           TEAM_SIZE               = 4;
+const           MAX_CHARACTERS          = 4;
 const           MAXROLES                = 20;
 const           ENTITY_COUNT            = 2048;
 const           HITTABLE_COUNT          = 128;          // just arbitrary

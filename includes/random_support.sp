@@ -190,10 +190,26 @@ SUPPORT_CleanArrays()
         g_iClassTimeout[i] = 0;
     }
     
+    for (new i=0; i < MAX_CHARACTERS; i++)
+    {
+        g_fGiftBlindTime[i] = 0.0;
+        g_bPlayerIncapNoSecondary[i] = false;
+    }
+    
     // arrays for ZC / class changing code
     InitSpawnArrays();
 }
 
+
+public InitSpawnArrays()
+{
+    for (new i=1; i <= MaxClients; i++)
+    {
+        g_bHasGhost[i] = false;
+        g_bHasSpawned[i] = false;
+        g_bSpectateDeath[i] = false;
+    }
+}
 
 // Event functions
 // ---------------
