@@ -216,6 +216,7 @@ public InitSpawnArrays()
 // whenever PBONUS changes
 EVENT_PBonusChanged()
 {
+    if ( !g_bInRound ) { return; }
     // transfer current bonus to random bonus plugin, so it can display it
     RNDBNS_SetPenaltyBonus( PBONUS_GetRoundBonus() );
 }
@@ -893,7 +894,7 @@ bool: CheckSpecialRoleMemory( client, bool:dontEmpty=false )
     if ( !IsClientAndInGame(client) || IsFakeClient(client) || !g_iHadRoleCount ) { return false; }
     
     decl String: sSteamId[32];
-    GetClientAuthString( g_iSpecialEventRole, sSteamId, 32 );
+    GetClientAuthString( client, sSteamId, 32 );
     
     for ( new i = 0; i < g_iHadRoleCount; i++ )
     {
