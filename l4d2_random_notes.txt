@@ -85,6 +85,9 @@ L4D2_Random
             - Fixed the damage and gnome bonus being displayed incorrectly after round end, sometimes.
             - Removed problems/exploits with gift blindness and pauses.
             - Fixed secondary magically appearing after incapping without one.
+            - Fixed issue with distance freezing leading to 0 distance rounds.
+            - Fixed pills appearing on common kill on Adrenaline Rush event.
+            - Made gnomes worth a smaller portion of map distance (20%).
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -107,26 +110,28 @@ L4D2_Random
             - test:     still not the right penalty counts on double round end.. (only display)?
             
             - fix:      sab gets special role every time? wut
-                        test if repick really happens..
+                            test if repick really happens..
             
-                        - test:     double smokers in 2v2/3v3?
+            - test:     double smokers in 2v2/3v3?
             - test:     boobytraps on cola/gnome? shouldn't happen.
             - test:     hittable damage in minitanks event (looks ok.. why wrong sometimes?)
                             maybe for car alarm props? some props not taken into account by hittablecontrol plugin?
-            
             - test:     what happens when a blinded players goes spec? does the blindness transfer automatically?
                         if not, handle it by player character and do a check on teamswitches during blindtime.
             
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    find less annoying way of doing gunswap (reload before swapping?)
             - tweak:    make GL do less self-damage in bad combo
-            - tweak:    more adren
-            - tweak:    gnome value too high (okay in finales)
+            - tweak:    more adren on adrenaline event?
+            - tweak:    women event doesn't work well as it is..
             
             - bugfix:   haunted doors: sometimes doors get stuck.. detect / prevent?
             - bugfix:   scout max ammo still broken / wrong (see rjven) [ doesn't seem to be the case for hunting rifle]
             - bugfix:   t2 event: increase sniper ammo too -- broken?
-            - bugfix:   points for health penalty are wrong.. says 20, does 25
+            - bugfix:   minitanks: freezes too close together, doesn't update score
+            - bugfix:   medic on second round doesn't.. work?
+                            note: second rondhalf.. first was fine
+                            - debug print in place.. but no clue
             
             - misc:     add bay RC data to actual KV file setup
             

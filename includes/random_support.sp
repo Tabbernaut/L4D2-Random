@@ -32,6 +32,11 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
         g_bWitchFirstRound = false;
     }
     
+    if ( g_bFrozenPoints )
+    {
+        SUPPORT_UnFreezePoints();
+    }
+    
     // called before randomization
     g_bIsPaused = false;
     g_fPauseAttemptTime = 0.0;
@@ -812,6 +817,8 @@ EVENT_PickSpecialEventRole( notClient=-1, bool:notLeftStart=false, bool:gameChoi
     new pick = GetRandomInt(0, count-1);
     
     g_iSpecialEventRole = survivors[pick];
+    
+    PrintDebug(3, "[rand] Picked event role: %i (%N). (by game: %i)", g_iSpecialEventRole, g_iSpecialEventRole, gameChoice);
     
     // if it was the game that decided the role should switch, add the player to the memory
     if ( gameChoice && !IsFakeClient(g_iSpecialEventRole) )

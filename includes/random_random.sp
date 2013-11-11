@@ -1524,21 +1524,21 @@ RandomizeItems()
                         }
                     }
                     
-                    // some hittables are forced cars with alarms, or should just not be touched
                     hamId = GetEntProp(i, Prop_Data, "m_iHammerID");
-                    if ( hamId == 1 )
+                    
+                    if ( g_RI_bNoRealHittables )
                     {
+                        // some maps should not have real hittables (overpowered)
+                        randType = GetRandomInt(0, 1) ? HITTAB_HANDTRUCK : HITTAB_TABLE;
+                    }
+                    else if ( hamId == 1 )
+                    {
+                        // some hittables are forced cars with alarms, or should just not be touched
                         // stabby's car or forced alarm car (c4m4 - stabby's event)
                         randType = HITTAB_CAR95;
                         g_strArHittableStorage[curHit][hitIsAlarmed] = true;
                     }
-                    else if ( hamId == 2 )
-                    {
-                        // make a relatively harmless hittable, if there is a tank (c12m1)
-                        if ( g_bTankWillSpawn ) {
-                            randType = GetRandomInt(0, 1) ? HITTAB_HANDTRUCK : HITTAB_TABLE;
-                        }
-                    }
+
                     
                     g_strArHittableStorage[curHit][hitPickedType] = randType;
                     
@@ -4476,10 +4476,17 @@ SpawnCommonItem(Float:loc[3], Float:vel[3])
     else if (randomPick < 8)  { randomPick = 6; }
     
     // l4d1 event
-    if ( g_iSpecialEvent == EVT_L4D1 ) {
+    if ( g_iSpecialEvent == EVT_L4D1 )
+    {
         if ( randomPick == 3 ) { randomPick = 0; }
         else if (randomPick == 10 ) { randomPick = GetRandomInt(8, 9); }
-    } 
+    }
+    // adenaline event: no pills
+    else if ( g_iSpecialEvent == EVT_ADREN )
+    {
+        if ( randomPick == 0 ) { randomPick = 3; }
+    }
+
     
     switch (randomPick) {
         case 0: {
@@ -4489,7 +4496,6 @@ SpawnCommonItem(Float:loc[3], Float:vel[3])
             } else {
                 ent = CreateEntityByName("weapon_pain_pills");
             }
-            
         }
         case 3: {
             // adren

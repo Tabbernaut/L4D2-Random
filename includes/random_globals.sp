@@ -310,6 +310,7 @@ new                     g_RI_iEarlyDoors                                    = 0;
 new                     g_RI_iArEarlyDoor       [EARLYDOOR_MAX][3];                                 // early door coordinates (if any)
 new     Float:          g_RI_fTankOddsNormal                                = 0.0;                  // if > 0, override value for tank chance this map
 new     Float:          g_RI_fTankOddsHard                                  = 0.0;                  // if > 0, override value for tank chance this map (if hard path)
+new     bool:           g_RI_bNoRealHittables                               = false;
 
 // ConVars
 new     Handle:         g_hArCvarWeight         [INDEX_TOTAL];                                      // cvar, per randomize-type, that sets an integer weight 
@@ -536,7 +537,7 @@ new                     g_RC_iEventBoobyTrapMin                             = 5;
 new     Float:          g_RC_fEventAmmoMaxFactor                            = 0.5;      // max-ammo changer
 new     Float:          g_RC_fEventAmmoFactor                               = 0.12;     // init-ammo changer
 
-new     Float:          g_RC_fEventWitchesSpawnFreq                         = 40.0;     // s
+new     Float:          g_RC_fEventWitchesSpawnFreq                         = 30.0;     // s
 
 new                     g_RC_iEventBoomFluMinInt                            = 20;
 new                     g_RC_iEventBoomFluMaxInt                            = 55;

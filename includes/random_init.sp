@@ -48,7 +48,7 @@ INIT_DefineCVars()
     g_hCvarNoSpitterDuringTank = CreateConVar(              "rand_tank_nospitter",           "1",       "Block spitter while tank is up?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarFreezeDistanceTank = CreateConVar(               "rand_tank_freezepoints",        "0",       "Whether to always block distance points when a tank is alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarBoomedTime = CreateConVar(                       "rand_boomed_time",             "10.0",     "The time window in seconds that boomer team-ups are rewarded (2+ boomers getting booms on different survivors). 0 = boomer combos are not rewarded.", FCVAR_PLUGIN, true, 0.0, true, 20.0);
-    g_hCvarGnomeBonus = CreateConVar(                       "rand_gnome_bonus",              "0.25",    "The bonus given for bringing a gnome from start to end saferoom. (lower than 10 = amount of times distance, greater = static bonus)", FCVAR_PLUGIN, true, 0.0);
+    g_hCvarGnomeBonus = CreateConVar(                       "rand_gnome_bonus",              "0.2",     "The bonus given for bringing a gnome from start to end saferoom. (lower than 10 = amount of times distance, greater = static bonus)", FCVAR_PLUGIN, true, 0.0);
     g_hCvarGnomeFinaleFactor = CreateConVar(                "rand_gnome_finale_factor",      "0.5",     "The gnome bonus is worth this factor on finales.", FCVAR_PLUGIN, true, 0.0);
     g_hCvarGnomeAllowRandom = CreateConVar(                 "rand_gnome_random",             "0",       "Whether gnomes can drop at random (from gifts, common drops etc)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarSpecialEventTimeout = CreateConVar(              "rand_event_timeout",            "5",       "How many maps must be played before the same special event may be picked again.", FCVAR_PLUGIN, true, 0.0, false);
@@ -649,6 +649,7 @@ bool: RI_KV_UpdateRandomMapInfo()
     g_RI_iEarlyDoors = 0;           // if > 0, check for early doors on the map (g_RI_vEarlyDoor)
     g_RI_fTankOddsNormal = 0.0;     // tank odds override (if > default)
     g_RI_fTankOddsHard = 0.0;       // tank odds override (if > default) (hard path)
+    g_RI_bNoRealHittables = false;  // no real hittables on the map?
     
     new String: mapname[64];
     GetCurrentMap(mapname, sizeof(mapname));
@@ -675,6 +676,7 @@ bool: RI_KV_UpdateRandomMapInfo()
         g_RI_bIsFinale = bool: (KvGetNum(g_kRIData, "finale", (g_RI_bIsFinale) ? 1 : 0 ));
         g_RI_fTankOddsNormal = KvGetFloat(g_kRIData, "tank_odds", g_RI_fTankOddsNormal);
         g_RI_fTankOddsHard = KvGetFloat(g_kRIData, "tank_odds_hard", g_RI_fTankOddsHard);
+        g_RI_bNoRealHittables = bool: (KvGetNum(g_kRIData, "no_hittables", (g_RI_bNoRealHittables) ? 1 : 0 ));
         
         g_RI_iEarlyDoors = KvGetNum(g_kRIData, "earlydoors", 0);
         if (g_RI_iEarlyDoors)
@@ -870,20 +872,6 @@ INIT_GetMeleeClasses()
     
     PrintDebug(2, "[rand] Read %i melee classes.", g_iMeleeClassCount);
 }
-
-/*
-    // not used?
-INIT_GetScriptName( const String:Class[MELEE_CLASS_LENGTH], String:ScriptName[MELEE_CLASS_LENGTH] )
-{
-    for(new i = 0; i < g_iMeleeClassCount; i++) {
-        if(StrContains( g_sMeleeClass[i], Class, false ) == 0) {
-            Format( ScriptName, MELEE_CLASS_LENGTH, "%s", g_sMeleeClass[i] );
-            return;
-        }
-    }
-    Format(ScriptName, MELEE_CLASS_LENGTH, "%s", g_sMeleeClass[0]);     // waarom dit?
-}
-*/
 
 // find out whether a hard path is loaded
 bool: SUPPORT_StripperDetectAlt()

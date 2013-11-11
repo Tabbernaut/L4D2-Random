@@ -320,7 +320,10 @@ stock GetPlayerCharacter( client )
     Scoring manipulation
     -----------------
 */
-
+public Action: Timer_FreezePoints ( Handle:timer, any:showMessage )
+{
+    SUPPORT_FreezePoints( bool:showMessage );
+}
 SUPPORT_FreezePoints( bool:bShowMessage = false )
 {
     if ( !g_bFrozenPoints ) {

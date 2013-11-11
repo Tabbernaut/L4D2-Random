@@ -31,7 +31,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.0.74"
+#define PLUGIN_VERSION "1.0.75"
 
 /*
         L4D2 Random
@@ -104,7 +104,6 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
     MarkNativeAsOptional("PBONUS_AddRoundBonus");
     // crox readyup:
     MarkNativeAsOptional("IsInReady");
-
     
     return APLRes_Success;
 }
@@ -146,7 +145,6 @@ public OnPluginStart()
     HookEvent("round_start",                Event_RoundStart,               EventHookMode_PostNoCopy);
     HookEvent("round_end",                  Event_RoundEnd,                 EventHookMode_PostNoCopy);
     HookEvent("player_team",                Event_PlayerTeam,               EventHookMode_Post);
-    HookEvent("player_left_start_area",     Event_PlayerLeftStartArea,      EventHookMode_PostNoCopy);
     HookEvent("mission_lost",               Event_MissionLostCampaign,      EventHookMode_Post);
     
     HookEvent("player_death",               Event_PlayerDeath,              EventHookMode_Pre);
@@ -162,7 +160,6 @@ public OnPluginStart()
     HookEvent("ammo_pickup",                Event_AmmoPickup,               EventHookMode_Post);
     HookEvent("weapon_drop",                Event_WeaponDrop,               EventHookMode_Post);
     HookEvent("weapon_given",               Event_WeaponGiven,              EventHookMode_Post);    // also works for pills/adren
-    //HookEvent("player_shoved",              Event_ShovedPlayer,             EventHookMode_Post);
     HookEvent("weapon_fire",                Event_WeaponFire,               EventHookMode_Post);
     HookEvent("upgrade_pack_added",         Event_SpecialAmmo,              EventHookMode_Post);
     HookEvent("upgrade_pack_begin",         Event_SpecialAmmoDeploy,        EventHookMode_Post);
@@ -174,11 +171,6 @@ public OnPluginStart()
     
     HookEvent("player_incapacitated_start", Event_IncapStart,               EventHookMode_Post);
     
-    //HookEvent("player_hurt",                Event_PlayerHurt,               EventHookMode_Pre);
-    //HookEvent("ability_use",                Event_AbilityUse,               EventHookMode_Post);
-    //HookEvent("lunge_pounce",               Event_LungePounce,              EventHookMode_Post);
-    
-    //HookEvent("witch_spawn",                Event_WitchSpawn,               EventHookMode_Post);  // done through created entity now (since that listens to witches anyway)
     HookEvent("witch_harasser_set",         Event_WitchHarasserSet,         EventHookMode_Post);
     HookEvent("witch_killed",               Event_WitchDeath,               EventHookMode_Post);
     
@@ -1770,37 +1762,9 @@ public Action: Timer_PlayerJoinedSurvivor(Handle:timer, any:pack)
 
 public Action: L4D_OnFirstSurvivorLeftSafeArea( client )
 {
-    // the normal event only fires for every actual saferoom exit in versus mode..
-    if ( g_bCampaignMode )
-    {
-        PrintDebug(2, "[rand] Survivors left saferoom [L4DT forward].");
-        SurvivorsReallyLeftSaferoom();
-    }
+    PrintDebug(6, "[rand] Survivors left saferoom [L4DT forward].");
+    SurvivorsReallyLeftSaferoom();
 }
-
-public Action: Event_PlayerLeftStartArea(Handle:event, const String:name[], bool:dontBroadcast)
-{
-    if ( !g_bCampaignMode )
-    {
-        SurvivorsReallyLeftSaferoom();
-    }
-    
-    /*
-        the following is not really necessary.
-        does it help in vanilla? meh.
-    
-    // only do it if we're no longer in readyup
-    if (!SUPPORT_IsInReady())
-    {
-        SurvivorsReallyLeftSaferoom();
-    }
-    else
-    {
-        CreateTimer(TIMER_STARTCHECK, Timer_CheckForRealSaferoomExit, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-    }
-    */
-}
-
 // this is called iff the round has actually really started
 SurvivorsReallyLeftSaferoom()
 {
@@ -3053,8 +3017,13 @@ public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBro
     PrintDebug(4, "[rand si] Tank spawned: %N.", client);
     
     // freeze points?
-    if ( g_bFreezeDistanceOnTank ) {
-        SUPPORT_FreezePoints( g_bReportFreezing );
+    if ( g_bFreezeDistanceOnTank )
+    {
+        if ( g_iSpecialEvent == EVT_MINITANKS ) {
+            CreateTimer( DELAY_MINITANKFREEZE, Timer_FreezePoints, (g_bReportFreezing) ? 1 : 0, TIMER_FLAG_NO_MAPCHANGE );
+        } else {
+            SUPPORT_FreezePoints( g_bReportFreezing );
+        }
     }
     
     // tank and ghost stuff:
