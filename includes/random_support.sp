@@ -139,7 +139,6 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     
     // some things need to be delayed to work right
     g_hTimerReport = CreateTimer( (g_bCampaignMode) ? DELAY_ROUNDPREP_COOP : DELAY_ROUNDPREP , Timer_DelayedRoundPrep, _, TIMER_FLAG_NO_MAPCHANGE);
-    
 }
 
 // delayed call for every round start
@@ -170,6 +169,12 @@ public Action: Timer_DelayedRoundPrep(Handle:timer)
     
     // output debug info about gnomes
     DoGnomesServerReport();
+    
+    // call 'all loaded in' on second roundhalf
+    if ( g_bSecondHalf )
+    {
+        EVENT_AllSurvivorsLoadedIn();
+    }
 }
 
 SUPPORT_CleanArrays()

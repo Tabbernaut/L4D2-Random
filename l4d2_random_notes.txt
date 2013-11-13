@@ -108,6 +108,9 @@ L4D2_Random
                         - crashes seem to cause this: player comes back after pause,
                             g_bHasSpawned[] is set, so it skips the spawn selection
             - test:     still not the right penalty counts on double round end.. (only display)?
+                            - yes, it displays the wrong value (like, 60 if it should be 75 on skeet shoot)
+            - test:     minitanks: freezes too close together, doesn't update score
+            - test:     distance seems wrong on doubletank / minitanks
             
             - fix:      sab gets special role every time? wut
                             test if repick really happens..
@@ -128,10 +131,13 @@ L4D2_Random
             - tweak:    women event doesn't work well as it is..
             
             - bugfix:   haunted doors: sometimes doors get stuck.. detect / prevent?
-            - bugfix:   scout max ammo still broken / wrong (see rjven) [ doesn't seem to be the case for hunting rifle]
             
-            - bugfix:   minitanks: freezes too close together, doesn't update score
-            - bugfix:   distance seems wrong on doubletank / minitanks
+            - bugfix:   scout max ammo still broken / wrong (see rjven) [ doesn't seem to be the case for hunting rifle]
+                        fix attempt:    increase max ammo cvar for snipers to what they should at most have (for whatever type)
+                                        then do a check after any ammo-receive to reduce back to the max for that weapon
+                                        (I think that's kinda like what I'm doing with AK anyway)
+            
+            
             
             - misc:     add bay RC data to actual KV file setup
             

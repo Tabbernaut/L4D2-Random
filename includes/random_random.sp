@@ -605,6 +605,8 @@ RANDOM_DetermineRandomStuff()
             
         }
         
+        g_iRememberFrozenDistance = distNew;
+        
         /*
         // set in damage bonus plugin (not using it there now, but might later)
         RNDBNS_SetDistance(distNew);

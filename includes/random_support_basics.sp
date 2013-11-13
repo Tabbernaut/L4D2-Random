@@ -341,7 +341,6 @@ public Action: Timer_FreezePoints ( Handle:timer, any:showMessage )
 SUPPORT_FreezePoints( bool:bShowMessage = false )
 {
     if ( !g_bFrozenPoints ) {
-        g_iRememberFrozenDistance = L4D_GetVersusMaxCompletionScore();
         if ( bShowMessage ) PrintToChatAll("\x01[\x05r\x01] \x04Freezing\x01 distance points until tank is killed.");
         L4D_SetVersusMaxCompletionScore(0);
         g_bFrozenPoints = true;

@@ -31,7 +31,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.0.75"
+#define PLUGIN_VERSION "1.0.76"
 
 /*
         L4D2 Random
