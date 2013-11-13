@@ -503,6 +503,7 @@ public Action: EVENT_SurvivorsLeftSaferoom(Handle:timer)
             } else {
                 ReportSpecialEventRole();
             }
+            SetSpecialRoleMemory(g_iSpecialEventRole);
         }
         
         case EVT_PROTECT: {
@@ -512,6 +513,7 @@ public Action: EVENT_SurvivorsLeftSaferoom(Handle:timer)
             } else {
                 ReportSpecialEventRole();
             }
+            SetSpecialRoleMemory(g_iSpecialEventRole);
         }
         
         case EVT_MEDIC: {
@@ -521,6 +523,7 @@ public Action: EVENT_SurvivorsLeftSaferoom(Handle:timer)
             } else {
                 ReportSpecialEventRole();
             }
+            SetSpecialRoleMemory(g_iSpecialEventRole);
         }
         
         case EVT_PEN_TIME: {
@@ -539,6 +542,7 @@ public Action: EVENT_SurvivorsLeftSaferoom(Handle:timer)
             } else {
                 ReportSpecialEventRole();
             }
+            SetSpecialRoleMemory(g_iSpecialEventRole);
         }
         
     }
@@ -824,11 +828,7 @@ EVENT_PickSpecialEventRole( notClient=-1, bool:notLeftStart=false, bool:gameChoi
     if ( gameChoice && !IsFakeClient(g_iSpecialEventRole) )
     {
         // check if it was already in the memory, otherwise add
-        if ( !CheckSpecialRoleMemory(g_iSpecialEventRole) )
-        {
-            GetClientAuthString( g_iSpecialEventRole, g_sArHadRoleId[g_iHadRoleCount], 32 );
-            g_iHadRoleCount++;
-        }
+        SetSpecialRoleMemory(g_iSpecialEventRole);
     }
 
     
@@ -857,8 +857,12 @@ EVENT_PickSpecialEventRole( notClient=-1, bool:notLeftStart=false, bool:gameChoi
 // give special role back to player who should have it
 public Action: Timer_ForceSpecialEventRole(Handle:timer, any:client)
 {
-    if ( !IsClientAndInGame(client) || IsFakeClient(client) || g_iSpecialEvent == -1 ) { return Plugin_Continue; }
+    if ( !IsClientAndInGame(client) || !IsSurvivor(client) || !IsPlayerAlive(client) || IsFakeClient(client) || g_iSpecialEvent == -1 ) { return Plugin_Continue; }
     
+    // check if it's already in order
+    if ( g_iSpecialEventRole == client ) { return Plugin_Continue; }
+    
+    // else, force it
     g_iSpecialEventRole = client;
     
     PrintDebug(2, "[rand] Forcing event role (back) to %i (%N).", client, client);
@@ -888,6 +892,17 @@ public Action: Timer_ForceSpecialEventRole(Handle:timer, any:client)
     return Plugin_Continue;
 }
 
+// remember who has special role
+SetSpecialRoleMemory( client )
+{
+    if ( !IsClientAndInGame(client) || !IsSurvivor(client) || !IsPlayerAlive(client) || IsFakeClient(client) ) { return; }
+    
+    if ( !CheckSpecialRoleMemory(client) )
+    {
+        GetClientAuthString( client, g_sArHadRoleId[g_iHadRoleCount], 32 );
+        g_iHadRoleCount++;
+    }
+}
 // forget who should have special role
 ClearSpecialRoleMemory()
 {
@@ -2259,65 +2274,6 @@ SUPPORT_StormStart()
 
 
 
-
-/*  // for debugging blindents
-DoBlindEntReport()
-{
-    PrintDebug("[rand] Randomized item table, for %i items:", g_iStoredEntities);
-    
-    new String: tmpStr[64];
-    new count = 0;
-    
-    PrintDebug("[rand] --------------- stored entity list -----------------");
-    
-    for (new i=0; i < g_iStoredEntities; i++)
-    {
-        // don't show stuff that won't be blinded
-        if (g_strArStorage[i][entPickedType] == PCK_NOITEM) { continue; }
-        if (g_strArStorage[i][entPickedType] == PCK_JUNK) { continue; }
-        if (g_strArStorage[i][entPickedType] == PCK_EXPLOSIVE_BARREL) { continue; }
-        if (g_strArStorage[i][entPickedType] == PCK_SILLY_GIFT) { continue; }
-        
-        count++;
-        
-        if (IsValidEntity(g_strArStorage[i][entNumber])) {
-            GetEntityClassname( g_strArStorage[i][entNumber], tmpStr, sizeof(tmpStr) );
-        } else {
-            tmpStr = "";
-        }
-        
-        PrintDebug( "  Item: %4i:  entity %5i (= %s), classname: %s.", i, g_strArStorage[i][entNumber], g_csItemPickName[ g_strArStorage[i][entPickedType] ], tmpStr );
-    }
-    
-    PrintDebug("[rand] how many blindable stored: %4i", count);
-    count = 0;
-    
-    PrintDebug("[rand] --------------- blinded entity list -----------------");
-    
-    new size = GetArraySize(g_hBlockedEntities);
-    decl currentEnt[EntInfo];
-
-    for (new i; i < size; i++)
-    {
-        GetArrayArray(g_hBlockedEntities, i, currentEnt[0]);
-        
-        if (currentEnt[hasBeenSeen]) { continue; }
-        
-        if (currentEnt[iEntity] != 0 && IsValidEntity(currentEnt[iEntity])) {
-            GetEntityClassname( currentEnt[iEntity], tmpStr, sizeof(tmpStr) );
-        } else {
-            tmpStr = "";
-        }
-        
-        count++;
-        
-        PrintDebug( "  BlindEnt: %4i:  entity %5i = classname: %s.", i, currentEnt[iEntity], tmpStr );
-        
-    }
-    
-    PrintDebug("[rand] how many blindable blinded: %4i", count);
-}
-*/
 
 // for debugging item balance
 DoItemsServerReport(full=false)

@@ -929,12 +929,19 @@ RANDOM_DetermineRandomStuff()
                     EVENT_SetDifficulty(DIFFICULTY_HARD, DIFFICULTY_HARD);
                     g_iDifficultyRating -= 2;
                     
-                    new iRifle, iShot;
+                    new iRifle, iShot, iSniper;
                     iRifle = RoundFloat( GetConVarFloat(FindConVar("ammo_assaultrifle_max")) * EVENT_FIREPOWER_AMMO);
                     iShot = RoundFloat( GetConVarFloat(FindConVar("ammo_autoshotgun_max")) * EVENT_FIREPOWER_AMMO);
-                    SetConVarInt(FindConVar("ammo_assaultrifle_max"), iRifle );
-                    SetConVarInt(FindConVar("ammo_autoshotgun_max"), iShot );
+                    iSniper = RoundFloat( GetConVarFloat(FindConVar("ammo_huntingrifle_max")) * EVENT_FIREPOWER_AMMO);
+                    
+                    SetConVarInt(FindConVar("ammo_assaultrifle_max"), iRifle);
+                    SetConVarInt(FindConVar("ammo_autoshotgun_max"), iShot);
                     g_iActiveAmmoAk = RoundFloat( GetConVarFloat(g_hCvarAmmoAk) * EVENT_FIREPOWER_AMMO);
+                    g_iActiveAmmoScout = RoundFloat( GetConVarFloat(g_hCvarAmmoScout) * EVENT_FIREPOWER_AMMO);
+                    g_iActiveAmmoAWP = RoundFloat( GetConVarFloat(g_hCvarAmmoAWP) * EVENT_FIREPOWER_AMMO);
+                    // also increase sniper ammo
+                    SetConVarInt(FindConVar("ammo_huntingrifle_max"), iSniper);
+                    SetConVarInt(FindConVar("ammo_sniperrifle_max"), iSniper);
                     g_iActiveAmmoScout = RoundFloat( GetConVarFloat(g_hCvarAmmoScout) * EVENT_FIREPOWER_AMMO);
                     g_iActiveAmmoAWP = RoundFloat( GetConVarFloat(g_hCvarAmmoAWP) * EVENT_FIREPOWER_AMMO);
                     
@@ -972,8 +979,8 @@ RANDOM_DetermineRandomStuff()
                     SetConVarInt(FindConVar("z_boomer_limit"), 4);
                     SetConVarInt(FindConVar("z_spitter_limit"), 2);
                     
-                    SetConVarInt(FindConVar("z_vomit_interval"), 15);
-                    SetConVarInt(FindConVar("z_spit_interval"), 15);
+                    SetConVarInt(FindConVar("z_vomit_interval"), 10);
+                    SetConVarInt(FindConVar("z_spit_interval"), 10);
                     
                     // no tonfa's
                     SetConVarFloat(FindConVar("sv_infected_riot_control_tonfa_probability"), 0.0);
@@ -3741,11 +3748,7 @@ RANDOM_DoGiftEffect(client, entity)
                     }
                     
                     // get rid of temp health buffer?
-                    if (oldTotal > curHealth) {
-                        SetEntPropFloat(client, Prop_Send, "m_healthBuffer", float(oldTotal - curHealth));
-                    } else {
-                        SetEntPropFloat(client, Prop_Send, "m_healthBuffer", 0.0);
-                    }
+                    SetEntPropFloat(client, Prop_Send, "m_healthBuffer", (oldTotal > curHealth) ? float(oldTotal - curHealth) : 0.0 );
                     
                     Vocalize_Random(client, "PainRelieftFirstAid");
                 }
@@ -3995,6 +3998,8 @@ RANDOM_DoGiftEffect(client, entity)
                 new chr = GetPlayerCharacter(client);
                 g_fGiftBlindTime[chr] = GetGameTime() + g_RC_fBlindTime;
                 DoBlindSurvivor(client, BLIND_AMOUNT);
+                
+                PrintDebug(3, "[rand] Blinded %N (character: %i) for %.f", client, chr, g_RC_fBlindTime);
                 
                 new Handle:pack = CreateDataPack();
                 WritePackCell(pack, client);

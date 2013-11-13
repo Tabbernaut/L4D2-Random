@@ -45,6 +45,18 @@ HUDRestoreClient(client)
     Blindness
     ------------------ */
 // update blindtimes after pause: add extra time
+public Action: Timer_CheckBlindness( Handle:timer, any:client )
+{
+    if ( !IsClientAndInGame(client) || !IsSurvivor(client) || !IsPlayerAlive(client) || IsFakeClient(client) ) { return; }
+    
+    new chr = GetPlayerCharacter(client);
+    
+    if ( g_fGiftBlindTime[chr] != 0.0 && FloatSub( g_fGiftBlindTime[chr], GetGameTime() ) > 0.0 )
+    {
+        DoBlindSurvivor(client, BLIND_AMOUNT);
+    }
+}
+        
 SUPPORT_CheckBlindSurvivors( Float: fExtraTime )
 {
     for ( new i = 0; i < MAX_CHARACTERS; i++ )
@@ -60,11 +72,13 @@ public Action: Timer_Blindness ( Handle:timer, any:chr )
 {
     if ( g_bIsPaused ) { return Plugin_Continue; }
     
+    //PrintDebug(3, "[rand] Checking chr %i: time: now: %.1f, until: %.1f", chr, GetGameTime(), g_fGiftBlindTime[chr]);
+    
     if ( g_fGiftBlindTime[chr] == 0.0 || FloatSub( g_fGiftBlindTime[chr], GetGameTime() ) <= 0.0 )
     {
         // find character and unblind
         new tmpClient = GetCharacterClient(chr);
-        if ( IsSurvivor(tmpClient) ) {
+        if ( IsSurvivor(tmpClient) && !IsFakeClient(tmpClient) ) {
             // unblind
             DoBlindSurvivor(tmpClient, 0);
         }
@@ -284,7 +298,7 @@ stock GetCharacterClient( chr )
 {
     for ( new client = 1; client <= MaxClients; client++ )
     {
-        if ( IsClientInGame(client) && IsFakeClient(client) && GetClientTeam(client) == TEAM_SURVIVOR )
+        if ( IsClientInGame(client) && GetClientTeam(client) == TEAM_SURVIVOR && !IsFakeClient(client) )
         {
             if ( GetPlayerCharacter(client) == chr ) { return client; }
         }

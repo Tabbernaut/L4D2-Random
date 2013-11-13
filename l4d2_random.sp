@@ -453,11 +453,11 @@ public OnPluginEnd()
 }
 
 
-public OnClientDisconnect_Post(client)
+public OnClientDisconnect(client)
 {
-    SDKUnhook(client, SDKHook_WeaponCanUse, OnWeaponCanUse);
+    if ( !IsClientAndInGame(client) ) { return; }
     
-    if (g_bSpecialEventPlayerCheck)
+    if ( g_bSpecialEventPlayerCheck )
     {
         new Handle:pack = CreateDataPack();
         WritePackCell(pack, g_bPlayersLeftStart);
@@ -467,16 +467,20 @@ public OnClientDisconnect_Post(client)
         return;
     }
     
-    PrintDebug(3, "Client disconnected: %i (hadspawn %i / wasghost %i)", client, g_bHasSpawned[client], g_bHasGhost[client] );
-    
+    if (!g_bIsTankInPlay || client != g_iTankClient) { return; }
+    CreateTimer(0.1, Timer_CheckTankDeath, client);
+
     // safeguard for SI
     g_bHasGhost[client] = false;
     g_bHasSpawned[client] = false;
     
-    
-    
-    if (!g_bIsTankInPlay || client != g_iTankClient) { return; }
-    CreateTimer(0.1, Timer_CheckTankDeath, client);
+    PrintDebug(3, "Client disconnected: %i (hadspawn %i / wasghost %i)", client, g_bHasSpawned[client], g_bHasGhost[client] );
+}
+public OnClientDisconnect_Post(client)
+{
+    SDKUnhook(client, SDKHook_WeaponCanUse, OnWeaponCanUse);
+    SDKUnhook(client, SDKHook_WeaponEquipPost, OnWeaponEquip);
+    SDKUnhook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 }
 
 public OnClientPostAdminCheck(client)
@@ -1819,29 +1823,6 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
         g_bArBlockPickupCall[client] = true;
         CreateTimer(0.01, Timer_UnblockWeaponPickupCall, client, TIMER_FLAG_NO_MAPCHANGE);
     }
-    else if (g_iSpecialEvent == EVT_GUNSWAP && newTeam == TEAM_SURVIVOR)
-    {
-        CreateTimer(0.1, Timer_CheckSurvivorGun, client, TIMER_FLAG_NO_MAPCHANGE);
-    }
-    else if (g_bSpecialEventPlayerCheck)
-    {
-        // check if it's a client that should get the special role
-        if ( newTeam == TEAM_SURVIVOR && CheckSpecialRoleMemory(client) && IsPlayerAlive(client) )
-        {
-            CreateTimer(DELAY_FORCEROLE, Timer_ForceSpecialEventRole, client, TIMER_FLAG_NO_MAPCHANGE);
-        }
-        
-        if (!g_bSpecialRoleAboutToChange)
-        {
-            g_bSpecialRoleAboutToChange = true;
-            
-            new Handle:pack = CreateDataPack();
-            WritePackCell(pack, g_bPlayersLeftStart);
-            WritePackCell(pack, true);
-            WritePackCell(pack, client);
-            CreateTimer(DELAY_TEAMSWAP, Timer_CheckSpecialEventRole, pack, TIMER_FLAG_NO_MAPCHANGE);
-        }
-    }
     // do some delayed checks/changes when people go survivor/infected
     else if (g_iSpecialEvent == EVT_NOHUD || g_iSpecialEvent == EVT_DEFIB)
     {
@@ -1853,8 +1834,38 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
         CreateTimer(DELAY_TEAMSWAP, Timer_TeamSwapDelayed, pack, TIMER_FLAG_NO_MAPCHANGE);
     }
     
+    // do stuff if a player becomes a survivor
+    if ( newTeam == TEAM_SURVIVOR )
+    {
+        CreateTimer(DELAY_FORCEROLE, Timer_CheckBlindness, client, TIMER_FLAG_NO_MAPCHANGE);
+        
+        if ( g_iSpecialEvent == EVT_GUNSWAP )
+        {
+            CreateTimer(0.1, Timer_CheckSurvivorGun, client, TIMER_FLAG_NO_MAPCHANGE);
+        }
+        else if ( g_bSpecialEventPlayerCheck )
+        {
+            // check if it's a client that should get the special role
+        
+            if ( CheckSpecialRoleMemory(client) )
+            {
+                CreateTimer(DELAY_FORCEROLE, Timer_ForceSpecialEventRole, client, TIMER_FLAG_NO_MAPCHANGE);
+            }
+        
+            if (!g_bSpecialRoleAboutToChange)
+            {
+                g_bSpecialRoleAboutToChange = true;
+                
+                new Handle:pack = CreateDataPack();
+                WritePackCell(pack, g_bPlayersLeftStart);
+                WritePackCell(pack, true);
+                WritePackCell(pack, client);
+                CreateTimer(DELAY_TEAMSWAP, Timer_CheckSpecialEventRole, pack, TIMER_FLAG_NO_MAPCHANGE);
+            }
+        }
+    }
     // spectate check / ghost check
-    if (newTeam == TEAM_SPECTATOR && oldTeam == TEAM_INFECTED)
+    else if (newTeam == TEAM_SPECTATOR && oldTeam == TEAM_INFECTED)
     {
         /*
             if they were a ghost (didn't spawn, didn't get tank and didn't die),

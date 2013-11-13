@@ -88,6 +88,7 @@ L4D2_Random
             - Fixed issue with distance freezing leading to 0 distance rounds.
             - Fixed pills appearing on common kill on Adrenaline Rush event.
             - Made gnomes worth a smaller portion of map distance (20%).
+            - Increased sniper ammo on Firepower event.
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -103,7 +104,6 @@ L4D2_Random
             
             - test:     should detect people trying to get out of a special role by speccing / disconnecting
                             give back to same player when they come back, unless: died and got defibbed in between
-                        - doesn't work
             - test:     still jockey in l4d1 mode ... sigh - can't reproduce (happened after pausing!)
                         - crashes seem to cause this: player comes back after pause,
                             g_bHasSpawned[] is set, so it skips the spawn selection
@@ -111,13 +111,15 @@ L4D2_Random
             
             - fix:      sab gets special role every time? wut
                             test if repick really happens..
+                            note that rjven reports always getting the gnome...
             
             - test:     double smokers in 2v2/3v3?
             - test:     boobytraps on cola/gnome? shouldn't happen.
             - test:     hittable damage in minitanks event (looks ok.. why wrong sometimes?)
                             maybe for car alarm props? some props not taken into account by hittablecontrol plugin?
-            - test:     what happens when a blinded players goes spec? does the blindness transfer automatically?
-                        if not, handle it by player character and do a check on teamswitches during blindtime.
+            - test:     medic on second round doesn't.. work?   note: second rondhalf.. first was fine
+                            - debug print in place.. but no clue
+            
             
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    find less annoying way of doing gunswap (reload before swapping?)
@@ -127,11 +129,9 @@ L4D2_Random
             
             - bugfix:   haunted doors: sometimes doors get stuck.. detect / prevent?
             - bugfix:   scout max ammo still broken / wrong (see rjven) [ doesn't seem to be the case for hunting rifle]
-            - bugfix:   t2 event: increase sniper ammo too -- broken?
+            
             - bugfix:   minitanks: freezes too close together, doesn't update score
-            - bugfix:   medic on second round doesn't.. work?
-                            note: second rondhalf.. first was fine
-                            - debug print in place.. but no clue
+            - bugfix:   distance seems wrong on doubletank / minitanks
             
             - misc:     add bay RC data to actual KV file setup
             
