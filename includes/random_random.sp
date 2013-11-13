@@ -769,6 +769,7 @@ RANDOM_DetermineRandomStuff()
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
                     g_iDifficultyRating++;
                     
+                    g_iActiveAmmoSniper = RoundFloat( GetConVarFloat(g_hCvarAmmoSniper) * EVENT_FIREPOWER_AMMO);
                     g_iActiveAmmoScout = RoundFloat( GetConVarFloat(g_hCvarAmmoScout) * EVENT_FIREPOWER_AMMO);
                     g_iActiveAmmoAWP = RoundFloat( GetConVarFloat(g_hCvarAmmoAWP) * EVENT_FIREPOWER_AMMO);
                 }
@@ -944,10 +945,9 @@ RANDOM_DetermineRandomStuff()
                     // also increase sniper ammo
                     SetConVarInt(FindConVar("ammo_huntingrifle_max"), iSniper);
                     SetConVarInt(FindConVar("ammo_sniperrifle_max"), iSniper);
+                    g_iActiveAmmoSniper = RoundFloat( GetConVarFloat(g_hCvarAmmoSniper) * EVENT_FIREPOWER_AMMO);
                     g_iActiveAmmoScout = RoundFloat( GetConVarFloat(g_hCvarAmmoScout) * EVENT_FIREPOWER_AMMO);
                     g_iActiveAmmoAWP = RoundFloat( GetConVarFloat(g_hCvarAmmoAWP) * EVENT_FIREPOWER_AMMO);
-                    
-                    PrintDebug(3, "[rand] Firepower event: Weapon maxima: rifle: %i; shotgun: %i; AK: %i; Scout: %i; AWP: %i", iRifle, iShot, g_iActiveAmmoAk, g_iActiveAmmoScout, g_iActiveAmmoAWP);
                 }
                 case EVT_AMMO: {
                     g_bNoAmmo = true;
@@ -956,9 +956,10 @@ RANDOM_DetermineRandomStuff()
                     SetConVarInt(FindConVar("ammo_smg_max"), RoundFloat( float(g_iDefAmmoSmg) * g_RC_fEventAmmoMaxFactor) );
                     SetConVarInt(FindConVar("ammo_shotgun_max"), RoundFloat( float(g_iDefAmmoShotgun) * g_RC_fEventAmmoMaxFactor) );
                     SetConVarInt(FindConVar("ammo_huntingrifle_max"), RoundFloat( float(g_iDefAmmoHR) * g_RC_fEventAmmoMaxFactor) );
-                    SetConVarInt(FindConVar("ammo_sniperrifle_max"), RoundFloat( float(g_iDefAmmoSniper) * g_RC_fEventAmmoMaxFactor) );
+                    //SetConVarInt(FindConVar("ammo_sniperrifle_max"), RoundFloat( float(g_iDefAmmoSniper) * g_RC_fEventAmmoMaxFactor) );
                     SetConVarInt(FindConVar("ammo_assaultrifle_max"), RoundFloat( float(g_iDefAmmoRifle) * g_RC_fEventAmmoMaxFactor) );
                     SetConVarInt(FindConVar("ammo_autoshotgun_max"), RoundFloat( float(g_iDefAmmoAutoShotgun) * g_RC_fEventAmmoMaxFactor) );
+                    g_iActiveAmmoSniper = RoundFloat( GetConVarFloat(g_hCvarAmmoSniper) * g_RC_fEventAmmoMaxFactor);
                     g_iActiveAmmoAk = RoundFloat( GetConVarFloat(g_hCvarAmmoAk) * g_RC_fEventAmmoMaxFactor);
                     g_iActiveAmmoScout = RoundFloat( GetConVarFloat(g_hCvarAmmoScout) * g_RC_fEventAmmoMaxFactor);
                     g_iActiveAmmoAWP = RoundFloat( GetConVarFloat(g_hCvarAmmoAWP) * g_RC_fEventAmmoMaxFactor);
@@ -1875,7 +1876,7 @@ RandomizeItems()
                             g_strArStorage[curEnt][entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_huntingrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
                         } else {
                             g_strArStorage[curEnt][entPickedType] = PCK_SNIPER_MILITARY;
-                            g_strArStorage[curEnt][entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_sniperrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
+                            g_strArStorage[curEnt][entAmmoMax] = RoundFloat(float(g_iActiveAmmoSniper) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor);
                         }
                     }
                 }
@@ -2395,7 +2396,7 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
                 case 2: { randomPick = PCK_HUNTING_RIFLE;
                           g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_huntingrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor); }
                 case 3: { randomPick = PCK_SNIPER_MILITARY;
-                          g_strTempItemSingle[entAmmoMax] = RoundFloat(GetConVarFloat(FindConVar("ammo_sniperrifle_max")) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor); }
+                          g_strTempItemSingle[entAmmoMax] = RoundFloat(float(g_iActiveAmmoSniper) * GetRandomFloat(fAmmoVarLess, fAmmoVarMore) * fAmmoFactor); }
             }
         }
         

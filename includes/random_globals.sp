@@ -416,6 +416,7 @@ new     Handle:         g_hCvarRandBonusScaleMode                           = IN
 new     Handle:         g_hCvarAmmoAk                                       = INVALID_HANDLE;       // cvar how much ammo in AK47s
 new     Handle:         g_hCvarAmmoScout                                    = INVALID_HANDLE;       // cvar how much ammo in Scout rifle
 new     Handle:         g_hCvarAmmoAWP                                      = INVALID_HANDLE;       // cvar how much ammo in AWP rifle
+new     Handle:         g_hCvarAmmoSniper                                   = INVALID_HANDLE;       // cvar how much ammo in Military Sniper (used to avoid scout/awp bugs)
 
 // Default convars
 new     Handle:         g_hCvarReadyUp                                      = INVALID_HANDLE;       // cvar handle for readyup checking
@@ -471,6 +472,7 @@ new     Float:          g_fDefCedaBileProb                                  = 0.
 new     Float:          g_fDefRiotTonfaProb                                 = 0.15;
 
 new                     g_iActiveAmmoAk                                     = 250;
+new                     g_iActiveAmmoSniper                                 = 65;
 new                     g_iActiveAmmoScout                                  = 90;
 new                     g_iActiveAmmoAWP                                    = 60;
 

@@ -112,6 +112,7 @@ INIT_DefineCVars()
     g_hCvarAmmoAk = CreateConVar(                           "rand_ammo_ak",                 "250",      "Ammo for the AK47 in Random.", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarAmmoScout = CreateConVar(                        "rand_ammo_scout",              "150",      "Ammo for the Scout rifle in Random.", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarAmmoAWP = CreateConVar(                          "rand_ammo_awp",                 "90",      "Ammo for the AWP rifle in Random.", FCVAR_PLUGIN, true, 0.0, false);
+    g_hCvarAmmoSniper = CreateConVar(                       "rand_ammo_sniper",              "60",      "Ammo for the military sniper rifle in Random.", FCVAR_PLUGIN, true, 0.0, false);
     
     g_hArCvarWeight[INDEX_NOITEM] = CreateConVar(           "rand_weight_nothing",          "25",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarWeight[INDEX_PISTOL] = CreateConVar(           "rand_weight_pistol",           "13",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );

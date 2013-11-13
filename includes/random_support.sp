@@ -261,6 +261,7 @@ EVENT_ResetOtherCvars()
     SetConVarInt(FindConVar("ammo_assaultrifle_max"), g_iDefAmmoRifle);
     SetConVarInt(FindConVar("ammo_autoshotgun_max"), g_iDefAmmoAutoShotgun);
     g_iActiveAmmoAk = GetConVarInt(g_hCvarAmmoAk);
+    g_iActiveAmmoSniper = GetConVarInt(g_hCvarAmmoSniper);
     g_iActiveAmmoScout = GetConVarInt(g_hCvarAmmoScout);
     g_iActiveAmmoAWP = GetConVarInt(g_hCvarAmmoAWP);
     

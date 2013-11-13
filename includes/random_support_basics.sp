@@ -724,10 +724,16 @@ SUPPORT_CheckAmmo(client)
             iProperAmmo = g_iActiveAmmoAWP + iClipAmmo;
             iOffset = MILITARY_SNIPER_OFFSET_IAMMO;
         }
+        else if (StrEqual("weapon_sniper_military", classname, false)) {
+            new iClipAmmo = 15 - GetEntProp(weapon, Prop_Send, "m_iClip1");
+            iProperAmmo = g_iActiveAmmoSniper + iClipAmmo;
+            iOffset = MILITARY_SNIPER_OFFSET_IAMMO;
+        }
         
         if (iProperAmmo != -1)
         {
             new ammo = GetEntData(client, (iAmmoOffset + iOffset));
+            //PrintDebug(3, "[rand] ammo for client %N: %i (%s)- ammo: %i / %i", client, iOffset, classname, ammo, iProperAmmo);
             if (ammo != iProperAmmo) {
                 SetEntData(client, (iAmmoOffset + iOffset), iProperAmmo);
             }
