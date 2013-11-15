@@ -38,7 +38,7 @@ public Plugin:myinfo =
     name = "Random - Damage Scoring",
     author = "CanadaRox, Tabun",
     description = "Custom damage scoring based on damage. Adjusted for use with Random config.",
-    version = "1.5",
+    version = "1.6",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 };
 
@@ -168,6 +168,8 @@ public Native_SetPenaltyBonus(Handle:plugin, numParams)
 {
     new value = GetNativeCell(1);
     g_iPenaltyBonus = value;
+    // if bonus is stored before (last) penalty added, could be ignored
+    iStorePBonus[GetCurRound()] = value;
     return;
 }
 
