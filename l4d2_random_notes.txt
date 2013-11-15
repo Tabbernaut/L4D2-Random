@@ -106,9 +106,6 @@ L4D2_Random
             - wait:     gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
                         but hey, windows sigs are broken anyway
             
-            
-            - test:     should detect people trying to get out of a special role by speccing / disconnecting
-                            give back to same player when they come back, unless: died and got defibbed in between
             - test:     still jockey in l4d1 mode ... sigh - can't reproduce (happened after pausing!)
                         - crashes seem to cause this: player comes back after pause,
                             g_bHasSpawned[] is set, so it skips the spawn selection
@@ -116,9 +113,11 @@ L4D2_Random
                             - yes, it displays the wrong value (like, 60 if it should be 75 on skeet shoot)
             - test:     minitanks: freezes too close together, doesn't update score
             - test:     distance seems wrong on doubletank / minitanks
-            
-            - fix:      sab gets special role every time? wut
+            - test:     m2s not always registered in m2 penalty event? debug print in place
+            - test:     sab gets special role every time? wut
                             test if repick really happens..
+            
+            - fix:      weird black walls (instead of shopping carts) c1m3 only
             
             - test:     double smokers in 2v2/3v3?
             - test:     boobytraps on cola/gnome? shouldn't happen.

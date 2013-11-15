@@ -31,7 +31,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.0.76"
+#define PLUGIN_VERSION "1.0.77"
 
 /*
         L4D2 Random
@@ -3412,21 +3412,23 @@ public OnSkeetSniperHurt ( attacker, victim, damage, bool:overkill )
     EVENT_HandleNonSkeet( victim, damage, overkill );
 }
 
-public OnSpecialShoved ( attacker, victim )
+public OnSpecialShoved ( attacker, victim, zClass )
 {
+    if ( g_iSpecialEvent != EVT_PEN_M2 ) { return; }
+    
+    PrintDebug( 2, "Shove: %i (valid: %i) shoves %i (valid: %i) (class: %i)", attacker, (IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_SURVIVOR), victim, (IsClientAndInGame(victim) && GetClientTeam(victim) == TEAM_INFECTED), zClass );
     if ( !IsClientAndInGame(attacker) || GetClientTeam(attacker) != TEAM_SURVIVOR || !IsClientAndInGame(victim) || GetClientTeam(victim) != TEAM_INFECTED) { return; }
     
     // don't count bots shoving...
-    if ( g_iSpecialEvent == EVT_PEN_M2 && !IsFakeClient(attacker) )
+    if ( !IsFakeClient(attacker) )
     {
         // only on cappers (except charger)
-        new classType = GetEntProp(victim, Prop_Send, "m_zombieClass");
-        if ( classType == ZC_JOCKEY || classType == ZC_HUNTER || classType == ZC_SMOKER )
+        if ( zClass == ZC_JOCKEY || zClass == ZC_HUNTER || zClass == ZC_SMOKER )
         {
             g_iBonusCount++;
             PBONUS_AddRoundBonus( -1 * g_RC_iEventPenaltyM2SI );
             EVENT_PBonusChanged();
-            EVENT_ReportPenalty(attacker, classType);
+            EVENT_ReportPenalty( attacker, zClass );
         }
     }
 }
