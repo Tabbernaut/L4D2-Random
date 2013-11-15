@@ -1420,12 +1420,6 @@ public Action: Event_SoundPlayed(clients[64], &numClients, String:sample[PLATFOR
 }
 
 
-/* public Action: TraceAttack(victim, &attacker, &inflictor, &Float:damage, &damagetype, &ammotype, hitbox, hitgroup)
-{
-    if (!IsClientAndInGame(victim) || !IsClientAndInGame(attacker)) { return; }
-}
-*/
-
 public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype)
 {
     if (damage == 0.0 || !IsValidEntity(attacker) || !IsValidEntity(victim)) { return Plugin_Continue; }
@@ -1610,8 +1604,6 @@ public Action: OnTakeDamage_Hittable(victim, &attacker, &inflictor, &Float:damag
         return Plugin_Continue;
     }
     
-    
-    
     new bool: doBlowUp = false;
     new index = 0;
     
@@ -1679,32 +1671,6 @@ public Action: OnTakeDamage_Hittable(victim, &attacker, &inflictor, &Float:damag
 }
 
 
-/*      see note @ hooking car in random_thirdparty spawnalarmcar
-public Action: OnTakeDamage_AlarmedCar(victim, &attacker, &inflictor, &Float:damage, &damagetype)
-{
-    // alarmed car gets punched
-    if (!IsValidEntity(victim) || !IsValidEntity(attacker)) { return Plugin_Continue; }
-    
-    //PrintToChatAll("attacker: %d - inflictor: %d - victim: %i", attacker, inflictor, victim);
-    
-    if (attacker == inflictor) {
-        // check if one hittable collided with another
-        new String: classname[32];
-        GetEdictClassname(attacker, classname, sizeof(classname));
-        
-        if (StrEqual(classname, "prop_physics", false) || StrEqual(classname, "prop_car_alarm", false))
-        {
-            for (new i=0; i < g_iStoredHittables; i++)
-            {
-                if (!g_strArHittableStorage[i][hitIsAlarmed] || g_strArHittableStorage[i][hitNumber] != victim || g_strArHittableStorage[i][hitAlarmOff]) { continue; }
-                DisableAlarmCar(i);
-            }
-        }
-    }
-    
-    return Plugin_Continue;
-}
-*/
 
 /*  Human tracking (join/etc)
     -------------------------- */
@@ -3148,7 +3114,7 @@ public Event_WitchDeath(Handle:event, const String:name[], bool:dontBroadcast)
     // witch was killed, give bonus to survivors (if killer was a survivor)
     if (!IsClientAndInGame(client) || GetClientTeam(client) != TEAM_SURVIVOR) { return; }
     
-    PrintDebug(4, "[rand] witch died: entity: %i; bungled: %i", witchEnt, g_bWitchBungled[witchEnt]);
+    PrintDebug(6, "[rand] witch died: entity: %i; bungled: %i", witchEnt, g_bWitchBungled[witchEnt]);
     
     // only give points if not bungled
     if ( g_bWitchBungled[witchEnt] ) {
@@ -3162,9 +3128,6 @@ public Event_WitchDeath(Handle:event, const String:name[], bool:dontBroadcast)
         PrintToChatAll("\x01[\x05r\x01] Survivors killed a witch for \x04%i\x01 points.", g_RC_iEventBonusWitch);
     }
 }
-/* public Event_WitchSpawn(Handle:event, const String:name[], bool:dontBroadcast)
-{
-} */
 
 public Event_WitchHarasserSet(Handle:event, const String:name[], bool:dontBroadcast)
 {
@@ -3416,25 +3379,6 @@ public Action:Timer_PipeCheck(Handle:timer, any:entity)
 
 
 
-
-// hooked for BAY
-/* rock hook
-public OnTankRockTouchesSomething(entity)
-{
-    new Float: targetPos[3];
-    GetEntPropVector(entity, Prop_Send, "m_vecOrigin", targetPos);
-    
-    new Handle:pack = CreateDataPack();
-    WritePackFloat(pack, -1.0); // no damage just graphics
-    WritePackFloat(pack, targetPos[0]);
-    WritePackFloat(pack, targetPos[1]);
-    WritePackFloat(pack, targetPos[2]);
-    WritePackCell(pack, 0 ); // for fire
-    CreateTimer(0.1, Timer_CreateExplosion, pack, TIMER_FLAG_NO_MAPCHANGE);
-    
-    SDKUnhook(entity, SDKHook_Touch, OnTankRockTouchesSomething);
-}
-*/
 
 // from skill_detect
 public OnSkeet ( attacker, victim )

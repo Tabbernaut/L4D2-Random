@@ -90,6 +90,7 @@ L4D2_Random
             - Made gnomes worth a smaller portion of map distance (20%).
             - Increased sniper ammo on Firepower event.
             - Fixed issues with Scout/AWP ammo replenishing.
+            - Changed it so that the same players no longer get the best/worst hand-out compared to their teammates.
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -115,7 +116,6 @@ L4D2_Random
             
             - fix:      sab gets special role every time? wut
                             test if repick really happens..
-                            note that rjven reports always getting the gnome...
             
             - test:     double smokers in 2v2/3v3?
             - test:     boobytraps on cola/gnome? shouldn't happen.

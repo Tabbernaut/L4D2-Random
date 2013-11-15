@@ -2495,6 +2495,7 @@ RandomizeSurvivorItems()
     new randomPick;
     new secondaryPick;          // additional to primaries, if we force a minimum
     new meleeRandomPick;
+    new i;
     
     new iMinPrimary = 1;
     new iMinSecondary = 2;      // special case though, not used for now
@@ -2507,6 +2508,48 @@ RandomizeSurvivorItems()
     new Float: fAmmoVarLess = 1.0 - GetConVarFloat(g_hCvarAmmoVarianceLess);
     new Float: fAmmoFactor = (g_iSpecialEvent == EVT_AMMO) ? g_RC_fEventAmmoFactor : 1.0;
 
+    // build randomized team handout order
+    new teamOrder[TEAM_SIZE];
+    switch ( GetRandomInt(0, 5) )
+    {
+        case 0: {
+            teamOrder[0] = 0;
+            teamOrder[1] = 1;
+            teamOrder[2] = 2;
+            teamOrder[3] = 3;
+        }
+        case 1: {
+            teamOrder[0] = 3;
+            teamOrder[1] = 1;
+            teamOrder[2] = 2;
+            teamOrder[3] = 0;
+        }
+        case 2: {
+            teamOrder[0] = 2;
+            teamOrder[1] = 1;
+            teamOrder[2] = 0;
+            teamOrder[3] = 3;
+        }
+        case 3: {
+            teamOrder[0] = 1;
+            teamOrder[1] = 0;
+            teamOrder[2] = 3;
+            teamOrder[3] = 2;
+        }
+        case 4: {
+            teamOrder[0] = 0;
+            teamOrder[1] = 3;
+            teamOrder[2] = 2;
+            teamOrder[3] = 1;
+        }
+        case 5: {
+            teamOrder[0] = 2;
+            teamOrder[1] = 3;
+            teamOrder[2] = 0;
+            teamOrder[3] = 1;
+        }
+    }
+    
 
     // minimum supplies for higher difficulty rounds
     if (GetConVarBool(g_hCvarStartBalanceSurv))
@@ -2532,8 +2575,9 @@ RandomizeSurvivorItems()
         iMinSecondary = 0;
     }
     
-    for (new i=0; i < TEAM_SIZE; i++)
+    for (new j=0; j < TEAM_SIZE; j++)
     {
+        i = teamOrder[j];
         // pick a random option
         // save it to array
         
@@ -2688,7 +2732,7 @@ RandomizeSurvivorItems()
     if (g_iSpecialEvent == EVT_GUNSWAP)
     {
         // give nothing but pistol (or melee)
-        for (new i=0; i < TEAM_SIZE; i++) {
+        for (i=0; i < TEAM_SIZE; i++) {
             g_iArStorageSurv[i] = PCK_NOITEM;
             g_iArStorageSurvSec[i] = PCK_PISTOL;
         }
@@ -2700,7 +2744,7 @@ RandomizeSurvivorItems()
         if (g_iSpecialEvent == EVT_DOORS && iCountMelee < EVENT_DOORS_MINMELEE)
         {
             PrintDebug(2, "[rand] Adding melees to deal with special event.");
-            for (new i=0; i < TEAM_SIZE; i++)
+            for (i=0; i < TEAM_SIZE; i++)
             {
                 if (g_iArStorageSurvSec[i] != PCK_MELEE) {
                     g_iArStorageSurvSec[i] = PCK_MELEE;
@@ -2715,7 +2759,7 @@ RandomizeSurvivorItems()
         else if (g_bEarlyLock && iCountMelee < EARLY_DOORS_MINMELEE && g_iSpecialEvent != EVT_BADCOMBO)
         {
             PrintDebug(2, "[rand] Adding melees to deal with early locks.");
-            for (new i=0; i < TEAM_SIZE; i++)
+            for (i=0; i < TEAM_SIZE; i++)
             {
                 if (g_iArStorageSurvSec[i] != PCK_MELEE) {
                     g_iArStorageSurvSec[i] = PCK_MELEE;
@@ -4161,7 +4205,7 @@ DetermineSpawnClass(any:client, any:iClass)
         // build first attack
         iClass = GetClassForFirstAttack(client);
         forcedClass = true;
-        PrintDebug(6, "[rand si] first attack spawn assigned: %8s => %N", g_csSIClassName[iClass], client);
+        PrintDebug(5, "[rand si] first attack spawn assigned: %8s => %N", g_csSIClassName[iClass], client);
     }
     else if (g_iSpectateGhostCount && !IsFakeClient(client))
     {
