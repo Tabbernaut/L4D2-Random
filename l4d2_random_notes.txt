@@ -94,6 +94,7 @@ L4D2_Random
             - Survivors now do only half the normal amount of friendly fire on the Bad Combo special event.
             - Blocked ultra-early tank on c1m1_hotel
             - Increased items for Adrenaline Rush event.
+            - Fixed problems with first spawns not being equal and some event effects being applied before round goes live.
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]

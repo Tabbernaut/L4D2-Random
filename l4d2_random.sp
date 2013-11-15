@@ -1142,6 +1142,8 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
     g_bSurvivorsLoadedIn = false;
     g_bBotsAllowedPickup = false;
+    g_bRoundIsLive = false;
+    
     if (GetConVarBool(g_hCvarStopBotsAtStart)) { SetConVarInt(g_hCvarBotStop, 1); }
     
     // this is a bit silly, since roundstart gets called before onmapstart...
@@ -1181,6 +1183,7 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 public OnRoundIsLive()
 {
     g_bBotsAllowedPickup = true;
+    g_bRoundIsLive = true;
     
     // only if a readyup plugin is active
     // if not, display panel with a timer?
@@ -1737,12 +1740,10 @@ public Action: Timer_PlayerJoinedSurvivor(Handle:timer, any:pack)
 
 public Action: L4D_OnFirstSurvivorLeftSafeArea( client )
 {
-    PrintDebug(6, "[rand] Survivors left saferoom [L4DT forward].");
-    SurvivorsReallyLeftSaferoom();
-}
-// this is called iff the round has actually really started
-SurvivorsReallyLeftSaferoom()
-{
+    if ( g_bReadyUpAvailable && !g_bRoundIsLive ) { return; }
+    
+    PrintDebug(6, "[rand] Survivors left saferoom (and round is live).");
+    
     g_bIsFirstAttack = false;
     g_bBotsAllowedPickup = true;
     if (GetConVarBool(g_hCvarStopBotsAtStart)) { SetConVarInt(g_hCvarBotStop, 0); }
@@ -1763,7 +1764,7 @@ SurvivorsReallyLeftSaferoom()
     }
     
     // do special late round prep
-    if (!g_bPlayersLeftStart)
+    if ( !g_bPlayersLeftStart )
     {
         g_bPlayersLeftStart = true;
         CreateTimer(0.1, EVENT_SurvivorsLeftSaferoom, _, TIMER_FLAG_NO_MAPCHANGE);

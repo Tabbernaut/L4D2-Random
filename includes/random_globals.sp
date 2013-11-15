@@ -31,6 +31,7 @@ new     bool:           g_bCampaignMode                                     = fa
 new                     g_bSecondHalf                                       = false;                // is this the second round-half?
 new     bool:           g_bMapStartDone                                     = false;                // has OnMapStart been executed? (to avoid double roundprep calls)
 new     bool:           g_bFirstMapDone                                     = false;                // set to true after the first round has been played
+new     bool:           g_bRoundIsLive                                      = false;                // only true if readyup is loaded and round went live
 new     bool:           g_bInRound                                          = false;                // are we in a live round?
 new     bool:           g_bIsFirstAttack                                    = false;                // is this / will this be the first attack of the round(half)?
 new     bool:           g_bItemsFullyRandomized                             = false;                // if this is true, all the items are in place and ready to be picked up
