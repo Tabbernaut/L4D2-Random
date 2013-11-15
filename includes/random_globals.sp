@@ -303,6 +303,7 @@ new     bool:           g_RI_bNoRain                                        = fa
 new     bool:           g_RI_bNoCola                                        = false;                // block cola spawns
 new                     g_RI_iTankBanStart                                  = 0;                    // block specific tank spawn range
 new                     g_RI_iTankBanEnd                                    = 0;                    // block specific tank spawn range
+new                     g_RI_iTankBanEarly                                  = 0;                    // block specific tank spawn for banning (some) early tanks
 new     bool:           g_RI_bWeakHittables                                 = false;                // makes hittables do less damage (like c5m5 normally)
 new                     g_RI_iDistance                                      = 0;                    // normal max map distance points
 new                     g_RI_iDistanceHard                                  = 0;                    // hard-path max map distance points

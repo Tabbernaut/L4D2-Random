@@ -1419,7 +1419,6 @@ public Action: Event_SoundPlayed(clients[64], &numClients, String:sample[PLATFOR
     return Plugin_Continue;
 }
 
-
 public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype)
 {
     if (damage == 0.0 || !IsValidEntity(attacker) || !IsValidEntity(victim)) { return Plugin_Continue; }
@@ -1516,9 +1515,7 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
     // set a fixed damage amount for melee weaps on tank
     else if (g_iSpecialEvent == EVT_MINITANKS)
     {
-        if ( !IsClientAndInGame(victim) ) { return Plugin_Continue; }
-        if ( !IsClientAndInGame(attacker) ) { return Plugin_Continue; }
-        
+        if ( !IsClientAndInGame(victim) || !IsClientAndInGame(attacker) ) { return Plugin_Continue; }
         if ( GetClientTeam(attacker) != TEAM_SURVIVOR || GetClientTeam(victim) != TEAM_INFECTED || !IsTank(victim) || !IsValidEdict(inflictor) ) { return Plugin_Continue; }
     
         new String: classname[32];
@@ -1532,6 +1529,14 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
             damage = g_RC_fMinitankMeleeDmg;
             return Plugin_Changed;
         }
+    }
+    else if ( g_iSpecialEvent == EVT_BADCOMBO )
+    {
+        // for bad combo, reduce friendly fire to half
+        if ( !IsClientAndInGame(victim) || !IsClientAndInGame(attacker) || GetClientTeam(attacker) != TEAM_SURVIVOR || GetClientTeam(victim) != TEAM_SURVIVOR ) { return Plugin_Continue; }
+        
+        damage *= 0.5;
+        return Plugin_Changed;
     }
     
     return Plugin_Continue;
@@ -3614,7 +3619,5 @@ public Action:Event_SpecialAmmo(Handle:event, const String:name[], bool:dontBroa
         SetEntProp(gunEnt, Prop_Send, "m_nUpgradedPrimaryAmmoLoaded", newAmmo, 1);
     }
 }
-
-
 
 

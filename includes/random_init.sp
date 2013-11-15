@@ -647,6 +647,7 @@ bool: RI_KV_UpdateRandomMapInfo()
     g_RI_iDistanceHard = 0;         // if > 0, the map's hard-path distance
     g_RI_iTankBanStart = -1;        // block some tank spawns
     g_RI_iTankBanEnd = -1;
+    g_RI_iTankBanEarly = 0;
     g_RI_iEarlyDoors = 0;           // if > 0, check for early doors on the map (g_RI_vEarlyDoor)
     g_RI_fTankOddsNormal = 0.0;     // tank odds override (if > default)
     g_RI_fTankOddsHard = 0.0;       // tank odds override (if > default) (hard path)
@@ -671,6 +672,7 @@ bool: RI_KV_UpdateRandomMapInfo()
         g_RI_bNoCola = bool: (KvGetNum(g_kRIData, "no_cola", 0));
         g_RI_iTankBanStart = KvGetNum(g_kRIData, "tank_ban_start", -1);
         g_RI_iTankBanEnd = KvGetNum(g_kRIData, "tank_ban_end", -1);
+        g_RI_iTankBanEarly = KvGetNum(g_kRIData, "tank_ban_early", 0);
         g_RI_bWeakHittables = bool: (KvGetNum(g_kRIData, "weak_hittables", 0));
         g_RI_iDistance = KvGetNum(g_kRIData, "distance", g_RI_iDistance);
         g_RI_iDistanceHard = KvGetNum(g_kRIData, "distance_hard", g_RI_iDistanceHard);
@@ -815,6 +817,9 @@ RConfig_Read()
         g_RC_fEventWitchesSpawnFreq = KvGetFloat(kRCData, "event_witches_spawntime", g_RC_fEventWitchesSpawnFreq);
         g_RC_iEventBoomFluMinInt = KvGetNum(kRCData, "event_boomflu_interval_min", g_RC_iEventBoomFluMinInt);
         g_RC_iEventBoomFluMaxInt = KvGetNum(kRCData, "event_boomflu_interval_max", g_RC_iEventBoomFluMaxInt);
+        
+        g_RC_fEventBaySIChance = KvGetFloat(kRCData, "event_bay_si_chance", g_RC_fEventBaySIChance);
+        g_RC_fEventBayCIChance = KvGetFloat(kRCData, "event_bay_common_chance", g_RC_fEventBayCIChance);
         
         g_RC_iVomitOnType = KvGetNum(kRCData, "vomit_on_type", g_RC_iVomitOnType);
         g_RC_fVomitRange = KvGetFloat(kRCData, "vomit_range", g_RC_fVomitRange);

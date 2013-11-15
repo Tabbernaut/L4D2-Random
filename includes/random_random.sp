@@ -1131,7 +1131,7 @@ RANDOM_DetermineRandomStuff()
         new iTankSpawn = RoundToNearest(fTankFlow * 100.0);
         
         // check tank flow bans:
-        if (GetConVarBool(g_hCvarBanTankFlows) && g_RI_iTankBanStart != -1 && g_RI_iTankBanEnd != -1)
+        if (GetConVarBool(g_hCvarBanTankFlows) && g_RI_iTankBanStart != -1 && g_RI_iTankBanEnd != -1 || g_RI_iTankBanEarly > 0 )
         {
             // banned range?
             if (iTankSpawn >= g_RI_iTankBanStart && iTankSpawn <= g_RI_iTankBanEnd)
@@ -1150,6 +1150,16 @@ RANDOM_DetermineRandomStuff()
                 
                 PrintDebug(2, "[rand] Boss spawns - Found banned tank (@ %i), changing to %i.", oldSpawn, iTankSpawn);
                 
+                L4D2Direct_SetVSTankFlowPercent(0, fTankFlow);
+                L4D2Direct_SetVSTankFlowPercent(1, fTankFlow);
+            }
+            
+            // ban early tanks (just move to min)
+            if ( iTankSpawn < g_RI_iTankBanEarly )
+            {
+                PrintDebug(2, "[rand] Boss spawns - Blocked minimal/early banned tank (@ %i), changing to %i.", iTankSpawn, g_RI_iTankBanEarly);
+                iTankSpawn = g_RI_iTankBanEarly;
+                fTankFlow = float(iTankSpawn) / 100.0;
                 L4D2Direct_SetVSTankFlowPercent(0, fTankFlow);
                 L4D2Direct_SetVSTankFlowPercent(1, fTankFlow);
             }
@@ -5103,9 +5113,9 @@ RANDOM_PrepareChoices()
     new iSpecialItemWeight = 0;                                             // used only for EVT_ITEM
     
     // special case: abundance event = no 'no item' category
-    if (g_iSpecialEvent == EVT_ABUNDANCE) {
+    if ( g_iSpecialEvent == EVT_ABUNDANCE || g_iSpecialEvent == EVT_ADREN ) {
         fNoitemVariance = 0.0;
-        PrintDebug(1, "[rand] No-Item Variation set to 0 (for abundance).");
+        PrintDebug(1, "[rand] No-Item Variation set to 0 (for abundance / adrenaline rush).");
     } else {
         if (fNoitemVariance) {
             

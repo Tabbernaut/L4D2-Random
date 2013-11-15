@@ -91,6 +91,9 @@ L4D2_Random
             - Increased sniper ammo on Firepower event.
             - Fixed issues with Scout/AWP ammo replenishing.
             - Changed it so that the same players no longer get the best/worst hand-out compared to their teammates.
+            - Survivors now do only half the normal amount of friendly fire on the Bad Combo special event.
+            - Blocked ultra-early tank on c1m1_hotel
+            - Increased items for Adrenaline Rush event.
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -126,13 +129,8 @@ L4D2_Random
             
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    find less annoying way of doing gunswap (reload before swapping?)
-            - tweak:    make GL do less self-damage in bad combo
-            - tweak:    more adren on adrenaline event?
+            
             - tweak:    women event doesn't work well as it is..
-            
-            - bugfix:   haunted doors: sometimes doors get stuck.. detect / prevent?
-            
-            - misc:     add bay RC data to actual KV file setup
             
             - coop:     sudden death event: give everyone full (temp?) health
             - coop:     fix adrenaline rush for coop
@@ -149,6 +147,8 @@ L4D2_Random
             
     minor cleanup / details
     -----------------------
+            - problem:  haunted doors: sometimes doors get stuck.. detect / prevent?
+                        [ no way to detect. :/ ]
             - tweak:    haunted doors: synchronize double doors... (bit annoying, can't easily use current methods to 'track' these)
             - tweak:    change boomer combo: 2 => riot, 3 => (a few) jimmy gibbs (maybe)?
             - tweak:    tell infected when survivors (first) find a gnome and how many points it's worth
