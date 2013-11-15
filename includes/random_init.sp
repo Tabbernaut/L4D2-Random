@@ -700,16 +700,14 @@ bool: RI_KV_UpdateRandomMapInfo()
             }
         }
         
-        
         PrintDebug(1, "[RI] Read data: intro: %i; difficulty: %i; doors; %i; nostorm: %i", g_RI_bIsIntro, g_RI_iDifficulty, g_RI_iDoors, g_RI_iNoStorm);
-        
         
         if ( !g_bCMTActive )
         {
             // find current map, and if not a finale
             // set the next keyvalue-key to be the next map
 
-            if ( !g_RI_bIsFinale && !KvGotoNextKey( g_kRIData, true ) )
+            if ( !g_RI_bIsFinale && KvGotoNextKey( g_kRIData, true ) )
             {
                 // store next keyname as next map
                 KvGetSectionName( g_kRIData, g_sNextMap, sizeof(g_sNextMap) );
