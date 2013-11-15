@@ -23,6 +23,7 @@
 		"no_tank_var"	"1"
 		"tank_ban_start"	"45"
 		"tank_ban_end"		"82"
+		"tank_ban_early"	"30"
 		"earlydoors"	"4"
 		"earlydoor_1"	"388 5604 2656"
 		"earlydoor_2"	"1875 6364 2656"
@@ -385,6 +386,7 @@
 		"tank_ban_start"	"0"
 		"tank_ban_end"		"57"
 		"distance"	"400"
+		"no_hittables"	"1"
 	}
 	"c12m2_traintunnel"
 	{

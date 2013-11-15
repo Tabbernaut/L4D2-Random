@@ -53,7 +53,7 @@
 		"event_boobytrap_min"		"8"
 		"event_ammo_factor_max"		"0.5"
 		"event_ammo_factor"		"0.12"
-		"event_witches_spawntime"	"30.0"
+		"event_witches_spawntime"	"27.5"
 		"event_boomflu_interval_min"	"20"
 		"event_boomflu_interval_max"	"55"
 
@@ -68,6 +68,9 @@
 
 		"pounce_uncap_damage_max"	"49"		// for hunters event(s)
 		"pounce_uncap_range_max"	"1729.1666"
+
+		"event_bay_si_chance"		"0.5"
+		"event_bay_common_chance"	"0.025"
 
 		// extra options
 		"extra_common_models"		"1"
