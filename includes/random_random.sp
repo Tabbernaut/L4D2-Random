@@ -4177,7 +4177,7 @@ RandomizeFirstSpawns()
         g_iArStorageSpawns[0] = tmpPick;
     }
 
-    PrintDebug(6, "[rand] Picked four classes for first attack (%s, %s, %s, %s).",
+    PrintDebug(5, "[rand] Picked four classes for first attack (%s, %s, %s, %s).",
             g_csSIClassName[g_iArStorageSpawns[0]],
             g_csSIClassName[g_iArStorageSpawns[1]],
             g_csSIClassName[g_iArStorageSpawns[2]],

@@ -15,7 +15,7 @@
 INIT_DefineCVars()
 {
     // ConVars
-    g_hCvarDebug = CreateConVar(                            "rand_debug",                    "2",       "Random debug mode. (0: only error reporting, -1: disable all reports, 1+: set debug report level)", FCVAR_PLUGIN, true, -1.0, true, 5.0);
+    g_hCvarDebug = CreateConVar(                            "rand_debug",                    "2",       "Random debug mode. (0: only error reporting, -1: disable all reports, 1+: set debug report level)", FCVAR_PLUGIN, true, -1.0);
     g_hCvarConfogl = CreateConVar(                          "rand_confogl",                  "1",       "Whether random is loaded as a confogl matchmode (changes the way cvar defaults are read).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarLoaded = CreateConVar(                           "rand_cvars_loaded",             "0",       "For checking whether the config files are all properly loaded. ", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     g_hCvarSimplePauseCheck = CreateConVar(                 "rand_simplepausecheck",         "1",       "Uses sv_pausable for a simple pause check.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
