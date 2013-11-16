@@ -119,7 +119,6 @@ L4D2_Random
             - test:     m2s not always registered in m2 penalty event? debug print in place
             - test:     sab gets special role every time? wut
                             test if repick really happens..
-            - test:     survivor starting item setup says "0 strips", yet it strips for 2 gnomes?
             
             - fix:      weird black walls (instead of shopping carts) c1m3 only
             

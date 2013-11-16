@@ -3415,7 +3415,7 @@ ChangeSurvivorSetup(index, client)
     new ammo = 0;
     new ammoOffset = 0;
     
-    PrintDebug( 2, "Survivor handout %N: pri: %i, sec: %i, pills: %i", type, typeSec, g_iArStorageSurvPills[index] );
+    PrintDebug( 6, "Survivor handout %N: pri: %i, sec: %i, pills: %i", client, type, typeSec, g_iArStorageSurvPills[index] );
     
     // if we're playing coop, strip survivor items first
     if (g_bCampaignMode)
@@ -3530,6 +3530,7 @@ ChangeSurvivorSetup(index, client)
     
     
     // add primary
+    weaponname = "";
     switch (type)
     {
         case PCK_NOITEM: {
@@ -3541,8 +3542,6 @@ ChangeSurvivorSetup(index, client)
         case PCK_SMG_SILENCED: {    weaponname = "weapon_smg_silenced";   ammo = g_iArStorageSurvAmmo[index]; ammoOffset = SMG_OFFSET_IAMMO; }
         case PCK_PUMPSHOTGUN: {     weaponname = "weapon_pumpshotgun";    ammo = g_iArStorageSurvAmmo[index]; ammoOffset = SHOTGUN_OFFSET_IAMMO; }
         case PCK_SHOTGUN_CHROME: {  weaponname = "weapon_shotgun_chrome"; ammo = g_iArStorageSurvAmmo[index]; ammoOffset = SHOTGUN_OFFSET_IAMMO; }
-        
-        default: { weaponname = ""; }
     }
     
     // special event, snipers only (marksmen):
