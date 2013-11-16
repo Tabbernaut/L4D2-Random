@@ -865,7 +865,10 @@ public Action: RandomCoopRerandom_Cmd(client, args)
 }
 public Action: Spectate_Cmd(client, args)
 {
-    if (g_bHasGhost[client]) { g_bSpectateDeath[client] = true; }
+    if (g_bHasGhost[client]) {
+        PrintDebug(3, "Client %i:%N spectated.", client, client);
+        g_bSpectateDeath[client] = true;
+    }
     
     return Plugin_Continue;
 }
@@ -887,7 +890,10 @@ public Action: Say_Cmd(client, args)
     
     // if !spectate command
     if (commandTyped == RANDOM_COMMAND_SPECTATE) {
-        if (g_bHasGhost[client]) { g_bSpectateDeath[client] = true; }
+        if (g_bHasGhost[client]) { 
+            PrintDebug(3, "Client %i:%N spectated (say).", client, client);
+            g_bSpectateDeath[client] = true;
+        }
     }
     
     // hide commands typed
@@ -1859,6 +1865,7 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
     }
     
     if (oldTeam == TEAM_INFECTED) {
+        g_bSpectateDeath[client] = false;
         g_bHasGhost[client] = false;
         g_bHasSpawned[client] = false;
     }
@@ -2617,13 +2624,20 @@ public L4D_OnEnterGhostState(client)
     
     if (IsInfected(client) && IsPlayerGhost(client))
     {
+        new zClass = GetEntProp(client, Prop_Send, "m_zombieClass");
+        
         if (!g_bHasSpawned[client])
         {
             g_bClassPicked[client] = true;
-            DetermineSpawnClass(client, GetEntProp(client, Prop_Send, "m_zombieClass"));
+            DetermineSpawnClass(client, zClass);
         }
         else
         {
+            // safeguard: check if the player is the right class... pick a new one
+            if ( !SpawnClassCheck(zClass) ) {
+                DetermineSpawnClass(client, zClass);
+            }
+            
             // if it's a despawn/respawn, reset sack detection
             g_fGotGhost[client] = GetGameTime();
             g_fDeathAfterGhost[client] = 0.0;

@@ -2592,13 +2592,13 @@ RandomizeSurvivorItems()
         // save it to array
         
         // primary: adjust for minima
-        if (i - iCountPrimary >= TEAM_SIZE - iMinPrimary) { bPrimaryForced = true; } else { bPrimaryForced = false; }
+        if (j - iCountPrimary >= TEAM_SIZE - iMinPrimary) { bPrimaryForced = true; } else { bPrimaryForced = false; }
         
         randomPick = GetRandomInt( (bPrimaryForced) ? g_iSurvWeightedChoicesStartPrimary : 0 , (g_iSurvWeightedChoicesTotal-1));
         randomPick = g_iArSurvWeightedChoices[randomPick];
         
         // are we giving a secondary? adjust for minima
-        if (i - iCountSecondary >= TEAM_SIZE - iMinSecondary) { bSecondaryForced = true; } else { bSecondaryForced = false; }
+        if (j - iCountSecondary >= TEAM_SIZE - iMinSecondary) { bSecondaryForced = true; } else { bSecondaryForced = false; }
         
         if (bSecondaryForced || GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarExtraSecondaryChance)) {
             secondaryPick = GetRandomInt(g_iSurvWeightedChoicesStartSecondary, g_iSurvWeightedChoicesEndSecondary);
@@ -2637,12 +2637,13 @@ RandomizeSurvivorItems()
                 // if we get nothing, keep secondary pick intact if we're forced to give a secondary
                 if (!bSecondaryForced) { secondaryPick = -1; }
             }
+            
             case    INDEX_SURV_PISTOL,
                     INDEX_SURV_DUALS,
                     INDEX_SURV_MAGNUM,
                     INDEX_SURV_MELEE :{
-                        randomPick = PCK_NOITEM;
                         secondaryPick = randomPick;
+                        randomPick = PCK_NOITEM;
             }
             
             case INDEX_SURV_T1SMG: {
@@ -3414,6 +3415,7 @@ ChangeSurvivorSetup(index, client)
     new ammo = 0;
     new ammoOffset = 0;
     
+    PrintDebug( 2, "Survivor handout %N: pri: %i, sec: %i, pills: %i", type, typeSec, g_iArStorageSurvPills[index] );
     
     // if we're playing coop, strip survivor items first
     if (g_bCampaignMode)
@@ -4496,6 +4498,24 @@ DetermineSpawnClass(any:client, any:iClass)
     return;
 }
 
+// safeguard-tool: returns false if the current spawn class of the client is not acceptable
+bool: SpawnClassCheck( zClass )
+{
+    if ( g_iSpecialEvent == EVT_L4D1 ) {
+        if ( zClass != ZC_SMOKER && zClass != ZC_BOOMER && zClass != ZC_HUNTER ) { return false; }
+    }
+    else if ( g_iSpecialEvent == EVT_WOMEN ) {
+        if ( zClass != ZC_BOOMER && zClass != ZC_SPITTER ) { return false; }
+    }
+    else if ( g_iSpecialEvent != EVT_QUADS && !GetConVarBool(g_hCvarNoSupportSI) ) {
+        if ( zClass == ZC_BOOMER || zClass == ZC_SPITTER ) { return false; }
+    }
+    else if ( g_bIsTankInPlay && zClass == ZC_SPITTER && GetConVarBool(g_hCvarNoSpitterDuringTank) ) {
+        return false;
+    }
+    return true;
+}
+
 // Item drops (from common/SI/Tank)
 // --------------------------------
 
@@ -4547,6 +4567,11 @@ SpawnCommonItem(Float:loc[3], Float:vel[3])
     else if ( g_iSpecialEvent == EVT_ADREN )
     {
         if ( randomPick == 0 ) { randomPick = 3; }
+    }
+    // women event: no pistol
+    else if ( g_iSpecialEvent == EVT_WOMEN )
+    {
+        if ( randomPick == 6 ) { randomPick = 10; }
     }
 
     
@@ -5287,11 +5312,6 @@ RANDOM_PrepareChoices()
     for (new i=0; i < INDEX_SURV_TOTAL; i++)
     {
         count = GetConVarInt(g_hArCvarSurvWeight[i]);
-        
-        // different weight for special picked item EVT_ITEM
-        if (g_iSpecialEvent == EVT_ITEM && i == g_iSpecialEventExtra) {
-            count = iSpecialItemWeight;
-        }
         
         for (new j=0; j < count; j++)
         {

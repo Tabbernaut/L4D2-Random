@@ -86,7 +86,7 @@ L4D2_Random
             - Removed problems/exploits with gift blindness and pauses.
             - Fixed secondary magically appearing after incapping without one.
             - Fixed issue with distance freezing leading to 0 distance rounds.
-            - Fixed pills appearing on common kill on Adrenaline Rush event.
+            - Fixed pills appearing on common kill on Adrenaline Rush event -- fixed pistol appearing on Women event.
             - Made gnomes worth a smaller portion of map distance (20%).
             - Increased sniper ammo on Firepower event.
             - Fixed issues with Scout/AWP ammo replenishing.
@@ -95,6 +95,8 @@ L4D2_Random
             - Blocked ultra-early tank on c1m1_hotel
             - Increased items for Adrenaline Rush event.
             - Fixed problems with first spawns not being equal and some event effects being applied before round goes live.
+            - Fixed problems with (very occasionally) getting spawns that should not be allowed for an event.
+            - Fixed incorrect starting setups handed out to survivors (too many gnomes handed out!).
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -117,6 +119,7 @@ L4D2_Random
             - test:     m2s not always registered in m2 penalty event? debug print in place
             - test:     sab gets special role every time? wut
                             test if repick really happens..
+            - test:     survivor starting item setup says "0 strips", yet it strips for 2 gnomes?
             
             - fix:      weird black walls (instead of shopping carts) c1m3 only
             
@@ -129,7 +132,6 @@ L4D2_Random
             
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    find less annoying way of doing gunswap (reload before swapping?)
-            
             - tweak:    women event doesn't work well as it is..
             
             - coop:     sudden death event: give everyone full (temp?) health
