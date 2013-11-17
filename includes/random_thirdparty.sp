@@ -374,24 +374,19 @@ bool:IsVisibleTo(client, entity)
 {
     decl Float:vAngles[3], Float:vOrigin[3], Float:vEnt[3], Float:vLookAt[3];
     
+    // if not valid somehow, remove it from blind-check list (by tagging it as 'seen')
     if ( !IsValidEntity(entity) ) {
         PrintDebug(1, "[rand] BlindEntCheck: not a valid entity: %i (client: %N)", entity, client);
-        // remove it from blind-check list (by tagging it as 'seen')
         SetBlindEntityAsSeen(entity);
         return false;
     }
-    
-    // check classname to catch weird predicted_viewmodel problem:
-    decl String:classname[64];
-    GetEdictClassname(entity, classname, sizeof(classname));
-    new entityBlindable: classnameBlindable;
-    
-    if (GetTrieValue(g_hTrieBlindable, classname, classnameBlindable)) {
-        if (classnameBlindable == ENTITY_NOT_BLINDABLE) {
-            //PrintDebug("BlindEntCheck: unblindable entity problem: %i (class: %s) (client: %N)", entity, classname, client);
-            SetBlindEntityAsSeen(entity);
-            return false;
-        }
+    else if ( !GetEntSendPropOffs(entity, "m_vecOrigin", true) )
+    {
+        decl String:classname[64];
+        GetEdictClassname(entity, classname, sizeof(classname));
+        PrintDebug(1, "[rand] BlindEntCheck: entity does not have vecOrigin: %i = %s", entity, classname );
+        SetBlindEntityAsSeen(entity);
+        return false;
     }
     
     GetClientEyePosition(client,vOrigin);

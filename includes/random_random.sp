@@ -2190,15 +2190,27 @@ public Action:Timer_TestEntityLocation(Handle:timer)
     new Float: tmpVec[3];
     tmpVec[2] = -1.0;                                          // small downward push so they still 'drop'
     new entity;
-
+    
+    new String: classname[64];
     
     for (new i=0; i < g_iStoredEntities; i++)
     {
         entity = g_strArStorage[i][entNumber];
         //PrintToServer("Entity %i = %i", i, entity);
         
-        if (entity > 0 && IsValidEntity(entity)) {
+        if (entity > 0 && IsValidEntity(entity))
+        {
             itemOriginOrg[2] = g_strArStorage[i][entOrigin_c];
+            
+            // test if entity even has m_vecOrigin
+            if ( !GetEntSendPropOffs(entity, "m_vecOrigin", true) )
+            {
+                GetEdictClassname(entity, classname, sizeof(classname));
+                PrintDebug( 1, "[rand] EntityLocation Test: entity has no m_vecOrigin: %i = %s", entity, classname );
+                g_strArStorage[i][entNumber] = 0;
+                continue;
+            }
+            
             GetEntPropVector(entity, Prop_Send, "m_vecOrigin", itemOriginCur);
             
             if (FloatAbs(itemOriginCur[2] - itemOriginOrg[2]) > TESTENTITY_THRESH)
@@ -2210,7 +2222,7 @@ public Action:Timer_TestEntityLocation(Handle:timer)
                 
                 TeleportEntity(entity, itemOriginOrg, NULL_VECTOR, tmpVec);
                 
-                PrintToServer("Shifted entity that fell through floor %i: %.3f (location: %.1f %.1f %.1f)", entity, FloatAbs(itemOriginCur[2] - itemOriginOrg[2]), itemOriginCur[0], itemOriginCur[1], itemOriginCur[2]);
+                PrintDebug( 4, "Shifted entity that fell through floor %i: %.3f (location: %.1f %.1f %.1f)", entity, FloatAbs(itemOriginCur[2] - itemOriginOrg[2]), itemOriginCur[0], itemOriginCur[1], itemOriginCur[2] );
             }
         }
     }

@@ -99,6 +99,7 @@ L4D2_Random
             - Fixed incorrect starting setups handed out to survivors (too many gnomes handed out!).
             - Removed the forever-the-same two static witches in Hard Rain 2.
             - Fixed horde spawning up before the round goes live.
+            - Removed some minor error spam for infected-entity-blind and entity-fell-through-floor checks.
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -123,6 +124,7 @@ L4D2_Random
             
             - fix:      weird black walls (instead of shopping carts) c1m3 only
             - fix:      despawning changes your SI now (occasionally)
+            - fix:      invalid entities are tracked for 'blindness' why?
             
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    find less annoying way of doing gunswap (reload before swapping?)
@@ -159,8 +161,7 @@ L4D2_Random
             - nitpick:  MORE ammo than max in clip doesn't work for map-spawned weapons (stays at max when picked up)
                         check + overwrite netprop for client picking it up? what goes on here?
             - nitpick:  if penalty values change (if they ever do), the reported !rand/event values don't change with
-            - nitpick:  when gifts spawn inside walls etc, fire effects will not spawn
-                            and items might disappear
+            - nitpick:  when gifts spawn inside walls etc, fire effects will not spawn and items might disappear
             - remember: forward Action:L4D_OnSpawnSpecial(&zombieClass, const Float:vector[3], const Float:qangle[3]);
                         = when a BOT (only) spawns, you could do some stuff with that?
             - nitpick:  boomer vomit doesn't really appear convincingly from the survivor's mouth
@@ -202,13 +203,12 @@ L4D2_Random
             - event:    'firestarter': fire does insane amounts of damage to everything (mostly survivors), and there are fire items everywhere. fire ammo always  
             - event:    facemelters: direct hits with spitters = horrendous damage?
             
-            - gift:     temporary deafness
+            - gift  - gift idea: temporary deafness
             - gift  - gift idea: blindness for entire team (shorter)
             - gift  - gift idea: X second slowdown (like EVT_ENCUMBERED)
             - gift  - gift idea: ghost-effect for survivors for X seconds (no outlines for SI) (even if running)
             - gift  - gift idea: see outlines on infected for X seconds ('telepathy')
             - gift  - steal weapon / ammo (on condition of not breaking event)
-            
             
             - MAYBE - mini-scavenge for specific rounds (decide per map) / do the research (how well possible? how much work? has anyone done it already?)
             - MAYBE - add 'rerandom' function, working on live round [ for testing / bad starts ]

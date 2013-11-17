@@ -350,11 +350,24 @@ INIT_FillTries()
     SetTrieValue(g_hTrieCommands, "!bonus",             RANDOM_COMMAND);
     SetTrieValue(g_hTrieCommands, "!penalty",           RANDOM_COMMAND);
     SetTrieValue(g_hTrieCommands, "!spectate",          RANDOM_COMMAND_SPECTATE);
-    // DB
+    SetTrieValue(g_hTrieCommands, "!spec",              RANDOM_COMMAND_SPECTATE);
     SetTrieValue(g_hTrieCommands, "!damage",            RANDOM_COMMAND);
     SetTrieValue(g_hTrieCommands, "!health",            RANDOM_COMMAND);
     SetTrieValue(g_hTrieCommands, "!damage_explain",    RANDOM_COMMAND);
     SetTrieValue(g_hTrieCommands, "!health_explain",    RANDOM_COMMAND);
+    
+    SetTrieValue(g_hTrieCommands, "/rand",              RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "/random",            RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "/info",              RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "/drop",              RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "/bonus",             RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "/penalty",           RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "/spectate",          RANDOM_COMMAND_SPECTATE);
+    SetTrieValue(g_hTrieCommands, "/spec",              RANDOM_COMMAND_SPECTATE);
+    SetTrieValue(g_hTrieCommands, "/damage",            RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "/health",            RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "/damage_explain",    RANDOM_COMMAND);
+    SetTrieValue(g_hTrieCommands, "/health_explain",    RANDOM_COMMAND);
     
     g_hTrieEntityCreated = CreateTrie();                                                                                            // classname trie for checking OnEntityCreated()
     SetTrieValue(g_hTrieEntityCreated, "infected",                                  CREATED_INFECTED);
@@ -453,14 +466,6 @@ INIT_FillTries()
     SetTrieValue(g_hTrieMeleeType, "electric_guitar",               MELEE_NORMAL);
     SetTrieValue(g_hTrieMeleeType, "golfclub",                      MELEE_NORMAL);
     SetTrieValue(g_hTrieMeleeType, "hunting_knife",                 MELEE_WEIRD);
-    
-    g_hTrieBlindable = CreateTrie();
-    SetTrieValue(g_hTrieBlindable, "predicted_viewmodel",           ENTITY_NOT_BLINDABLE);
-    SetTrieValue(g_hTrieBlindable, "instanced_scripted_scene",      ENTITY_NOT_BLINDABLE);
-    SetTrieValue(g_hTrieBlindable, "func_occluder",                 ENTITY_NOT_BLINDABLE);
-    SetTrieValue(g_hTrieBlindable, "ability_vomit",                 ENTITY_NOT_BLINDABLE);
-    SetTrieValue(g_hTrieBlindable, "ability_spit",                  ENTITY_NOT_BLINDABLE);
-    SetTrieValue(g_hTrieBlindable, "ability_lunge",                 ENTITY_NOT_BLINDABLE);
     
     g_hTriePenaltyItems = CreateTrie();
     SetTrieValue(g_hTriePenaltyItems, "melee",                      ITEM_PICKUP_PENALTY_MELEE);

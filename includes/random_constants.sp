@@ -514,12 +514,6 @@ enum randomCommands             // for use with tries to check if a command was 
     RANDOM_COMMAND_SPECTATE
 }
 
-enum entityBlindable            // for use with tries to check if an entity causes problems with the blind-infected approach
-{
-    ENTITY_BLINDABLE,
-    ENTITY_NOT_BLINDABLE
-}
-
 enum itemPickupPenalty          // for use with tries to check if an item should carry a penalty (also other detection comparison for events)
 {
     ITEM_PICKUP_PENALTY,
