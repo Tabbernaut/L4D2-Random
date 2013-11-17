@@ -26,6 +26,8 @@ const           MULTITANK_MAX           = 12;
 const           MULTIWITCH_MAX          = 12;
 const           EARLYDOOR_MAX           = 10;
 
+const           STARTING_HORDE_TIMER    = 3600;         // this is set before round goes live
+
 // String lengths
 // --------------
 const           STR_MAX_WPCLASSNAME     = 48;
@@ -116,6 +118,7 @@ const           RATE_UPG_EXPLOSIVE      = 10;           // 1 in [#] = explosives
 const           CISKIN_EXTRA_RATE       = 8;            // 1 in [#]+1 = extra common type
 const           CISKIN_L4D1_LESSER_RATE = 2;            // 1 in [#]+1 = extra common type
 const           CISKIN_L4D1_LEAST_RATE  = 2;            // 1 in [#]+1 = extra common type
+
 
 // event config
 const Float:    EVENT_ITEM_WEIGHT       = 0.2;          // EVT_ITEM         set weight of picked item type to this factor of total weight

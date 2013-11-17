@@ -97,6 +97,8 @@ L4D2_Random
             - Fixed problems with first spawns not being equal and some event effects being applied before round goes live.
             - Fixed problems with (very occasionally) getting spawns that should not be allowed for an event.
             - Fixed incorrect starting setups handed out to survivors (too many gnomes handed out!).
+            - Removed the forever-the-same two static witches in Hard Rain 2.
+            - Fixed horde spawning up before the round goes live.
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -109,29 +111,23 @@ L4D2_Random
             - wait:     gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
                         but hey, windows sigs are broken anyway
             
-            - test:     still jockey in l4d1 mode ... sigh - can't reproduce (happened after pausing!)
-                        - crashes seem to cause this: player comes back after pause,
-                            g_bHasSpawned[] is set, so it skips the spawn selection
-            - test:     still not the right penalty counts on double round end.. (only display)?
-                            - yes, it displays the wrong value (like, 60 if it should be 75 on skeet shoot)
-            - test:     minitanks: freezes too close together, doesn't update score
-            - test:     distance seems wrong on doubletank / minitanks
             - test:     m2s not always registered in m2 penalty event? debug print in place
-            - test:     sab gets special role every time? wut
-                            test if repick really happens..
-            
-            - fix:      weird black walls (instead of shopping carts) c1m3 only
+            - test:     distance seems wrong on doubletank / minitanks
+                            minitanks: freezes too close together, doesn't update score
+            - test:     block tank spawn in nm5 where tank can't reach start saferoom area
             
             - test:     double smokers in 2v2/3v3?
             - test:     boobytraps on cola/gnome? shouldn't happen.
             - test:     hittable damage in minitanks event (looks ok.. why wrong sometimes?)
                             maybe for car alarm props? some props not taken into account by hittablecontrol plugin?
-            - test:     medic on second round doesn't.. work?   note: second rondhalf.. first was fine
-                            - debug print in place.. but no clue
+            
+            - fix:      weird black walls (instead of shopping carts) c1m3 only
+            - fix:      despawning changes your SI now (occasionally)
             
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    find less annoying way of doing gunswap (reload before swapping?)
             - tweak:    women event doesn't work well as it is..
+                            idea: no vomit; boomer gets a scratch = biled + panic horde; survivor pops boomer = just stumble, no bile
             
             - coop:     sudden death event: give everyone full (temp?) health
             - coop:     fix adrenaline rush for coop
@@ -204,6 +200,7 @@ L4D2_Random
                             - high pounces (penalty)
                             - common hops
             - event:    'firestarter': fire does insane amounts of damage to everything (mostly survivors), and there are fire items everywhere. fire ammo always  
+            - event:    facemelters: direct hits with spitters = horrendous damage?
             
             - gift:     temporary deafness
             - gift  - gift idea: blindness for entire team (shorter)

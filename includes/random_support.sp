@@ -37,6 +37,10 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
         SUPPORT_UnFreezePoints();
     }
     
+    // don't start horde yet (SetHordeTimer() does this)
+    SetConVarInt(FindConVar("z_mob_spawn_min_interval_normal"), STARTING_HORDE_TIMER);
+    SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), STARTING_HORDE_TIMER);
+    
     // called before randomization
     g_bIsPaused = false;
     g_fPauseAttemptTime = 0.0;
@@ -230,6 +234,7 @@ EVENT_PBonusChanged()
     // transfer current bonus to random bonus plugin, so it can display it
     RNDBNS_SetPenaltyBonus( PBONUS_GetRoundBonus() );
 }
+
 EVENT_ResetOtherCvars()
 {
     // don't do this if defaults were not loaded yet
@@ -238,7 +243,7 @@ EVENT_ResetOtherCvars()
         INIT_TryCVarsGetDefault();
         if (!g_bDefaultCvarsLoaded) { return; }
     }
-        
+    
     // for defib event
     PrintDebug(3, "[rand] CVars: Reset defib penalty (to: %i)", g_iDefDefibPenalty);
     SetConVarInt(FindConVar("vs_defib_penalty"), g_iDefDefibPenalty);
@@ -314,8 +319,9 @@ EVENT_ResetDifficulty()
     SetConVarInt(FindConVar("z_background_limit"), g_iDefBackgroundLimit);
     SetConVarInt(FindConVar("z_mob_spawn_min_size"), g_iDefHordeSizeMin);
     SetConVarInt(FindConVar("z_mob_spawn_max_size"), g_iDefHordeSizeMax);
-    SetConVarInt(FindConVar("z_mob_spawn_min_interval_normal"), g_iDefHordeTimeMin);
-    SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), g_iDefHordeTimeMax);
+    
+    g_iHordeTimeMin = g_iDefHordeTimeMin;
+    g_iHordeTimeMax = g_iDefHordeTimeMax;
     
     // SI
     SetConVarInt(FindConVar("z_ghost_delay_min"), g_iDefSpawnTimeMin);
@@ -347,7 +353,6 @@ EVENT_SetDifficulty(commonDiff, specialDiff)
             SetConVarInt(FindConVar("z_ghost_delay_min"), RoundFloat(float(g_iDefSpawnTimeMin) * g_RC_fEventSITimeVeryHard));
             SetConVarInt(FindConVar("z_ghost_delay_max"), RoundFloat(float(g_iDefSpawnTimeMax) * g_RC_fEventSITimeVeryHard));
         }
-        
     }
     
     // difficulty change for commons
@@ -359,8 +364,8 @@ EVENT_SetDifficulty(commonDiff, specialDiff)
             SetConVarInt(FindConVar("z_background_limit"), RoundFloat(float(g_iDefBackgroundLimit) * g_RC_fEventCILimSuperEasy));
             SetConVarInt(FindConVar("z_mob_spawn_min_size"), RoundFloat(float(g_iDefHordeSizeMin) * g_RC_fEventCILimSuperEasy));
             SetConVarInt(FindConVar("z_mob_spawn_max_size"), RoundFloat(float(g_iDefHordeSizeMax) * g_RC_fEventCILimSuperEasy));
-            SetConVarInt(FindConVar("z_mob_spawn_min_interval_normal"), RoundFloat(float(g_iDefHordeTimeMin) / g_RC_fEventCILimVeryEasy));
-            SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), RoundFloat(float(g_iDefHordeTimeMax) / g_RC_fEventCILimVeryEasy));
+            g_iHordeTimeMin = RoundFloat(float(g_iDefHordeTimeMin) / g_RC_fEventCILimVeryEasy);
+            g_iHordeTimeMax = RoundFloat(float(g_iDefHordeTimeMax) / g_RC_fEventCILimVeryEasy);
         }
         
         case DIFFICULTY_VERYEASY: {
@@ -368,8 +373,8 @@ EVENT_SetDifficulty(commonDiff, specialDiff)
             SetConVarInt(FindConVar("z_background_limit"), RoundFloat(float(g_iDefBackgroundLimit) * g_RC_fEventCILimVeryEasy));
             SetConVarInt(FindConVar("z_mob_spawn_min_size"), RoundFloat(float(g_iDefHordeSizeMin) * g_RC_fEventCILimVeryEasy));
             SetConVarInt(FindConVar("z_mob_spawn_max_size"), RoundFloat(float(g_iDefHordeSizeMax) * g_RC_fEventCILimVeryEasy));
-            SetConVarInt(FindConVar("z_mob_spawn_min_interval_normal"), RoundFloat(float(g_iDefHordeTimeMin) / g_RC_fEventCILimEasy));
-            SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), RoundFloat(float(g_iDefHordeTimeMax) / g_RC_fEventCILimEasy));
+            g_iHordeTimeMin = RoundFloat(float(g_iDefHordeTimeMin) / g_RC_fEventCILimEasy);
+            g_iHordeTimeMax = RoundFloat(float(g_iDefHordeTimeMax) / g_RC_fEventCILimEasy);
         }
         
         case DIFFICULTY_EASY: {
@@ -383,7 +388,7 @@ EVENT_SetDifficulty(commonDiff, specialDiff)
             SetConVarInt(FindConVar("z_background_limit"), RoundFloat(float(g_iDefBackgroundLimit) * g_RC_fEventCILimHard));
             SetConVarInt(FindConVar("z_mob_spawn_min_size"), RoundFloat(float(g_iDefHordeSizeMin) * g_RC_fEventCILimHard));
             SetConVarInt(FindConVar("z_mob_spawn_max_size"), RoundFloat(float(g_iDefHordeSizeMax) * g_RC_fEventCILimHard));
-            SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), RoundFloat(float(g_iDefHordeTimeMax) / g_RC_fEventCILimHard));
+            g_iHordeTimeMax = RoundFloat(float(g_iDefHordeTimeMax) / g_RC_fEventCILimHard);
         }
         
         case DIFFICULTY_VERYHARD: {
@@ -391,10 +396,16 @@ EVENT_SetDifficulty(commonDiff, specialDiff)
             SetConVarInt(FindConVar("z_background_limit"), RoundFloat(float(g_iDefBackgroundLimit) * g_RC_fEventCILimVeryHard));
             SetConVarInt(FindConVar("z_mob_spawn_min_size"), RoundFloat(float(g_iDefHordeSizeMin) * g_RC_fEventCILimVeryHard));
             SetConVarInt(FindConVar("z_mob_spawn_max_size"), RoundFloat(float(g_iDefHordeSizeMax) * g_RC_fEventCILimVeryHard));
-            SetConVarInt(FindConVar("z_mob_spawn_min_interval_normal"), RoundFloat(float(g_iDefHordeTimeMin) / g_RC_fEventCILimVeryHard));
-            SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), RoundFloat(float(g_iDefHordeTimeMax) / g_RC_fEventCILimVeryHard));
+            g_iHordeTimeMin = RoundFloat(float(g_iDefHordeTimeMin) / g_RC_fEventCILimVeryHard);
+            g_iHordeTimeMax = RoundFloat(float(g_iDefHordeTimeMax) / g_RC_fEventCILimVeryHard);
         }
     }
+}
+
+SetHordeTimer()
+{
+    SetConVarInt(FindConVar("z_mob_spawn_min_interval_normal"), g_iHordeTimeMin);
+    SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), g_iHordeTimeMax);
 }
 
 EVENT_RoundStartPreparation()

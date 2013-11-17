@@ -430,6 +430,9 @@ new     Handle:         g_hCvarPounceUncapDamage                            = IN
 new     Handle:         g_hCvarPounceUncapRange                             = INVALID_HANDLE;       // z_pounce_damage_range_max
 
 
+new                     g_iHordeTimeMin                                     = 30;                   // these are set when round goes live
+new                     g_iHordeTimeMax                                     = 180;
+
 // Default values
 new                     g_iTeamSize                                         = 4;
 new                     g_iDefSpawnTimeMin                                  = 15;

@@ -1194,7 +1194,12 @@ public OnRoundIsLive()
     // only if a readyup plugin is active
     // if not, display panel with a timer?
     CreateTimer(DELAY_PANELAFTERLIVE, Timer_DoPanelReport, _, TIMER_FLAG_NO_MAPCHANGE);
+    
+    // set timer (to real values now)
+    SetHordeTimer();
 }
+
+
 public Action: Timer_DoPanelReport(Handle:timer)
 {
     DoPanelReport();
@@ -1227,8 +1232,7 @@ public Action:OnTransmit(entity, client)
 // for making hats invisible to wearer
 public Action:Hat_Hook_SetTransmit(entity, client)
 {
-    if( EntIndexToEntRef(entity) == g_iHatIndex[client] )
-        return Plugin_Handled;
+    if( EntIndexToEntRef(entity) == g_iHatIndex[client] ) { return Plugin_Handled; }
     return Plugin_Continue;
 }
     
@@ -1778,6 +1782,12 @@ public Action: L4D_OnFirstSurvivorLeftSafeArea( client )
         // enable all car alarms
         EnableAllCarAlarms();
     }
+    
+    // set timer (if not already set by going live)
+    if ( !g_bReadyUpAvailable )
+    {
+        SetHordeTimer();
+    }
 }
 
 public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroadcast)
@@ -1917,11 +1927,27 @@ public Action:Timer_TeamSwapDelayed(Handle:hTimer, any:pack)
 
 
 
+
+/*  this is not needed -- mob timer is 3600s to start with
+public Action: L4D_OnSpawnMob( &amount )
+{
+    PrintDebug(6, "[rand] Mob spawned.");
+    
+    // only allow mobs if the round is really live
+    if ( !g_bPlayersLeftStart )
+    {
+        return Plugin_Handled;
+    }
+    
+    return Plugin_Continue;
+}
+*/
+
 /*  Boomers
     --------------------------
     boomer stuff can't be (cleanly/consistently) done. it's a shame, but multiple boomers getting double booms on single survivors cannot be correctly detected
     combo's on multiple survivors can be done though, and we're doing it.
-*/    
+*/
 public Event_PlayerBoomed(Handle:event, const String:name[], bool:dontBroadcast)
 {
     // only do it if there's a reward window
