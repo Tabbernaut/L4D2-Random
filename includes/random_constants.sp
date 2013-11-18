@@ -152,6 +152,7 @@ const           EVENT_MEDIC_UNITS_MAX   = 12;           // EVT_MEDIC        maxi
 const           EVENT_MEDIC_DIFF_BASE   = 4;            // EVT_MEDIC        use this difficulty for the base value (and scale the rest)
 
 const           EVENT_BAY_CARDAMAGE     = 150;          // EVT_BAY          amount of damage done to a car before it explodes
+const           EVENT_BAY_CARDMG_NORMAL = 500;          //                  same, but outside of the michael bay event
 const Float:    EVENT_BAY_CARFLYLOW     = 75.0;
 const Float:    EVENT_BAY_CARFLYHIGH    = 400.0;
 const Float:    EVENT_BAY_SIEXPLODE     = 0.75;         // EVT_BAY          odds that SI explode

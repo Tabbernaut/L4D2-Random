@@ -2612,12 +2612,22 @@ RandomizeSurvivorItems()
         // are we giving a secondary? adjust for minima
         if (j - iCountSecondary >= TEAM_SIZE - iMinSecondary) { bSecondaryForced = true; } else { bSecondaryForced = false; }
         
-        if (bSecondaryForced || GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarExtraSecondaryChance)) {
+        if ( g_iSpecialEvent == EVT_GUNSWAP ) {
+            // for gunswap, enforce at least duals, good chance of melee / magnum
+            switch ( GetRandomInt( 0, 2 ) ) {
+                case 0: { secondaryPick = INDEX_SURV_DUALS; }
+                case 1: { secondaryPick = INDEX_SURV_MELEE; }
+                case 2: { secondaryPick = INDEX_SURV_MAGNUM; }
+            }
+        }
+        else if (bSecondaryForced || GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarExtraSecondaryChance)) {
             secondaryPick = GetRandomInt(g_iSurvWeightedChoicesStartSecondary, g_iSurvWeightedChoicesEndSecondary);
             secondaryPick = g_iArSurvWeightedChoices[secondaryPick];
-        } else if (GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarPistolChance)) {
+        }
+        else if (GetRandomFloat(0.001, 1.0) <= GetConVarFloat(g_hCvarPistolChance)) {
             secondaryPick = INDEX_SURV_PISTOL;
-        } else {
+        }
+        else {
             secondaryPick = -1;
         }
         
@@ -5006,15 +5016,6 @@ RANDOM_PrepareChoicesEvents()
     
     PrintDebug(0, "[rand] Prepared special event weight array: %i total weight over %i events.", total, EVT_TOTAL);
 }
-
-/*
-RANDOM_CheckEventOkayForNextMap( event )
-{
-    // figure out what next map is going to be
-    // determine whether the chosen event is allowed
-}
-*/
-
 // preparation of choice-hat (gift effects)
 RANDOM_PrepareChoicesGiftEffects()
 {

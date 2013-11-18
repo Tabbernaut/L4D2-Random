@@ -1643,8 +1643,17 @@ public Action: OnTakeDamage_Hittable(victim, &attacker, &inflictor, &Float:damag
         if ( doBlowUp )
         {
             g_strArHittableStorage[index][hitDamageRcvd] += RoundFloat( damage );
-            if ( g_strArHittableStorage[index][hitDamageRcvd] < EVENT_BAY_CARDAMAGE ) {
-                doBlowUp = false;
+            
+            if ( g_iSpecialEvent == EVT_BAY )
+            {
+                if ( g_strArHittableStorage[index][hitDamageRcvd] < EVENT_BAY_CARDMG_NORMAL ) {
+                    doBlowUp = false;
+                }
+            }
+            else {
+                if ( g_strArHittableStorage[index][hitDamageRcvd] < EVENT_BAY_CARDAMAGE ) {
+                    doBlowUp = false;
+                }
             }
         }
     }
@@ -2544,15 +2553,24 @@ public Action: Timer_CheckReviveStatus ( Handle:timer, any:client )
 {
     if (!IsClientAndInGame(client)) { return Plugin_Continue; }
     new chr = GetPlayerCharacter(client);
+    new weaponIndex;
     
-    // remove secondary weap if they had none on incapping
-    if ( g_bPlayerIncapNoSecondary[chr] )
+    if ( g_iSpecialEvent == EVT_WOMEN )
     {
-        new weaponIndex = GetPlayerWeaponSlot(client, PLAYER_SLOT_SECONDARY);
-        if ( weaponIndex > 0 )
-        {
-            RemovePlayerItem(client, weaponIndex);
+        // give melee back
+        weaponIndex = GetPlayerWeaponSlot(client, PLAYER_SLOT_SECONDARY);
+        if ( weaponIndex > 0 ) { RemovePlayerItem(client, weaponIndex); }
+        switch (g_iSpecialEventExtra) {
+            case EVTWOMEN_TYPE_AXE:     { GiveItemMelee(client, "fireaxe"); }
+            case EVTWOMEN_TYPE_ROCK:    { GiveItemMelee(client, "electric_guitar"); }
+            default:                    { GiveItemMelee(client, g_sMeleeClass[(GetRandomInt(0, sizeof(g_iMeleeClassCount) - 1))]); }
         }
+    }
+    else if ( g_bPlayerIncapNoSecondary[chr] )
+    {
+        // remove secondary weap if they had none on incapping
+        weaponIndex = GetPlayerWeaponSlot(client, PLAYER_SLOT_SECONDARY);
+        if ( weaponIndex > 0 ) { RemovePlayerItem(client, weaponIndex); }
     }
     
     return Plugin_Continue;
@@ -2814,6 +2832,12 @@ public Action:Event_IncapStart(Handle:hEvent, const String:name[], bool:dontBroa
     
     g_bPlayerIncapNoSecondary[chr] = bool:( slotSec < 1 || !IsValidEntity(slotSec) );
     
+    // if women event, give player a magnum (it will be replaced again after they get back up)
+    if ( g_iSpecialEvent == EVT_WOMEN )
+    {
+        if ( slotSec > 0 ) { RemovePlayerItem(client, slotSec); }
+        GiveItem(client, "weapon_pistol_magnum", 0, 0);
+    }
 }
 
 public Action:Event_PlayerSpawn(Handle:hEvent, const String:name[], bool:dontBroadcast)

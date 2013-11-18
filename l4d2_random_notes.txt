@@ -100,35 +100,33 @@ L4D2_Random
             - Removed the forever-the-same two static witches in Hard Rain 2.
             - Fixed horde spawning up before the round goes live.
             - Removed some minor error spam for infected-entity-blind and entity-fell-through-floor checks.
+            - Increased the Sudden Death defib penalty to 15 points (was 5).
+            - Made it much less likely that players blow up cars outside of the Directed by Michael Bay event.
+            - Guaranteed dual pistols, magnum or melee weapon on Magic Gunswap event.
+            - Now gives incapped players a magnum in the 'Lots of Women' events and blocked secondary weapon drop.
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
             - [ added friendly fire stats table printout ]
             
         
-
-    to-do:
-    ------  
-            - wait:     gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
-                        but hey, windows sigs are broken anyway
-            
+    to test:
+    --------
             - test:     m2s not always registered in m2 penalty event? debug print in place
             - test:     distance seems wrong on doubletank / minitanks
                             minitanks: freezes too close together, doesn't update score
             - test:     block tank spawn in nm5 where tank can't reach start saferoom area
-            
             - test:     double smokers in 2v2/3v3?
             - test:     boobytraps on cola/gnome? shouldn't happen.
             - test:     hittable damage in minitanks event (looks ok.. why wrong sometimes?)
                             maybe for car alarm props? some props not taken into account by hittablecontrol plugin?
             
+    to-do:
+    ------  
             - fix:      weird black walls (instead of shopping carts) c1m3 only
             - fix:      despawning changes your SI now (occasionally)
-            - fix:      invalid entities are tracked for 'blindness' why?
             
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
-            - tweak:    find less annoying way of doing gunswap (reload before swapping?)
-                        for now: give at least dual pistols, good chance of melee / magnum
             - tweak:    women event doesn't work well as it is..
                             idea: no vomit; boomer gets a scratch = biled + panic horde; survivor pops boomer = just stumble, no bile
             
@@ -147,18 +145,21 @@ L4D2_Random
             
     minor cleanup / details
     -----------------------
+            - wait:     gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
+                            but hey, windows sigs are broken anyway
+            - tweak:    find less annoying way of doing gunswap (reload before swapping?)
             - problem:  haunted doors: sometimes doors get stuck.. detect / prevent?
                         [ no way to detect. :/ ]
             - tweak:    haunted doors: synchronize double doors... (bit annoying, can't easily use current methods to 'track' these)
             - tweak:    change boomer combo: 2 => riot, 3 => (a few) jimmy gibbs (maybe)?
             - tweak:    tell infected when survivors (first) find a gnome and how many points it's worth
-            - tweak:    EVT_WOMEN: give survivors something (magnum)? when incapped, then take it away from them
             - bugfix:   still broken hud thing on solid health healing (cat from 1+22temp => +27 solid breaks) was downed once (3 max incaps) - cannot reproduce?
                         to try:
                             if (healthBuffer == 0.0) {
                                 SetEntPropFloat(i, Prop_Send, "m_healthBuffer", EBLOCK_BONUS_HEALTH_BUFFER);
                                 DebugPrintToAll("Health buffer for player [%d] set to %f", i, EBLOCK_BONUS_HEALTH_BUFFER);
                             }
+            - nitpick:  invalid entities are tracked for 'blindness' why?
             - nitpick:  MORE ammo than max in clip doesn't work for map-spawned weapons (stays at max when picked up)
                         check + overwrite netprop for client picking it up? what goes on here?
             - nitpick:  if penalty values change (if they ever do), the reported !rand/event values don't change with

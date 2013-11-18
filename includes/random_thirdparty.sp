@@ -46,7 +46,10 @@ bool: SUPPORT_DropItem(client, bool:dropCurrent, count, dropSlot = 0, bool:throw
             if ( g_iSpecialEvent == EVT_MEDIC && g_iSpecialEventRole == client && (dropSlot == PLAYER_SLOT_KIT || dropSlot == PLAYER_SLOT_PILL) ) {
                 PrintToChat(client, "\x01[\x05r\x01] A medic cannot drop health items.");
             }
-            else if ( g_iSpecialEvent != EVT_GUNSWAP || dropSlot != PLAYER_SLOT_PRIMARY ) {
+            else if (
+                (g_iSpecialEvent != EVT_GUNSWAP || dropSlot != PLAYER_SLOT_PRIMARY) &&
+                (g_iSpecialEvent != EVT_WOMEN || dropSlot != PLAYER_SLOT_SECONDARY)
+            ) {
                 if ( SUPPORT_DropItemSlot(client, dropSlot, throwItem) ) { dropCount++; } 
             }
             
