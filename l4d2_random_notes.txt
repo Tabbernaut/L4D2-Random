@@ -128,6 +128,7 @@ L4D2_Random
             
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    find less annoying way of doing gunswap (reload before swapping?)
+                        for now: give at least dual pistols, good chance of melee / magnum
             - tweak:    women event doesn't work well as it is..
                             idea: no vomit; boomer gets a scratch = biled + panic horde; survivor pops boomer = just stumble, no bile
             
@@ -202,6 +203,7 @@ L4D2_Random
                             - common hops
             - event:    'firestarter': fire does insane amounts of damage to everything (mostly survivors), and there are fire items everywhere. fire ammo always  
             - event:    facemelters: direct hits with spitters = horrendous damage?
+                        or: exploding spit plops
             
             - gift  - gift idea: temporary deafness
             - gift  - gift idea: blindness for entire team (shorter)
@@ -209,6 +211,7 @@ L4D2_Random
             - gift  - gift idea: ghost-effect for survivors for X seconds (no outlines for SI) (even if running)
             - gift  - gift idea: see outlines on infected for X seconds ('telepathy')
             - gift  - steal weapon / ammo (on condition of not breaking event)
+            - gift  - gift idea: [tom] invulnerability
             
             - MAYBE - mini-scavenge for specific rounds (decide per map) / do the research (how well possible? how much work? has anyone done it already?)
             - MAYBE - add 'rerandom' function, working on live round [ for testing / bad starts ]

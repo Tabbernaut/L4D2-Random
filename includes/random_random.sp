@@ -403,7 +403,7 @@ DoEventInfo(client, event)
         }
         case EVT_DEFIB: {
             PrintToChat(client, "\x05Survivors start black and white and will die immediately if they are incapacitated. There are no medkits. There are, however, a lot of defibs around.\x01");
-            PrintToChat(client, "\x05Defibrillators still bring you back in black and white mode. The defib penalty is lowered to 5 points this round. \x01");
+            PrintToChat(client, "\x05Defibrillators still bring you back in black and white mode. The defib penalty is lowered to 15 points this round. \x01");
         }
         case EVT_ADREN: {
             PrintToChat(client, "\x05Survivors start bleeding out as soon as they leave the saferoom. They bleed out a bit faster than normally and there are no medkits to stop the bleeding.\x01");
@@ -795,7 +795,7 @@ RANDOM_DetermineRandomStuff()
                 case EVT_DEFIB: {
                     EVENT_SetDifficulty(DIFFICULTY_EASY, DIFFICULTY_NOCHANGE);
                     SetConVarInt(FindConVar("vs_defib_penalty"), 5);
-                    PBONUS_SetDefibPenalty(5);
+                    PBONUS_SetDefibPenalty( EVENT_DEFIB_PEN );
                     SetConVarInt(FindConVar("defibrillator_use_duration"), 2);
                     bDoItemRePrep = true;
                     g_iDifficultyRating += 2;
