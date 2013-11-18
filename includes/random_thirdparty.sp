@@ -380,7 +380,7 @@ bool:IsVisibleTo(client, entity)
         SetBlindEntityAsSeen(entity);
         return false;
     }
-    else if ( !GetEntSendPropOffs(entity, "m_vecOrigin", true) )
+    else if ( GetEntSendPropOffs(entity, "m_vecOrigin", true) == -1 )
     {
         decl String:classname[64];
         GetEdictClassname(entity, classname, sizeof(classname));

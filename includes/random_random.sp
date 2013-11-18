@@ -2203,7 +2203,7 @@ public Action:Timer_TestEntityLocation(Handle:timer)
             itemOriginOrg[2] = g_strArStorage[i][entOrigin_c];
             
             // test if entity even has m_vecOrigin
-            if ( !GetEntSendPropOffs(entity, "m_vecOrigin", true) )
+            if ( GetEntSendPropOffs(entity, "m_vecOrigin", true) == -1 )
             {
                 GetEdictClassname(entity, classname, sizeof(classname));
                 PrintDebug( 1, "[rand] EntityLocation Test: entity has no m_vecOrigin: %i = %s", entity, classname );
