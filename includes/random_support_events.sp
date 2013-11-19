@@ -851,6 +851,15 @@ Float:MULTIWITCH_GetMaxSurvivorCompletion()
 }
 
 
+
+/*
+    Women event (boomers
+    -------------------- */
+public Action:Timer_WomenBoomerScratch(Handle:timer, any:client)
+{
+    g_fWomenBoomCharged[client] = GetGameTime() + EVENT_WOMEN_BDELAY;
+}
+
 /*  Event check
     ------------------ */
 bool: IsEventOkayForMap( const String: sMap[], event )

@@ -104,6 +104,7 @@ L4D2_Random
             - Made it much less likely that players blow up cars outside of the Directed by Michael Bay event.
             - Guaranteed dual pistols, magnum or melee weapon on Magic Gunswap event.
             - Now gives incapped players a magnum in the 'Lots of Women' events and blocked secondary weapon drop.
+            - Overhauled Women event it's now all about getting / avoiding scratches; spitters can't spit for ages.
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -125,10 +126,9 @@ L4D2_Random
     ------  
             - fix:      weird black walls (instead of shopping carts) c1m3 only
             - fix:      despawning changes your SI now (occasionally)
+                        - check the death handling, because that's where the hadspawn should get unset!
             
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
-            - tweak:    women event doesn't work well as it is..
-                            idea: no vomit; boomer gets a scratch = biled + panic horde; survivor pops boomer = just stumble, no bile
             
             - coop:     sudden death event: give everyone full (temp?) health
             - coop:     fix adrenaline rush for coop

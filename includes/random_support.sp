@@ -197,6 +197,7 @@ SUPPORT_CleanArrays()
         g_bClientHoldingUse[i] = false;
         g_bAlreadyVomitedUpon[i] = false;
         g_bPlayerIsBlinded[i] = false;
+        g_fWomenBoomCharged[i] = 0.0;
     }
     
     for (new i=ZC_SMOKER; i <= ZC_CHARGER; i++)
@@ -278,6 +279,16 @@ EVENT_ResetOtherCvars()
     
     SetConVarInt(FindConVar("z_vomit_interval"), g_iDefVomitInterval);
     SetConVarInt(FindConVar("z_spit_interval"), g_iDefSpitInterval);
+    
+    SetConVarInt(FindConVar("boomer_pz_claw_dmg"), Z_EXPL_CLAW);
+    SetConVarInt(FindConVar("spitter_pz_claw_dmg"), Z_EXPL_CLAW);
+    SetConVarInt(FindConVar("z_exploding_speed"), Z_EXPL_SPEED);
+    SetConVarInt(FindConVar("z_exploding_force"), Z_EXPL_FORCE);
+    SetConVarInt(FindConVar("z_exploding_inner_radius"), Z_EXPL_RADIUS_IN);
+    SetConVarInt(FindConVar("z_exploding_outer_radius"), Z_EXPL_RADIUS_OUT);
+    SetConVarInt(FindConVar("z_spitter_speed"), Z_SPIT_SPEED);
+    SetConVarInt(FindConVar("z_exploding_shove_min"), Z_EXPL_SHOVE_MIN);
+    SetConVarInt(FindConVar("z_exploding_shove_max"), Z_EXPL_SHOVE_MAX);
     
     SetConVarFloat(FindConVar("sv_infected_ceda_vomitjar_probability"), g_fDefCedaBileProb);
     SetConVarFloat(FindConVar("sv_infected_riot_control_tonfa_probability"), g_fDefRiotTonfaProb);

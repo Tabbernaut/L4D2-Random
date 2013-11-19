@@ -425,6 +425,13 @@ SpawnPanicHorde(client, mobs = 1)
     }
 }
 
+public Action: Timer_KillInfected (Handle:timer, any:client)
+{
+    if ( IsClientAndInGame(client) && IsPlayerAlive(client))
+    {
+        ForcePlayerSuicide(client);
+    }
+}
 /*
     Weapon nerfing
     ------------------
@@ -813,8 +820,6 @@ KillProgressBar(client)
     SetEntPropFloat(client, Prop_Send, "m_flProgressBarStartTime", GetGameTime());
     SetEntPropFloat(client, Prop_Send, "m_flProgressBarDuration", 0.0);
 }
-
-
 
 // stop animations we triggered
 EndSurvivorAnim(client)

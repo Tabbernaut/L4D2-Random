@@ -377,6 +377,7 @@ INIT_FillTries()
     SetTrieValue(g_hTrieEntityCreated, "upgrade_ammo_incendiary",                   CREATED_AMMO_DEPLOYED);
     SetTrieValue(g_hTrieEntityCreated, "witch",                                     CREATED_WITCH);
     SetTrieValue(g_hTrieEntityCreated, "tank_rock",                                 CREATED_TANKROCK);
+    SetTrieValue(g_hTrieEntityCreated, "ability_vomit",                             CREATED_ABILITYVOMIT);
     
     g_hTrieRandomizableEntity = CreateTrie();                                                                                       // classname trie for finding randomizable items
     SetTrieValue(g_hTrieRandomizableEntity, "weapon_spawn",                         RANDOMIZABLE_ITEM);

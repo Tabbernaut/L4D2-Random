@@ -145,6 +145,10 @@ const Float:    EVENT_FIREPOWER_AMMO    = 2.0;          // EVT_FIREPOWER    fact
 const Float:    EVENT_AMMO_PACKTIME     = 3.0;          // EVT_AMMO         time it takes to repack ammo
 const Float:    EVENT_WOMEN_LIMITTIME   = 7.5;          // EVT_WOMEN        how long per combo-step to keep increased common limit
 const           EVENT_WOMEN_EXTRACOMMON = 5;            // EVT_WOMEN        how many extra common per combo (limit increase)
+const           EVENT_WOMEN_CLAW        = 10;           //                  claw damage spitter/boomer
+const           EVENT_WOMEN_BSPEED      = 220;          //                  speed of boomer/spitter
+const           EVENT_WOMEN_BFORCE      = 2500;         //                  force of boomer explosion
+const Float:    EVENT_WOMEN_BDELAY      = 10.0;         //                  how much time delay between booming scratches
 const Float:    EVENT_WITCHES_RANGE     = 250000.0;     //                  range for glow removal/addition
 const           EVENT_MEDIC_UNITS_BASE  = 9;            // EVT_MEDIC        how many mediunits to start with (default difficulty) (medkit, pills + 8)
 const           EVENT_MEDIC_UNITS_MIN   = 6;            // EVT_MEDIC        minimum mediunits
@@ -500,6 +504,15 @@ const           WITCHES_DAY             = 3;
 
 const           DMGTYPE_CHAINSAW        = (1<<26);
 
+const           Z_EXPL_SPEED            = 175;
+const           Z_EXPL_CLAW             = 4;
+const           Z_SPIT_SPEED            = 210;
+const           Z_EXPL_FORCE            = 5000;     //z_exploding_force
+const           Z_EXPL_RADIUS_IN        = 130;      //z_exploding_inner_radius
+const           Z_EXPL_RADIUS_OUT       = 200;
+
+const           Z_EXPL_SHOVE_MIN        = 4;
+const           Z_EXPL_SHOVE_MAX        = 5;
 
 // structs, enums
 // --------------
@@ -566,7 +579,8 @@ enum CreatedEntityType          // for use with tries to determine whether to ha
     CREATED_PROP_PHYSICS,
     CREATED_AMMO_DEPLOYED,      // explosive/incendiary
     CREATED_WITCH,
-    CREATED_TANKROCK
+    CREATED_TANKROCK,
+    CREATED_ABILITYVOMIT
 }
 
 enum RandomizableOrNot          // for use with tries to determine ent's random-replaceableness

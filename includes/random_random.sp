@@ -468,7 +468,8 @@ DoEventInfo(client, event)
         }
         case EVT_WOMEN: {
             PrintToChat(client, "\x05In this event there are only women around, who come in big hordes at the irresistable (mostly male) survivors. Survivors only have their melee weapon to fight them off.\x01");
-            PrintToChat(client, "\x05The only special infected are female boomers and spitters.\nThe special infected are slightly buffed: they both recharge their attacks in 15 seconds.\x01");
+            PrintToChat(client, "\x05The only special infected are female boomers and spitters. They are as fast as survivors and scratch damage is 10 per hit.\n");
+            PrintToChat(client, "\x05Boomers cannot vomit or explode-boom survivors, but boom by getting scratches. Spitters die after spitting once.\n");
             PrintToChat(client, "\x05Witches may spawn for this round, but they only do 25 damage per slash and die to 2 melee swings.\x01");
         }
         case EVT_GUNSWAP: {
@@ -973,7 +974,7 @@ RANDOM_DetermineRandomStuff()
                     g_bNoAmmo = true;
                     bBlockTank = true;
                     g_bNoSpawnBalance = true;
-                    EVENT_SetDifficulty(DIFFICULTY_VERYHARD, DIFFICULTY_HARD);
+                    EVENT_SetDifficulty(DIFFICULTY_VERYHARD, DIFFICULTY_VERYHARD);
                     
                     SetConVarInt(FindConVar("z_smoker_limit"), 0);
                     SetConVarInt(FindConVar("z_hunter_limit"), 0);
@@ -982,8 +983,17 @@ RANDOM_DetermineRandomStuff()
                     SetConVarInt(FindConVar("z_boomer_limit"), 4);
                     SetConVarInt(FindConVar("z_spitter_limit"), 2);
                     
+                    // tweak boomers and spitters
                     SetConVarInt(FindConVar("z_vomit_interval"), 10);
                     SetConVarInt(FindConVar("z_spit_interval"), 10);
+                    SetConVarInt(FindConVar("boomer_pz_claw_dmg"), EVENT_WOMEN_CLAW);
+                    SetConVarInt(FindConVar("spitter_pz_claw_dmg"), EVENT_WOMEN_CLAW);
+                    SetConVarInt(FindConVar("z_exploding_speed"), EVENT_WOMEN_BSPEED);
+                    SetConVarInt(FindConVar("z_exploding_force"), EVENT_WOMEN_BFORCE);
+                    SetConVarInt(FindConVar("z_exploding_inner_radius"), 0);    // this prevents boomer explosions from automatically biling survivors        
+                    SetConVarInt(FindConVar("z_exploding_outer_radius"), 0);
+                    SetConVarInt(FindConVar("z_exploding_shove_min"), 2);
+                    SetConVarInt(FindConVar("z_exploding_shove_max"), 3);
                     
                     // no tonfa's
                     SetConVarFloat(FindConVar("sv_infected_riot_control_tonfa_probability"), 0.0);

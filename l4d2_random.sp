@@ -31,7 +31,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.1.0"
+#define PLUGIN_VERSION "1.1.1"
 
 /*
         L4D2 Random
@@ -156,6 +156,7 @@ public OnPluginStart()
     HookEvent("player_no_longer_it",        Event_PlayerUnboomed,           EventHookMode_Post);
 
     HookEvent("player_use",                 Event_PlayerUse,                EventHookMode_Post);
+    HookEvent("ability_use",                Event_AbilityUse,               EventHookMode_Post);
     HookEvent("item_pickup",                Event_ItemPickup,               EventHookMode_Post);
     HookEvent("ammo_pickup",                Event_AmmoPickup,               EventHookMode_Post);
     HookEvent("weapon_drop",                Event_WeaponDrop,               EventHookMode_Post);
@@ -1253,7 +1254,6 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
             }
         }
     }
-    
     if (!IsSurvivor(client) || !IsPlayerAlive(client)) { return Plugin_Continue; }
 
 
@@ -1470,27 +1470,42 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
         }
     }
     // women, where the witch should die more easily to melee swings
-    else if ( g_iSpecialEvent == EVT_WOMEN || g_iSpecialEvent == EVT_WITCHES )
+    else if ( (g_iSpecialEvent == EVT_WOMEN || g_iSpecialEvent == EVT_WITCHES) && !IsClientAndInGame(attacker) && IsValidEdict(attacker) )
     {
-        if (!IsClientAndInGame(attacker) && IsValidEdict(attacker) )
-        {
-            // only change damage for swings at upright survivors
-            if ( !IsClientAndInGame(victim) || GetClientTeam(victim) != TEAM_SURVIVOR ) { return Plugin_Continue; }
+        // only change damage for swings at upright survivors
+        if ( !IsClientAndInGame(victim) || GetClientTeam(victim) != TEAM_SURVIVOR ) { return Plugin_Continue; }
+    
+        decl String:attackClass[64];
+        GetEdictClassname(attacker, attackClass, 64);
+        if (!StrEqual(attackClass, "witch")) { return Plugin_Continue; }
         
-            decl String:attackClass[64];
-            GetEdictClassname(attacker, attackClass, 64);
-            if (!StrEqual(attackClass, "witch")) { return Plugin_Continue; }
+        // survivors bungled the witch!
+        if ( g_iSpecialEvent == EVT_WITCHES ) {
+            //PrintDebug(4, "[rand] witch bungled: entity: %i; victim: %i", attacker, victim);
+            g_bWitchBungled[attacker] = true;
+        }
+        
+        if ( IsIncapacitated( victim ) ) { return Plugin_Continue; }
+        
+        damage = (g_iSpecialEvent == EVT_WOMEN) ? g_RC_fEventWomenWitchDmg : g_RC_fEventWitchesWitchDmg;
+        return Plugin_Changed;
+    }
+    // women, special boomer scratch handling
+    else if ( g_iSpecialEvent == EVT_WOMEN )
+    {
+        if ( !IsClientAndInGame(victim) || !IsClientAndInGame(attacker) || GetClientTeam(attacker) != TEAM_INFECTED || GetClientTeam(victim) != TEAM_SURVIVOR || GetEntProp(attacker, Prop_Send, "m_zombieClass") != ZC_BOOMER ) { return Plugin_Continue; }
             
-            // survivors bungled the witch!
-            if ( g_iSpecialEvent == EVT_WITCHES ) {
-                //PrintDebug(4, "[rand] witch bungled: entity: %i; victim: %i", attacker, victim);
-                g_bWitchBungled[attacker] = true;
-            }
+        // boomer scratch => boom survivor
+        if ( g_fWomenBoomCharged[attacker] == 0.0 || FloatSub(g_fWomenBoomCharged[attacker], GetGameTime()) <= 0.0 )
+        {
+            // delay-set scratchboom time so multiscratches do register
+            CreateTimer(0.05, Timer_WomenBoomerScratch, attacker, TIMER_FLAG_NO_MAPCHANGE);
             
-            if ( IsIncapacitated( victim ) ) { return Plugin_Continue; }
-            
-            damage = (g_iSpecialEvent == EVT_WOMEN) ? g_RC_fEventWomenWitchDmg : g_RC_fEventWitchesWitchDmg;
-            return Plugin_Changed;
+            SetEntPropFloat(attacker, Prop_Send, "m_flProgressBarStartTime", GetGameTime());
+            SetEntPropFloat(attacker, Prop_Send, "m_flProgressBarDuration", EVENT_WOMEN_BDELAY);
+            PlayerGetVomitedOn(victim);
+
+            PrintToChatAll("\x04%N\x01 scratch-boomed \x05%N\x01", attacker, victim);
         }
     }
     // protect, baby player takes more damage (the others less)
@@ -1884,6 +1899,7 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
     }
     
     if (oldTeam == TEAM_INFECTED) {
+        PrintDebug(4, "HasSpawned unset [team switch] (client %N, %i)", client, client );
         g_bSpectateDeath[client] = false;
         g_bHasGhost[client] = false;
         g_bHasSpawned[client] = false;
@@ -2687,6 +2703,7 @@ public L4D_OnEnterGhostState(client)
             g_fDeathAfterGhost[client] = 0.0;
         }
         
+        PrintDebug(4, "HasSpawned unset [ghoststate] (client %N, %i)", client, client );
         g_bHasSpawned[client] = false;
     }
     
@@ -2864,6 +2881,7 @@ public Action:Event_PlayerSpawn(Handle:hEvent, const String:name[], bool:dontBro
     g_bHasGhost[client] = false;
     
     if (iClass >= ZC_SMOKER && iClass <= ZC_CHARGER) {
+        PrintDebug(4, "HasSpawned set (client %N, %i)", client, client );
         g_bHasSpawned[client] = true;
     }
 
@@ -3010,14 +3028,26 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
             }
         }
         
+        // women event?
+        if ( g_iSpecialEvent == EVT_WOMEN && zClass == ZC_BOOMER )
+        {
+            // check and kill progress bar
+            if ( g_fWomenBoomCharged[victim] != 0.0 && FloatSub(g_fWomenBoomCharged[attacker], GetGameTime()) > 0.0 )
+            {
+                KillProgressBar(victim);
+            }
+        }
+        
         /*
             this is also called when a player spectates
             so we have to distinguish between an actual death and a 'spectate death'
         */
         if (!g_bSpectateDeath[victim]) {
+            PrintDebug(4, "HasSpawned unset [death] (client %N, %i)", victim, victim );
             g_bHasGhost[victim] = false;
             g_bHasSpawned[victim] = false;
         } else {
+            PrintDebug(4, "HasSpawned NOT unset [spectate death] (client %N, %i)", victim, victim );
             g_bSpectateDeath[victim] = false;
         }
         g_bClassPicked[victim] = false;
@@ -3107,6 +3137,7 @@ public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBro
     // ghost stuff:
     if (!IsClientAndInGame(client) || IsFakeClient(client)) { return Plugin_Continue; }
     
+    PrintDebug(4, "HasSpawned unset [tank spawn] (client %N, %i)", client, client );
     g_bHasGhost[client] = false;
     g_bHasSpawned[client] = false;
     g_bClassPicked[client] = false;
@@ -3208,6 +3239,25 @@ public Event_WitchHarasserSet(Handle:event, const String:name[], bool:dontBroadc
 }
 
 
+
+// for women event
+public Event_AbilityUse ( Handle:event, const String:name[], bool:dontBroadcast )
+{
+    if ( g_iSpecialEvent != EVT_WOMEN ) { return; }
+    
+    new client = GetClientOfUserId( GetEventInt(event, "userid") );
+    new String: abilityName[32];
+    GetEventString( event, "ability", abilityName, sizeof(abilityName) );
+    
+    if ( !IsClientAndInGame(client) ) { return; }
+    
+    // spitters
+    if ( StrEqual(abilityName, "ability_spit", false) )
+    {
+        // kill after spitting
+        CreateTimer( 1.0, Timer_KillInfected, client, TIMER_FLAG_NO_MAPCHANGE);
+    }
+}
 
 /*
     Uncommon infected spawning
@@ -3343,6 +3393,14 @@ public OnEntityCreated(entity, const String:classname[])
         
         CreateTimer(0.01, Timer_CreatedPropPhysics, entity, TIMER_FLAG_NO_MAPCHANGE);
     }
+    else if (classnameOEC == CREATED_ABILITYVOMIT)
+    {
+        if ( g_iSpecialEvent == EVT_WOMEN )
+        {
+            // block vomit ability on boomers
+            CreateTimer(0.01, Timer_CreatedWomenBoomAbility, entity, TIMER_FLAG_NO_MAPCHANGE);
+        }
+    }
     else if (g_iSpecialEvent == EVT_AMMO && classnameOEC == CREATED_AMMO_DEPLOYED)
     {
         SetEntityModel(entity, "models/props/terror/ammo_stack.mdl");
@@ -3375,6 +3433,15 @@ public Action: Timer_CreatedPropPhysics(Handle:timer, any:entity)
     return Plugin_Continue;
 }
 
+public Action: Timer_CreatedWomenBoomAbility(Handle:timer, any:entity)
+{
+    if (!IsValidEntity(entity)) { return Plugin_Continue; }
+    
+    // kill boomer ability
+    AcceptEntityInput(entity, "Kill");
+
+    return Plugin_Continue;
+}
 
 public OnEntityDestroyed(entity)
 {
