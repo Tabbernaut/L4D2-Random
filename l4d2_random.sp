@@ -1898,7 +1898,7 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
         
     }
     
-    if (oldTeam == TEAM_INFECTED) {
+    if ( oldTeam == TEAM_INFECTED && !IsFakeClient(client) ) {
         PrintDebug(4, "HasSpawned unset [team switch] (client %N, %i)", client, client );
         g_bSpectateDeath[client] = false;
         g_bHasGhost[client] = false;

@@ -2774,10 +2774,9 @@ RandomizeSurvivorItems()
     // check for special event
     if (g_iSpecialEvent == EVT_GUNSWAP)
     {
-        // give nothing but pistol (or melee)
+        // give nothing but already set secondary
         for (i=0; i < TEAM_SIZE; i++) {
             g_iArStorageSurv[i] = PCK_NOITEM;
-            g_iArStorageSurvSec[i] = PCK_PISTOL;
         }
     }
     //      so many doors locked, guarantee two melees
