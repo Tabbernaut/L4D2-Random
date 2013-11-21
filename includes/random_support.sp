@@ -413,6 +413,7 @@ EVENT_SetDifficulty(commonDiff, specialDiff)
     }
 }
 
+// set the horde timer to the proper values (for when round goes live)
 SetHordeTimer()
 {
     SetConVarInt(FindConVar("z_mob_spawn_min_interval_normal"), g_iHordeTimeMin);

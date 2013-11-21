@@ -131,6 +131,7 @@ const Float:    EVENT_DEFIB_PILLS       = 1.25;         // EVT_DEFIB        by w
 const           EVENT_DEFIB_PEN         = 15;           // EVT_DEFIB
 const Float:    EVENT_ADREN_EXTRA       = 4.25;         // EVT_ADREN        by what factor to change adren amount
 const Float:    EVENT_ADREN_LESSER      = 0.5;          // EVT_ADREN        by what factor to change a bunch of other items (less useful in this mode)
+const Float:    EVENT_ADREN_BONUS       = 0.5;          // EVT_ADREN        by what factor to change the damage bonus for adrenaline rush events
 const           EVENT_NOHUD_MASK        = 64;           // EVT_NOHUD        bitmask for what to hide
 
 const bool:     EVENT_PENALTY_CI        = false;        // EVT_PEN_M2       whether there are penalties for common-shoves
@@ -139,6 +140,7 @@ const Float:    EVENT_LOCKEDCHANCE      = 0.7;          // EVT_DOORS        most
 const           EVENT_DOORS_MINMELEE    = 2;            // EVT_DOORS        how many melees at least for locked doors event?
 const Float:    EVENT_PROTECT_CIWEAK    = 1.5;
 const Float:    EVENT_PROTECT_CISTRONG  = 0.5;
+const Float:    EVENT_PROTECT_TANKSPIT  = 0.8333;       // EVT_PROTECT      modifier for damage done by tanks/spit on baby ( damage * 1.5 * 0.8333 = 1.25 )
 const Float:    EVENT_BOOBYTRAP_CHANCE  = 0.1;          // EVT_BOOBYTRAP    odds that an item or door is boobytrapped
 const           EVENT_BOOBYTRAP_MIN     = 5;            //                  minimum amount of traps on a level
 const Float:    EVENT_FIREPOWER_AMMO    = 2.0;          // EVT_FIREPOWER    factor that ammo for T2 weapons is multiplied
@@ -510,7 +512,6 @@ const           Z_SPIT_SPEED            = 210;
 const           Z_EXPL_FORCE            = 5000;     //z_exploding_force
 const           Z_EXPL_RADIUS_IN        = 130;      //z_exploding_inner_radius
 const           Z_EXPL_RADIUS_OUT       = 200;
-
 const           Z_EXPL_SHOVE_MIN        = 4;
 const           Z_EXPL_SHOVE_MAX        = 5;
 

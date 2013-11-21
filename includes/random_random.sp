@@ -812,6 +812,10 @@ RANDOM_DetermineRandomStuff()
                     SetConVarFloat(FindConVar("pain_pills_decay_rate"), g_fDefPillDecayRate * g_RC_fEventAdrenDecay);
                     g_iDifficultyRating += 2;
                     RNDBNS_SetSolidFactor( 1.0 );   // no solid health + bleed out makes this better
+                    
+                    // cut bonus in two
+                    g_iDamageBonus = RoundFloat( float(g_iDamageBonus) * EVENT_ADREN_BONUS );
+                    RNDBNS_SetBonus(g_iDamageBonus);
                 }
                 case EVT_NOHUD: {
                     // handled in survivor setup handout / playerleftsaferoom, etc

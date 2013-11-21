@@ -104,7 +104,11 @@ L4D2_Random
             - Made it much less likely that players blow up cars outside of the Directed by Michael Bay event.
             - Guaranteed dual pistols, magnum or melee weapon on Magic Gunswap event.
             - Now gives incapped players a magnum in the 'Lots of Women' events and blocked secondary weapon drop.
-            - Overhauled Women event it's now all about getting / avoiding scratches; spitters can't spit for ages.
+            - Overhauled Women event it's now all about getting and avoiding scratches; spitters can only spit once, boomers cannot vomit.
+            - Fixed a bug that caused some boom combo rewards not to take effect.
+            - Reduced the damage spit and tank do to the 'baby' a bit.
+            - Greatly reduced damage bonus for maps with the Adrenaline Rush event.
+            - Fixed a bug causing gnome bonus to not be fully awarded, as well as incorrect bonus explanations for /damage_explain prints.
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]

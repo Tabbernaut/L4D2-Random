@@ -31,7 +31,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.1.1"
+#define PLUGIN_VERSION "1.1.2"
 
 /*
         L4D2 Random
@@ -1503,7 +1503,7 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
             
             SetEntPropFloat(attacker, Prop_Send, "m_flProgressBarStartTime", GetGameTime());
             SetEntPropFloat(attacker, Prop_Send, "m_flProgressBarDuration", EVENT_WOMEN_BDELAY);
-            PlayerGetVomitedOn(victim);
+            PlayerGetVomitedOn(victim, attacker);
 
             PrintToChatAll("\x04%N\x01 scratch-boomed \x05%N\x01", attacker, victim);
         }
@@ -1530,10 +1530,18 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
             }
             return Plugin_Changed;
         }
-        else if ( IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_INFECTED ) {
+        else if ( IsClientAndInGame(attacker) && GetClientTeam(attacker) == TEAM_INFECTED )
+        {
             // SI-to-survivor
-            if (victim == g_iSpecialEventRole) {
-                damage = damage * g_RC_fEventProtectWeak;
+            if (victim == g_iSpecialEventRole)
+            {
+                new zClass = GetEntProp(attacker, Prop_Send, "m_zombieClass");
+                // spit and tank damage are ramped down a bit (too insane otherwise)
+                if ( ( damagetype & (DMG_RADIATION | DMG_ENERGYBEAM) && zClass == ZC_SPITTER ) || zClass == ZC_TANK ) {
+                    damage = damage * g_RC_fEventProtectWeak * EVENT_PROTECT_TANKSPIT;
+                } else {
+                    damage = damage * g_RC_fEventProtectWeak;
+                }
             } else {
                 damage = damage * g_RC_fEventProtectStrong;
             }
@@ -2085,6 +2093,7 @@ public DoBoomerComboReward(combo, victim)
     if (!IsClientAndInGame(victim) && !IsFakeClient(victim)) {
         victim = GetSpawningClient();
     }
+    
     if ( !IsClientAndInGame(victim) ) {
         PrintDebug(2, "[rand] Couldn't reward %i-way boom combo (no spawning client available).", combo);
         return;
@@ -2100,20 +2109,18 @@ public DoBoomerComboReward(combo, victim)
             CreateTimer(1.0, Timer_CheckEndBoomComboReward, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
         }
         
-        
         //  for now, just spawn panic hordes..
         if (combo > 2)
         {
             SpawnPanicHorde(victim, combo - 1);
         }
-        
     }
     else
     {
         if (combo == 2 || combo == 3 || combo != TEAM_SIZE) {
             g_bBoomHighRewardMode = (combo == 3);
             g_iCommonBoomQueue += BOOMCOMBO_REWARD;
-            SpawnCommon(BOOMCOMBO_REWARD);
+            SpawnCommon(victim, BOOMCOMBO_REWARD);
         } else {
             // reward quad-combo with huge horde
             SpawnPanicHorde(victim, 2);
