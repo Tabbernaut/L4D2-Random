@@ -38,7 +38,7 @@ public Plugin:myinfo =
     name = "Random - Damage Scoring",
     author = "CanadaRox, Tabun",
     description = "Custom damage scoring based on damage. Adjusted for use with Random config.",
-    version = "1.6",
+    version = "1.7",
     url = "https://github.com/Tabbernaut/L4D2-Random"
 };
 
@@ -185,11 +185,9 @@ public Native_CheckStartHealth(Handle:plugin, numParams)
 public OnPluginStart()
 {
     // Score Change Triggers
-    HookEvent("door_close", DoorClose_Event);
-    HookEvent("player_death", PlayerDeath_Event);
-    HookEvent("finale_vehicle_leaving", FinaleVehicleLeaving_Event, EventHookMode_PostNoCopy);
+    HookEvent("player_death", PlayerDeath_Event, EventHookMode_Post);
     HookEvent("player_ledge_grab", PlayerLedgeGrab_Event);
-    HookEvent("player_incapacitated", PlayerIncap_Event);
+    HookEvent("player_incapacitated", PlayerIncap_Event, EventHookMode_Post);
     HookEvent("round_start", RoundStart_Event);
     HookEvent("round_end", RoundEnd_Event);
 
@@ -334,13 +332,11 @@ public RoundEnd_Event(Handle:event, const String:name[], bool:dontBroadcast)
     }
 }
 
-public DoorClose_Event(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:L4D2_OnEndVersusModeRound(bool:countSurvivors)
 {
-    if (GetEventBool(event, "checkpoint"))
-    {
-        SetBonus(CalculateSurvivalBonus());
-    }
+    SetBonus(CalculateSurvivalBonus());
 }
+
 
 public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
@@ -349,7 +345,7 @@ public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
     
     if (client && IsSurvivor(client))
     {
-        SetBonus(CalculateSurvivalBonus());
+        //SetBonus(CalculateSurvivalBonus());   // no need, onendversusmoderound is reliable
         
         if (!g_bInRound) { return; }
         
@@ -376,8 +372,6 @@ public FinaleVehicleLeaving_Event(Handle:event, const String:name[], bool:dontBr
             ForcePlayerSuicide(i);
         }
     }
-    
-    SetBonus(CalculateSurvivalBonus());
 }
 
 public OnTakeDamage(victim, attacker, inflictor, Float:damage, damagetype)
@@ -555,10 +549,10 @@ stock DisplayBonus(client=-1)
             tmpBonus -= tmpStatic;
             if (bRoundOver[round]) {
                 if (iStoreExtra[round]) {
-                    tmpBonus -= RoundToFloor(float(iStoreExtra[round]) / float(iStoreSurvivors[round]));
+                    tmpBonus -= iStoreExtra[round];
                 }
             } else if (g_iRoundExtra) {
-                tmpBonus -= RoundToFloor(float(g_iRoundExtra) / float(tmpAlive));
+                tmpBonus -= g_iRoundExtra;
             }
             
             // safeguard: no negative bonus:
@@ -766,7 +760,7 @@ stock DisplayBonusExplanation(client=-1)
     // add random bonus (gnome)
     if (iBonusExtra)
     {
-        iTmpBonus += iBonusExtra;
+        iTmpBonus += iBonusExtra * living;
         FormatEx(sReport[iLine], STR_REPLINELENGTH, "Gnome bonus: +\x04%i\x01 x \x05%i\x01 => \x03%i\x01",
                     iBonusExtra,
                     living,
@@ -899,7 +893,9 @@ stock CalculateSurvivalBonus()
     {
         new aliveSurvs = GetAliveSurvivors();
         if (aliveSurvs > 0) {
-            fBonus += float( RoundToFloor(float(g_iRoundExtra) / float(aliveSurvs)) );
+            //fBonus += float( RoundToFloor(float(g_iRoundExtra) / float(aliveSurvs)) );
+            
+            fBonus += float(g_iRoundExtra) * (TEAMSIZE_DEFAULT / float(aliveSurvs));
         }
     }
     
