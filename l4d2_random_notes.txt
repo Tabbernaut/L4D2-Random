@@ -109,6 +109,7 @@ L4D2_Random
             - Reduced the damage spit and tank do to the 'baby' a bit.
             - Greatly reduced damage bonus for maps with the Adrenaline Rush event.
             - Fixed a bug causing gnome bonus to not be fully awarded, as well as incorrect bonus explanations for /damage_explain prints.
+            - Fixed some bugs related to infected despawning, respawning or going spectator and getting class-switches.
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -125,7 +126,7 @@ L4D2_Random
             - test:     boobytraps on cola/gnome? shouldn't happen.
             - test:     hittable damage in minitanks event (looks ok.. why wrong sometimes?)
                             maybe for car alarm props? some props not taken into account by hittablecontrol plugin?
-            
+                            
     to-do:
     ------  
             - fix:      weird black walls (instead of shopping carts) c1m3 only

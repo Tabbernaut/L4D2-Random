@@ -243,10 +243,8 @@ public OnPluginStart()
         RegAdminCmd("sm_voc_this", Cmd_Vocalize_Specified, ADMFLAG_CHEATS, "...");
     #endif
     
-    // Listen for specating
-    RegConsoleCmd("spectate",   Spectate_Cmd,   "...");
-    RegConsoleCmd("say",        Say_Cmd,        "...");
-    RegConsoleCmd("say_team",   Say_Cmd,        "...");
+    //RegConsoleCmd("say",        Say_Cmd,        "...");
+    //RegConsoleCmd("say_team",   Say_Cmd,        "...");
     
     // Listen for pausing & unpausing
     RegConsoleCmd("unpause",    Unpause_Cmd,    "...");
@@ -864,15 +862,7 @@ public Action: RandomCoopRerandom_Cmd(client, args)
     
     return Plugin_Handled;
 }
-public Action: Spectate_Cmd(client, args)
-{
-    if (g_bHasGhost[client]) {
-        PrintDebug(3, "Client %i:%N spectated.", client, client);
-        g_bSpectateDeath[client] = true;
-    }
-    
-    return Plugin_Continue;
-}
+/* (say command listening no longer required)
 public Action: Say_Cmd(client, args)
 {
     new String: full[11];
@@ -889,25 +879,9 @@ public Action: Say_Cmd(client, args)
         GetTrieValue(g_hTrieCommands, sMessage, commandTyped);
     }
     
-    // if !spectate command
-    if (commandTyped == RANDOM_COMMAND_SPECTATE) {
-        if (g_bHasGhost[client]) { 
-            PrintDebug(3, "Client %i:%N spectated (say).", client, client);
-            g_bSpectateDeath[client] = true;
-        }
-    }
-    
-    // hide commands typed
-    if (IsChatTrigger() && commandTyped == RANDOM_COMMAND)
-    {
-        return Plugin_Handled;
-    }
-    
     return Plugin_Continue;
 }
-
-
-
+*/
 
 // pausing
 public Action:Listener_Pause(client, const String:command[], argc)
@@ -1892,23 +1866,22 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
             remember and reset when a player returns
             no need to remember if it's still first attack (that's handled)
         */
-        if (!g_bIsFirstAttack && !IsFakeClient(client) && g_bHasGhost[client])
-        {
-            new tmpClass = GetEntProp(client, Prop_Send, "m_zombieClass");
-            if (tmpClass >= ZC_SMOKER && tmpClass <= ZC_CHARGER)
+        if (    !g_bIsFirstAttack && !IsFakeClient(client) &&
+                g_iGhostClassOnDeath[client] > 0 &&
+                FloatSub( GetGameTime(), g_fGhostDeathTime[client] ) < 0.1
+        ) {
+            if ( g_iGhostClassOnDeath[client] >= ZC_SMOKER && g_iGhostClassOnDeath[client] <= ZC_CHARGER)
             {
-                g_iSpectateGhost[g_iSpectateGhostCount] = tmpClass;
-                if (g_iSpectateGhostCount < (TEAM_SIZE - 1)) {
-                    g_iSpectateGhostCount++;
-                }
+                PrintDebug(4, "Infected ghost goes spec (client %N, %i: class: %i)", client, client, g_iGhostClassOnDeath[client] );
+                
+                g_iSpectateGhost[g_iSpectateGhostCount] = g_iGhostClassOnDeath[client];
+                if (g_iSpectateGhostCount < (TEAM_SIZE - 1)) { g_iSpectateGhostCount++; }
             }
         }
-        
     }
     
     if ( oldTeam == TEAM_INFECTED && !IsFakeClient(client) ) {
         PrintDebug(4, "HasSpawned unset [team switch] (client %N, %i)", client, client );
-        g_bSpectateDeath[client] = false;
         g_bHasGhost[client] = false;
         g_bHasSpawned[client] = false;
     }
@@ -2889,6 +2862,7 @@ public Action:Event_PlayerSpawn(Handle:hEvent, const String:name[], bool:dontBro
     
     if (iClass >= ZC_SMOKER && iClass <= ZC_CHARGER) {
         PrintDebug(4, "HasSpawned set (client %N, %i)", client, client );
+        g_iGhostClassOnDeath[client] = 0;
         g_bHasSpawned[client] = true;
     }
 
@@ -2947,7 +2921,7 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
     
     // survivor dies
     // -------------------
-    if (IsSurvivor(victim))
+    if ( IsSurvivor(victim) )
     {
         RemoveHat(victim);
         
@@ -2995,11 +2969,11 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
     }
     // -------------------
     
-    if ( !IsClientAndInGame(attacker) || GetClientTeam(victim) != TEAM_INFECTED ) { return Plugin_Continue; }
+    if ( GetClientTeam(victim) != TEAM_INFECTED ) { return Plugin_Continue; }
     
     new zClass = GetEntProp(victim, Prop_Send, "m_zombieClass");
     
-    if (!IsFakeClient(victim))
+    if ( !IsFakeClient(victim) )
     {
         // death order:
         if (GetConVarInt(g_hCvarDeathOrderMode) > 0 && zClass >= ZC_SMOKER && zClass <= ZC_CHARGER)
@@ -3010,11 +2984,7 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
             if (    ( (g_iSpecialEvent != EVT_SKEET || g_iSpecialEvent != EVT_L4D1) || zClass != ZC_HUNTER)
                 &&  (g_iSpecialEvent != EVT_WOMEN || (zClass != ZC_BOOMER && zClass != ZC_SPITTER) )
             ) {
-                if (dMode == 1) {
-                    g_iClassTimeout[zClass] = 3;
-                } else {
-                    g_iClassTimeout[zClass] = 4;
-                }
+                g_iClassTimeout[zClass] = (dMode == 1) ? 3 : 4;
             }
         }
         
@@ -3039,7 +3009,7 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
         if ( g_iSpecialEvent == EVT_WOMEN && zClass == ZC_BOOMER )
         {
             // check and kill progress bar
-            if ( g_fWomenBoomCharged[victim] != 0.0 && FloatSub(g_fWomenBoomCharged[attacker], GetGameTime()) > 0.0 )
+            if ( g_fWomenBoomCharged[victim] != 0.0 && FloatSub(g_fWomenBoomCharged[victim], GetGameTime()) > 0.0 )
             {
                 KillProgressBar(victim);
             }
@@ -3047,23 +3017,32 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
         
         /*
             this is also called when a player spectates
-            so we have to distinguish between an actual death and a 'spectate death'
+            so we have to distinguish between an actual death and a 'spectate death' (which is a suicide),
+                and only relevant if the player was a ghost
+            note: attacker = 0 = ghost killed by map trigger or the like, so don't listen to that!
+                shouldn't be a problem for configs, since they should block ghost deaths anyway
         */
-        if (!g_bSpectateDeath[victim]) {
-            PrintDebug(4, "HasSpawned unset [death] (client %N, %i)", victim, victim );
-            g_bHasGhost[victim] = false;
-            g_bHasSpawned[victim] = false;
-        } else {
-            PrintDebug(4, "HasSpawned NOT unset [spectate death] (client %N, %i)", victim, victim );
-            g_bSpectateDeath[victim] = false;
+        if ( g_bHasGhost[victim] && ( !attacker || attacker == victim ) )
+        {
+            PrintDebug(5, "%i died as ghost: attacker: %i; class: %i ", victim, attacker, zClass );
+            g_iGhostClassOnDeath[victim] = zClass;
+            g_fGhostDeathTime[victim] = GetGameTime();
         }
+        else
+        {
+            g_iGhostClassOnDeath[victim] = 0;
+        }
+        
+        PrintDebug(4, "HasSpawned unset [death] (client %N, %i)", victim, victim );
+        g_bHasGhost[victim] = false;
+        g_bHasSpawned[victim] = false;
         g_bClassPicked[victim] = false;
     }
     
-    // explode?
-    if ( g_iSpecialEvent == EVT_BAY ) {
-        
-        if (GetRandomFloat(0.001,1.0) <=  g_RC_fEventBaySIChance)
+    // explode? (only if killed by someone other than themselves)
+    if ( g_iSpecialEvent == EVT_BAY && attacker != victim && IsClientAndInGame(attacker) )
+    {
+        if ( GetRandomFloat(0.001,1.0) <=  g_RC_fEventBaySIChance )
         {
             new Float: targetPos[3];
             GetClientAbsOrigin(victim, targetPos);
@@ -3087,7 +3066,6 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
     
     // remember place where tank died
     GetClientAbsOrigin(victim, g_fTankDeathLocation);
-    //GetEntPropVector(victim, Prop_Send, "m_vecOrigin", g_fTankDeathLocation); <- better or worse? test.
     
     CreateTimer(0.1, Timer_CheckTankDeath, victim); // Use a delayed timer due to bugs where the tank passes to another player
     

@@ -11,7 +11,6 @@ new     Handle:         g_hTriePropItems                                    = IN
 new     Handle:         g_hTrieUseItems                                     = INVALID_HANDLE;       // trie for recognizing usable items
 new     Handle:         g_hTrieDropItems                                    = INVALID_HANDLE;       // trie for recognizing dropped items/weapons
 new     Handle:         g_hTrieL4D1Common                                   = INVALID_HANDLE;       // trie for recognizing l4d1 commons
-new     Handle:         g_hTrieCommands                                     = INVALID_HANDLE;       // trie for recognizing typed commands in chat
 new     Handle:         g_hTrieEventWeapons                                 = INVALID_HANDLE;       // trie for recognizing weapons from eventinfo
 new     Handle:         g_hTrieTankPlayers                                  = INVALID_HANDLE;       // trie for checking how many times player got tank
 
@@ -124,9 +123,11 @@ new     bool:           g_bArWitchSitting       [MULTIWITCH_MAX]            = {t
 new     bool:           g_bHasSpawned           [MAXPLAYERS+1]              = {false,...};          // whether player X has spawned his ghost (only true if still alive and not tank)
 new     bool:           g_bHasGhost             [MAXPLAYERS+1]              = {false,...};          // whether player X currently holds a ghost
 new     bool:           g_bClassPicked          [MAXPLAYERS+1]              = {false,...};          // whether player X got assigned a class (for catching the few times the l4dt forward doesn't fire)
-new     bool:           g_bSpectateDeath        [MAXPLAYERS+1]              = {false,...};          // whether player X (if he 'died') died because of going spec
 new                     g_iSpectateGhost        [TEAM_SIZE];                                        // people that spectated while being SI ghosts.. remembered to avoid exploit
 new                     g_iSpectateGhostCount                               = 0;                    // amount of ghosts saved
+new                     g_iGhostClassOnDeath    [MAXPLAYERS+1];                                     // if a player died as a ghost, what class they were
+new     Float:          g_fGhostDeathTime       [MAXPLAYERS+1];                                     // what time it was when the player died as a ghost last    used to check for spectate deaths
+
 
 // SDK Calls
 new     Handle:         g_setClass                                          = INVALID_HANDLE;

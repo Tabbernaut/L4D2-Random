@@ -525,12 +525,6 @@ enum _:strPlayDisco
     DISC_CLASS
 };
 
-enum randomCommands             // for use with tries to check if a command was typed in chat
-{
-    RANDOM_COMMAND,
-    RANDOM_COMMAND_SPECTATE
-}
-
 enum itemPickupPenalty          // for use with tries to check if an item should carry a penalty (also other detection comparison for events)
 {
     ITEM_PICKUP_PENALTY,

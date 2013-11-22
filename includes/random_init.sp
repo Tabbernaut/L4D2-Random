@@ -341,34 +341,6 @@ INIT_StripperSwitch()
 
 INIT_FillTries()
 {
-    // Tries
-    g_hTrieCommands = CreateTrie();
-    SetTrieValue(g_hTrieCommands, "!rand",              RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!random",            RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!info",              RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!drop",              RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!bonus",             RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!penalty",           RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!spectate",          RANDOM_COMMAND_SPECTATE);
-    SetTrieValue(g_hTrieCommands, "!spec",              RANDOM_COMMAND_SPECTATE);
-    SetTrieValue(g_hTrieCommands, "!damage",            RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!health",            RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!damage_explain",    RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "!health_explain",    RANDOM_COMMAND);
-    
-    SetTrieValue(g_hTrieCommands, "/rand",              RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "/random",            RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "/info",              RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "/drop",              RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "/bonus",             RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "/penalty",           RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "/spectate",          RANDOM_COMMAND_SPECTATE);
-    SetTrieValue(g_hTrieCommands, "/spec",              RANDOM_COMMAND_SPECTATE);
-    SetTrieValue(g_hTrieCommands, "/damage",            RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "/health",            RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "/damage_explain",    RANDOM_COMMAND);
-    SetTrieValue(g_hTrieCommands, "/health_explain",    RANDOM_COMMAND);
-    
     g_hTrieEntityCreated = CreateTrie();                                                                                            // classname trie for checking OnEntityCreated()
     SetTrieValue(g_hTrieEntityCreated, "infected",                                  CREATED_INFECTED);
     SetTrieValue(g_hTrieEntityCreated, "pipe_bomb_projectile",                      CREATED_PIPEBOMB);

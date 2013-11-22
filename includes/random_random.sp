@@ -4527,7 +4527,6 @@ DetermineSpawnClass(any:client, any:iClass)
     
     // player now has a ghost
     g_bHasGhost[client] = true;
-    g_bSpectateDeath[client] = false;
     
     return;
 }

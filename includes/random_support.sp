@@ -222,7 +222,8 @@ public InitSpawnArrays()
     {
         g_bHasGhost[i] = false;
         g_bHasSpawned[i] = false;
-        g_bSpectateDeath[i] = false;
+        g_fGhostDeathTime[i] = 0.0;
+        g_iGhostClassOnDeath[i] = 0;
     }
 }
 
