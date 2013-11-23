@@ -2770,8 +2770,8 @@ public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
             g_fTankPreviousPass = GetGameTime();
             return Plugin_Handled;
         }
-        // 25% chance of keeping tank
-        else if (GetRandomInt(0, GetConVarInt(g_hCvarTeamSize) - 1) == 0)
+        // 25% chance of keeping tank ( or always, on minitanks event)
+        else if ( GetRandomInt(0, GetConVarInt(g_hCvarTeamSize) - 1) == 0 || g_iSpecialEvent == EVT_MINITANKS )
         {
             for (new i=1; i <= MaxClients; i++)
             {

@@ -280,6 +280,7 @@ new                     g_iDoorCircusTypeCount  [3]                         = 0;
 new                     g_bWitchBungled         [ENTITY_COUNT];                                     // stores, per witch entity, whether survivors bungled her
 new     Float:          g_fWomenBoomCharged     [MAXPLAYERS+1];                                     // when a boomer can scratch-boom again
 
+
 // T2 nerf
 new     Float:          g_fNerfMsgTimeout       [MAXPLAYERS+1]              = {0.0,...};            // time when player will get a t2 nerf msg again
 

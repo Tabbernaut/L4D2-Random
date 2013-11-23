@@ -110,6 +110,7 @@ L4D2_Random
             - Greatly reduced damage bonus for maps with the Adrenaline Rush event.
             - Fixed a bug causing gnome bonus to not be fully awarded, as well as incorrect bonus explanations for /damage_explain prints.
             - Fixed some bugs related to infected despawning, respawning or going spectator and getting class-switches.
+            - Now does not pass minitanks: the same player gets to play 2 passes.
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -129,9 +130,7 @@ L4D2_Random
                             
     to-do:
     ------  
-            - fix:      weird black walls (instead of shopping carts) c1m3 only
-            - fix:      despawning changes your SI now (occasionally)
-                        - check the death handling, because that's where the hadspawn should get unset!
+            - fix:      weird black walls (instead of shopping carts) c1m3 only            
             
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             
@@ -150,6 +149,7 @@ L4D2_Random
             
     minor cleanup / details
     -----------------------
+            - tweak:    minitanks.. don't let tank rocks give rage?
             - wait:     gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
                             but hey, windows sigs are broken anyway
             - tweak:    find less annoying way of doing gunswap (reload before swapping?)
