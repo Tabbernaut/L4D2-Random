@@ -172,7 +172,7 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_SKEET] = CreateConVar(           "rand_weight_evt_skeet",         "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_FIREPOWER] = CreateConVar(       "rand_weight_evt_firepower",     "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_AMMO] = CreateConVar(            "rand_weight_evt_ammo",          "4",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
-    g_hArCvarEvtWeight[EVT_WOMEN] = CreateConVar(           "rand_weight_evt_women",         "1",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_WOMEN] = CreateConVar(           "rand_weight_evt_women",         "2",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_GUNSWAP] = CreateConVar(         "rand_weight_evt_gunswap",       "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_WITCHES] = CreateConVar(         "rand_weight_evt_witches",       "5",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_BADSANTA] = CreateConVar(        "rand_weight_evt_badgifts",      "3",       "Weight for picking special event.",        FCVAR_PLUGIN, true, 0.0, true, 100.0 );
