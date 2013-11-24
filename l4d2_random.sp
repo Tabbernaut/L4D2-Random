@@ -31,7 +31,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.1.2"
+#define PLUGIN_VERSION "1.1.3"
 
 /*
         L4D2 Random
@@ -3653,6 +3653,22 @@ public OnL4D1CommonInfectedSpawned(entity)
         
         SetEntProp(entity, Prop_Send, "m_nSkin", (GetRandomInt(0,1)) ? 1 : 4 );
     }
+}
+
+// handle shoves on boomers/spitters in women event
+public Action:L4D_OnShovedBySurvivor(attacker, client, const Float:vector[3])
+{
+    if ( g_iSpecialEvent != EVT_WOMEN ) { return Plugin_Continue; }
+    if ( !IsClientAndInGame(client) || !IsClientAndInGame(attacker) || GetClientTeam(client) != TEAM_INFECTED ) { return Plugin_Continue; }
+    
+    new zClass = GetEntProp(client, Prop_Send, "m_zombieClass");
+    if ( zClass == ZC_BOOMER || zClass == ZC_SPITTER )
+    {
+        L4D_StaggerPlayer(attacker, client, NULL_VECTOR);
+        //return Plugin_Handled;    // worst case scenario: enable this and poop on survivors
+    }
+    
+    return Plugin_Continue;
 }
 
 /*  SI Spawning

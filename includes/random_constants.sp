@@ -147,10 +147,12 @@ const Float:    EVENT_FIREPOWER_AMMO    = 2.0;          // EVT_FIREPOWER    fact
 const Float:    EVENT_AMMO_PACKTIME     = 3.0;          // EVT_AMMO         time it takes to repack ammo
 const Float:    EVENT_WOMEN_LIMITTIME   = 7.5;          // EVT_WOMEN        how long per combo-step to keep increased common limit
 const           EVENT_WOMEN_EXTRACOMMON = 5;            // EVT_WOMEN        how many extra common per combo (limit increase)
-const           EVENT_WOMEN_CLAW        = 10;           //                  claw damage spitter/boomer
+const           EVENT_WOMEN_CLAW        = 8;            //                  claw damage spitter/boomer
 const           EVENT_WOMEN_BSPEED      = 220;          //                  speed of boomer/spitter
 const           EVENT_WOMEN_BFORCE      = 2500;         //                  force of boomer explosion
 const Float:    EVENT_WOMEN_BDELAY      = 10.0;         //                  how much time delay between booming scratches
+const Float:    EVENT_WOMEN_STUNTIME    = 0.4;          //                  m2 stun duration for event
+const           EVENT_WOMEN_GUNRANGE    = 35;           //                  m2 range for the event
 const Float:    EVENT_WITCHES_RANGE     = 250000.0;     //                  range for glow removal/addition
 const           EVENT_MEDIC_UNITS_BASE  = 9;            // EVT_MEDIC        how many mediunits to start with (default difficulty) (medkit, pills + 8)
 const           EVENT_MEDIC_UNITS_MIN   = 6;            // EVT_MEDIC        minimum mediunits
@@ -514,6 +516,10 @@ const           Z_EXPL_RADIUS_IN        = 130;      //z_exploding_inner_radius
 const           Z_EXPL_RADIUS_OUT       = 200;
 const           Z_EXPL_SHOVE_MIN        = 4;
 const           Z_EXPL_SHOVE_MAX        = 5;
+
+const           Z_GUN_RANGE             = 75;
+const Float:    Z_GUN_STUNTIME          = 1.25;
+
 
 // structs, enums
 // --------------

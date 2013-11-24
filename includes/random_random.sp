@@ -996,8 +996,9 @@ RANDOM_DetermineRandomStuff()
                     SetConVarInt(FindConVar("z_exploding_force"), EVENT_WOMEN_BFORCE);
                     SetConVarInt(FindConVar("z_exploding_inner_radius"), 0);    // this prevents boomer explosions from automatically biling survivors        
                     SetConVarInt(FindConVar("z_exploding_outer_radius"), 0);
-                    SetConVarInt(FindConVar("z_exploding_shove_min"), 2);
-                    SetConVarInt(FindConVar("z_exploding_shove_max"), 3);
+                    
+                    SetConVarFloat(FindConVar("z_gun_stun_duration"), EVENT_WOMEN_STUNTIME);
+                    SetConVarInt(FindConVar("z_gun_range"), EVENT_WOMEN_GUNRANGE);
                     
                     // no tonfa's
                     SetConVarFloat(FindConVar("sv_infected_riot_control_tonfa_probability"), 0.0);
@@ -1479,12 +1480,16 @@ RandomizeItems()
     new hamId;
     
     new String:classname[128];
+    new String:targetname[32];
     new curEnt;                             // the entity we're currently storing data for
     new curHit;                             // the hittable we're currently storing data for
 
     new Float: fAmmoVarMore = 1.0 + GetConVarFloat(g_hCvarAmmoVarianceMore);
     new Float: fAmmoVarLess = 1.0 - GetConVarFloat(g_hCvarAmmoVarianceLess);
     new Float: fAmmoFactor = (g_iSpecialEvent == EVT_AMMO) ? g_RC_fEventAmmoFactor : 1.0;
+    
+    decl Float: origin[3];
+    decl Float: angles[3];
     
     for (new i=0; i < entityCount; i++)
     {
@@ -1664,6 +1669,39 @@ RandomizeItems()
             curEnt = g_iStoredEntities;
             g_iStoredEntities++;
             
+            
+            // check if it should be skipped
+            if ( GetEntProp(i, Prop_Data, "m_iHammerID") == 999999 )
+            {
+                GetEntPropString( i, Prop_Data, "m_iName", targetname, sizeof(targetname) );
+                
+                // leave untouched if women event (or remove it if it's not) (molotov)
+                if ( StrEqual( targetname, "random_special_women", false ) )
+                {
+                    if ( g_iSpecialEvent == EVT_WOMEN )
+                    {
+                        g_strArStorage[curEnt][entPickedType] = PCK_MOLOTOV;
+                        g_strArStorage[curEnt][entSpawnPhysics] = false;
+                        g_strArStorage[curEnt][entAmmoMax] = 0;
+                        g_strArStorage[curEnt][entCheckOrigin] = false;
+                        g_strArStorage[curEnt][entInStartSaferoom] = false;
+                        g_strArStorage[curEnt][entInEndSaferoom] = false;
+                        
+                        GetEntPropVector(i, Prop_Send, "m_vecOrigin", origin);
+                        GetEntPropVector(i, Prop_Send, "m_angRotation", angles);
+                        
+                        g_strArStorage[curEnt][entOrigin_a] = origin[0];
+                        g_strArStorage[curEnt][entOrigin_b] = origin[1];
+                        g_strArStorage[curEnt][entOrigin_c] = origin[2];
+                        g_strArStorage[curEnt][entAngles_a] = angles[0];
+                        g_strArStorage[curEnt][entAngles_b] = angles[1];
+                        g_strArStorage[curEnt][entAngles_c] = angles[2];
+                    }
+                    AcceptEntityInput(i, "Kill");
+                    continue;
+                }
+            }
+            
             g_strArStorage[curEnt][entPickedType] = 0;           // cleanup, defaults:
             g_strArStorage[curEnt][entSpawnPhysics] = false;
             g_strArStorage[curEnt][entAmmoMax] = 0;
@@ -1716,7 +1754,6 @@ RandomizeItems()
                             case INDEX_T2RIFLE: { randomPick = INDEX_T1SMG; }
                         }
                     }
-                    
                 }
                 else {
                     randomPick = INDEX_NOITEM;
@@ -2057,9 +2094,6 @@ RandomizeItems()
             //PrintDebug(3, "[rand] Picked ent %i: type = %i =pick=> %i", g_iStoredEntities, randomPick, g_strArStorage[curEnt][entPickedType]);
 
             // lookup position
-            decl Float: origin[3];
-            decl Float: angles[3];
-            
             GetEntPropVector(i, Prop_Send, "m_vecOrigin", origin);
             GetEntPropVector(i, Prop_Send, "m_angRotation", angles);
             

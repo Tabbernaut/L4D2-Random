@@ -288,8 +288,11 @@ EVENT_ResetOtherCvars()
     SetConVarInt(FindConVar("z_exploding_inner_radius"), Z_EXPL_RADIUS_IN);
     SetConVarInt(FindConVar("z_exploding_outer_radius"), Z_EXPL_RADIUS_OUT);
     SetConVarInt(FindConVar("z_spitter_speed"), Z_SPIT_SPEED);
-    SetConVarInt(FindConVar("z_exploding_shove_min"), Z_EXPL_SHOVE_MIN);
-    SetConVarInt(FindConVar("z_exploding_shove_max"), Z_EXPL_SHOVE_MAX);
+    //SetConVarInt(FindConVar("z_exploding_shove_min"), Z_EXPL_SHOVE_MIN);
+    //SetConVarInt(FindConVar("z_exploding_shove_max"), Z_EXPL_SHOVE_MAX);
+    
+    SetConVarFloat(FindConVar("z_gun_stun_duration"), Z_GUN_STUNTIME);
+    SetConVarInt(FindConVar("z_gun_range"), Z_GUN_RANGE);
     
     SetConVarFloat(FindConVar("sv_infected_ceda_vomitjar_probability"), g_fDefCedaBileProb);
     SetConVarFloat(FindConVar("sv_infected_riot_control_tonfa_probability"), g_fDefRiotTonfaProb);

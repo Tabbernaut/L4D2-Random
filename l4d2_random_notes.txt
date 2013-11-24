@@ -105,12 +105,14 @@ L4D2_Random
             - Guaranteed dual pistols, magnum or melee weapon on Magic Gunswap event.
             - Now gives incapped players a magnum in the 'Lots of Women' events and blocked secondary weapon drop.
             - Overhauled Women event it's now all about getting and avoiding scratches; spitters can only spit once, boomers cannot vomit.
+            - Women event: scratch damage 8, m2 range made shorter than claw range. 
             - Fixed a bug that caused some boom combo rewards not to take effect.
             - Reduced the damage spit and tank do to the 'baby' a bit.
             - Greatly reduced damage bonus for maps with the Adrenaline Rush event.
             - Fixed a bug causing gnome bonus to not be fully awarded, as well as incorrect bonus explanations for /damage_explain prints.
             - Fixed some bugs related to infected despawning, respawning or going spectator and getting class-switches.
             - Now does not pass minitanks: the same player gets to play 2 passes.
+            - Added fixed molotov to Dead Air 3 so players can still set fire to the barricade.
             
         -----
             - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
@@ -222,7 +224,15 @@ L4D2_Random
             - MAYBE - mini-scavenge for specific rounds (decide per map) / do the research (how well possible? how much work? has anyone done it already?)
             - MAYBE - add 'rerandom' function, working on live round [ for testing / bad starts ]
 
-            
+
+Map tweaks
+===========================
+
+    hammerid 999999
+    and
+        targetname "random_special_women"       =>      appears untouched on EVT_WOMEN (not at all outside of it)
+    
+
             
 Some stuff to keep in mind:
 ===========================
