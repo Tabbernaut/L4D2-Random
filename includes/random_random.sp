@@ -57,6 +57,8 @@ DoReport(client=0)
     {
         // report distance / bonus changes
         new tmpDist = ( g_bFrozenPoints ) ? g_iRememberFrozenDistance : L4D_GetVersusMaxCompletionScore();
+        if ( g_bHoldoutActive ) { tmpDist += g_iHoldoutBonus; }
+        
         if (GetConVarInt(g_hCvarRandDistance) > 0 && GetConVarInt(g_hCvarRandBonus) > 0) {
             Format(sReport[iLine], REPLINELENGTH, "Random map distance: \x05%i\x01, Bonus: \x04%i\x01.", tmpDist, g_iDamageBonus);
             iLine++;
@@ -164,7 +166,10 @@ DoPanelReport()
     
     DrawPanelItem(panel, "", ITEMDRAW_SPACER);
     
-    Format(sReport, sizeof(sReport), "Distance points: %4i", ( g_bFrozenPoints ) ? g_iRememberFrozenDistance : L4D_GetVersusMaxCompletionScore() );
+    new tmpDist = ( g_bFrozenPoints ) ? g_iRememberFrozenDistance : L4D_GetVersusMaxCompletionScore();
+    if ( g_bHoldoutActive ) { tmpDist += g_iHoldoutBonus; }
+    
+    Format(sReport, sizeof(sReport), "Distance points: %4i", tmpDist );
     DrawPanelText(panel, sReport);
     if (GetConVarInt(g_hCvarRandBonus) > 0) {
         Format(sReport, sizeof(sReport), "Damage bonus:  %4i", g_iDamageBonus);

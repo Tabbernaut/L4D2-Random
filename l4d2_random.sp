@@ -31,7 +31,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.1.3"
+#define PLUGIN_VERSION "1.1.4"
 
 /*
         L4D2 Random
@@ -994,6 +994,22 @@ public OnCMTEnd()
 {
     g_bCMTActive = false;
     FormatEx( g_sNextMap, sizeof(g_sNextMap), "" );
+}
+
+/*
+    Forwards from holdout_bonus
+    --------------------------- */
+public OnHoldOutBonusSet( bonus, distance, time, bool:distanceChanged )
+{
+    // holdoutbonus will change the distance, set points so we know what the full 'distance' is!
+    
+    g_bHoldoutActive = true;
+    
+    if ( distanceChanged )
+    {
+        g_iHoldoutBonus = bonus;
+        g_iRememberFrozenDistance = distance;
+    }
 }
 
 /*

@@ -21,6 +21,7 @@ new     bool:           g_bReadyUpAvailable                                 = fa
 new     bool:           g_bPauseAvailable                                   = false;                // crox's pause
 new     bool:           g_bCMTActive                                        = false;                // whether custom map transitions is active (and running a mapset)
 new     String:         g_sNextMap              [STR_MAX_MAPNAME];                                  // what the upcoming map is (if any)
+new     bool:           g_bHoldoutActive                                    = false;                // whether holdout_bonus is doing its magic this map
 
 new     bool:           g_bDefaultCvarsLoaded                               = false;                // if not loaded, check if they can be loaded and load them
 new     bool:           g_bVeryFirstMapLoad                                 = true;                 // for preventing a first-map problem with item randomization
@@ -217,6 +218,7 @@ new     bool:           g_bEarlyLock                                        = fa
 new                     g_iSpecialEventRole                                 = 0;                    // for player-selecting special events
 new                     g_iDefaultDistance                                  = 0;                    // how much distance the map is worth normally (at OnMapStart)
 new                     g_iDamageBonus                                      = 0;                    // how much bonus for this round (half) can be got (maximally)
+new                     g_iHoldoutBonus                                     = 0;                    // if holdout_bonus active, what points of the distance are turned to bonus
 
 // Insight
 new     bool:           g_bInsightSurvDone                                  = false;                // already 'had insight'?

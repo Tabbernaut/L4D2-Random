@@ -41,6 +41,10 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     SetConVarInt(FindConVar("z_mob_spawn_min_interval_normal"), STARTING_HORDE_TIMER);
     SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), STARTING_HORDE_TIMER);
     
+    // holdout bonus reset
+    g_bHoldoutActive = false;
+    g_iHoldoutBonus = 0;
+    
     // called before randomization
     g_bIsPaused = false;
     g_fPauseAttemptTime = 0.0;
