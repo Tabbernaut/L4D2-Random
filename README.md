@@ -11,3 +11,4 @@ The parts that do serve more general purposes and may well be of use for other p
 - Saferoom Detect (to detect whether players, entities or coordinates are inside the bounds of a saferoom)
 - Penalty Bonus (a non-survival bonus system that uses the defib. penalty)
 - Skill Detect (a tracking/detection plugin that is used to detect skeets, crowns, etc)
+- Holdout Bonus (a plugin that gives survivors bonus for (partially) surviving camping events)
