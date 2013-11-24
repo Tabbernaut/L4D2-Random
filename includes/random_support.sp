@@ -13,6 +13,13 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
         RNDBNS_SetScaleMode( GetConVarInt(g_hCvarRandBonusScaleMode) );
     }
     
+    // holdout bonus reset
+    if ( !g_bSecondHalf )
+    {
+        g_bHoldoutActive = false;
+        g_iHoldoutBonus = 0;
+    }
+    
     // only reset on first roundhalf or if event's not equal
     if (!g_bSecondHalf || !(GetConVarInt(g_hCvarEqual) & EQ_EVENT)  || (g_bCampaignMode && g_bCampaignForceRandom))
     {
@@ -40,10 +47,6 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     // don't start horde yet (SetHordeTimer() does this)
     SetConVarInt(FindConVar("z_mob_spawn_min_interval_normal"), STARTING_HORDE_TIMER);
     SetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"), STARTING_HORDE_TIMER);
-    
-    // holdout bonus reset
-    g_bHoldoutActive = false;
-    g_iHoldoutBonus = 0;
     
     // called before randomization
     g_bIsPaused = false;
