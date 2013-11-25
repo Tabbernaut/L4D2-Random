@@ -2690,7 +2690,8 @@ public L4D_OnEnterGhostState(client)
         else
         {
             // safeguard: check if the player is the right class... pick a new one
-            if ( !SpawnClassCheck(zClass) ) {
+            if ( !SpawnClassCheck(zClass) )
+            {
                 DetermineSpawnClass(client, zClass);
             }
             

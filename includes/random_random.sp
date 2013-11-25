@@ -4579,7 +4579,7 @@ bool: SpawnClassCheck( zClass )
     else if ( g_iSpecialEvent == EVT_WOMEN ) {
         if ( zClass != ZC_BOOMER && zClass != ZC_SPITTER ) { return false; }
     }
-    else if ( g_iSpecialEvent != EVT_QUADS && !GetConVarBool(g_hCvarNoSupportSI) ) {
+    else if ( g_iSpecialEvent == EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI) ) {
         if ( zClass == ZC_BOOMER || zClass == ZC_SPITTER ) { return false; }
     }
     else if ( g_bIsTankInPlay && zClass == ZC_SPITTER && GetConVarBool(g_hCvarNoSpitterDuringTank) ) {

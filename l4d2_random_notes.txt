@@ -110,7 +110,8 @@ L4D2_Random
             - Reduced the damage spit and tank do to the 'baby' a bit.
             - Greatly reduced damage bonus for maps with the Adrenaline Rush event.
             - Fixed a bug causing gnome bonus to not be fully awarded, as well as incorrect bonus explanations for /damage_explain prints.
-            - Fixed some bugs related to infected despawning, respawning or going spectator and getting class-switches.
+            - Fixed some bugs related to infected despawning, respawning or going spectator.
+            - Fixed a bug causing infected to change class when despawning sometimes.
             - Now does not pass minitanks: the same player gets to play 2 passes.
             - Added fixed molotov to Dead Air 3 so players can still set fire to the barricade.
             
@@ -144,8 +145,6 @@ L4D2_Random
     
     side considerations / 3rd party bugs
     ------------------------------------
-            - tweak:    [consider] give points for surviving longer during DT3 event (and maybe other events in specific maps too?)
-                        holdout bonus.. (and deduct the total you're able to get from the total distance points)
             - note:     the netprop m_iVersus(something) for distance seems to actually work pretty well (with minor bug)
                         CRox reports. try it?
             
