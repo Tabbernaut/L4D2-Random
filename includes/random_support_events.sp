@@ -150,7 +150,10 @@ EVENT_SwapSurvivorGun(client)
 
 public Action: Timer_CheckSurvivorGun(Handle:timer, any:client)
 {
-    EVENT_CheckSurvivorGun(client);
+    if ( IsClientAndInGame(client) )
+    {
+        EVENT_CheckSurvivorGun(client);
+    }
 }
 
 EVENT_CheckSurvivorGun(client)
