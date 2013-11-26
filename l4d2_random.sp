@@ -31,7 +31,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.1.4"
+#define PLUGIN_VERSION "1.1.5"
 
 /*
         L4D2 Random
@@ -3393,23 +3393,20 @@ public OnEntityCreated(entity, const String:classname[])
         // is really the gnome?
         if (GetConVarFloat(g_hCvarGnomeBonus) == 0.0) { return; }
         
-        CreateTimer(0.01, Timer_CreatedPropPhysics, entity, TIMER_FLAG_NO_MAPCHANGE);
+        SDKHook(entity, SDKHook_SpawnPost, OnEntitySpawnPost_PropPhysics);
     }
     else if (classnameOEC == CREATED_ABILITYVOMIT)
     {
         if ( g_iSpecialEvent == EVT_WOMEN )
         {
             // block vomit ability on boomers
-            CreateTimer(0.01, Timer_CreatedWomenBoomAbility, entity, TIMER_FLAG_NO_MAPCHANGE);
+            SDKHook(entity, SDKHook_SpawnPost, OnEntitySpawnPost_WomenBoomAbility);
         }
     }
     else if (g_iSpecialEvent == EVT_AMMO && classnameOEC == CREATED_AMMO_DEPLOYED)
     {
         SetEntityModel(entity, "models/props/terror/ammo_stack.mdl");
-        
-        // create an ammo pile instead
-        CreateTimer(0.01, EVENT_DeployAmmo, entity, TIMER_FLAG_NO_MAPCHANGE);
-        //CreateTimer(0.025, EVENT_CheckDeployedAmmo, entity, TIMER_FLAG_NO_MAPCHANGE);
+        SDKHook(entity, SDKHook_SpawnPost, OnEntitySpawnPost_DeployAmmo);
     }
     /* else if (g_iSpecialEvent == EVT_BAY && classnameOEC == CREATED_TANKROCK && GetEntProp(entity, Prop_Send, "m_iTeamNum") >= 0)
     {
@@ -3417,10 +3414,10 @@ public OnEntityCreated(entity, const String:classname[])
     } */
 }
 
-public Action: Timer_CreatedPropPhysics(Handle:timer, any:entity)
+public OnEntitySpawnPost_PropPhysics (entity)
 {
     // now the gnome we held is destroyed, so only check if we did drop one
-    if (!IsValidEntity(entity) || !g_iGnomeJustDropped) { return Plugin_Continue; }
+    if (!IsValidEntity(entity) || !g_iGnomeJustDropped) { return; }
     
     new String:modelname[STR_MAX_MODELNAME];
     GetEntPropString(entity, Prop_Data, "m_ModelName", modelname, STR_MAX_MODELNAME);
@@ -3431,18 +3428,20 @@ public Action: Timer_CreatedPropPhysics(Handle:timer, any:entity)
     {
         OnPossibleDroppedGnomeCreated(entity);
     }
-    
-    return Plugin_Continue;
 }
 
-public Action: Timer_CreatedWomenBoomAbility(Handle:timer, any:entity)
+public OnEntitySpawnPost_WomenBoomAbility (entity)
 {
-    if (!IsValidEntity(entity)) { return Plugin_Continue; }
+    if (!IsValidEntity(entity)) { return; }
     
     // kill boomer ability
     AcceptEntityInput(entity, "Kill");
+}
 
-    return Plugin_Continue;
+public OnEntitySpawnPost_DeployAmmo (entity)
+{
+    // create an ammo pile instead
+    EVENT_DeployAmmo(entity);
 }
 
 public OnEntityDestroyed(entity)

@@ -209,7 +209,7 @@ EVENT_CheckSurvivorGun(client)
     Ammo Shortage
     ------------------
 */
-public Action: EVENT_DeployAmmo(Handle:timer, any:entity)
+public EVENT_DeployAmmo (entity)
 {
     // deploys ammo pile in spot of indicated entity
     if (!IsValidEntity(entity)) { return; }
