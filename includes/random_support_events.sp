@@ -158,6 +158,8 @@ public Action: Timer_CheckSurvivorGun(Handle:timer, any:client)
 
 EVENT_CheckSurvivorGun(client)
 {
+    if ( !IsClientAndInGame(client) ) { return; }
+    
     // check after team switch / player join
     // reset available ammo during gunswap event
     new ammo = 0;

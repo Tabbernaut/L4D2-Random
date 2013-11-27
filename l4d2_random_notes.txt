@@ -136,6 +136,7 @@ L4D2_Random
             - fix:      weird black walls (instead of shopping carts) c1m3 only            
             
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
+            - tweak:    make magnum less effective against boomers
             
             - coop:     sudden death event: give everyone full (temp?) health
             - coop:     fix adrenaline rush for coop

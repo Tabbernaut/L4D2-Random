@@ -31,7 +31,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.1.4"
+#define PLUGIN_VERSION "1.1.5"
 
 /*
         L4D2 Random
@@ -3400,16 +3400,13 @@ public OnEntityCreated(entity, const String:classname[])
         if ( g_iSpecialEvent == EVT_WOMEN )
         {
             // block vomit ability on boomers
-            CreateTimer(0.01, Timer_CreatedWomenBoomAbility, entity, TIMER_FLAG_NO_MAPCHANGE);
+            SDKHook(entity, SDKHook_SpawnPost, OnEntitySpawnPost_WomenBoomAbility);
         }
     }
     else if (g_iSpecialEvent == EVT_AMMO && classnameOEC == CREATED_AMMO_DEPLOYED)
     {
         SetEntityModel(entity, "models/props/terror/ammo_stack.mdl");
-        
-        // create an ammo pile instead
         CreateTimer(0.01, EVENT_DeployAmmo, entity, TIMER_FLAG_NO_MAPCHANGE);
-        //CreateTimer(0.025, EVENT_CheckDeployedAmmo, entity, TIMER_FLAG_NO_MAPCHANGE);
     }
     /* else if (g_iSpecialEvent == EVT_BAY && classnameOEC == CREATED_TANKROCK && GetEntProp(entity, Prop_Send, "m_iTeamNum") >= 0)
     {
@@ -3435,14 +3432,12 @@ public Action: Timer_CreatedPropPhysics(Handle:timer, any:entity)
     return Plugin_Continue;
 }
 
-public Action: Timer_CreatedWomenBoomAbility(Handle:timer, any:entity)
+public OnEntitySpawnPost_WomenBoomAbility (entity)
 {
-    if (!IsValidEntity(entity)) { return Plugin_Continue; }
+    if (!IsValidEntity(entity)) { return; }
     
     // kill boomer ability
     AcceptEntityInput(entity, "Kill");
-
-    return Plugin_Continue;
 }
 
 public OnEntityDestroyed(entity)
