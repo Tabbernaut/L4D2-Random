@@ -5,119 +5,8 @@ L4D2_Random
 
     changelog:
     ---------
-            - Damage bonus revamped (easier to destroy): solid starting health counts double, reduction of max damage for smaller bonuses.
-            - Now handles tank odds itself, circumventing built in tank odds.
-            - Fixed a bug that caused only one team to get a tank sometimes.
-            - Fixed reversed reading of the vote blocking cvar.
-            - Fixed a bug where some finales were not marked as such, allowing incorrect special events.
-            - Fixed a bug that disallowed dual pistols for snipers.
-            - Fixed a bug where and old tank flow call resulted in problems.
-            - Fixed many problems with gnome bonus scoring, including gnomes losing their value and exploits giving players huge bonuses.
-            - Added optional argument to !drop / sm_drop: # (1-5) for slot to drop
-            - Added command: !damage_explain to show how bonus is calculated.
-            - Made some SDKCalls optional (vomit: breaks boomer flu event, team switching: teamshuffle). Random will load, but disable the relevant functions.
-            - Update: Changed z_spawn calls to z_spawn_old (cvar controlled, in case it breaks).
-            - Update: Updated gamedata.
-            - Uncapped pounce damage (50 dmg max, 1729... range max) for Skeet Shoot event.
-        -----
-            - Added custom map transition's (Stabby's plugin) to Random by default. Type "!mapset random" to play 5 random maps.
-            - Removed infected bots in randhard, randbasic, rand2v2 and rand3v3
-            - Fixed gifts being openable in unfrozen readyup.
-            - Slightly increased ammo counts all around. Way too many people running out of ammo halfway through a map.
-            - Made Sudden Death event easier: fewer common around, no tanks (unless forced).
-            - Added static survival bonus: 25 points for making saferoom.
-            - Fixed problems with damage bonus & gnome bonus, negative bonus results and incorrect reporting.
-            - Fixed Lots of Women event (hilariously) giving survivors only gnomes.
-            - Fixed teamshuffle (the old SDKCall approach didn't work anymore).
-            - Freezes distance points while tank is alive for Minitanks event and double tanks.
-            - Made temporary blindness more effective.
-            - Fixed Minitanks event (now only spawns new tanks after one has died). [needs testing]
-            - Blocked more than 1 smoker in 2v2 & 3v3. [needs testing]
-        -----
-            - Tweaked event weights: it is less likely that the same events will appear many times.
-            - Now displays penalty bonus in !damage/!health reports, so !bonus isn't required to see it.
-            - !damage/!health report now also shows special event bonus/penalty.
-            - Car alarms can now only be triggered after the survivors leave the saferoom.
-            - Slightly reduced the chances of cars being alarmed.
-            - Removed (randomized) hittables from Blood Harvest 1.
-            - Keymaster event: doors can not be broken by survivors anymore (except with explosives). Infected can still break them at will.
-            - L4D1 event: fixed survivors getting adrenaline at start (sometimes).
-            - Added Haunted Doors event.
-            - Added Directed by Michael Bay event.
-            - Added Bunnyhop Professionals event.
-            - Fixed a problem with defib penalty not resetting if a match ended with a Sudden Death event.
-            - Firepower event: tweaked amount of ammo available.
-            - Prevented the same player getting assigned two tanks in a row.
-            - Slightly increased odds of getting double tanks.
-            - Witch Hunt event: increased witch spawn frequency.
-            - Witch Hunt event: increased damage witches do per swing to upright survivors to 75.
-            - Witch Hunt event: bonus points for killing witch now only given if witch did no damage to survivors.
-            - Skeets are now always reported (but still only worth points in Skeet Shoot event).
-            - Booby Traps event: slightly increased odds of things being booby traps.
-            - Some cars have gas in their tank and will explode when shot.
-            - Added gift effect: all car alarms disabled.
-            - Health Penalty event: increased penalty to 25 points per heal.
-            - Shove Penalty event: added grace time so deadstops don't get overcounted.
-            - Fixed skeet detection (though chipping with non-shotguns still doesn't count); added detection for sniper/magnum headshot skeets.
-            - Fixed a bunch of problems in campaign mode. Now makes survivors try 3 times, then rerandomizes the map.
-        -----
-            ^ all posted (on SPUF only)
-        -----
-            - Added randomcoop config: Random Coop Mutation gameplay! Much fun for campaign mode added plusplus.
-            - Coop: After 3 failures, the round will automatically be re-randomized.
-            - Coop: Added !rerandom command to force re-randomization of the round if players fail to make it.
-            - Coop: Sets minimum health for survivors in campaign mode, at round start (50 solid).
-            - Coop: Added encounters with insane amounts of hunters, jockeys, witches, etc.
-            - Coop: Removed common-size related events (they wouldn't work right with the mutation anyway).
-        -----
-            - Adjusted skeet reports to match l4d2_skill_detect markup more.
-            - Shove Penalty event: now uses l4d2_skill_detect for shove detection.
-            - Fixed problem with readyup & ledge-hanging with damage bonus scoring.
-            - Fixed minor event/shuffle voting problem on roundhalf switch.
-            - Fixed some (potential) problems with tank selection.
-            - Solved a problem that made Random think every map was a finale map (limiting the available special events).
-            - Now prevents events from being voted for if the next map doesn't suit them.
-            - Made it 33% likely that ammo piles (in non-finale maps) are left alone.
-            - Fixed !rand distance print while distance points frozen.
-            - Split off teamshuffling to separate plugin (teamshuffle.sp).
-            - Fixed an issue with special infected getting spawns they shouldn't after pauses.
-            - Blocked players dodging/passing on special event roles by going spectator/reconnecting.
-            - Fixed the damage and gnome bonus being displayed incorrectly after round end, sometimes.
-            - Removed problems/exploits with gift blindness and pauses.
-            - Fixed secondary magically appearing after incapping without one.
-            - Fixed issue with distance freezing leading to 0 distance rounds.
-            - Fixed pills appearing on common kill on Adrenaline Rush event -- fixed pistol appearing on Women event.
-            - Made gnomes worth a smaller portion of map distance (20%).
-            - Increased sniper ammo on Firepower event.
-            - Fixed issues with Scout/AWP ammo replenishing.
-            - Changed it so that the same players no longer get the best/worst hand-out compared to their teammates.
-            - Survivors now do only half the normal amount of friendly fire on the Bad Combo special event.
-            - Blocked ultra-early tank on c1m1_hotel
-            - Increased items for Adrenaline Rush event.
-            - Fixed problems with first spawns not being equal and some event effects being applied before round goes live.
-            - Fixed problems with (very occasionally) getting spawns that should not be allowed for an event.
-            - Fixed incorrect starting setups handed out to survivors (too many gnomes handed out!).
-            - Removed the forever-the-same two static witches in Hard Rain 2.
-            - Fixed horde spawning up before the round goes live.
-            - Removed some minor error spam for infected-entity-blind and entity-fell-through-floor checks.
-            - Increased the Sudden Death defib penalty to 15 points (was 5).
-            - Made it much less likely that players blow up cars outside of the Directed by Michael Bay event.
-            - Guaranteed dual pistols, magnum or melee weapon on Magic Gunswap event.
-            - Now gives incapped players a magnum in the 'Lots of Women' events and blocked secondary weapon drop.
-            - Overhauled Women event it's now all about getting and avoiding scratches; spitters can only spit once, boomers cannot vomit.
-            - Women event: scratch damage 8, m2 range made shorter than claw range. 
-            - Fixed a bug that caused some boom combo rewards not to take effect.
-            - Reduced the damage spit and tank do to the 'baby' a bit.
-            - Greatly reduced damage bonus for maps with the Adrenaline Rush event.
-            - Fixed a bug causing gnome bonus to not be fully awarded, as well as incorrect bonus explanations for /damage_explain prints.
-            - Fixed some bugs related to infected despawning, respawning or going spectator.
-            - Fixed a bug causing infected to change class when despawning sometimes.
-            - Now does not pass minitanks: the same player gets to play 2 passes.
-            - Added fixed molotov to Dead Air 3 so players can still set fire to the barricade.
-            
-        -----
-            - [ readyup attempt: only the survivor leaving the saferoom gets teleported back ]
-            - [ added friendly fire stats table printout ]
+        - made melee weapons and kit-type items heavier in encumbered event.
+        - updated exploit blocks.
             
         
     to test:
@@ -135,8 +24,14 @@ L4D2_Random
     ------  
             - fix:      weird black walls (instead of shopping carts) c1m3 only            
             
+            - fix:      shove penalty: first round hits don't reg.. second round they do?
+                        jockey shove -- happens more often.. (doesn't show up in playstats sometimes either)
+            
+            - fix:      gnome bonus + holdout bonus conflict.. calculate on the basis of distance + holdout bonus knownyk
+            
+            - tweak:    replace jockey pounce with internal version (and better prints)
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
-            - tweak:    make magnum less effective against boomers
+            - tweak:    women event: make magnum less effective against boomers
             
             - coop:     sudden death event: give everyone full (temp?) health
             - coop:     fix adrenaline rush for coop
@@ -192,6 +87,7 @@ L4D2_Random
         
     ideas:
     ------
+            - event:    1 person is the Time Master and can slow down time by holding down a key (needs to recharge)
             - event:    boomer rain
                             hard to pop boomers, do damage on exploding, pukenuke?
             - event:    hiccups? survivor oncontrollably jumps? (maybe just annoying)
@@ -220,6 +116,7 @@ L4D2_Random
             - gift  - gift idea: see outlines on infected for X seconds ('telepathy')
             - gift  - steal weapon / ammo (on condition of not breaking event)
             - gift  - gift idea: [tom] invulnerability
+            - gift: - gift idea: reverse keys
             
             - MAYBE - mini-scavenge for specific rounds (decide per map) / do the research (how well possible? how much work? has anyone done it already?)
             - MAYBE - add 'rerandom' function, working on live round [ for testing / bad starts ]
