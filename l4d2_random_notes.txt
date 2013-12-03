@@ -6,8 +6,9 @@ L4D2_Random
     changelog:
     ---------
         - made melee weapons and kit-type items heavier in encumbered event.
-        - updated exploit blocks.
-            
+        - fixed gnome bonus varying oddly on maps with a holdout event.
+        - updated exploit blocks (c7m2 fix).
+        
         
     to test:
     --------
@@ -26,8 +27,6 @@ L4D2_Random
             
             - fix:      shove penalty: first round hits don't reg.. second round they do?
                         jockey shove -- happens more often.. (doesn't show up in playstats sometimes either)
-            
-            - fix:      gnome bonus + holdout bonus conflict.. calculate on the basis of distance + holdout bonus knownyk
             
             - tweak:    replace jockey pounce with internal version (and better prints)
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)

@@ -1836,24 +1836,29 @@ UpdateClientHoldingGnome(client, entity=-1, bool:setHeld=true)
 
 
 // value of a gnome when picked up at given distance
-GetGnomeValue(Float:distance)
+GetGnomeValue( Float:distance )
 {
     distance = FloatAbs(distance);
     new Float: fBonus = GetConVarFloat(g_hCvarGnomeBonus);
     
     if (g_RI_bIsFinale)
     {
+        // weigh distance for only this factor, if we're going by distance
         fBonus = fBonus * GetConVarFloat(g_hCvarGnomeFinaleFactor);
         
-        // weigh distance for only this factor, if we're going by distance
-        if (fBonus < 10.0) {
-            fBonus = fBonus * L4D_GetVersusMaxCompletionScore();
+        // only if the bonus is not manually fixed (cvar > 10)
+        if ( fBonus < 10.0 )
+        {
+            fBonus = fBonus * ActualMapDistance();
             // factor in distance factor (get right average between full and distance-scaled bonus)
             fBonus = ((1.0 - GNOME_FINALE_DIST_FACTOR) * fBonus) + (GNOME_FINALE_DIST_FACTOR * fBonus * (1.0 - distance));
         }
-    } else {
-        if (fBonus < 10.0) {
-            fBonus = fBonus * L4D_GetVersusMaxCompletionScore() * (1.0 - distance);
+    }
+    else
+    {
+        if ( fBonus < 10.0 )
+        {
+            fBonus = fBonus * ActualMapDistance() * (1.0 - distance);
         }
     }
     

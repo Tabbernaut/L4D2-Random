@@ -334,6 +334,12 @@ stock GetPlayerCharacter( client )
     Scoring manipulation
     -----------------
 */
+// get actual map distance, even when frozen, and including holdout bonus
+ActualMapDistance()
+{
+    return ( ( g_bFrozenPoints ) ? g_iRememberFrozenDistance : L4D_GetVersusMaxCompletionScore() ) + ( ( g_bHoldoutActive ) ? g_iHoldoutBonus : 0 );
+}
+
 public Action: Timer_FreezePoints ( Handle:timer, any:showMessage )
 {
     SUPPORT_FreezePoints( bool:showMessage );
