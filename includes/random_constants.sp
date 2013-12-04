@@ -218,6 +218,8 @@ const Float:    HITTABLE_CAR_REPICK     = 0.5;          // the odds that a car w
 const Float:    FIREEXT_POS_OFFSET      = 12.0;         // by how much to offset a fire-extinguisher replacement item from a wall
 const Float:    FIREEXT_POS_OFFSET_Z    = 30.0;
 
+const Float:    JOCKEY_POUNCE_MIN_HEIGHT    = 50.0;     // how high a Jockey DP must be minimally to do any damage
+
 
 // Random indexes
 // --------------

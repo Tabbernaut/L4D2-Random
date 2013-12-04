@@ -811,6 +811,49 @@ ShowWeapon(client)
     }
 }
 */
+// damage a player
+ApplyDamageToPlayer( damage, victim, attacker )
+{
+    new Handle: pack = CreateDataPack();
+    WritePackCell(pack, damage);
+    WritePackCell(pack, victim);
+    WritePackCell(pack, attacker);
+    CreateTimer( 0.1, Timer_ApplyDamage, pack);
+}
+
+public Action: Timer_ApplyDamage (Handle:timer, Handle:dataPack)
+{
+    ResetPack(dataPack);
+    new damage = ReadPackCell(dataPack);  
+    new victim = ReadPackCell(dataPack);
+    new attacker = ReadPackCell(dataPack);
+    CloseHandle(dataPack);   
+
+    decl Float:victimPos[3], String:strDamage[16], String:strDamageTarget[16];
+    
+    GetClientEyePosition(victim, victimPos);
+    IntToString(damage, strDamage, sizeof(strDamage));
+    Format(strDamageTarget, sizeof(strDamageTarget), "hurtme%d", victim);
+    
+    new entPointHurt = CreateEntityByName("point_hurt");
+    if (!entPointHurt) { return; }
+
+    // Config, create point_hurt
+    DispatchKeyValue(victim, "targetname", strDamageTarget);
+    DispatchKeyValue(entPointHurt, "DamageTarget", strDamageTarget);
+    DispatchKeyValue(entPointHurt, "Damage", strDamage);
+    DispatchKeyValue(entPointHurt, "DamageType", "0"); // DMG_GENERIC
+    DispatchSpawn(entPointHurt);
+    
+    // Teleport, activate point_hurt
+    TeleportEntity(entPointHurt, victimPos, NULL_VECTOR, NULL_VECTOR);
+    AcceptEntityInput(entPointHurt, "Hurt", (IsClientAndInGame(attacker)) ? attacker : -1);
+    
+    // Config, delete point_hurt
+    DispatchKeyValue(entPointHurt, "classname", "point_hurt");
+    DispatchKeyValue(victim, "targetname", "null");
+    RemoveEdict(entPointHurt);
+}
 
 // progress bar handling
 SetupProgressBar(client, Float:time, Float:location[3])

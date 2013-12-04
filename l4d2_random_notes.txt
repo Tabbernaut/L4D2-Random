@@ -10,7 +10,8 @@ L4D2_Random
         - updated exploit blocks (c7m2 fix).
         - only coloured the 'freezing points' message, to avoid confusion at a glance.
         - coloured minitanks yellow.
-        
+        - added 'l4d2_godframes_color' plugin (shows when survivors are godframed).
+        - built in jockey pounce damage with better damage to height calculations.
         
     to test:
     --------
@@ -30,13 +31,8 @@ L4D2_Random
             - fix:      shove penalty: first round hits don't reg.. second round they do?
                         jockey shove -- happens more often.. (doesn't show up in playstats sometimes either)
             
-            - tweak:    replace jockey pounce with internal version (and better prints)
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    women event: make magnum less effective against boomers
-            
-            - tweak:    recolor minitanks for obvious difference
-            - add:      plugin for showing godframe status on survivors, some visual clue as to when they end
-                        see godframes control
             
             - coop:     sudden death event: give everyone full (temp?) health
             - coop:     fix adrenaline rush for coop

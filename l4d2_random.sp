@@ -31,7 +31,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.1.6"
+#define PLUGIN_VERSION "1.1.7"
 
 /*
         L4D2 Random
@@ -3573,6 +3573,30 @@ public OnSpecialShoved ( attacker, victim, zClass )
             EVENT_PBonusChanged();
             EVENT_ReportPenalty( attacker, zClass );
         }
+    }
+}
+
+// jockey pounce damage
+public OnJockeyHighPounce ( attacker, victim, Float:height, bool:bReportedHigh )
+{
+    // let height determine damage to do..
+    if ( !IsSurvivor(victim) || !IsPlayerAlive(victim) || height <= JOCKEY_POUNCE_MIN_HEIGHT ) { return; }
+    
+    // damage to do = max + 1 * height factor
+    new damage = RoundFloat( float(g_RC_iPounceUncapDamageMax + 1) * (height / g_RC_fPounceUncapRangeMax) );
+    if (damage <= 0) { return; }
+    
+    // do damage
+    ApplyDamageToPlayer( damage, victim, attacker );
+    
+    // report damage / pounce
+    if ( IsClientAndInGame(attacker) && IsClientAndInGame(victim) && !IsFakeClient(attacker) )
+    {
+        PrintToChatAll( "\x04%N\x01 jockey-pounced \x05%N\x01 for \x03%i\x01 damage (height: \x05%i\x01).", attacker,  victim, damage, RoundFloat(height) );
+    }
+    else if ( IsClientAndInGame(victim) )
+    {
+        PrintToChatAll( "A jockey jockey-pounced \x05%N\x01 for \x03%i\x01 damage (height: \x05%i\x01).", victim, damage, RoundFloat(height) );
     }
 }
 

@@ -572,6 +572,7 @@ new     Float:          g_RC_fBlindTime                                     = 15
 new                     g_RC_iPounceUncapDamageMax                          = 49;
 new     Float:          g_RC_fPounceUncapRangeMax                           = 1729.1666;
 
+
 // other RC options
 new     bool:           g_RC_bExtraCommonModels                             = true;
 new     bool:           g_RC_bDrawPanelReport                               = true;
