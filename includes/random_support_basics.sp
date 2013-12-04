@@ -356,7 +356,7 @@ SUPPORT_FreezePoints( bool:bShowMessage = false )
 SUPPORT_UnFreezePoints( bool:bShowMessage = false )
 {
     if ( g_bFrozenPoints ) {
-        if ( bShowMessage ) PrintToChatAll("\x01[\x05r\x01] \x04Unfreezing\x01 distance points.");
+        if ( bShowMessage ) PrintToChatAll("\x01[\x05r\x01] \x01Unfreezing\x01 distance points.");
         L4D_SetVersusMaxCompletionScore(g_iRememberFrozenDistance);
         g_bFrozenPoints = false;
     }
