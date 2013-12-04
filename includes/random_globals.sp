@@ -424,6 +424,8 @@ new     Handle:         g_hCvarAmmoScout                                    = IN
 new     Handle:         g_hCvarAmmoAWP                                      = INVALID_HANDLE;       // cvar how much ammo in AWP rifle
 new     Handle:         g_hCvarAmmoSniper                                   = INVALID_HANDLE;       // cvar how much ammo in Military Sniper (used to avoid scout/awp bugs)
 
+new     Handle:         g_hCvarColorMinitank                                = INVALID_HANDLE;       // cvar the color to give minitanks
+
 // Default convars
 new     Handle:         g_hCvarReadyUp                                      = INVALID_HANDLE;       // cvar handle for readyup checking
 new     Handle:         g_hCvarPausable                                     = INVALID_HANDLE;       // cvar handle for pausable/pausing checking

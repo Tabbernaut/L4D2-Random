@@ -114,6 +114,8 @@ INIT_DefineCVars()
     g_hCvarAmmoAWP = CreateConVar(                          "rand_ammo_awp",                 "90",      "Ammo for the AWP rifle in Random.", FCVAR_PLUGIN, true, 0.0, false);
     g_hCvarAmmoSniper = CreateConVar(                       "rand_ammo_sniper",              "60",      "Ammo for the military sniper rifle in Random.", FCVAR_PLUGIN, true, 0.0, false);
     
+    g_hCvarColorMinitank = CreateConVar(                    "rand_color_minitank",     "180 180 0",     "Color for minitanks.", FCVAR_PLUGIN);
+    
     g_hArCvarWeight[INDEX_NOITEM] = CreateConVar(           "rand_weight_nothing",          "25",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarWeight[INDEX_PISTOL] = CreateConVar(           "rand_weight_pistol",           "13",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );
     g_hArCvarWeight[INDEX_T1SMG] = CreateConVar(            "rand_weight_t1smg",            "16",       "Weight for picking item spawns.",          FCVAR_PLUGIN, true, 0.0, true, 100.0 );

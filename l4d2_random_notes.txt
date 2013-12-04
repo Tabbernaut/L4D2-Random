@@ -8,6 +8,8 @@ L4D2_Random
         - made melee weapons and kit-type items heavier in encumbered event.
         - fixed gnome bonus varying oddly on maps with a holdout event.
         - updated exploit blocks (c7m2 fix).
+        - only coloured the 'freezing points' message, to avoid confusion at a glance.
+        - coloured minitanks yellow.
         
         
     to test:
@@ -31,6 +33,10 @@ L4D2_Random
             - tweak:    replace jockey pounce with internal version (and better prints)
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    women event: make magnum less effective against boomers
+            
+            - tweak:    recolor minitanks for obvious difference
+            - add:      plugin for showing godframe status on survivors, some visual clue as to when they end
+                        see godframes control
             
             - coop:     sudden death event: give everyone full (temp?) health
             - coop:     fix adrenaline rush for coop
@@ -86,6 +92,11 @@ L4D2_Random
         
     ideas:
     ------
+            - event:    stalkers of some sort: make SI partially transparent
+                            maybe scratch-only hunters.. kinda 'the hidden'-like gameplay
+            - event:    'shooting gallery': very quick spawns, low health SI (maybe only of particular types?)
+                            maybe remove capping potential (or give set damage for a cap)
+                            should be intense and fast action
             - event:    1 person is the Time Master and can slow down time by holding down a key (needs to recharge)
             - event:    boomer rain
                             hard to pop boomers, do damage on exploding, pukenuke?
@@ -108,6 +119,7 @@ L4D2_Random
             - event:    facemelters: direct hits with spitters = horrendous damage?
                         or: exploding spit plops
             
+            - gift  - make SI transparant for a while?
             - gift  - gift idea: temporary deafness
             - gift  - gift idea: blindness for entire team (shorter)
             - gift  - gift idea: X second slowdown (like EVT_ENCUMBERED)

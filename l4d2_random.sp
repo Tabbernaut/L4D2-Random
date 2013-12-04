@@ -3119,6 +3119,8 @@ public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBro
         }
         */
         //CreateTimer(1.0, Timer_SetTankMiniScale, client, TIMER_FLAG_NO_MAPCHANGE);
+        
+        CreateTimer(1.0, Timer_SetTankMiniColor, client, TIMER_FLAG_NO_MAPCHANGE);
     }
     else if ( !g_bFirstTankSpawned )  // double tank ?
     {
@@ -3146,9 +3148,7 @@ public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBro
     
     return Plugin_Continue;
 }
-
-
-public Action:Timer_CheckTankDeath(Handle:hTimer, any:client_oldTank)
+public Action: Timer_CheckTankDeath(Handle:hTimer, any:client_oldTank)
 {
     if (g_iTankClient != client_oldTank) { return Plugin_Continue; }
  
@@ -3205,6 +3205,20 @@ public Action:Timer_CheckTankDeath(Handle:hTimer, any:client_oldTank)
     return Plugin_Continue;
 }
 
+
+public Action: Timer_SetTankMiniColor ( Handle:timer, any:client )
+{
+    new String: sColor[12];
+    GetConVarString(g_hCvarColorMinitank, sColor, sizeof(sColor));
+    
+    // don't do anything if no color
+    if ( StrEqual( sColor, "-1 -1 -1", false) ) { return Plugin_Continue; }
+    
+    SetEntityRenderMode( client, RenderMode:0 );
+    DispatchKeyValue( client, "rendercolor", sColor );
+    
+    return Plugin_Continue;
+}
 
 /* Witch events */
 public Event_WitchDeath(Handle:event, const String:name[], bool:dontBroadcast)
