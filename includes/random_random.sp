@@ -4565,7 +4565,7 @@ DetermineSpawnClass(any:client, any:iClass)
 }
 
 // safeguard-tool: returns false if the current spawn class of the client is not acceptable
-bool: SpawnClassCheck( zClass )
+bool: SpawnClassCheck( zClass, bool:bRespawn = false )
 {
     if ( g_iSpecialEvent == EVT_L4D1 ) {
         if ( zClass != ZC_SMOKER && zClass != ZC_BOOMER && zClass != ZC_HUNTER ) { return false; }
@@ -4576,7 +4576,7 @@ bool: SpawnClassCheck( zClass )
     else if ( g_iSpecialEvent == EVT_QUADS || GetConVarBool(g_hCvarNoSupportSI) ) {
         if ( zClass == ZC_BOOMER || zClass == ZC_SPITTER ) { return false; }
     }
-    else if ( g_bIsTankInPlay && zClass == ZC_SPITTER && GetConVarBool(g_hCvarNoSpitterDuringTank) ) {
+    else if ( !bRespawn && g_bIsTankInPlay && zClass == ZC_SPITTER && GetConVarBool(g_hCvarNoSpitterDuringTank) ) {
         return false;
     }
     return true;
