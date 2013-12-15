@@ -4932,7 +4932,8 @@ LockDoors()
     for (new i=0; i < g_iDoorsLockedTotal; i++)
     {
         tmpDoor = g_iDoorsLocked[i];
-        
+        if (!IsValidEntity(tmpDoor)) { continue; }
+
         AcceptEntityInput(tmpDoor, "Close");
         AcceptEntityInput(tmpDoor, "Lock");
         

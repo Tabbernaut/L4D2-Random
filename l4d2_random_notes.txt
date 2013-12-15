@@ -18,11 +18,15 @@ L4D2_Random
             - test:     m2s not always registered in m2 penalty event? debug print in place
             - test:     distance seems wrong on doubletank / minitanks
                             minitanks: freezes too close together, doesn't update score
-            - test:     block tank spawn in nm5 where tank can't reach start saferoom area
             - test:     double smokers in 2v2/3v3?
             - test:     boobytraps on cola/gnome? shouldn't happen.
             - test:     hittable damage in minitanks event (looks ok.. why wrong sometimes?)
                             maybe for car alarm props? some props not taken into account by hittablecontrol plugin?
+            - test:     bug on some doors being attempted to lock
+                        L 12/15/2013 - 00:56:39: [SM] Native "AcceptEntityInput" reported: Entity 154 (154) is not a CBaseEntity
+                        L 12/15/2013 - 00:56:39: [SM] Displaying call stack trace for plugin "optional/l4d2_random.smx":
+                        L 12/15/2013 - 00:56:39: [SM]   [0]  Line 4936, includes/random_random.sp::LockDoors()
+                        [ happened on atrium ]
                             
     to-do:
     ------  
@@ -30,7 +34,9 @@ L4D2_Random
             
             - fix:      shove penalty: first round hits don't reg.. second round they do?
                         jockey shove -- happens more often.. (doesn't show up in playstats sometimes either)
-            
+
+            - fix:      early tanks on c8m5 can still spawn so they're not able to approach saferoom
+
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    women event: make magnum less effective against boomers
             
