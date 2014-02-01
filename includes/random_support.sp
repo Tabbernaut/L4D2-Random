@@ -1194,7 +1194,7 @@ PickTankPlayer()
     new pickArray[96];
     new tickets = 5;
     new playerCount = 0;
-    new round = GameRules_GetProp("m_bAreTeamsFlipped", 4, 0);
+    new round = GetCurrentLogicalTeam();    // CMT-swap safe
     
     decl String: sSteamId[32];
     new tankCount;
@@ -1210,7 +1210,7 @@ PickTankPlayer()
             if ( !GetTrieValue(g_hTrieTankPlayers, sSteamId, tankCount) ) { tankCount = 0; }
             
             // if the player had the previous tank, exclude him from the next pick
-            if ( StrEqual( g_sPreviousTankClient[ round ], sSteamId, false) )
+            if ( StrEqual( g_sPreviousTankClient[round], sSteamId, false) )
             {
                 PrintDebug(3, "[rand tank] Prevented tank pick for %N (had the last tank).", i);
                 continue;
@@ -1254,10 +1254,10 @@ PickTankPlayer()
         GetClientAuthString( pick, sSteamId, sizeof(sSteamId) );
         
         PrintDebug(4, "[rand tank] Previous tank stored: %i for team %i ...", pick, round);
-        strcopy( g_sPreviousTankClient[ round ], 32, sSteamId );
+        strcopy( g_sPreviousTankClient[round], 32, sSteamId );
     } else {
         PrintDebug(4, "[rand tank] NO previous tank stored: %i for team %i ...", pick, round);
-        g_sPreviousTankClient[ round ] = "";
+        g_sPreviousTankClient[round] = "";
     }
     
     return pick;

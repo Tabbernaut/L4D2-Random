@@ -20,6 +20,7 @@ new     Handle:         g_hSteamIds                                         = IN
 new     bool:           g_bReadyUpAvailable                                 = false;                // whether crox's readyup plugin is used
 new     bool:           g_bPauseAvailable                                   = false;                // crox's pause
 new     bool:           g_bCMTActive                                        = false;                // whether custom map transitions is active (and running a mapset)
+new     bool:           g_bCMTSwapped                                       = false;                // whether A/B teams have been swapped (by CMT)
 new     String:         g_sNextMap              [STR_MAX_MAPNAME];                                  // what the upcoming map is (if any)
 new     bool:           g_bHoldoutActive                                    = false;                // whether holdout_bonus is doing its magic this map
 

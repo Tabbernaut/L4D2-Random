@@ -2409,6 +2409,11 @@ PickRandomItem(bool:onlyUseful = false, bool:noLaserSight = false, bool:noWeapon
             case INDEX_UPGRADE: { randomIndex = INDEX_MELEE; }
         }
     }
+    else if (g_iSpecialEvent == EVT_ADREN) {
+        switch (randomIndex) {
+            case INDEX_KIT: { randomIndex = INDEX_PILL; }
+        }
+    }
     
     switch (randomIndex)
     {
@@ -3032,6 +3037,14 @@ CreateEntity(index, bool:inArray = true, bool:overrideBlocks = false)
                 case PCK_UPG_EXPLOSIVE: { type = PCK_NOITEM; }
                 case PCK_UPG_INCENDIARY: { type = PCK_NOITEM; }
             }
+        }
+    }
+    else if (g_iSpecialEvent == EVT_ADREN)
+    {
+        switch (type)
+        {
+            case PCK_FIRST_AID_KIT: { type = PCK_NOITEM; }
+            case PCK_PAIN_PILLS: { type = PCK_NOITEM; }
         }
     }
     
@@ -4951,11 +4964,6 @@ LockDoors()
         }
     }
 }
-
-
-
-
-
 
 
 //  Randomization preparation

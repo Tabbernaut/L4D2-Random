@@ -12,12 +12,12 @@ L4D2_Random
         - coloured minitanks yellow.
         - added 'l4d2_godframes_color' plugin (shows when survivors are godframed).
         - built in jockey pounce damage with better damage to height calculations.
+        - fixed rare spawn of medkit/pills in adrenaline rush event.
+
         
     to test:
     --------
             - test:     m2s not always registered in m2 penalty event? debug print in place
-            - test:     distance seems wrong on doubletank / minitanks
-                            minitanks: freezes too close together, doesn't update score
             - test:     double smokers in 2v2/3v3?
             - test:     boobytraps on cola/gnome? shouldn't happen.
             - test:     hittable damage in minitanks event (looks ok.. why wrong sometimes?)
@@ -36,7 +36,9 @@ L4D2_Random
                         jockey shove -- happens more often.. (doesn't show up in playstats sometimes either)
 
             - fix:      early tanks on c8m5 can still spawn so they're not able to approach saferoom
+            - fix:      on double tanks (and, presumably, minitanks) the distance does not always unfreeze on killing tank...
 
+            - tweak:    remove static tank from c13m2, make it 25% chance of tank spawning there
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    women event: make magnum less effective against boomers
             

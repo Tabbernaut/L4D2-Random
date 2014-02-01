@@ -348,6 +348,7 @@ SUPPORT_FreezePoints( bool:bShowMessage = false )
 {
     if ( !g_bFrozenPoints ) {
         if ( bShowMessage ) PrintToChatAll("\x01[\x05r\x01] \x04Freezing\x01 distance points until tank is killed.");
+        PrintDebug(1, "[rand] freezing distance points (old value: %i)", g_iRememberFrozenDistance);
         L4D_SetVersusMaxCompletionScore(0);
         g_bFrozenPoints = true;
     }
@@ -357,6 +358,7 @@ SUPPORT_UnFreezePoints( bool:bShowMessage = false )
 {
     if ( g_bFrozenPoints ) {
         if ( bShowMessage ) PrintToChatAll("\x01[\x05r\x01] \x01Unfreezing\x01 distance points.");
+        PrintDebug(1, "[rand] UN-freezing distance points (reset to value: %i)", g_iRememberFrozenDistance);
         L4D_SetVersusMaxCompletionScore(g_iRememberFrozenDistance);
         g_bFrozenPoints = false;
     }
@@ -1006,4 +1008,15 @@ public bool:_TraceFilter(entity, contentsMask, any:data)
     // only check if we're not hitting ourselves
     if (!entity || entity == data || !IsValidEntity(entity)) { return false; }
     return true;
+}
+
+// get logical team (that's survivor), taking CMT into consideration
+GetCurrentLogicalTeam()
+{
+    // this is corrected if CMT has mixed the teams up to preserve playing order
+    if ( g_bCMTSwapped ) {
+        return !GameRules_GetProp("m_bAreTeamsFlipped");
+    } else {
+        return GameRules_GetProp("m_bAreTeamsFlipped");
+    }
 }

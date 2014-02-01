@@ -31,7 +31,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.1.8"
+#define PLUGIN_VERSION "1.1.9"
 
 /*
         L4D2 Random
@@ -996,6 +996,13 @@ public OnCMTEnd()
     FormatEx( g_sNextMap, sizeof(g_sNextMap), "" );
 }
 
+// called when (before) CMT swaps logical teams in a round (this happens ~5 seconds after round start)
+public OnCMTTeamSwap()
+{
+    // toggle CMT swap
+    g_bCMTSwapped = !g_bCMTSwapped;
+}
+
 /*
     Forwards from holdout_bonus
     --------------------------- */
@@ -1437,12 +1444,12 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
         new String: classname[32];
         if ( IsValidEdict(inflictor) ) {
             GetEdictClassname(inflictor, classname, sizeof(classname));
-        }
         
-        if (StrEqual(classname, "weapon_chainsaw", false))
-        {
-            damage *= CSAW_TANK_DMG_FACTOR;
-            return Plugin_Changed;
+            if (StrEqual(classname, "weapon_chainsaw", false))
+            {
+                damage *= CSAW_TANK_DMG_FACTOR;
+                return Plugin_Changed;
+            }
         }
     }
     
