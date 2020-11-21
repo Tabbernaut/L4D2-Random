@@ -9,10 +9,10 @@
 
 /*
     Make coop more RANDOM FUN.
-    
+
     Most of the work is now done by the mutationrandomcoop.nut script
     This plugin should help with a few things that vscript can't do well
-    
+
     - spawn witches
     - force spawns when the director has fallen asleep?
     - spawn special hordes, such as fallen survivors (or other?)
@@ -57,7 +57,7 @@ new     Handle:         g_hCvarDebug                                        = IN
 
 
 
-public Plugin:myinfo = 
+public Plugin:myinfo =
 {
     name = "Randomize the Game - Coop Stuff",
     author = "Tabun",
@@ -89,7 +89,7 @@ public Action: Timer_CheckLogicTimer (Handle:timer)
     {
         g_bLogicTimerEntSet = false;
     }
-    
+
     // find the timers
     if ( !g_bLogicTimerEntSet )
     {
@@ -99,7 +99,7 @@ public Action: Timer_CheckLogicTimer (Handle:timer)
         while ( ( ent = FindEntityByClassname( ent, "logic_timer") ) != -1 )
         {
             GetEntPropString( ent, Prop_Data, "m_iName", sName, sizeof(sName) );
-            
+
             if ( StrEqual( sName, "random_coop_timer_a_1" ) )
             {
                 g_iLogicTimerEntEncounter[0] = ent;
@@ -129,31 +129,31 @@ public Action: Timer_CheckLogicTimer (Handle:timer)
                 g_iLogicTimerEntAmount[3] = ent;
             }
         }
-        
+
         if ( g_iLogicTimerEntEncounter[0] != 0 && IsValidEntity( g_iLogicTimerEntEncounter[0] ) )
         {
             PrintDebug( 0, "[rndcoop] Found timers: %i", g_iLogicTimerEntEncounter[0] );
             g_bLogicTimerEntSet = true;
-            
+
         }
     }
-    
+
     if ( !g_bLogicTimerEntSet ) { return Plugin_Continue; }
-    
+
     // vscript is trying to tell us something if anything but 0
     new iEncounterValue =   ( ( (GetEntProp( g_iLogicTimerEntEncounter[0], Prop_Data, "m_iDisabled" ) == LTIMER_ENABLED) ? 1 : 0 ) * 1 ) +
                             ( ( (GetEntProp( g_iLogicTimerEntEncounter[1], Prop_Data, "m_iDisabled" ) == LTIMER_ENABLED) ? 1 : 0 ) * 2 ) +
                             ( ( (GetEntProp( g_iLogicTimerEntEncounter[2], Prop_Data, "m_iDisabled" ) == LTIMER_ENABLED) ? 1 : 0 ) * 4 );
-    
+
     if ( iEncounterValue > 0 )
     {
-        
-        
+
+
         new iAmountValue =      ( ( (GetEntProp( g_iLogicTimerEntAmount[0], Prop_Data, "m_iDisabled" ) == LTIMER_ENABLED) ? 1 : 0 ) * 1 ) +
                                 ( ( (GetEntProp( g_iLogicTimerEntAmount[1], Prop_Data, "m_iDisabled" ) == LTIMER_ENABLED) ? 1 : 0 ) * 2 ) +
                                 ( ( (GetEntProp( g_iLogicTimerEntAmount[2], Prop_Data, "m_iDisabled" ) == LTIMER_ENABLED) ? 1 : 0 ) * 4 ) +
                                 ( ( (GetEntProp( g_iLogicTimerEntAmount[3], Prop_Data, "m_iDisabled" ) == LTIMER_ENABLED) ? 1 : 0 ) * 8 );
-        
+
         if ( iAmountValue > 0 )
         {
             PrintDebug( 0, "[rndcoop] Status of timer: %i (amount: %i)", iEncounterValue, iAmountValue );
@@ -205,9 +205,9 @@ public Action: Timer_CheckLogicTimer (Handle:timer)
                     }
                 }
             }
-            
+
         }
-        
+
         // reset all timers back to 0
         AcceptEntityInput( g_iLogicTimerEntEncounter[0], "Disable" );
         AcceptEntityInput( g_iLogicTimerEntEncounter[1], "Disable" );
@@ -217,7 +217,7 @@ public Action: Timer_CheckLogicTimer (Handle:timer)
         AcceptEntityInput( g_iLogicTimerEntAmount[2], "Disable" );
         AcceptEntityInput( g_iLogicTimerEntAmount[3], "Disable" );
     }
-    
+
     return Plugin_Continue;
 }
 
@@ -225,13 +225,13 @@ public Action: Timer_SpawnSomething (Handle:timer, any:what)
 {
     // relay to spawn function
     new client = GetSpawningClient(true);
-    
+
     PrintDebug( 3, "[rand-coop] Spawning... client: %i.", client );
-    
+
     if ( !IsClientAndInGame( client ) ) { return Plugin_Continue; }
-    
+
     PrintDebug( 3, "[rand-coop] Spawning something: %i.", what );
-    
+
     switch ( what )
     {
         case ZC_SMOKER: { SpawnSpecial( client, what ); }
@@ -240,11 +240,11 @@ public Action: Timer_SpawnSomething (Handle:timer, any:what)
         case ZC_SPITTER: { SpawnSpecial( client, what ); }
         case ZC_JOCKEY: { SpawnSpecial( client, what ); }
         case ZC_CHARGER: { SpawnSpecial( client, what ); }
-        
+
         case ZC_WITCH:  { SpawnWitch(client); }
         //case ZC_TANK:  { SpawnTank(client); }
     }
-    
+
     return Plugin_Continue;
 }
 
@@ -252,7 +252,7 @@ public Action: Timer_SpawnSomething (Handle:timer, any:what)
 public OnEntityCreated(entity, const String:classname[])
 {
 	if ( !StrEqual(classname, "infected", false)) { return; }
-	
+
 	if ( g_iRemainingFallen )
     {
         g_iRemainingFallen--;
@@ -290,15 +290,15 @@ GetSpawningClient ( bool:onlySurvivors=false )
     {
         if ( IsClientConnected(i) && IsSurvivor(i) && !IsFakeClient(i) ) { return i; }
     }
-    
+
     if ( onlySurvivors ) { return 0; }
-    
+
     // since we're just using this for spawning stuff that requires a client, use infected alternatively
     for ( new i=1; i <= GetMaxClients(); i++ )
     {
         if (IsClientConnected(i) && IsInfected(i) && !IsFakeClient(i)) { return i; }
     }
-    
+
     // no usable clients...
     return 0;
 }
@@ -334,7 +334,7 @@ SpawnCommon(client, mobs = 1)
 SpawnSpecial(client, siClass)
 {
     PrintDebug( 4, "[rand-coop] Spawning something..." );
-    
+
     if ( USE_OLD_SPAWN )
     {
         new flags = GetCommandFlags("z_spawn_old");
@@ -386,15 +386,15 @@ SpawnWitch(client)
 public Action: SpawnFallen( number, Float:location[3] )
 {
 	new zombie = CreateEntityByName("infected");
-	
+
 	SetEntityModel( zombie, FALLEN_MODEL );
-	
+
 	new ticktime = RoundToNearest( FloatDiv( GetGameTime() , GetTickInterval() ) ) + 5;
 	SetEntProp( zombie, Prop_Data, "m_nNextThinkTick", ticktime );
 
 	DispatchSpawn( zombie );
 	ActivateEntity( zombie );
-	
+
 	location[2] -= 25.0; //reduce the 'drop' effect
 	TeleportEntity( zombie, location, NULL_VECTOR, NULL_VECTOR );
 }
