@@ -176,7 +176,7 @@ public OnPluginStart()
     
     
     // version convar
-    CreateConVar("rand_version", PLUGIN_VERSION, "Random plugin version.", FCVAR_PLUGIN|FCVAR_NOTIFY|FCVAR_REPLICATED|FCVAR_DONTRECORD);
+    CreateConVar("rand_version", PLUGIN_VERSION, "Random plugin version.", FCVAR_NOTIFY|FCVAR_REPLICATED|FCVAR_DONTRECORD);
 
     // default convars
     g_hCvarTeamSize = FindConVar("survivor_limit");
@@ -512,7 +512,7 @@ public OnClientPostAdminCheck(client)
     if (mode == WELCOME_ONCE) {
         // remember client
         new String: SteamId[32];
-        if (GetClientAuthString(client, SteamId, sizeof(SteamId)))
+        if (GetClientAuthId(client, AuthId_Engine, SteamId, sizeof(SteamId)))
         {
             if (FindStringInArray(g_hSteamIds, SteamId) != -1) { return; }  // already welcomed once
             PushArrayString(g_hSteamIds, SteamId);
@@ -928,7 +928,7 @@ public OnCvarPausableChanged(Handle:cvar, const String:oldVal[], const String:ne
     {
         // if this happens after pause command, we're paused
         if (    !g_bIsPaused && ( (GetConVarBool(g_hCvarSimplePauseCheck) ) &&
-                (g_fPauseAttemptTime == 0.0 || FloatSub( GetGameTime(), g_fPauseAttemptTime ) > 5.0) ) 
+                (g_fPauseAttemptTime == 0.0 || (GetGameTime() - g_fPauseAttemptTime) > 5.0) )
         ) {
             OnPause();
         }
@@ -959,10 +959,10 @@ public OnPause()
 public OnUnpause()
 {
     g_bIsPaused = false;
-    PrintDebug( 1, "[rand] Unpaused. (%.1fs)", FloatSub(GetGameTime(), g_fPauseStartTime) );
-    
-    SUPPORT_CheckBlindSurvivors( FloatSub(GetGameTime(), g_fPauseStartTime) );
-    
+    PrintDebug( 1, "[rand] Unpaused. (%.1fs)", GetGameTime() - g_fPauseStartTime );
+
+    SUPPORT_CheckBlindSurvivors( GetGameTime() - g_fPauseStartTime );
+
     g_fPauseStartTime = 0.0;
     g_fPauseAttemptTime = 0.0;
 }
@@ -1492,7 +1492,7 @@ public Action: OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damag
         if ( !IsClientAndInGame(victim) || !IsClientAndInGame(attacker) || GetClientTeam(attacker) != TEAM_INFECTED || GetClientTeam(victim) != TEAM_SURVIVOR || GetEntProp(attacker, Prop_Send, "m_zombieClass") != ZC_BOOMER ) { return Plugin_Continue; }
             
         // boomer scratch => boom survivor
-        if ( g_fWomenBoomCharged[attacker] == 0.0 || FloatSub(g_fWomenBoomCharged[attacker], GetGameTime()) <= 0.0 )
+        if ( g_fWomenBoomCharged[attacker] == 0.0 || (g_fWomenBoomCharged[attacker] - GetGameTime()) <= 0.0 )
         {
             // delay-set scratchboom time so multiscratches do register
             CreateTimer(0.05, Timer_WomenBoomerScratch, attacker, TIMER_FLAG_NO_MAPCHANGE);
@@ -1890,7 +1890,7 @@ public Action:Event_PlayerTeam(Handle:hEvent, const String:name[], bool:dontBroa
         */
         if (    !g_bIsFirstAttack && !IsFakeClient(client) &&
                 g_iGhostClassOnDeath[client] > 0 &&
-                FloatSub( GetGameTime(), g_fGhostDeathTime[client] ) < 0.1
+                ( GetGameTime() - g_fGhostDeathTime[client] ) < 0.1
         ) {
             if ( g_iGhostClassOnDeath[client] >= ZC_SMOKER && g_iGhostClassOnDeath[client] <= ZC_CHARGER)
             {
@@ -3032,7 +3032,7 @@ public Action:Event_PlayerDeath(Handle:hEvent, const String:name[], bool:dontBro
         if ( g_iSpecialEvent == EVT_WOMEN && zClass == ZC_BOOMER )
         {
             // check and kill progress bar
-            if ( g_fWomenBoomCharged[victim] != 0.0 && FloatSub(g_fWomenBoomCharged[victim], GetGameTime()) > 0.0 )
+            if ( g_fWomenBoomCharged[victim] != 0.0 && (g_fWomenBoomCharged[victim] - GetGameTime()) > 0.0 )
             {
                 KillProgressBar(victim);
             }
@@ -3394,7 +3394,7 @@ public OnEntityCreated(entity, const String:classname[])
             }
             
             SetEntProp(entity, Prop_Send, "m_mobRush", 2);
-            new ticktime = RoundToNearest( FloatDiv( GetGameTime() , GetTickInterval() ) ) + 5;
+            new ticktime = RoundToNearest( ( GetGameTime() / GetTickInterval() ) ) + 5;
             SetEntProp(entity, Prop_Data, "m_nNextThinkTick", ticktime);
             
             ActivateEntity(entity);
