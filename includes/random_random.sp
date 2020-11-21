@@ -2218,6 +2218,8 @@ RandomizeItems()
         CreateHittable(i);
     }
 
+    PrintDebug(1, "[rand] Done creating entities.");
+
     // done, do a report
     DoItemsServerReport();
 
@@ -2226,12 +2228,15 @@ RandomizeItems()
     CreateTimer(TESTENTITY_TIMER, Timer_TestEntityLocation);
 
     g_bItemsFullyRandomized = true;
+
+    PrintDebug(1, "[rand] Done randomizing entities.");
 }
 
 
 public Action:Timer_TestEntityLocation(Handle:timer)
 {
     // compare current origin z to the one stored
+    PrintDebug(1, "[rand] Timer for TestEntityLocation...");
 
     new Float: itemOriginOrg[3], Float: itemOriginCur[3];
     new Float: tmpVec[3];
@@ -2274,6 +2279,7 @@ public Action:Timer_TestEntityLocation(Handle:timer)
         }
     }
 
+    PrintDebug(1, "[rand] TestEntityLocation done.");
 }
 
 // let the same magic happen as before

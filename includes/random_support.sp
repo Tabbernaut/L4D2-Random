@@ -5,6 +5,8 @@
 // called as timer (to avoid some problems)
 public Action: SUPPORT_RoundPreparation(Handle:timer)
 {
+    PrintDebug(1, "[rand] Round Preparation...");
+
     // only reset on first roundhalf:
     if (!g_bSecondHalf || (g_bCampaignMode && g_bCampaignForceRandom))
     {
@@ -150,11 +152,15 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
 
     // some things need to be delayed to work right
     g_hTimerReport = CreateTimer( (g_bCampaignMode) ? DELAY_ROUNDPREP_COOP : DELAY_ROUNDPREP , Timer_DelayedRoundPrep, _, TIMER_FLAG_NO_MAPCHANGE);
+
+    PrintDebug(1, "[rand] Round Preparation done.");
 }
 
 // delayed call for every round start
 public Action: Timer_DelayedRoundPrep(Handle:timer)
 {
+    PrintDebug(1, "[rand] Delayed RoundPreparation...");
+
     // item replacement and blinding
     g_iCreatedEntities = 0;
 
@@ -186,6 +192,8 @@ public Action: Timer_DelayedRoundPrep(Handle:timer)
     {
         EVENT_AllSurvivorsLoadedIn();
     }
+
+    PrintDebug(1, "[rand] Delayed RoundPreparation done.");
 }
 
 SUPPORT_CleanArrays()
