@@ -48,7 +48,7 @@ HUDRestoreClient(client)
 public Action: Timer_CheckBlindness( Handle:timer, any:client )
 {
     if ( !IsClientAndInGame(client) || !IsSurvivor(client) || !IsPlayerAlive(client) || IsFakeClient(client) ) { return; }
-    
+
     new chr = GetPlayerCharacter(client);
 
     if ( g_fGiftBlindTime[chr] != 0.0 && (g_fGiftBlindTime[chr] - GetGameTime()) > 0.0 )
@@ -56,7 +56,7 @@ public Action: Timer_CheckBlindness( Handle:timer, any:client )
         DoBlindSurvivor(client, BLIND_AMOUNT);
     }
 }
-        
+
 SUPPORT_CheckBlindSurvivors( Float: fExtraTime )
 {
     for ( new i = 0; i < MAX_CHARACTERS; i++ )
@@ -71,7 +71,7 @@ SUPPORT_CheckBlindSurvivors( Float: fExtraTime )
 public Action: Timer_Blindness ( Handle:timer, any:chr )
 {
     if ( g_bIsPaused ) { return Plugin_Continue; }
-    
+
     //PrintDebug(3, "[rand] Checking chr %i: time: now: %.1f, until: %.1f", chr, GetGameTime(), g_fGiftBlindTime[chr]);
 
     if ( g_fGiftBlindTime[chr] == 0.0 || (g_fGiftBlindTime[chr] - GetGameTime()) <= 0.0 )
@@ -83,10 +83,10 @@ public Action: Timer_Blindness ( Handle:timer, any:chr )
             DoBlindSurvivor(tmpClient, 0);
         }
         g_fGiftBlindTime[chr] = 0.0;
-        
+
         return Plugin_Stop;
     }
-    
+
     return Plugin_Continue;
 }
 
@@ -149,15 +149,15 @@ GetSpawningClient(bool:onlySurvivors=false)
     {
         if (IsClientConnected(i) && IsSurvivor(i) && !IsFakeClient(i)) { return i; }
     }
-    
+
     if (onlySurvivors) { return 0; }
-    
+
     // since we're just using this for spawning stuff that requires a client, use infected alternatively
     for (new i=1; i <= MaxClients; i++)
     {
         if (IsClientConnected(i) && IsInfected(i) && !IsFakeClient(i)) { return i; }
     }
-    
+
     // no usable clients...
     return 0;
 }
@@ -166,7 +166,7 @@ GetSpawningClient(bool:onlySurvivors=false)
 {
     if (!g_bIsTankInPlay) return 0;
     new tankclient = g_iTankClient;
- 
+
     if (!IsClientInGame(tankclient))
     {
         tankclient = FindTankClient();
@@ -221,10 +221,10 @@ bool: NoSurvivorInSaferoom()
 /* bool: IsCommon(entity)
 {
     if (entity <= 0 || entity > 2048 || !IsValidEdict(entity)) return false;
-    
+
     decl String:model[128];
     GetEntPropString(entity, Prop_Data, "m_ModelName", model, sizeof(model));
-    
+
     if (StrContains(model, "_ceda") != -1)      { return false; }
     if (StrContains(model, "_clown") != -1)     { return false; }
     if (StrContains(model, "_mud") != -1)       { return false; }
@@ -237,7 +237,7 @@ bool: NoSurvivorInSaferoom()
 CountInfectedClass(any:ZClass, ignoreClient)
 {
     // note: ghosts are considered 'alive', so return IsPlayerAlive() true too.
-    
+
     // counts infected currently spawned/ghosted
     new classCount = 0, classType;
 
@@ -270,9 +270,9 @@ CountHumanSurvivors()
 SetMinimumHealthSurvivors()
 {
     new health = 0;
-    
+
     PrintDebug(3, "SetMinimumHealthSurvivors()");
-    
+
     // exceptions?
     if ( g_iSpecialEvent == EVT_DEFIB ) { return; }
 
@@ -302,19 +302,19 @@ stock GetCharacterClient( chr )
             if ( GetPlayerCharacter(client) == chr ) { return client; }
         }
     }
-    
+
     return 0;
 }
 stock GetPlayerCharacter( client )
 {
     new tmpChr = GetEntProp(client, Prop_Send, "m_survivorCharacter");
-    
+
     // use models when incorrect character returned
     if (tmpChr < 0 || tmpChr >= MAX_CHARACTERS)
     {
         decl String:model[256];
         GetEntPropString(client, Prop_Data, "m_ModelName", model, sizeof(model));
-        
+
         if (StrContains(model, "gambler") != -1) {          tmpChr = 0; }
         else if (StrContains(model, "coach") != -1) {       tmpChr = 2; }
         else if (StrContains(model, "mechanic") != -1) {    tmpChr = 3; }
@@ -325,7 +325,7 @@ stock GetPlayerCharacter( client )
         else if (StrContains(model, "manager") != -1) {     tmpChr = 2; }
         else {                                              tmpChr = 0; }
     }
-    
+
     return tmpChr;
 }
 
@@ -394,7 +394,7 @@ SpawnCommon(client, mobs = 1)
 SpawnCommonLocation(Float:location[3], bool: isFemale = false)
 {
     new zombie = CreateEntityByName("infected");
-    
+
     if (isFemale)
     {
         // force female model
@@ -406,7 +406,7 @@ SpawnCommonLocation(Float:location[3], bool: isFemale = false)
 
     DispatchSpawn(zombie);
     ActivateEntity(zombie);
-    
+
     TeleportEntity(zombie, location, NULL_VECTOR, NULL_VECTOR);
 }
 // spawning a horde (cheap way.. damnit)
@@ -447,10 +447,10 @@ public Action: Timer_KillInfected (Handle:timer, any:client)
 bool: SUPPORT_PlayerHasPistol(client)
 {
     if (!IsSurvivor(client) || !IsPlayerAlive(client)) { return false; }
-    
+
     new slotSec = GetPlayerWeaponSlot(client, PLAYER_SLOT_SECONDARY);
     if (slotSec < 1 || !IsValidEntity(slotSec)) { return false; }
-    
+
     decl String:classname[64];
     GetEdictClassname(slotSec, classname, sizeof(classname));
     new itemPickupPenalty: itemIsPistol;
@@ -458,28 +458,28 @@ bool: SUPPORT_PlayerHasPistol(client)
     {
         if (itemIsPistol == ITEM_PICKUP_PENALTY_PISTOL) { return true; }
     }
-    
+
     return false;
 }
 bool: SUPPORT_EntityIsPistol(entity)
 {
     if (!entity || !IsValidEntity(entity)) { return false; }
-    
+
     decl String:classname[32];
     GetEdictClassname(entity, classname, sizeof(classname));
-    
+
     new itemPickupPenalty: itemIsPistol;
     if (GetTrieValue(g_hTriePenaltyItems, classname, itemIsPistol))
     {
         if (itemIsPistol == ITEM_PICKUP_PENALTY_PISTOL) { return true; }
     }
-    
+
     return false;
 }
 bool: SUPPORT_IsNerfSecondary(entity, client, tierType)
 {
     if (!entity || !IsValidEntity(entity) || !IsValidEdict(entity)) { return false; }
-    
+
     decl String:wclass[64];
     if (!GetEdictClassname(entity, wclass, sizeof(wclass))) { return false; }
 
@@ -500,7 +500,7 @@ bool: SUPPORT_IsNerfSecondary(entity, client, tierType)
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -523,7 +523,7 @@ bool: SUPPORT_IsNerfSecondary(entity, client, tierType)
             }
         }
     }
-    
+
     return false;
 }
 
@@ -531,9 +531,9 @@ bool: SUPPORT_IsNerfSecondary(entity, client, tierType)
 SUPPORT_IsNerfTier2(entity)
 {
     // consider adding snipers to this check?
-    
+
     if (!entity || !IsValidEntity(entity) || !IsValidEdict(entity)) { return 0; }
-    
+
     decl String:wclass[64];
     if (!GetEdictClassname(entity, wclass, sizeof(wclass))) { return 0; }
 
@@ -549,7 +549,7 @@ SUPPORT_IsNerfTier2(entity)
                 return NERFTYPE_SNIPER;
             }
         }
-        
+
         return 0;
     }
 
@@ -560,7 +560,7 @@ SUPPORT_IsNerfTier2(entity)
         if ( itemWepType == ITEM_PICKUP_PENALTY_PRIMARY_T2 ) { return NERFTYPE_T2; }
         if ( itemWepType == ITEM_PICKUP_PENALTY_PRIMARY_SNIPER && !StrEqual(wclass, "weapon_sniper_scout", false) ) { return NERFTYPE_SNIPER; }
     }
-    
+
     return 0;
 }
 
@@ -570,10 +570,10 @@ SUPPORT_IsNerfTier2(entity)
 SUPPORT_PlayerHasT2(client)
 {
     if (!IsSurvivor(client) || !IsPlayerAlive(client)) { return 0; }
-    
+
     new slotPri = GetPlayerWeaponSlot(client, PLAYER_SLOT_PRIMARY);
     if (slotPri < 1 || !IsValidEntity(slotPri)) { return 0; }
-    
+
     decl String:classname[64];
     GetEdictClassname(slotPri, classname, sizeof(classname));
     new itemPickupPenalty: itemIsT2;
@@ -582,17 +582,17 @@ SUPPORT_PlayerHasT2(client)
         if ( itemIsT2 == ITEM_PICKUP_PENALTY_PRIMARY_T2 ) { return NERFTYPE_T2; }
         if ( itemIsT2 == ITEM_PICKUP_PENALTY_PRIMARY_SNIPER && !StrEqual(classname, "weapon_sniper_scout", false) ) { return NERFTYPE_SNIPER; }
     }
-    
+
     return 0;
 }
 
 SUPPORT_FixNerfTier2(client, tierType)
 {
     // called when a player picks up a T2
-    
+
     new slotSec = GetPlayerWeaponSlot(client, PLAYER_SLOT_SECONDARY);
     new bool: bDropped = false;
-    
+
     if (IsValidEntity(slotSec))
     {
         decl String:classname[64];
@@ -615,7 +615,7 @@ SUPPORT_FixNerfTier2(client, tierType)
             }
         }
     }
-    
+
     if (bDropped)
     {
         // report
@@ -644,22 +644,22 @@ GiveItem(client, String:item[STR_MAX_ITEMGIVEN], ammo, iOffset)
     decl Float:clientOrigin[3];
 
     entity = CreateEntityByName(item);
-    
+
     if (!IsValidEntity(entity)) {
         PrintDebug(0, "[rand] error: no valid entity for spawning: %s", item);
         return -1;
     }
-    
+
     GetClientAbsOrigin(client, clientOrigin);
     TeleportEntity(entity, clientOrigin, NULL_VECTOR, NULL_VECTOR);
-    
+
     DispatchSpawn(entity);
-    
+
     if (!ammo && StrEqual(item, "weapon_pistol")) {
         AcceptEntityInput(entity, "use", client);
     } else {
         EquipPlayerWeapon(client, entity);
-        
+
         if (ammo > -1)
         {
             new iAmmoOffset = FindDataMapInfo(client, "m_iAmmo");
@@ -671,7 +671,7 @@ GiveItem(client, String:item[STR_MAX_ITEMGIVEN], ammo, iOffset)
             SetEntData(client, (iAmmoOffset + iOffset), 0);
         }
     }
-    
+
     return entity;
 }
 
@@ -682,16 +682,16 @@ GiveItemMelee(client, String:item[MELEE_CLASS_LENGTH])
     decl Float:clientOrigin[3];
 
     entity = CreateEntityByName("weapon_melee");
-    
+
     if (!IsValidEntity(entity)) {
         PrintDebug(0, "[rand] error: no valid entity for spawning: %s", item);
         return;
     }
-    
+
     GetClientAbsOrigin(client, clientOrigin);
     TeleportEntity(entity, clientOrigin, NULL_VECTOR, NULL_VECTOR);
     DispatchKeyValue(entity, "melee_script_name", item);
-    
+
     DispatchSpawn(entity);
     EquipPlayerWeapon(client, entity);
 }
@@ -705,7 +705,7 @@ bool: IsMeleeAvailable(const String:type[])
             return true;
         }
     }
-    
+
     return false;
 }
 
@@ -718,7 +718,7 @@ SUPPORT_CheckAmmo(client)
         // which is it?
         new String: classname[64];
         GetEdictClassname(weapon, classname, sizeof(classname));
-        
+
         new iProperAmmo = -1;
         new iOffset = -1;
         new iAmmoOffset = FindDataMapInfo(client, "m_iAmmo");
@@ -743,7 +743,7 @@ SUPPORT_CheckAmmo(client)
             iProperAmmo = g_iActiveAmmoSniper + iClipAmmo;
             iOffset = MILITARY_SNIPER_OFFSET_IAMMO;
         }
-        
+
         if (iProperAmmo != -1)
         {
             new ammo = GetEntData(client, (iAmmoOffset + iOffset));
@@ -793,10 +793,10 @@ CheatCommand(client, const String:command[], const String:arguments[])
     //  apparently, this only works for weapons on the ground etc, weapons
     //  on the model will never disappear, unless you hide the entire player model
     new weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-    
+
     new String: classname[64];
     GetEdictClassname(weapon, classname, sizeof(classname));
-    
+
     if (IsValidEntity(weapon)) {
         SetEntityRenderMode(weapon, RENDER_TRANSCOLOR);
         SetEntityRenderColor(weapon, 255, 255, 255, 0);
@@ -805,7 +805,7 @@ CheatCommand(client, const String:command[], const String:arguments[])
 ShowWeapon(client)
 {
     new weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-    
+
     if (IsValidEntity(weapon)) {
         SetEntityRenderMode(weapon, RENDER_TRANSCOLOR);
         SetEntityRenderColor(weapon, 255, 255, 255, 255);
@@ -825,17 +825,17 @@ ApplyDamageToPlayer( damage, victim, attacker )
 public Action: Timer_ApplyDamage (Handle:timer, Handle:dataPack)
 {
     ResetPack(dataPack);
-    new damage = ReadPackCell(dataPack);  
+    new damage = ReadPackCell(dataPack);
     new victim = ReadPackCell(dataPack);
     new attacker = ReadPackCell(dataPack);
-    CloseHandle(dataPack);   
+    CloseHandle(dataPack);
 
     decl Float:victimPos[3], String:strDamage[16], String:strDamageTarget[16];
-    
+
     GetClientEyePosition(victim, victimPos);
     IntToString(damage, strDamage, sizeof(strDamage));
     Format(strDamageTarget, sizeof(strDamageTarget), "hurtme%d", victim);
-    
+
     new entPointHurt = CreateEntityByName("point_hurt");
     if (!entPointHurt) { return; }
 
@@ -845,11 +845,11 @@ public Action: Timer_ApplyDamage (Handle:timer, Handle:dataPack)
     DispatchKeyValue(entPointHurt, "Damage", strDamage);
     DispatchKeyValue(entPointHurt, "DamageType", "0"); // DMG_GENERIC
     DispatchSpawn(entPointHurt);
-    
+
     // Teleport, activate point_hurt
     TeleportEntity(entPointHurt, victimPos, NULL_VECTOR, NULL_VECTOR);
     AcceptEntityInput(entPointHurt, "Hurt", (IsClientAndInGame(attacker)) ? attacker : -1);
-    
+
     // Config, delete point_hurt
     DispatchKeyValue(entPointHurt, "classname", "point_hurt");
     DispatchKeyValue(victim, "targetname", "null");
@@ -861,7 +861,7 @@ SetupProgressBar(client, Float:time, Float:location[3])
 {
     g_fProgressTime[client] = GetGameTime();
     g_fProgressLocation[client] = location;
-    
+
     SetEntPropFloat(client, Prop_Send, "m_flProgressBarStartTime", g_fProgressTime[client]);
     SetEntPropFloat(client, Prop_Send, "m_flProgressBarDuration", time);
 }
@@ -877,7 +877,7 @@ EndSurvivorAnim(client)
     // doesn't work right, simply do animation change instead
     //new PropOff_flCycle = FindSendPropInfo("CTerrorPlayer", "m_flCycle");
     //SetEntDataFloat(client, PropOff_flCycle, 2.0, true);
-    
+
     L4D2Direct_DoAnimationEvent(client, ANIM_EVENT_BACK_TO_IDLE);
 }
 
@@ -885,10 +885,10 @@ bool: SUPPORT_IsInReady()
 {
     // do a check that's compatible with new and old readyup plugins
     // use native if crox's plugin is loaded
-    
+
     // check if we've readyup loaded (here because now all plugins are loaded)
     if (g_hCvarReadyUp == INVALID_HANDLE || !GetConVarBool(g_hCvarReadyUp)) { return false; }
-    
+
     if (g_bReadyUpAvailable) {
         // use native
         return IsInReady();
@@ -898,7 +898,7 @@ bool: SUPPORT_IsInReady()
         // find a survivor
         new client = GetAnySurvivor();
         if (client == 0) { return false; }
-        
+
         // if he's frozen, assume it's readyup time
         return bool: (GetEntityMoveType(client) == MOVETYPE_NONE);
     }
@@ -940,7 +940,7 @@ bool: IsEntityInSaferoom(entity, bool:isPlayer=false, bool:endSaferoom=true)
             return bool: SAFEDETECT_IsPlayerInStartSaferoom(entity);
         }
     }
-    
+
     // entity
     if (endSaferoom) {
         return bool: SAFEDETECT_IsEntityInEndSaferoom(entity);
@@ -957,17 +957,17 @@ Float: FindDistanceFromFloor(entity)
     new Float: floor[3];
     new Float: direction[3];
     new Handle: trace;
-    
+
     direction[0] = 89.0; // downwards
     GetEntPropVector(entity, Prop_Send, "m_vecOrigin", pos);
-    
+
     new bool: bFoundFloor = false;
-    
+
     // look from up higher, by a bit
     pos[2] += 10.0;
-    
+
     new Float: fNewZ = pos[2];
-    
+
     // do a bunch of TRs and save what we find
     for (new i=0; i < 3; i++)
     {
@@ -976,7 +976,7 @@ Float: FindDistanceFromFloor(entity)
             case 1: { tmpPos[0] += 3; tmpPos[1] += 3; }
             case 2: { tmpPos[0] -= 3; tmpPos[1] -= 3; }
         }
-        
+
         trace = TR_TraceRayFilterEx(tmpPos, direction, MASK_SOLID, RayType_Infinite, _TraceFilter, entity);
         if (TR_DidHit(trace))
         {
@@ -991,9 +991,9 @@ Float: FindDistanceFromFloor(entity)
         }
         if (trace != INVALID_HANDLE) { CloseHandle(trace); }
     }
-        
+
     new Float: fDif = fNewZ;
-    
+
     if (bFoundFloor == false) {          // no floor found, so don't change
         fDif = 0.0;
     } else {
