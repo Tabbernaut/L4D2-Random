@@ -288,7 +288,6 @@ SetMinimumHealthSurvivors()
                 SetEntProp(i, Prop_Send, "m_currentReviveCount", 0);
                 SetEntProp(i, Prop_Send, "m_bIsOnThirdStrike", 0);
                 SetEntProp(i, Prop_Send, "m_isGoingToDie", 0);
-                //SetEntData( i, FindDataMapOffs(i, "m_iHealth"), COOP_MIN_STARTHEALTH, 4, true);
             }
         }
     }
