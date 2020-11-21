@@ -2329,9 +2329,9 @@ SUPPORT_StormStart()
 
 
 // for debugging item balance
-DoItemsServerReport(full=false)
+DoItemsServerReport()
 {
-    PrintDebug(0, "[rand] Randomized item table, for %i items:", g_iStoredEntities);
+    PrintDebug(0, "[rand] Randomized item table, for %d items:", g_iStoredEntities);
 
     new iGroupCount[INDEX_TOTAL];        // counts per index group
     new iItemCount[pickType];   // counts per item
@@ -2348,9 +2348,6 @@ DoItemsServerReport(full=false)
 
     new String: tmpStr[64];
 
-    if (full) {
-        PrintDebug(0, "[rand] --------------- entity list -----------------");
-    }
 
     g_iCountItemGnomes = 0;
     g_iCountItemCola = 0;
@@ -2364,62 +2361,150 @@ DoItemsServerReport(full=false)
         // count towards group
         switch (g_strArStorage[i][entPickedType])
         {
-            case PCK_NOITEM: { iGroupCount[INDEX_NOITEM]++; }
-            case PCK_PISTOL: { iGroupCount[INDEX_PISTOL]++; } case PCK_PISTOL_MAGNUM: { iGroupCount[INDEX_PISTOL]++; }
-            case PCK_SMG_MP5: { iGroupCount[INDEX_T1SMG]++; } case PCK_SMG: { iGroupCount[INDEX_T1SMG]++; } case PCK_SMG_SILENCED: { iGroupCount[INDEX_T1SMG]++; }
-            case PCK_PUMPSHOTGUN: { iGroupCount[INDEX_T1SHOTGUN]++; } case PCK_SHOTGUN_CHROME: { iGroupCount[INDEX_T1SHOTGUN]++; }
-            case PCK_RIFLE_SG552: { iGroupCount[INDEX_T2RIFLE]++; } case PCK_RIFLE: { iGroupCount[INDEX_T2RIFLE]++; } case PCK_RIFLE_AK47: { iGroupCount[INDEX_T2RIFLE]++; } case PCK_RIFLE_DESERT: { iGroupCount[INDEX_T2RIFLE]++; }
-            case PCK_AUTOSHOTGUN: { iGroupCount[INDEX_T2SHOTGUN]++; } case PCK_SHOTGUN_SPAS: { iGroupCount[INDEX_T2SHOTGUN]++; }
-            case PCK_HUNTING_RIFLE: { iGroupCount[INDEX_SNIPER]++; } case PCK_SNIPER_MILITARY: { iGroupCount[INDEX_SNIPER]++; } case PCK_SNIPER_SCOUT: { iGroupCount[INDEX_SNIPER]++; } case PCK_SNIPER_AWP: { iGroupCount[INDEX_SNIPER]++; }
-            case PCK_MELEE: { iGroupCount[INDEX_MELEE]++; }
-            case PCK_CHAINSAW: { iGroupCount[INDEX_T3]++; } case PCK_GRENADE_LAUNCHER: { iGroupCount[INDEX_T3]++; } case PCK_RIFLE_M60: { iGroupCount[INDEX_T3]++; }
-            case PCK_EXPLOSIVE_BARREL: { iGroupCount[INDEX_CANISTER]++; } case PCK_GASCAN: { iGroupCount[INDEX_CANISTER]++; } case PCK_PROPANETANK: { iGroupCount[INDEX_CANISTER]++; } case PCK_OXYGENTANK: { iGroupCount[INDEX_CANISTER]++; } case PCK_FIREWORKCRATE: { iGroupCount[INDEX_CANISTER]++; }
-            case PCK_AMMO: { iGroupCount[INDEX_AMMO]++; }
-            case PCK_PAIN_PILLS: { iGroupCount[INDEX_PILL]++; } case PCK_ADRENALINE: { iGroupCount[INDEX_PILL]++; }
-            case PCK_MOLOTOV: { iGroupCount[INDEX_THROWABLE]++; } case PCK_PIPEBOMB: { iGroupCount[INDEX_THROWABLE]++; } case PCK_VOMITJAR: { iGroupCount[INDEX_THROWABLE]++; }
-            case PCK_FIRST_AID_KIT: { iGroupCount[INDEX_KIT]++; g_iCountItemMedkits++; } case PCK_DEFIBRILLATOR: { iGroupCount[INDEX_KIT]++; g_iCountItemDefibs++; }
-            case PCK_UPG_LASER: { iGroupCount[INDEX_UPGRADE]++; } case PCK_UPG_EXPLOSIVE: { iGroupCount[INDEX_UPGRADE]++; } case PCK_UPG_INCENDIARY: { iGroupCount[INDEX_UPGRADE]++; }
-            case PCK_JUNK: { iGroupCount[INDEX_JUNK]++; }
-            case PCK_SILLY_GNOME: { iGroupCount[INDEX_SILLY]++; g_iCountItemGnomes++; } case PCK_SILLY_COLA: { iGroupCount[INDEX_SILLY]++; g_iCountItemCola++; }
-            case PCK_SILLY_GIFT: { iGroupCount[INDEX_GIFT]++; }
+            case PCK_NOITEM: {
+                iGroupCount[INDEX_NOITEM]++;
+            }
+            case PCK_PISTOL: {
+                iGroupCount[INDEX_PISTOL]++;
+            }
+            case PCK_PISTOL_MAGNUM: {
+                iGroupCount[INDEX_PISTOL]++;
+            }
+            case PCK_SMG_MP5: {
+                iGroupCount[INDEX_T1SMG]++;
+            }
+            case PCK_SMG: {
+                iGroupCount[INDEX_T1SMG]++;
+            }
+            case PCK_SMG_SILENCED: {
+                iGroupCount[INDEX_T1SMG]++;
+            }
+            case PCK_PUMPSHOTGUN: {
+                iGroupCount[INDEX_T1SHOTGUN]++;
+            }
+            case PCK_SHOTGUN_CHROME: {
+                iGroupCount[INDEX_T1SHOTGUN]++;
+            }
+            case PCK_RIFLE_SG552: {
+                iGroupCount[INDEX_T2RIFLE]++;
+            }
+            case PCK_RIFLE: {
+                iGroupCount[INDEX_T2RIFLE]++;
+            }
+            case PCK_RIFLE_AK47: {
+                iGroupCount[INDEX_T2RIFLE]++;
+            }
+            case PCK_RIFLE_DESERT: {
+                iGroupCount[INDEX_T2RIFLE]++; }
+            case PCK_AUTOSHOTGUN: {
+                iGroupCount[INDEX_T2SHOTGUN]++;
+            }
+            case PCK_SHOTGUN_SPAS: {
+                iGroupCount[INDEX_T2SHOTGUN]++; }
+            case PCK_HUNTING_RIFLE: {
+                iGroupCount[INDEX_SNIPER]++;
+            }
+            case PCK_SNIPER_MILITARY: {
+                iGroupCount[INDEX_SNIPER]++;
+            }
+            case PCK_SNIPER_SCOUT: {
+                iGroupCount[INDEX_SNIPER]++;
+            }
+            case PCK_SNIPER_AWP: {
+                iGroupCount[INDEX_SNIPER]++; }
+            case PCK_MELEE: {
+                iGroupCount[INDEX_MELEE]++; }
+            case PCK_CHAINSAW: {
+                iGroupCount[INDEX_T3]++;
+            }
+            case PCK_GRENADE_LAUNCHER: {
+                iGroupCount[INDEX_T3]++;
+            }
+            case PCK_RIFLE_M60: {
+                iGroupCount[INDEX_T3]++; }
+            case PCK_EXPLOSIVE_BARREL: {
+                iGroupCount[INDEX_CANISTER]++;
+            }
+            case PCK_GASCAN: {
+                iGroupCount[INDEX_CANISTER]++;
+            }
+            case PCK_PROPANETANK: {
+                iGroupCount[INDEX_CANISTER]++;
+            }
+            case PCK_OXYGENTANK: {
+                iGroupCount[INDEX_CANISTER]++;
+            }
+            case PCK_FIREWORKCRATE: {
+                iGroupCount[INDEX_CANISTER]++;
+            }
+            case PCK_AMMO: {
+                iGroupCount[INDEX_AMMO]++;
+            }
+            case PCK_PAIN_PILLS: {
+                iGroupCount[INDEX_PILL]++;
+            }
+            case PCK_ADRENALINE: {
+                iGroupCount[INDEX_PILL]++;
+            }
+            case PCK_MOLOTOV: {
+                iGroupCount[INDEX_THROWABLE]++;
+            }
+            case PCK_PIPEBOMB: {
+                iGroupCount[INDEX_THROWABLE]++;
+            }
+            case PCK_VOMITJAR: {
+                iGroupCount[INDEX_THROWABLE]++;
+            }
+            case PCK_FIRST_AID_KIT: {
+                iGroupCount[INDEX_KIT]++;
+                g_iCountItemMedkits++;
+            }
+            case PCK_DEFIBRILLATOR: {
+                iGroupCount[INDEX_KIT]++;
+                g_iCountItemDefibs++;
+            }
+            case PCK_UPG_LASER: {
+                iGroupCount[INDEX_UPGRADE]++;
+            }
+            case PCK_UPG_EXPLOSIVE: {
+                iGroupCount[INDEX_UPGRADE]++;
+            }
+            case PCK_UPG_INCENDIARY: {
+                iGroupCount[INDEX_UPGRADE]++;
+            }
+            case PCK_JUNK: {
+                iGroupCount[INDEX_JUNK]++;
+            }
+            case PCK_SILLY_GNOME: {
+                iGroupCount[INDEX_SILLY]++;
+                g_iCountItemGnomes++;
+            }
+            case PCK_SILLY_COLA: {
+                iGroupCount[INDEX_SILLY]++;
+                g_iCountItemCola++;
+            }
+            case PCK_SILLY_GIFT: {
+                iGroupCount[INDEX_GIFT]++;
+            }
         }
 
-        if (g_strArStorage[i][entNumber] == 0) { continue; }
+        if (g_strArStorage[i][entNumber] == 0) {
+            continue; }
 
         if (IsValidEntity(g_strArStorage[i][entNumber])) {
             GetEntityClassname( g_strArStorage[i][entNumber], tmpStr, sizeof(tmpStr) );
         } else {
             tmpStr = "";
         }
-
-        if (full) {
-            PrintDebug(0, "  Item: %4i: entity %5i (= %s), classname: %s.", i, g_strArStorage[i][entNumber], g_csItemPickName[ g_strArStorage[i][entPickedType] ], tmpStr );
-        }
     }
 
-    if (full) {
-        return;
-    }
 
     iTotalRealItems = g_iStoredEntities - iItemCount[PCK_NOITEM];
 
-    /*
-    PrintDebug(0,"[rand] --------------- item list -----------------");
-
-    PrintDebug( "  %18s: %4i ( %5.1f%% /        ).", "no item", iItemCount[0], float(iItemCount[0]) / float(g_iStoredEntities) * 100.0 );
-    PrintDebug( "  %18s: %4i ( %5.1f%% /        ).", g_csItemPickName[PCK_JUNK], iItemCount[PCK_JUNK], float(iItemCount[PCK_JUNK]) / float(g_iStoredEntities) * 100.0 );
-    PrintDebug("");
-
-    for (new i=PCK_PISTOL; i < PCK_DUALS; i++)
-    {
-        if (i == PCK_JUNK) { continue; }
-        PrintDebug( "  %18s: %4i ( %5.1f%% / %5.1f%% ).", g_csItemPickName[i], iItemCount[i], float(iItemCount[i]) / float(g_iStoredEntities) * 100.0, float(iItemCount[i]) / float(iTotalRealItems) * 100.0 );
-    }
-    */
     PrintDebug(0,"---------------------- type list --------------------------------------------------------- real items: %4i", iTotalRealItems);
 
-    PrintDebug(0, "  %18s: %4i ( %5.1f%% /        ). Weighted at: %5.1f%%", "no item", iGroupCount[0], float(iGroupCount[0]) / float(g_iStoredEntities) * 100.0, float(iWeight[0]) / float(iTotalWeight) * 100.0 );
-    PrintDebug(0, "  %18s: %4i ( %5.1f%% /        ). Weighted at: %5.1f%%", g_csItemTypeText[INDEX_JUNK], iGroupCount[INDEX_JUNK], float(iGroupCount[INDEX_JUNK]) / float(g_iStoredEntities) * 100.0, float(iWeight[INDEX_JUNK]) / float(iTotalWeight) * 100.0, float(iWeight[INDEX_JUNK]) / float(iTotalWeight) * 100.0  );
+    PrintDebug(0, "  %18s: %4d ( %5.1f%% /        ). Weighted at: %5.1f%%", "no item", iGroupCount[0], float(iGroupCount[0]) / float(g_iStoredEntities) * 100.0, float(iWeight[0]) / float(iTotalWeight) * 100.0 );
+    PrintDebug(0, "  %18s: %4d ( %5.1f%% /        ). Weighted at: %5.1f%%", g_csItemTypeText[INDEX_JUNK], iGroupCount[INDEX_JUNK], float(iGroupCount[INDEX_JUNK]) / float(g_iStoredEntities) * 100.0, float(iWeight[INDEX_JUNK]) / float(iTotalWeight) * 100.0, float(iWeight[INDEX_JUNK]) / float(iTotalWeight) * 100.0  );
     PrintDebug(0, "-----------------------------------------------------------------------------------------------------------");
 
     iTotalWeight = (iTotalWeight - iWeight[0]) - iWeight[INDEX_JUNK];
@@ -2427,7 +2512,7 @@ DoItemsServerReport(full=false)
     for (new i=INDEX_PISTOL; i < INDEX_TOTAL; i++)
     {
         if (i == INDEX_JUNK) { continue; }
-        PrintDebug(0, "  %18s: %4i ( %5.1f%% / %5.1f%% ). Weighted at: %5.1f%%, expected occurrence: %3i (diff.: %3i).",
+        PrintDebug(0, "  %18s: %4d ( %5.1f%% / %5.1f%% ). Weighted at: %5.1f%%, expected occurrence: %3d (diff.: %3d).",
                 g_csItemTypeText[i], iGroupCount[i],
                 float(iGroupCount[i]) / float(g_iStoredEntities) * 100.0, float(iGroupCount[i]) / float(iTotalRealItems) * 100.0,
                 float(iWeight[i]) / float(iTotalWeight) * 100.0,
@@ -2437,7 +2522,6 @@ DoItemsServerReport(full=false)
     }
 
     PrintDebug(0, "-----------------------------------------------------------------------------------------------------------");
-
 }
 
 DoGnomesServerReport()
@@ -2482,5 +2566,4 @@ DoGnomesServerReport()
     }
 
     PrintDebug(0, "-----------------------------------------------------------------------------------------------------------");
-
 }
