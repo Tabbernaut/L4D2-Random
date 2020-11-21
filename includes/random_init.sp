@@ -231,59 +231,59 @@ INIT_CVarsGetDefault()
     {
         GetConVarString(FindConVar("stripper_cfg_path"), g_sStripperDir, sizeof(g_sStripperDir));
     }
-    
+
     // Store some default cvar values
     g_iDefSpawnTimeMin =        GetConVarInt(FindConVar("z_ghost_delay_min"));
     g_iDefSpawnTimeMax =        GetConVarInt(FindConVar("z_ghost_delay_max"));
     PrintDebug(3, "[rand] Default value: ghost spawns (= %i / %i)", g_iDefSpawnTimeMin, g_iDefSpawnTimeMax);
-    
+
     g_iDefCommonLimit =         GetConVarInt(FindConVar("z_common_limit"));
     g_iDefBackgroundLimit =     GetConVarInt(FindConVar("z_background_limit"));
     g_iDefHordeTimeMin =        GetConVarInt(FindConVar("z_mob_spawn_min_interval_normal"));
     g_iDefHordeTimeMax =        GetConVarInt(FindConVar("z_mob_spawn_max_interval_normal"));
     g_iDefHordeSizeMin =        GetConVarInt(FindConVar("z_mob_spawn_min_size"));
     g_iDefHordeSizeMax =        GetConVarInt(FindConVar("z_mob_spawn_max_size"));
-    
+
     g_iDefDefibPenalty =        GetConVarInt(FindConVar("vs_defib_penalty"));
     PrintDebug(3, "[rand] Default value: defib penalty (= %i)", g_iDefDefibPenalty);
     //PBONUS_SetDefibPenalty(g_iDefDefibPenalty);
-    
+
     g_iDefDefibDuration =       GetConVarInt(FindConVar("defibrillator_use_duration"));
     g_fDefPillDecayRate =       GetConVarFloat(FindConVar("pain_pills_decay_rate"));
-    
+
     g_iTeamSize =               GetConVarInt(FindConVar("survivor_limit"));
-    
+
     g_iDefSmokerLimit =         GetConVarInt(FindConVar("z_smoker_limit"));
     g_iDefBoomerLimit =         GetConVarInt(FindConVar("z_boomer_limit"));
     g_iDefHunterLimit =         GetConVarInt(FindConVar("z_hunter_limit"));
     g_iDefSpitterLimit =        GetConVarInt(FindConVar("z_spitter_limit"));
     g_iDefJockeyLimit =         GetConVarInt(FindConVar("z_jockey_limit"));
     g_iDefChargerLimit =        GetConVarInt(FindConVar("z_charger_limit"));
-    
+
     g_iDefAmmoSmg =             GetConVarInt(FindConVar("ammo_smg_max"));
     g_iDefAmmoShotgun =         GetConVarInt(FindConVar("ammo_shotgun_max"));
     g_iDefAmmoHR =              GetConVarInt(FindConVar("ammo_huntingrifle_max"));
     g_iDefAmmoSniper =          GetConVarInt(FindConVar("ammo_sniperrifle_max"));
     g_iDefAmmoRifle =           GetConVarInt(FindConVar("ammo_assaultrifle_max"));
     g_iDefAmmoAutoShotgun =     GetConVarInt(FindConVar("ammo_autoshotgun_max"));
-    
+
     g_fDefFFFactor =            GetConVarFloat(FindConVar("survivor_friendly_fire_factor_normal"));
-    
+
     g_iDefTankHealth =          GetConVarInt(FindConVar("z_tank_health"));
     g_iDefTankFrustTime =       GetConVarInt(FindConVar("z_frustration_lifetime"));
     g_iDefTankDamage =          GetConVarInt(FindConVar("vs_tank_damage"));
     g_fDefTankFlowVariation =   GetConVarFloat(FindConVar("versus_tank_flow_team_variation"));
-    
+
     g_iDefVomitInterval =       GetConVarInt(FindConVar("z_vomit_interval"));
     g_iDefSpitInterval =        GetConVarInt(FindConVar("z_spit_interval"));
-    
+
     g_fDefCedaBileProb =        GetConVarFloat(FindConVar("sv_infected_ceda_vomitjar_probability"));
     g_fDefRiotTonfaProb =       GetConVarFloat(FindConVar("sv_infected_riot_control_tonfa_probability"));
-    
+
     if (FindConVar("hc_car_standing_damage") != INVALID_HANDLE) {
         g_iDefTankHittableDamage =  GetConVarInt(FindConVar("hc_car_standing_damage"));
     }
-    
+
     // pounce uncap
     if (g_hCvarPounceUncapDamage != INVALID_HANDLE && g_hCvarPounceUncapRange != INVALID_HANDLE) {
         g_iPounceUncapDamageMax = GetConVarInt(g_hCvarPounceUncapDamage);
@@ -297,11 +297,11 @@ INIT_CVarsReset()
     SetConVarInt(FindConVar("sv_force_time_of_day"), -1);
     SetConVarInt(FindConVar("sv_disable_glow_survivors"), 0);
     SetConVarInt(FindConVar("survivor_max_incapacitated_count"), INCAP_DEFAULT);
-    
+
     // reset cvars for which we stored starting values (difficulty si/ci)
     EVENT_ResetDifficulty();
     EVENT_ResetOtherCvars();
-    
+
     SetConVarString(FindConVar("stripper_cfg_path"), g_sStripperDir);
 }
 
@@ -321,12 +321,12 @@ INIT_StripperSwitch()
     // if we're randomly picking stripper directories
     //  called by onmapend every time
     new iStripperMode = GetConVarInt(g_hCvarStripperMode);
-    
+
     if (!g_bStripperPresent || g_bCampaignMode) { return; }
-    
+
     new String: sStripperDir[128] = "";
     GetConVarString(g_hCvarStripperPath, sStripperDir, sizeof(sStripperDir));
-    
+
     switch (iStripperMode)
     {
         case 0: {   g_iStripperCurrentAlt = 0; }
@@ -334,9 +334,9 @@ INIT_StripperSwitch()
         case 2: {   g_iStripperCurrentAlt = (GetRandomInt(0,2)) ? 0 : 1; }
         case 3: {   g_iStripperCurrentAlt = (GetRandomInt(0,3)) ? 0 : 1; }
     }
-    
+
     Format(sStripperDir, sizeof(sStripperDir), "%s%s", sStripperDir, (g_iStripperCurrentAlt == 1) ? "_alt" : "");
-    
+
     SetConVarString(FindConVar("stripper_cfg_path"), sStripperDir);
 }
 
@@ -352,7 +352,7 @@ INIT_FillTries()
     SetTrieValue(g_hTrieEntityCreated, "witch",                                     CREATED_WITCH);
     SetTrieValue(g_hTrieEntityCreated, "tank_rock",                                 CREATED_TANKROCK);
     SetTrieValue(g_hTrieEntityCreated, "ability_vomit",                             CREATED_ABILITYVOMIT);
-    
+
     g_hTrieRandomizableEntity = CreateTrie();                                                                                       // classname trie for finding randomizable items
     SetTrieValue(g_hTrieRandomizableEntity, "weapon_spawn",                         RANDOMIZABLE_ITEM);
     SetTrieValue(g_hTrieRandomizableEntity, "weapon_item_spawn",                    RANDOMIZABLE_ITEM);
@@ -389,9 +389,9 @@ INIT_FillTries()
     SetTrieValue(g_hTrieRandomizableEntity, "upgrade_ammo_incendiary",              RANDOMIZABLE_ITEM);                             // probably never appears
     SetTrieValue(g_hTrieRandomizableEntity, "upgrade_ammo_explosive",               RANDOMIZABLE_ITEM);                             // probably never appears
     SetTrieValue(g_hTrieRandomizableEntity, "prop_fuel_barrel",                     RANDOMIZABLE_ITEM);
-    
+
     SetTrieValue(g_hTrieRandomizableEntity, "prop_physics",                         RANDOMIZABLE_PHYSICS);
-    
+
     g_hTrieRandomizablePropPhysicsModel = CreateTrie();                                                                             // cant go around turning EVERY prop_physics into crazy things
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/gascan001a.mdl",               RANDOMIZABLE_PHYSICS);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/propanecanister001a.mdl",      RANDOMIZABLE_PHYSICS);
@@ -399,7 +399,7 @@ INIT_FillTries()
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props/cs_office/Fire_Extinguisher.mdl",   RANDOMIZABLE_PHYSICS);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/gnome.mdl",                    RANDOMIZABLE_PHYSICS);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/explosive_box001.mdl",         RANDOMIZABLE_PHYSICS);
-    
+
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/cara_69sedan.mdl",             HITTABLE_PHYSICS_CAR);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/cara_69sedan_glass.mdl",       HITTABLE_PHYSICS_ADDON);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_vehicles/cara_82hatchback.mdl",         HITTABLE_PHYSICS_CAR);
@@ -425,10 +425,10 @@ INIT_FillTries()
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_junk/dumpster_2.mdl",                   HITTABLE_PHYSICS_SMALL_TURNED);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_fairgrounds/bumpercar.mdl",             HITTABLE_PHYSICS_SMALL);
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_fairgrounds/bumpercar_pole.mdl",        HITTABLE_PHYSICS_ADDON);
-    
+
     SetTrieValue(g_hTrieRandomizablePropPhysicsModel, "models/props_unique/haybails_single.mdl",            HITTABLE_PHYSICS_SMALL_TURNED);
-    
-    
+
+
     g_hTrieMeleeType = CreateTrie();                                                                                                // classname trie for finding 'normal' melees
     SetTrieValue(g_hTrieMeleeType, "fireaxe",                       MELEE_NORMAL);
     SetTrieValue(g_hTrieMeleeType, "frying_pan",                    MELEE_NORMAL);
@@ -441,7 +441,7 @@ INIT_FillTries()
     SetTrieValue(g_hTrieMeleeType, "electric_guitar",               MELEE_NORMAL);
     SetTrieValue(g_hTrieMeleeType, "golfclub",                      MELEE_NORMAL);
     SetTrieValue(g_hTrieMeleeType, "hunting_knife",                 MELEE_WEIRD);
-    
+
     g_hTriePenaltyItems = CreateTrie();
     SetTrieValue(g_hTriePenaltyItems, "melee",                      ITEM_PICKUP_PENALTY_MELEE);
     SetTrieValue(g_hTriePenaltyItems, "pain_pills",                 ITEM_PICKUP_PENALTY);
@@ -475,14 +475,14 @@ INIT_FillTries()
     SetTrieValue(g_hTriePenaltyItems, "weapon_sniper_scout",        ITEM_PICKUP_PENALTY_PRIMARY_SNIPER);
     SetTrieValue(g_hTriePenaltyItems, "weapon_grenade_launcher",    ITEM_PICKUP_PENALTY_PRIMARY_T3);
     SetTrieValue(g_hTriePenaltyItems, "weapon_rifle_m60",           ITEM_PICKUP_PENALTY_PRIMARY_T3);
-    
+
     g_hTrieEventWeapons = CreateTrie();
     SetTrieValue(g_hTrieEventWeapons, "hunting_rifle",              ITEM_PICKUP_PENALTY_PRIMARY_SNIPER);
     SetTrieValue(g_hTrieEventWeapons, "sniper_military",            ITEM_PICKUP_PENALTY_PRIMARY_SNIPER);
     SetTrieValue(g_hTrieEventWeapons, "sniper_awp",                 ITEM_PICKUP_PENALTY_PRIMARY_SNIPER);
     SetTrieValue(g_hTrieEventWeapons, "sniper_scout",               ITEM_PICKUP_PENALTY_PRIMARY_SNIPER);
     SetTrieValue(g_hTrieEventWeapons, "pistol_magnum",              ITEM_PICKUP_PENALTY_MAGNUM);
-    
+
     g_hTriePropItems = CreateTrie();
     SetTrieValue(g_hTriePropItems, "weapon_gnome",                  ITEM_PROP_GNOME);
     SetTrieValue(g_hTriePropItems, "weapon_cola_bottles",           ITEM_PROP_COLA);
@@ -490,20 +490,20 @@ INIT_FillTries()
     SetTrieValue(g_hTriePropItems, "weapon_fireworkcrate",          ITEM_PROP_CANISTER);
     SetTrieValue(g_hTriePropItems, "weapon_propanetank",            ITEM_PROP_CANISTER);
     SetTrieValue(g_hTriePropItems, "weapon_oxygentank",             ITEM_PROP_CANISTER);
-    
+
     g_hTrieUseItems = CreateTrie();
     SetTrieValue(g_hTrieUseItems, "prop_door_rotating",             ITEM_USE_DOOR);
     SetTrieValue(g_hTrieUseItems, "weapon_cola_bottles",            ITEM_USE_COLA);
     SetTrieValue(g_hTrieUseItems, "prop_physics",                   ITEM_USE_PROP);
     SetTrieValue(g_hTrieUseItems, "weapon_ammo_spawn",              ITEM_USE_AMMO);
-    
+
     g_hTrieDropItems = CreateTrie();
     SetTrieValue(g_hTrieDropItems, "cola_bottles",                  ITEM_DROP_COLA);
     SetTrieValue(g_hTrieDropItems, "pain_pills",                    ITEM_DROP_HEALTH);
     SetTrieValue(g_hTrieDropItems, "first_aid_kit",                 ITEM_DROP_HEALTH);
     SetTrieValue(g_hTrieDropItems, "weapon_pain_pills",             ITEM_DROP_WEAPPILLS);
     SetTrieValue(g_hTrieDropItems, "weapon_first_aid_kit",          ITEM_DROP_WEAPKIT);
-    
+
     g_hTrieL4D1Common = CreateTrie();
     SetTrieValue(g_hTrieL4D1Common, "models/infected/common_male01.mdl",            COMMON_L4D1_PROBSKIN);
     SetTrieValue(g_hTrieL4D1Common, "models/infected/common_female01.mdl",          COMMON_L4D1_PROBSKIN);
@@ -517,7 +517,7 @@ INIT_FillTries()
     SetTrieValue(g_hTrieL4D1Common, "models/infected/common_female_nurse01.mdl",    COMMON_L4D1);
     SetTrieValue(g_hTrieL4D1Common, "models/infected/common_male_pilot.mdl",        COMMON_L4D1);
     SetTrieValue(g_hTrieL4D1Common, "models/infected/common_male_baggagehandler_01.mdl", COMMON_L4D1);
-    
+
     g_hTrieTankPlayers = CreateTrie();
 }
 
@@ -527,7 +527,7 @@ INIT_PrepareAllSDKCalls()
     new Handle: confRaw = LoadGameConfigFile("l4d2_random");
     if (confRaw == INVALID_HANDLE)
             ThrowError("Could not load gamedata/l4d2_random.txt");
-    
+
     StartPrepSDKCall(SDKCall_Player);
     PrepSDKCall_SetFromConf(confRaw, SDKConf_Signature, "SetClass");
     PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
@@ -535,7 +535,7 @@ INIT_PrepareAllSDKCalls()
 
     if (g_setClass == INVALID_HANDLE)
             ThrowError("Unable to find SetClass signature.");
-    
+
     StartPrepSDKCall(SDKCall_Static);
     PrepSDKCall_SetFromConf(confRaw, SDKConf_Signature, "CreateAbility");
     PrepSDKCall_AddParameter(SDKType_CBasePlayer, SDKPass_Pointer);
@@ -547,7 +547,7 @@ INIT_PrepareAllSDKCalls()
 
     g_oAbility = GameConfGetOffset(confRaw, "oAbility");
 
-    
+
     StartPrepSDKCall(SDKCall_Player);
     PrepSDKCall_SetFromConf(confRaw, SDKConf_Signature, "CTerrorPlayer_Fling");
     PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_ByRef);
@@ -555,11 +555,11 @@ INIT_PrepareAllSDKCalls()
     PrepSDKCall_AddParameter(SDKType_CBasePlayer, SDKPass_Pointer);
     PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
     g_CallPushPlayer = EndPrepSDKCall();
-    
+
     if (g_CallPushPlayer == INVALID_HANDLE)
             ThrowError("Unable to find the \"CTerrorPlayer_Fling\" signature.");
-    
-    
+
+
     // the following are non-critical (but block some functions)
     StartPrepSDKCall(SDKCall_Player);
     PrepSDKCall_SetFromConf(confRaw, SDKConf_Signature, "CTerrorPlayer_OnHitByVomitJar");
@@ -567,7 +567,7 @@ INIT_PrepareAllSDKCalls()
     g_CallBileJarPlayer = EndPrepSDKCall();
     if (g_CallBileJarPlayer == INVALID_HANDLE)
             LogMessage("[r init] SDKPrep failed: Unable to find the \"CTerrorPlayer_OnHitByVomitJar\" signature.");
-    
+
     // vomit tracking
     StartPrepSDKCall(SDKCall_Player);
     PrepSDKCall_SetFromConf(confRaw, SDKConf_Signature, "CTerrorPlayer_OnVomitedUpon");
@@ -576,8 +576,8 @@ INIT_PrepareAllSDKCalls()
     g_CallVomitSurvivor = EndPrepSDKCall();
     if (g_CallVomitSurvivor == INVALID_HANDLE)
             LogMessage("[r init] SDKPrep failed: Unable to find the \"CTerrorPlayer_OnVomitedUpon\" signature.");
-    
-    
+
+
     CloseHandle(confRaw);
     //CloseHandle(confRaw_b);
 }
@@ -596,12 +596,12 @@ RI_KV_Close()
 RI_KV_Load()
 {
     decl String:sNameBuff[PLATFORM_MAX_PATH];
-    
+
     GetConVarString(g_hCvarRIKeyValuesPath, sNameBuff, sizeof(sNameBuff));
-    
+
     g_kRIData = CreateKeyValues("RandomMap");
     BuildPath(Path_SM, sNameBuff, sizeof(sNameBuff), sNameBuff);
-    
+
     if (!FileToKeyValues(g_kRIData, sNameBuff))
     {
         LogError("[RI] Couldn't load RandomMapInfo data!");
@@ -632,12 +632,12 @@ bool: RI_KV_UpdateRandomMapInfo()
     g_RI_fTankOddsNormal = 0.0;     // tank odds override (if > default)
     g_RI_fTankOddsHard = 0.0;       // tank odds override (if > default) (hard path)
     g_RI_bNoRealHittables = false;  // no real hittables on the map?
-    
+
     new String: mapname[64];
     GetCurrentMap(mapname, sizeof(mapname));
-    
+
     //if (L4D_IsMissionFinalMap()) { g_RI_bIsFinale = true; }   // can't trust this, at all
-    
+
     // get keyvalues
     if ( KvJumpToKey(g_kRIData, mapname) )
     {
@@ -660,7 +660,7 @@ bool: RI_KV_UpdateRandomMapInfo()
         g_RI_fTankOddsNormal = KvGetFloat(g_kRIData, "tank_odds", g_RI_fTankOddsNormal);
         g_RI_fTankOddsHard = KvGetFloat(g_kRIData, "tank_odds_hard", g_RI_fTankOddsHard);
         g_RI_bNoRealHittables = bool: (KvGetNum(g_kRIData, "no_hittables", (g_RI_bNoRealHittables) ? 1 : 0 ));
-        
+
         g_RI_iEarlyDoors = KvGetNum(g_kRIData, "earlydoors", 0);
         if (g_RI_iEarlyDoors)
         {
@@ -669,7 +669,7 @@ bool: RI_KV_UpdateRandomMapInfo()
             for (new x=0; x < g_RI_iEarlyDoors && x < EARLYDOOR_MAX; x++)
             {
                 Format(tmpStr, sizeof(tmpStr), "earlydoor_%i", x+1);
-                
+
                 KvGetVector(g_kRIData, tmpStr, tmpVec, NULL_VECTOR);
                 if (tmpVec[0] != 0.0 && tmpVec[1] != 0.0 && tmpVec[2] != 0.0)
                 {
@@ -679,9 +679,9 @@ bool: RI_KV_UpdateRandomMapInfo()
                 }
             }
         }
-        
+
         PrintDebug(1, "[RI] Read data: intro: %i; difficulty: %i; doors; %i; nostorm: %i", g_RI_bIsIntro, g_RI_iDifficulty, g_RI_iDoors, g_RI_iNoStorm);
-        
+
         if ( !g_bCMTActive )
         {
             // find current map, and if not a finale
@@ -698,20 +698,20 @@ bool: RI_KV_UpdateRandomMapInfo()
             }
             LogMessage("[RI] Next map expected: '%s'.", g_sNextMap);
         }
-        
+
         return true;
     }
-    
+
     // no keyvalue set found for map:
     LogMessage("[RI] RandomMapInfo for '%s' is missing.", mapname);
-    
+
     // if no data found, set default stuff we should assume
     if (g_RI_bIsFinale)
     {
         g_RI_iDifficulty = 2;
         g_RI_iDoors = 0;
     }
-    
+
     return false;
 }
 
@@ -721,12 +721,12 @@ bool: RI_KV_UpdateRandomMapInfo()
 RConfig_Read()
 {
     decl String:sNameBuff[PLATFORM_MAX_PATH];
-    
+
     GetConVarString(g_hCvarRCKeyValuesPath, sNameBuff, sizeof(sNameBuff));
-    
+
     new Handle: kRCData = CreateKeyValues("RandomConfig");
     BuildPath(Path_SM, sNameBuff, sizeof(sNameBuff), sNameBuff);
-    
+
     if (!FileToKeyValues(kRCData, sNameBuff))
     {
         LogError("[rand] Couldn't load RandomConfig data!");
@@ -734,7 +734,7 @@ RConfig_Read()
         CloseHandle(kRCData);
         return;
     }
-    
+
     // get keyvalues
     if (KvJumpToKey(kRCData, "settings"))
     {
@@ -744,7 +744,7 @@ RConfig_Read()
         g_RC_fItemFactor3v3 = KvGetFloat(kRCData, "item_factor_3v3", g_RC_fItemFactor3v3);
         g_RC_iGiftMinItems = KvGetNum(kRCData, "gift_min_items", g_RC_iGiftMinItems);
         g_RC_iGiftMaxItems = KvGetNum(kRCData, "gift_max_items", g_RC_iGiftMaxItems);
-        
+
         g_RC_iMultiwitchMin = KvGetNum(kRCData, "multiwitch_min", g_RC_iMultiwitchMin);
         g_RC_iMultiwitchMax = KvGetNum(kRCData, "multiwitch_max", g_RC_iMultiwitchMax);
         g_RC_bMultiwitchAllowTank = bool: (KvGetNum(kRCData, "multiwitch_allow_tank", 1));
@@ -754,16 +754,16 @@ RConfig_Read()
         g_RC_iMinitankDamage = KvGetNum(kRCData, "minitank_damage", g_RC_iMinitankDamage);
         g_RC_iMinitankHittableDmg = KvGetNum(kRCData, "minitank_hittable_damage", g_RC_iMinitankHittableDmg);
         g_RC_iWeakHittableDmg = KvGetNum(kRCData, "weak_hittable_damage", g_RC_iWeakHittableDmg);
-        
+
         g_RC_iTankDropItemsMin = KvGetNum(kRCData, "tank_drop_items_min", g_RC_iTankDropItemsMin);
         g_RC_iTankDropItemsMax = KvGetNum(kRCData, "tank_drop_items_max", g_RC_iTankDropItemsMax);
         g_RC_fBoomComboDudChance = KvGetFloat(kRCData, "boomcombo_dud_chance", g_RC_fBoomComboDudChance);
-        
+
         g_RC_fEventSITimeVeryHard = KvGetFloat(kRCData, "event_sitime_veryhard", g_RC_fEventSITimeVeryHard);
         g_RC_fEventSITimeHard = KvGetFloat(kRCData, "event_sitime_hard", g_RC_fEventSITimeHard);
         g_RC_fEventSITimeEasy = KvGetFloat(kRCData, "event_sitime_easy", g_RC_fEventSITimeEasy);
         g_RC_fEventSITimeVeryEasy = KvGetFloat(kRCData, "event_sitime_veryeasy", g_RC_fEventSITimeVeryEasy);
-        
+
         g_RC_fEventCILimVeryHard = KvGetFloat(kRCData, "event_cilim_veryhard", g_RC_fEventCILimVeryHard);
         g_RC_fEventCILimHard = KvGetFloat(kRCData, "event_cilim_hard", g_RC_fEventCILimHard);
         g_RC_fEventCILimEasy = KvGetFloat(kRCData, "event_cilim_easy", g_RC_fEventCILimEasy);
@@ -795,35 +795,35 @@ RConfig_Read()
         g_RC_fEventWitchesSpawnFreq = KvGetFloat(kRCData, "event_witches_spawntime", g_RC_fEventWitchesSpawnFreq);
         g_RC_iEventBoomFluMinInt = KvGetNum(kRCData, "event_boomflu_interval_min", g_RC_iEventBoomFluMinInt);
         g_RC_iEventBoomFluMaxInt = KvGetNum(kRCData, "event_boomflu_interval_max", g_RC_iEventBoomFluMaxInt);
-        
+
         g_RC_fEventBaySIChance = KvGetFloat(kRCData, "event_bay_si_chance", g_RC_fEventBaySIChance);
         g_RC_fEventBayCIChance = KvGetFloat(kRCData, "event_bay_common_chance", g_RC_fEventBayCIChance);
-        
+
         g_RC_iVomitOnType = KvGetNum(kRCData, "vomit_on_type", g_RC_iVomitOnType);
         g_RC_fVomitRange = KvGetFloat(kRCData, "vomit_range", g_RC_fVomitRange);
         g_RC_fVomitStreamTime = KvGetFloat(kRCData, "vomit_stream_time", g_RC_fVomitStreamTime);
-        
+
         g_RC_fExplosionPowerHigh = KvGetFloat(kRCData, "explosion_power_high", g_RC_fExplosionPowerHigh);
         g_RC_fExplosionPowerLow = KvGetFloat(kRCData, "explosion_power_low", g_RC_fExplosionPowerLow);
-        
+
         g_RC_fBlindTime = KvGetFloat(kRCData, "gift_blind_time", g_RC_fBlindTime);
-        
+
         g_RC_iPounceUncapDamageMax = KvGetNum(kRCData, "pounce_uncap_damage_max", g_RC_iPounceUncapDamageMax);
         g_RC_fPounceUncapRangeMax = KvGetFloat(kRCData, "pounce_uncap_range_max", g_RC_fPounceUncapRangeMax);
-        
+
         // extra options
         g_RC_bExtraCommonModels = bool: (KvGetNum(kRCData, "extra_common_models", 1));
         g_RC_bDrawPanelReport = bool: (KvGetNum(kRCData, "draw_panel_report", 1));
-        
+
         PrintDebug(2, "[rand] Read config data.");
-        
+
         return;
     }
-    
+
     // no keyvalue set found for map:
     LogMessage("[rand] RandomConfig data missing.");
-    
-    
+
+
     if (kRCData == INVALID_HANDLE) { return; }
     CloseHandle(kRCData);
 }
@@ -835,25 +835,25 @@ INIT_GetMeleeClasses()
 {
     new String:sMeleeWeap[MELEE_CLASS_LENGTH];
     new MeleeNormalOrWeird: tMeleeType;
-    
+
     new MeleeStringTable = FindStringTable("MeleeWeapons");
     new total = GetStringTableNumStrings(MeleeStringTable);
     new restrict = GetConVarBool(g_hCvarRestrictMelee);
     g_iMeleeClassCount = 0;
-    
+
     for( new i = 0; i < total; i++ )
     {
         ReadStringTable(MeleeStringTable, i, sMeleeWeap, MELEE_CLASS_LENGTH);
         if (!GetTrieValue(g_hTrieMeleeType, sMeleeWeap, tMeleeType)) { continue; }
-        
+
         // only add melee weapons that are 'safe', if cvar is set
         if (!restrict || tMeleeType == MELEE_NORMAL) {
-            
+
             g_sMeleeClass[g_iMeleeClassCount] = sMeleeWeap;
             g_iMeleeClassCount++;
         }
     }
-    
+
     PrintDebug(2, "[rand] Read %i melee classes.", g_iMeleeClassCount);
 }
 
@@ -861,26 +861,26 @@ INIT_GetMeleeClasses()
 bool: SUPPORT_StripperDetectAlt()
 {
     if (!g_bStripperPresent) { return false; }
-    
+
     // the marker is a prop_dynamic(_override) with 999999 hammerid and targetname "random_detect_alt"
-    
+
     new entityCount = GetEntityCount();
     new String: classname[64] = "";
-    
+
     for (new i=0; i < entityCount; i++)
     {
         if (IsValidEntity(i)) {
             GetEdictClassname(i, classname, sizeof(classname));
-            
+
             if (StrEqual(classname, "prop_dynamic", false))
             {
                 if (GetEntProp(i, Prop_Data, "m_iHammerID") == 999999)
                 {
                     new String:name[20] = "";
                     GetEntPropString(i, Prop_Data, "m_iName", name, sizeof(name));
-                    
+
                     //PrintDebug(3, "[rand] prop_dynamic: ent: %i; hamid: %i; name: %s", i, GetEntProp(i, Prop_Data, "m_iHammerID"), name);
-                    
+
                     if (StrEqual(name, "random_detect_alt", false)) {
                         return true;
                     }
@@ -888,7 +888,7 @@ bool: SUPPORT_StripperDetectAlt()
             }
         }
     }
-    
+
     return false;
 }
 
@@ -902,7 +902,7 @@ INIT_PrecacheModels(bool: noMapStarted = false)
             PrecacheModel(g_csPreCacheModels[i], true);
         }
     }
-    
+
     // Melee weapon scripts
     PrecacheGeneric("scripts/melee/baseball_bat.txt", true);
     PrecacheGeneric("scripts/melee/cricket_bat.txt", true);
@@ -914,7 +914,7 @@ INIT_PrecacheModels(bool: noMapStarted = false)
     PrecacheGeneric("scripts/melee/katana.txt", true);
     PrecacheGeneric("scripts/melee/machete.txt", true);
     PrecacheGeneric("scripts/melee/tonfa.txt", true);
-    
+
     // Uncommon
     for (new i=0; i < sizeof(g_csUncommonModels); i++)
     {
@@ -922,7 +922,7 @@ INIT_PrecacheModels(bool: noMapStarted = false)
             PrecacheModel(g_csUncommonModels[i], true);
         }
     }
-    
+
     // Common
     for (new i=0; i < sizeof(g_csFemaleCommonModels); i++)
     {
@@ -936,7 +936,7 @@ INIT_PrecacheModels(bool: noMapStarted = false)
             PrecacheModel(g_csL4D1CommonModels[i], true);
         }
     }
-    
+
     // Hittables
     for (new i=0; i < sizeof(g_csHittableModels); i++)
     {
@@ -944,7 +944,7 @@ INIT_PrecacheModels(bool: noMapStarted = false)
             PrecacheModel(g_csHittableModels[i], true);
         }
     }
-    
+
     // Junk
     for (new i=0; i < sizeof(g_csJunkModels); i++)
     {
@@ -952,7 +952,7 @@ INIT_PrecacheModels(bool: noMapStarted = false)
             PrecacheModel(g_csJunkModels[i], true);
         }
     }
-    
+
     // CSS weapons
     if (!noMapStarted) {
         for (new i=0; i < sizeof(g_csCSSWeapons); i++)
@@ -962,19 +962,19 @@ INIT_PrecacheModels(bool: noMapStarted = false)
             RemoveEdict(tmpEnt);
         }
     }
-    
+
     // Alarmed cars
     if (!IsModelPrecached("sprites/glow.vmt")) PrecacheModel("sprites/glow.vmt", true);
     if (!IsModelPrecached("sprites/light_glow03.vmt")) PrecacheModel("sprites/light_glow03.vmt", true);
     if (!IsModelPrecached("sprites/glow_test02.vmt")) PrecacheModel("sprites/glow_test02.vmt", true);
-    
+
     // Sound
     for (new i=0; i < sizeof(g_csPrefetchSounds); i++)
     {
         PrefetchSound(g_csPrefetchSounds[i]);
         PrecacheSound(g_csPrefetchSounds[i], true);
     }
-    
+
     g_bModelsPrecached = true;
 }
 
