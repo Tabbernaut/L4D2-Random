@@ -662,12 +662,12 @@ GiveItem(client, String:item[STR_MAX_ITEMGIVEN], ammo, iOffset)
         
         if (ammo > -1)
         {
-            new iAmmoOffset = FindDataMapOffs(client, "m_iAmmo");
+            new iAmmoOffset = FindDataMapInfo(client, "m_iAmmo");
             SetEntData(client, (iAmmoOffset + iOffset), ammo);
         }
         else
         {
-            new iAmmoOffset = FindDataMapOffs(client, "m_iAmmo");
+            new iAmmoOffset = FindDataMapInfo(client, "m_iAmmo");
             SetEntData(client, (iAmmoOffset + iOffset), 0);
         }
     }
@@ -721,8 +721,8 @@ SUPPORT_CheckAmmo(client)
         
         new iProperAmmo = -1;
         new iOffset = -1;
-        new iAmmoOffset = FindDataMapOffs(client, "m_iAmmo");
-        
+        new iAmmoOffset = FindDataMapInfo(client, "m_iAmmo");
+
         if (StrEqual("weapon_rifle_ak47", classname, false)) {
             new iClipAmmo = 40 - GetEntProp(weapon, Prop_Send, "m_iClip1");
             iProperAmmo = g_iActiveAmmoAk + iClipAmmo;
