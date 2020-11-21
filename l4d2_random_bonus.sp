@@ -1,8 +1,7 @@
 #include <sourcemod>
 #include <sdkhooks>
 #include <sdktools>
-#include <left4downtown>
-#include <l4d2_direct>
+#include <left4dhooks>
 #include <l4d2_random>
 #undef REQUIRE_PLUGIN
 #include <readyup>
@@ -29,7 +28,7 @@
 
 /*
     Scoring mechanism chosen:
-        - 800 base distance => max damage reduced from that base -- reduced to the actual bonus, if larger than maxdamage: scaled instead 
+        - 800 base distance => max damage reduced from that base -- reduced to the actual bonus, if larger than maxdamage: scaled instead
         - solid health is worth 1.5x
 */
 
@@ -86,27 +85,27 @@ new                 g_iStartHealth[2][MAX_CHARACTERS];      // starting health p
  *      Natives
  *      =======
  */
- 
+
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
     CreateNative("RNDBNS_GetBonus",         Native_GetBonus);
     CreateNative("RNDBNS_GetSolidFactor",   Native_GetSolidFactor);
     CreateNative("RNDBNS_GetStatic",        Native_GetStatic);
     CreateNative("RNDBNS_GetScaleMode",     Native_GetScaleMode);
-    
+
     CreateNative("RNDBNS_SetBonus",         Native_SetBonus);
     CreateNative("RNDBNS_SetSolidFactor",   Native_SetSolidFactor);
     CreateNative("RNDBNS_SetStatic",        Native_SetStatic);
     CreateNative("RNDBNS_SetScaleMode",     Native_SetScaleMode);
-    
+
     CreateNative("RNDBNS_SetExtra",         Native_SetExtra);
     CreateNative("RNDBNS_SetPenaltyBonus",  Native_SetPenaltyBonus);
-    
+
     CreateNative("RNDBNS_CheckStartHealth", Native_CheckStartHealth);
-    
+
     MarkNativeAsOptional("RNDMAIN_GetGnomeBonus");  // so we can load this plugin before main
     MarkNativeAsOptional("RNDMAIN_ShowGnomeBonus");
-    
+
     return APLRes_Success;
 }
 
@@ -197,13 +196,13 @@ public OnPluginStart()
     g_hCvarTieBreakBonus = FindConVar("vs_tiebreak_bonus");
     g_iDefaultSurvivalBonus = GetConVarInt(g_hCvarSurvivalBonus);
     g_iDefaultTieBreakBonus = GetConVarInt(g_hCvarTieBreakBonus);
-    
+
     // Commands
     RegConsoleCmd("sm_damage", Damage_Cmd, "Prints the damage bonus for both teams");
     RegConsoleCmd("sm_health", Damage_Cmd, "Prints the damage bonus for both teams (Legacy)");
     RegConsoleCmd("sm_damage_explain", Explain_Cmd, "Shows an explanation of the damage bonus calculation.");
     RegConsoleCmd("sm_health_explain", Explain_Cmd, "Shows an explanation of the damage bonus calculation.");
-    
+
     // hooks
     if (g_bLateLoad)
     {
@@ -236,7 +235,7 @@ public OnMapStart()
         bRoundOver[i] = false;
         bHasWiped[i] = false;
         g_bFirstRoundReallyOver = false;
-        
+
         for (new j=0; j < MAX_CHARACTERS; j++)
         {
             g_iStartHealth[i][j] = 100;
@@ -254,15 +253,15 @@ public OnRoundIsLive()
     // crox readyup
     // if round goes live, make sure all the damage stuff is reset
     new round = GetCurRound();
-    
+
     iTotalDamage[round] = 0;
     iSolidHealthDamage[round] = 0;
-    
+
     //iStoreBonus[round] = 0;           // don't mess with the stuff that's ok anyway
     //iStoreSurvivors[round] = 0;
     //bRoundOver[round] = false;
     //bHasWiped[round] = false;
-    
+
     // also reset player status even if considered 'hanging before'
     for ( new i = 0; i < 4; i++ )
     {
@@ -303,9 +302,9 @@ public RoundStart_Event(Handle:event, const String:name[], bool:dontBroadcast)
         iPlayerDamage[i] = 0;
         bPlayerHasBeenIncapped[i] = false;
     }
-    
+
     g_bInRound = true;
-    
+
     if (g_bSecondHalf)
     {
         g_bFirstRoundReallyOver = true;
@@ -318,13 +317,13 @@ public RoundEnd_Event(Handle:event, const String:name[], bool:dontBroadcast)
     if (!GetUprightSurvivors()) {
         bHasWiped[GetCurRound()] = true;
     }
-    
+
     // when round is over...
-    
+
     g_bInRound = false;
     bRoundOver[GetCurRound()] = true;
     g_bSecondHalf = true;
-    
+
     new reason = GetEventInt(event, "reason");
     if (reason == 5)
     {
@@ -342,13 +341,13 @@ public PlayerDeath_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new client = GetClientOfUserId(GetEventInt(event, "userid"));
     new round = GetCurRound();
-    
+
     if (client && IsSurvivor(client))
     {
         //SetBonus(CalculateSurvivalBonus());   // no need, onendversusmoderound is reliable
-        
+
         if (!g_bInRound) { return; }
-        
+
         // check solid health
         if (g_fSettingSolid != 1.0)
         {
@@ -378,7 +377,7 @@ public OnTakeDamage(victim, attacker, inflictor, Float:damage, damagetype)
 {
     if ( !g_bInRound ) { return; }
     if (!IsSurvivor(victim)) { return; }
-    
+
     new srvchr = GetPlayerCharacter(victim);
     iHealth[srvchr] = (IsPlayerIncap(victim)) ? 0 : (GetSurvivorPermanentHealth(victim) + GetSurvivorTempHealth(victim));
     bTookDamage[srvchr] = true;
@@ -387,16 +386,16 @@ public OnTakeDamage(victim, attacker, inflictor, Float:damage, damagetype)
 public PlayerLedgeGrab_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
     if ( !g_bInRound ) { return; }
-    
+
     new client = GetClientOfUserId(GetEventInt(event, "userid"));
     if (!IsSurvivor(client)) { return; }
-    
+
     new health = L4D2Direct_GetPreIncapHealth(client);
     new temphealth = L4D2Direct_GetPreIncapHealthBuffer(client);
     new round = GetCurRound();
-    
+
     iTotalDamage[round] += health + temphealth;
-    
+
     // check solid health
     if (g_fSettingSolid != 1.0)
     {
@@ -412,15 +411,15 @@ public PlayerLedgeGrab_Event(Handle:event, const String:name[], bool:dontBroadca
 public PlayerIncap_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
     if ( !g_bInRound ) { return; }
-    
+
     new client = GetClientOfUserId(GetEventInt(event, "userid"));
     if (!IsSurvivor(client)) { return; }
-    
+
     new srvchr = GetPlayerCharacter(client);
     new round = GetCurRound();
-    
+
     bPlayerHasBeenIncapped[srvchr] = true;
-    
+
     // check solid health
     if (g_fSettingSolid != 1.0)
     {
@@ -437,13 +436,13 @@ public Action:L4D2_OnRevived(client)
 {
     if ( !g_bInRound ) { return; }
     if (!IsSurvivor(client)) { return; }
-    
+
     new health = GetSurvivorPermanentHealth(client);
     new temphealth = GetSurvivorTempHealth(client);
     new round = GetCurRound();
-    
+
     iTotalDamage[round] -= (health + temphealth);
-    
+
     // check solid health
     if (g_fSettingSolid != 1.0)
     {
@@ -459,10 +458,10 @@ public OnTakeDamagePost(victim, attacker, inflictor, Float:damage, damagetype)
 {
     if ( !g_bInRound ) { return; }
     if (!IsSurvivor(victim)) { return; }
-    
+
     new srvchr = GetPlayerCharacter(victim);
     new round = GetCurRound();
-    
+
     if (iHealth[srvchr])
     {
         if (!IsPlayerAlive(victim) || (IsPlayerIncap(victim) && !IsPlayerHanging(victim)))
@@ -472,12 +471,12 @@ public OnTakeDamagePost(victim, attacker, inflictor, Float:damage, damagetype)
         else if (!IsPlayerHanging(victim))
         {
             iTotalDamage[round] += iHealth[srvchr] - (GetSurvivorPermanentHealth(victim) + GetSurvivorTempHealth(victim));
-            
+
             if (!bPlayerHasBeenIncapped[srvchr])
             {
                 iPlayerDamage[srvchr] += iHealth[srvchr] - (GetSurvivorPermanentHealth(victim) + GetSurvivorTempHealth(victim));
                 iSolidHealthDamage[round] += iHealth[srvchr] - (GetSurvivorPermanentHealth(victim) + GetSurvivorTempHealth(victim));
-                
+
                 if (iPlayerDamage[srvchr] > g_iStartHealth[round][srvchr])
                 {
                     iSolidHealthDamage[round] -= (g_iStartHealth[round][srvchr] - iPlayerDamage[srvchr]);
@@ -497,7 +496,7 @@ stock GetDamage(round=-1)
 stock SetBonus(iBonus)
 {
     if ( !g_bInRound ) { return; }
-    
+
     SetConVarInt(g_hCvarSurvivalBonus, iBonus);
     StoreBonus(iBonus);
 }
@@ -518,9 +517,9 @@ stock DisplayBonus(client=-1)
 {
     new String:msgPartHdr[48];
     new String:msgPartDmg[64];
-    
+
     new curRound = GetCurRound();
-    
+
     // call for gnome bonus scoring native if we just finished a round
     if ((!curRound && bRoundOver[0]) || (curRound && bRoundOver[1]))
     {
@@ -529,7 +528,7 @@ stock DisplayBonus(client=-1)
             RNDMAIN_ShowGnomeBonus();
         }
     }
-    
+
     for (new round = 0; round <= curRound; round++)
     {
         if (bRoundOver[round]) {
@@ -545,7 +544,7 @@ stock DisplayBonus(client=-1)
             new tmpAlive = GetAliveSurvivors();
             new tmpBonus = (bRoundOver[round]) ? iStoreBonus[round] * iStoreSurvivors[round] : CalculateSurvivalBonus() * tmpAlive;
             new tmpStatic = g_iSettingStatic * ( (bRoundOver[round]) ? iStoreSurvivors[round] : tmpAlive );
-            
+
             tmpBonus -= tmpStatic;
             if (bRoundOver[round]) {
                 if (iStoreExtra[round]) {
@@ -554,17 +553,17 @@ stock DisplayBonus(client=-1)
             } else if (g_iRoundExtra) {
                 tmpBonus -= g_iRoundExtra;
             }
-            
+
             // safeguard: no negative bonus:
             tmpBonus = MAX( tmpBonus, 0 );
-            
+
             FormatEx(msgPartDmg, sizeof(msgPartDmg), "\x04%4d\x01 (\x05%4d\x01 damage)", tmpBonus, iTotalDamage[round] );
-            
+
             // add static bonus
             if (tmpStatic) {
                 Format(msgPartDmg, sizeof(msgPartDmg), "%s + \x04%d\x01", msgPartDmg, tmpStatic);
             }
-            
+
             // add extra bonus for random
             if ( bRoundOver[round] ) {
                 if ( iStoreExtra[round] ) {
@@ -574,7 +573,7 @@ stock DisplayBonus(client=-1)
                 Format(msgPartDmg, sizeof(msgPartDmg), "%s + \x05%d\x01", msgPartDmg, g_iRoundExtra);
             }
         }
-        
+
         // add extra bonus for penaltybonus scoring
         if ( bRoundOver[round] ) {
             if ( iStorePBonus[round] ) {
@@ -583,7 +582,7 @@ stock DisplayBonus(client=-1)
         } else if ( g_iPenaltyBonus ) {
             Format(msgPartDmg, sizeof(msgPartDmg), "%s %s \x03%d\x01", msgPartDmg, (g_iPenaltyBonus < 0) ? "-" : "+", (g_iPenaltyBonus < 0) ? g_iPenaltyBonus * -1 : g_iPenaltyBonus );
         }
-        
+
         if (client == -1) {
             PrintToChatAll("\x01%s: %s", msgPartHdr, msgPartDmg);
         } else if (client) {
@@ -597,23 +596,23 @@ stock DisplayBonus(client=-1)
 stock DisplayBonusExplanation(client=-1)
 {
     // show exactly how the calculated bonus is constructed
-    
+
     new String: sReport[MAX_REPORTLINES][STR_REPLINELENGTH];
     new iLine = 0;
-    
+
     new round = GetCurRound();
     new living = (bRoundOver[round]) ? iStoreSurvivors[round] : GetAliveSurvivors();
     new iDistMode = g_iSettingScaleMode;
     new iBonusExtra = (bRoundOver[round]) ? RoundToFloor(float(iStoreExtra[round]) / float(living)) : RoundToFloor(float(g_iRoundExtra) / float(living));
-    
+
     new Float: fBaseMaxDamage = float( VALUE_MAX_DAMAGE );
-    
+
     new Float: fCalcMaxDamage = fBaseMaxDamage;
     new Float: fCalcTakenDamage = float(iTotalDamage[round]);
     new Float: fBaseBonus = fCalcMaxDamage;
     new Float: fPerc = 0.0;
 
-    
+
     // damage taken
     Format(sReport[iLine], STR_REPLINELENGTH, "Damage taken:       \x05%i\x01", iTotalDamage[round]);
     if (g_fSettingSolid != 1.0) {
@@ -622,14 +621,14 @@ stock DisplayBonusExplanation(client=-1)
         Format(sReport[iLine], STR_REPLINELENGTH, "%s.", sReport[iLine]);
     }
     iLine++;
-    
+
     // base bonus to max damage calc
     fBaseBonus = fCalcMaxDamage - ( fCalcTakenDamage * VALUE_DAMAGE_MULTI );
     fPerc = ( ( fCalcTakenDamage * VALUE_DAMAGE_MULTI ) / fCalcMaxDamage ) * 100.0;
     if (fBaseBonus < 0.0) { fBaseBonus = 0.0; fPerc = 0.0; }
-    
+
     if (VALUE_DAMAGE_MULTI != 1.0) {
-        // damage scaled 
+        // damage scaled
         FormatEx(sReport[iLine], STR_REPLINELENGTH, "Dmg taken/maximum:  (\x05%.f\x01 * %.2f) out of \x05%.f\x01 [\x04%.1f%%\x01] => base bonus: \x03%i\x01",
                 fCalcTakenDamage, VALUE_DAMAGE_MULTI, fCalcMaxDamage,
                 fPerc,
@@ -646,7 +645,7 @@ stock DisplayBonusExplanation(client=-1)
             );
     }
     iLine++;
-    
+
     // factoring in the solid-health damage
     if (g_fSettingSolid != 1.0)
     {
@@ -657,22 +656,22 @@ stock DisplayBonusExplanation(client=-1)
         fBaseBonus = ( fCalcMaxDamage - fCalcTakenDamage ) * ( fBaseMaxDamage / fCalcMaxDamage );
         fPerc = ( fCalcTakenDamage / fCalcMaxDamage ) * 100.0;
         if (fBaseBonus < 0.0) { fBaseBonus = 0.0; fPerc = 0.0; }
-        
+
         FormatEx(sReport[iLine], STR_REPLINELENGTH, "Solid-health value: (\x05%.f\x01+(\x04%.f\x01*\x05%.1f\x01)) out of (\x05%.f\x01+(\x04%.f\x01*\x05%.1f\x01)) [\x04%.1f%%\x01] => \x03%i\x01",
                 float(iTotalDamage[round] - iSolidHealthDamage[round]) * VALUE_DAMAGE_MULTI,
                 float(iSolidHealthDamage[round]) * VALUE_DAMAGE_MULTI,
                 g_fSettingSolid,
-                
+
                 fBaseMaxDamage - ( float(GetStartHealthTotal()) * VALUE_DAMAGE_MULTI),
                 float(GetStartHealthTotal()) * VALUE_DAMAGE_MULTI,
                 g_fSettingSolid,
-                
+
                 fPerc,
                 RoundToFloor( fBaseBonus / TEAMSIZE_DEFAULT ) * RoundFloat(TEAMSIZE_DEFAULT)
             );
     }
     iLine++;
-    
+
     // scale for distance [base bonus]
     if (g_iSettingBonus != VALUE_DIST_BASE)
     {
@@ -688,7 +687,7 @@ stock DisplayBonusExplanation(client=-1)
                         RoundToFloor( fBaseBonus / TEAMSIZE_DEFAULT ) * RoundFloat(TEAMSIZE_DEFAULT)
                     );
             }
-            
+
             case DST_REDUCTION:
             {
                 if (VALUE_DIST_BASE - g_iSettingBonus > 0)
@@ -707,7 +706,7 @@ stock DisplayBonusExplanation(client=-1)
                 }
                 fPerc = ( fCalcTakenDamage / fCalcMaxDamage ) * 100.0;
                 if (fBaseBonus < 0.0) { fBaseBonus = 0.0; fPerc = 0.0; }
-                
+
                 if (VALUE_DIST_BASE - g_iSettingBonus > 0)
                 {
                     FormatEx(sReport[iLine], STR_REPLINELENGTH, "Rand.base (reduce): \x04%i\x01 diff. => new dmg: [\x04%.1f%%\x01] out of \x05%.f\x01 max => \x03%i\x01",
@@ -731,7 +730,7 @@ stock DisplayBonusExplanation(client=-1)
         }
         iLine++;
     }
-    
+
     // scale for survivors
     new iTmpBonus;
     iTmpBonus = RoundToFloor( fBaseBonus / TEAMSIZE_DEFAULT ) * living;
@@ -745,7 +744,7 @@ stock DisplayBonusExplanation(client=-1)
                 );
         iLine++;
     }
-    
+
     // add static survival bonus
     if (g_iSettingStatic > 0)
     {
@@ -756,7 +755,7 @@ stock DisplayBonusExplanation(client=-1)
                 );
         iLine++;
     }
-    
+
     // add random bonus (gnome)
     if (iBonusExtra)
     {
@@ -768,7 +767,7 @@ stock DisplayBonusExplanation(client=-1)
                 );
         iLine++;
     }
-    
+
     // compare to actual bonus:
     new iDiff = ( iTmpBonus + ( g_iSettingStatic * living ) ) - ( CalculateSurvivalBonus() * living );
     if (iDiff != 0)
@@ -776,7 +775,7 @@ stock DisplayBonusExplanation(client=-1)
         FormatEx(sReport[iLine], STR_REPLINELENGTH, "(ignore \x04%i\x01 points diff. from actual bonus (expl. rounding error))", iDiff);
         iLine++;
     }
-    
+
     // send the report
     for (new i=0; i < iLine; i++)
     {
@@ -801,35 +800,35 @@ stock bool:IsPlayerLedgedAtAll(client) return bool:(GetEntProp(client, Prop_Send
 stock GetStartHealthTotal(round = -1)
 {
     new totalHealth = 0;
-    
+
     if (round == -1) { round = GetCurRound(); }
-    
+
     for (new j=0; j < MAX_CHARACTERS; j++)
     {
         totalHealth += g_iStartHealth[round][j];
     }
-    
+
     if (!totalHealth)
     {
         totalHealth = 100 * RoundFloat( TEAMSIZE_DEFAULT );
     }
-    
+
     return totalHealth;
 }
 
 stock CheckStartHealth(round = -1)
 {
     if (round == -1) { round = GetCurRound(); }
-    
+
     new currentHealth[MAX_CHARACTERS] = {100,...};
-    
+
     for (new i=1; i <= MaxClients; i++)
     {
         if (!IsClientAndInGame(i) || !IsSurvivor(i) || !IsPlayerAlive(i)) { continue; }
-        
+
         currentHealth[ GetPlayerCharacter(i) ] = GetSurvivorPermanentHealth(i);
     }
-    
+
     for (new j=0; j < MAX_CHARACTERS; j++)
     {
         g_iStartHealth[round][j] = currentHealth[j];
@@ -850,13 +849,13 @@ stock CalculateSurvivalBonus()
     new iRound = GetCurRound();
 
     g_iRoundExtra = RNDMAIN_GetGnomeBonus();
-    
+
     new iDistMode = g_iSettingScaleMode;
-    
+
     new Float: fBonus = 0.0;
     new iBonusPart;
     new Float: fBaseMaxDamage = float( VALUE_MAX_DAMAGE );
-    
+
     // [base] distance reduction (needs be done before dmg calc)
     if (iDistMode == DST_REDUCTION)
     {
@@ -869,39 +868,39 @@ stock CalculateSurvivalBonus()
             iDistMode = DST_SCALING;
         }
     }
-    
+
     // damage calc: solid health damage, damage multiplier, max - taken damage (+ scaled back to 0-maxdmg range)
     new iDmg = GetDamage();
     new Float: fMaxDamageSolidPart = MIN( fBaseMaxDamage , float(GetStartHealthTotal()) );
     new Float: fTakenDamage = ( float( iDmg - iSolidHealthDamage[iRound] ) * VALUE_DAMAGE_MULTI ) + ( float(iSolidHealthDamage[iRound]) * VALUE_DAMAGE_MULTI * g_fSettingSolid );
     new Float: fMaxDamage = ( fBaseMaxDamage - fMaxDamageSolidPart ) + ( fMaxDamageSolidPart * g_fSettingSolid );
-    
+
     // calculate bonus
     fBonus = ( fMaxDamage - fTakenDamage ) * ( fBaseMaxDamage / fMaxDamage );
-    
+
     // [base] distance scaling (+ factor weighing)
     if (iDistMode == DST_SCALING)
     {
         fBonus = fBonus * ( float(g_iSettingBonus) / float(VALUE_DIST_BASE) );
     }
-    
+
     // at least 0 (before adding the extra & static)
     fBonus = MAX( fBonus, 0.0 );
-    
+
     // extra bonus
     if (g_iRoundExtra)
     {
         new aliveSurvs = GetAliveSurvivors();
         if (aliveSurvs > 0) {
             //fBonus += float( RoundToFloor(float(g_iRoundExtra) / float(aliveSurvs)) );
-            
+
             fBonus += float(g_iRoundExtra) * (TEAMSIZE_DEFAULT / float(aliveSurvs));
         }
     }
-    
+
     // scale for living + static
     iBonusPart = RoundToFloor( fBonus / TEAMSIZE_DEFAULT ) + g_iSettingStatic;
-    
+
     return iBonusPart;
 }
 
@@ -949,15 +948,15 @@ stock GetCurRound() { return (g_bSecondHalf && g_bFirstRoundReallyOver) ? 1 : 0;
 stock GetPlayerCharacter(client)
 {
     new tmpChr = GetEntProp(client, Prop_Send, "m_survivorCharacter");
-    
+
     // use models when incorrect character returned
     if (tmpChr < 0 || tmpChr >= MAX_CHARACTERS)
     {
         LogMessage("[dmgflx] Incorrect character code: %i (for %N) (using model instead)", tmpChr, client);
-        
+
         decl String:model[256];
         GetEntPropString(client, Prop_Data, "m_ModelName", model, sizeof(model));
-        
+
         if (StrContains(model, "gambler") != -1) {          tmpChr = 0; }
         else if (StrContains(model, "coach") != -1) {       tmpChr = 2; }
         else if (StrContains(model, "mechanic") != -1) {    tmpChr = 3; }
@@ -968,6 +967,6 @@ stock GetPlayerCharacter(client)
         else if (StrContains(model, "manager") != -1) {     tmpChr = 2; }
         else {                                              tmpChr = 0; }
     }
-    
+
     return tmpChr;
 }
