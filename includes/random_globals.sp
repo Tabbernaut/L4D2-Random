@@ -107,16 +107,16 @@ new     bool:           g_bDoubleTank                                       = fa
 new     Float:          g_fTankFlowEarly                                    = 0.0;
 new     Float:          g_fTankFlowLate                                     = 0.0;
 new     Float:          g_fTankDeathLocation[3]                             = {0.0,...};            // last tank death location, for item drops
-new                     g_iMiniTankIndex;				                                            // current minitank in map
-new                     g_iMiniTankNum;				                                                // the number of minitanks to be spawned on the current map
+new                     g_iMiniTankIndex;                                                           // current minitank in map
+new                     g_iMiniTankNum;                                                             // the number of minitanks to be spawned on the current map
 new     Float:          g_fArMiniTankFlows      [MULTITANK_MAX];                                    // stores flow distances for the current round
-new     bool:           g_bTankIsEarly                                      = false;                // for balance changes 
+new     bool:           g_bTankIsEarly                                      = false;                // for balance changes
 
 // Witches (Stabby)
 new     bool:           g_bWitchWillSpawn                                   = false;
 new     bool:           g_bWitchFirstRound                                  = false;                // true if there was a witch first round (to prevent 1/0 bugged witch spawns...)
 new     bool:           g_bMultiWitch                                       = false;                // whether we'll have multiple witches this round(half)
-new                     g_iWitchNum;				                                                // the number of witches to be spawned on the current map
+new                     g_iWitchNum;                                                                // the number of witches to be spawned on the current map
 new                     g_iWitchIndex;                                                              // the index of the current witch (in the witch flows array)
 new     Float:          g_fArWitchFlows         [MULTIWITCH_MAX];                                   // stores flow distances for the current round
 new     bool:           g_bArWitchSitting       [MULTIWITCH_MAX]            = {true,...};           // stores whether each witch is sitting or walking
@@ -292,8 +292,8 @@ new     Handle:         g_hVomitTraceAttack     [MAXPLAYERS+1]              = IN
 new     bool:           g_bAlreadyVomitedUpon   [MAXPLAYERS+1]              = false;                // so we can just do things once per vomit-covering
 
 // Hats
-new                     g_iHatIndex[MAXPLAYERS+1];				// Player hat entity reference
-new                     g_iType[MAXPLAYERS+1];					// Stores selected hat to give players.
+new                     g_iHatIndex[MAXPLAYERS+1];              // Player hat entity reference
+new                     g_iType[MAXPLAYERS+1];                  // Stores selected hat to give players.
 
 // RandomMapInfo keyvalues
 new     Handle:         g_kRIData                                           = INVALID_HANDLE;       // keyvalues handle for randommapinfo.txt
@@ -320,7 +320,7 @@ new     Float:          g_RI_fTankOddsHard                                  = 0.
 new     bool:           g_RI_bNoRealHittables                               = false;
 
 // ConVars
-new     Handle:         g_hArCvarWeight         [INDEX_TOTAL];                                      // cvar, per randomize-type, that sets an integer weight 
+new     Handle:         g_hArCvarWeight         [INDEX_TOTAL];                                      // cvar, per randomize-type, that sets an integer weight
 new     Handle:         g_hArCvarSurvWeight     [INDEX_SURV_TOTAL];                                 // cvar, per randomize-type, that sets an integer weight -- for handing out starting weapon
 new     Handle:         g_hArCvarEvtWeight      [EVT_TOTAL];                                        // cvar, per randomize-type, that sets an integer weight -- for picking events
 new     Handle:         g_hArCvarGiftWeight     [GIFT_TOTAL];                                       // cvar, per randomize-type, that sets an integer weight -- for picking gift effects
