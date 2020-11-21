@@ -202,8 +202,8 @@ DoPanelReport()
         Format(sReport, sizeof(sReport), "No Special Event.");
     }
     DrawPanelText(panel, sReport);
-    
-    for (new i = 1; i <= MaxClients; i++) 
+
+    for (new i = 1; i <= MaxClients; i++)
     {
         if (IsClientAndInGame(i) && !IsFakeClient(i)) 
         {
@@ -3682,7 +3682,7 @@ ChangeSurvivorSetup(index, client)
 RANDOM_CheckPlayerGiftUse(client)
 {
     // avoid use spam (block use function for some time after gift opening):
-    if (g_fGiftUseTimeout[client] != 0.0 && FloatSub(GetEngineTime(), g_fGiftUseTimeout[client]) < GIFTUSE_TIMEOUT) {
+    if (g_fGiftUseTimeout[client] != 0.0 && (GetEngineTime() - g_fGiftUseTimeout[client]) < GIFTUSE_TIMEOUT) {
         return 0;
     } else {
         g_fGiftUseTimeout[client] = 0.0;    // clean up
@@ -3727,8 +3727,7 @@ RANDOM_CheckPlayerGiftUse(client)
     if (SUPPORT_IsInReady())
     {
         // show message if we didn't for a while
-        if (g_fGiftReportTimeout != 0.0 && FloatSub(GetEngineTime(), g_fGiftReportTimeout) <= GIFTREPORT_TIMEOUT) { return 1; }
-        
+        if (g_fGiftReportTimeout != 0.0 && (GetEngineTime() - g_fGiftReportTimeout) <= GIFTREPORT_TIMEOUT) { return 1; }
         PrintToChat(client, "\x01[\x05r\x01] You must ready up before you can open a gift...");
         g_fGiftReportTimeout = GetEngineTime();
         return 1;
