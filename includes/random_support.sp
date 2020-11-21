@@ -2389,7 +2389,9 @@ DoItemsServerReport(full=false)
         }
     }
 
-    if (full) { return; }
+    if (full) {
+        return;
+    }
 
     iTotalRealItems = g_iStoredEntities - iItemCount[PCK_NOITEM];
 
