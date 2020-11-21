@@ -50,8 +50,8 @@ public Action: Timer_CheckBlindness( Handle:timer, any:client )
     if ( !IsClientAndInGame(client) || !IsSurvivor(client) || !IsPlayerAlive(client) || IsFakeClient(client) ) { return; }
     
     new chr = GetPlayerCharacter(client);
-    
-    if ( g_fGiftBlindTime[chr] != 0.0 && FloatSub( g_fGiftBlindTime[chr], GetGameTime() ) > 0.0 )
+
+    if ( g_fGiftBlindTime[chr] != 0.0 && (g_fGiftBlindTime[chr] - GetGameTime()) > 0.0 )
     {
         DoBlindSurvivor(client, BLIND_AMOUNT);
     }
@@ -73,8 +73,8 @@ public Action: Timer_Blindness ( Handle:timer, any:chr )
     if ( g_bIsPaused ) { return Plugin_Continue; }
     
     //PrintDebug(3, "[rand] Checking chr %i: time: now: %.1f, until: %.1f", chr, GetGameTime(), g_fGiftBlindTime[chr]);
-    
-    if ( g_fGiftBlindTime[chr] == 0.0 || FloatSub( g_fGiftBlindTime[chr], GetGameTime() ) <= 0.0 )
+
+    if ( g_fGiftBlindTime[chr] == 0.0 || (g_fGiftBlindTime[chr] - GetGameTime()) <= 0.0 )
     {
         // find character and unblind
         new tmpClient = GetCharacterClient(chr);
@@ -98,7 +98,7 @@ public Action: Timer_Blindness ( Handle:timer, any:chr )
 // just for checking rup at the moment
 GetAnySurvivor()
 {
-    for (new i=1; i <= GetMaxClients(); i++) {
+    for (new i=1; i <= MaxClients; i++) {
         if (IsClientConnected(i) && IsSurvivor(i)) { return i; }
     }
     return 0;
@@ -145,7 +145,7 @@ AnyoneLoadedIn()
 // get just any survivor client (param = false = switch to infected too)
 GetSpawningClient(bool:onlySurvivors=false)
 {
-    for (new i=1; i <= GetMaxClients(); i++)
+    for (new i=1; i <= MaxClients; i++)
     {
         if (IsClientConnected(i) && IsSurvivor(i) && !IsFakeClient(i)) { return i; }
     }
@@ -153,7 +153,7 @@ GetSpawningClient(bool:onlySurvivors=false)
     if (onlySurvivors) { return 0; }
     
     // since we're just using this for spawning stuff that requires a client, use infected alternatively
-    for (new i=1; i <= GetMaxClients(); i++)
+    for (new i=1; i <= MaxClients; i++)
     {
         if (IsClientConnected(i) && IsInfected(i) && !IsFakeClient(i)) { return i; }
     }
@@ -275,8 +275,8 @@ SetMinimumHealthSurvivors()
     
     // exceptions?
     if ( g_iSpecialEvent == EVT_DEFIB ) { return; }
-    
-    for ( new i = 1; i <= GetMaxClients(); i++ )
+
+    for ( new i = 1; i <= MaxClients; i++ )
     {
         if ( IsClientInGame(i) && IsSurvivor(i) && IsPlayerAlive(i) )
         {
@@ -401,8 +401,8 @@ SpawnCommonLocation(Float:location[3], bool: isFemale = false)
         // force female model
         SetEntityModel(zombie, g_csFemaleCommonModels[ GetRandomInt(0, sizeof(g_csFemaleCommonModels) - 1) ]);
     }
-    
-    new ticktime = RoundToNearest( FloatDiv( GetGameTime() , GetTickInterval() ) ) + 5;
+
+    new ticktime = RoundToNearest( ( GetGameTime() / GetTickInterval() ) ) + 5;
     SetEntProp(zombie, Prop_Data, "m_nNextThinkTick", ticktime);
 
     DispatchSpawn(zombie);
