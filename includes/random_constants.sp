@@ -527,7 +527,7 @@ const Float:    Z_GUN_STUNTIME          = 1.25;
 // --------------
 
 // witch array entries (maxplayers+index)
-enum _:strPlayDisco
+enum strPlayDisco
 {
     DISC_PAUSE,
     DISC_CLASS
@@ -600,21 +600,62 @@ enum RandomizableOrNot          // for use with tries to determine ent's random-
     HITTABLE_PHYSICS_ADDON          // the glass on cars
 }
 
-enum _:pickType                   // which option was randomly picked? data recreated on this basis
+enum                       // which option was randomly picked? data recreated on this basis
 {
-    PCK_NOITEM,
-    PCK_PISTOL,             PCK_PISTOL_MAGNUM,      PCK_SMG_MP5,            PCK_SMG,            PCK_SMG_SILENCED,       PCK_PUMPSHOTGUN,        PCK_SHOTGUN_CHROME,     PCK_RIFLE_SG552,
-    PCK_RIFLE,              PCK_RIFLE_AK47,         PCK_RIFLE_DESERT,       PCK_AUTOSHOTGUN,    PCK_SHOTGUN_SPAS,       PCK_HUNTING_RIFLE,      PCK_SNIPER_MILITARY,    PCK_SNIPER_AWP,
-    PCK_SNIPER_SCOUT,       PCK_MELEE,
-    PCK_CHAINSAW,           PCK_GRENADE_LAUNCHER,   PCK_RIFLE_M60,          PCK_EXPLOSIVE_BARREL,                       PCK_FIREWORKCRATE,      PCK_PROPANETANK,        PCK_OXYGENTANK,
-    PCK_GASCAN,             PCK_PAIN_PILLS,         PCK_ADRENALINE,         PCK_MOLOTOV,         PCK_PIPEBOMB,          PCK_VOMITJAR,           PCK_FIRST_AID_KIT,      PCK_DEFIBRILLATOR,
-    PCK_AMMO,               PCK_UPG_LASER,          PCK_UPG_EXPLOSIVE,      PCK_UPG_INCENDIARY,  PCK_SILLY_COLA,        PCK_SILLY_GNOME,        PCK_SILLY_GIFT,         PCK_JUNK,
-    PCK_DUALS
+    PCK_NOITEM,                 // 0
+    PCK_PISTOL,
+    PCK_PISTOL_MAGNUM,
+    PCK_SMG_MP5,
+    PCK_SMG,
+    PCK_SMG_SILENCED,
+    PCK_PUMPSHOTGUN,
+    PCK_SHOTGUN_CHROME,
+    PCK_RIFLE_SG552,
+
+    PCK_RIFLE,                  // 9
+    PCK_RIFLE_AK47,
+    PCK_RIFLE_DESERT,
+    PCK_AUTOSHOTGUN,
+    PCK_SHOTGUN_SPAS,
+    PCK_HUNTING_RIFLE,
+    PCK_SNIPER_MILITARY,
+    PCK_SNIPER_AWP,
+    PCK_SNIPER_SCOUT,
+    PCK_MELEE,                  // 18
+    PCK_CHAINSAW,
+    PCK_GRENADE_LAUNCHER,
+    PCK_RIFLE_M60,
+
+    PCK_EXPLOSIVE_BARREL,       // 22
+    PCK_FIREWORKCRATE,
+    PCK_PROPANETANK,
+    PCK_OXYGENTANK,
+    PCK_GASCAN,
+
+    PCK_PAIN_PILLS,             // 27
+    PCK_ADRENALINE,
+    PCK_MOLOTOV,
+    PCK_PIPEBOMB,
+    PCK_VOMITJAR,
+    PCK_FIRST_AID_KIT,
+    PCK_DEFIBRILLATOR,
+
+    PCK_AMMO,                   // 34
+    PCK_UPG_LASER,
+    PCK_UPG_EXPLOSIVE,
+    PCK_UPG_INCENDIARY,
+    PCK_SILLY_COLA,             // 38
+    PCK_SILLY_GNOME,
+    PCK_SILLY_GIFT,
+    PCK_JUNK,                   // 41
+
+    PCK_DUALS,                  // 42
     // PCK_MELEE [18] remember, class will be stored separately
     // PCK_DUALS = only for survivor start setups
+    pickType
 }
 
-enum _:strEntityData                // everything required to recreate the entity
+enum strEntityData                  // everything required to recreate the entity
 {
             entNumber,              // what is the actual entity number?
     bool:   entPickedUp,            // picked up by current team
@@ -634,7 +675,7 @@ enum _:strEntityData                // everything required to recreate the entit
             entJunkType             // index of junkModels array
 }
 
-enum _:strHittableData              // everything required to recreate the hittable
+enum strHittableData                // everything required to recreate the hittable
 {
             hitNumber,              // what is the actual entity number?
             hitNumberAddonA,        // entnumber for glass bit (which is parented to it) 0 for none
@@ -664,13 +705,13 @@ enum _:strHittableData              // everything required to recreate the hitta
             hitColor_b
 }
 
-enum _:EntInfo                      // for blind_infected adaptation
+enum EntInfo                        // for blind_infected adaptation
 {
             iEntity,
     bool:   hasBeenSeen
 }
 
-enum _:strGnomeData
+enum strGnomeData
 {
     bool:   gnomebIsCola,           // whether the gnome is really cola (don't ask)
     bool:   gnomebWorthPoints,      // whether the gnome is worth points at all
@@ -1107,62 +1148,63 @@ new const String: g_csSIClassName[][] =
     "tank"
 };
 
-enum _:WeaponId
+enum
 {
-	WEPID_NONE,				// 0
-	WEPID_PISTOL,			// 1
-	WEPID_SMG,				// 2
-	WEPID_PUMPSHOTGUN,		// 3
-	WEPID_AUTOSHOTGUN,		// 4
-	WEPID_RIFLE,			// 5
-	WEPID_HUNTING_RIFLE,	// 6
-	WEPID_SMG_SILENCED,		// 7
-	WEPID_SHOTGUN_CHROME, 	// 8
-	WEPID_RIFLE_DESERT,		// 9
-	WEPID_SNIPER_MILITARY,	// 10
-	WEPID_SHOTGUN_SPAS, 	// 11
-	WEPID_FIRST_AID_KIT, 	// 12
-	WEPID_MOLOTOV, 			// 13
-	WEPID_PIPE_BOMB, 		// 14
-	WEPID_PAIN_PILLS, 		// 15
-	WEPID_GASCAN,			// 16
-	WEPID_PROPANE_TANK,		// 17
-	WEPID_OXYGEN_TANK,		// 18
-	WEPID_MELEE,			// 19
-	WEPID_CHAINSAW,			// 20	
-	WEPID_GRENADE_LAUNCHER,	// 21
-	WEPID_AMMO_PACK,		// 22
-	WEPID_ADRENALINE,		// 23
-	WEPID_DEFIBRILLATOR,	// 24
-	WEPID_VOMITJAR,			// 25 
-	WEPID_RIFLE_AK47, 		// 26
-	WEPID_GNOME_CHOMPSKI,	// 27
-	WEPID_COLA_BOTTLES,		// 28
-	WEPID_FIREWORKS_BOX,	// 29
-	WEPID_INCENDIARY_AMMO,	// 30
-	WEPID_FRAG_AMMO,		// 31
-	WEPID_PISTOL_MAGNUM,	// 32
-	WEPID_SMG_MP5, 			// 33
-	WEPID_RIFLE_SG552, 		// 34
-	WEPID_SNIPER_AWP, 		// 35
-	WEPID_SNIPER_SCOUT, 	// 36
-	WEPID_RIFLE_M60,		// 37
-	WEPID_TANK_CLAW,		// 38
-	WEPID_HUNTER_CLAW,		// 39
-	WEPID_CHARGER_CLAW,		// 40
-	WEPID_BOOMER_CLAW,		// 41
-	WEPID_SMOKER_CLAW,		// 42
-	WEPID_SPITTER_CLAW,		// 43
-	WEPID_JOCKEY_CLAW,		// 44
-	WEPID_MACHINEGUN,		// 45
-	WEPID_FATAL_VOMIT,		// 46
-	WEPID_EXPLODING_SPLAT,	// 47
-	WEPID_LUNGE_POUNCE,		// 48
-	WEPID_LOUNGE,			// 49
-	WEPID_FULLPULL,			// 50
-	WEPID_CHOKE,			// 51
-	WEPID_THROWING_ROCK,	// 52
-	WEPID_TURBO_PHYSICS,	// 53 what is this
-	WEPID_AMMO,				// 54
-	WEPID_UPGRADE_ITEM		// 55
+    WEPID_NONE,             // 0
+    WEPID_PISTOL,           // 1
+    WEPID_SMG,              // 2
+    WEPID_PUMPSHOTGUN,      // 3
+    WEPID_AUTOSHOTGUN,      // 4
+    WEPID_RIFLE,            // 5
+    WEPID_HUNTING_RIFLE,    // 6
+    WEPID_SMG_SILENCED,     // 7
+    WEPID_SHOTGUN_CHROME,   // 8
+    WEPID_RIFLE_DESERT,     // 9
+    WEPID_SNIPER_MILITARY,  // 10
+    WEPID_SHOTGUN_SPAS,     // 11
+    WEPID_FIRST_AID_KIT,    // 12
+    WEPID_MOLOTOV,          // 13
+    WEPID_PIPE_BOMB,        // 14
+    WEPID_PAIN_PILLS,       // 15
+    WEPID_GASCAN,           // 16
+    WEPID_PROPANE_TANK,     // 17
+    WEPID_OXYGEN_TANK,      // 18
+    WEPID_MELEE,            // 19
+    WEPID_CHAINSAW,         // 20
+    WEPID_GRENADE_LAUNCHER, // 21
+    WEPID_AMMO_PACK,        // 22
+    WEPID_ADRENALINE,       // 23
+    WEPID_DEFIBRILLATOR,    // 24
+    WEPID_VOMITJAR,         // 25
+    WEPID_RIFLE_AK47,       // 26
+    WEPID_GNOME_CHOMPSKI,   // 27
+    WEPID_COLA_BOTTLES,     // 28
+    WEPID_FIREWORKS_BOX,    // 29
+    WEPID_INCENDIARY_AMMO,  // 30
+    WEPID_FRAG_AMMO,        // 31
+    WEPID_PISTOL_MAGNUM,    // 32
+    WEPID_SMG_MP5,          // 33
+    WEPID_RIFLE_SG552,      // 34
+    WEPID_SNIPER_AWP,       // 35
+    WEPID_SNIPER_SCOUT,     // 36
+    WEPID_RIFLE_M60,        // 37
+    WEPID_TANK_CLAW,        // 38
+    WEPID_HUNTER_CLAW,      // 39
+    WEPID_CHARGER_CLAW,     // 40
+    WEPID_BOOMER_CLAW,      // 41
+    WEPID_SMOKER_CLAW,      // 42
+    WEPID_SPITTER_CLAW,     // 43
+    WEPID_JOCKEY_CLAW,      // 44
+    WEPID_MACHINEGUN,       // 45
+    WEPID_FATAL_VOMIT,      // 46
+    WEPID_EXPLODING_SPLAT,  // 47
+    WEPID_LUNGE_POUNCE,     // 48
+    WEPID_LOUNGE,           // 49
+    WEPID_FULLPULL,         // 50
+    WEPID_CHOKE,            // 51
+    WEPID_THROWING_ROCK,    // 52
+    WEPID_TURBO_PHYSICS,    // 53 what is this
+    WEPID_AMMO,             // 54
+    WEPID_UPGRADE_ITEM,     // 55
+    WeaponId
 };
