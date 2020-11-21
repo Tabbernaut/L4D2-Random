@@ -156,7 +156,7 @@ const           EVENT_WOMEN_GUNRANGE    = 35;           //                  m2 r
 const Float:    EVENT_WITCHES_RANGE     = 250000.0;     //                  range for glow removal/addition
 const           EVENT_MEDIC_UNITS_BASE  = 9;            // EVT_MEDIC        how many mediunits to start with (default difficulty) (medkit, pills + 8)
 const           EVENT_MEDIC_UNITS_MIN   = 6;            // EVT_MEDIC        minimum mediunits
-const           EVENT_MEDIC_UNITS_MAX   = 12;           // EVT_MEDIC        maximum mediunits 
+const           EVENT_MEDIC_UNITS_MAX   = 12;           // EVT_MEDIC        maximum mediunits
 const           EVENT_MEDIC_DIFF_BASE   = 4;            // EVT_MEDIC        use this difficulty for the base value (and scale the rest)
 
 const           EVENT_BAY_CARDAMAGE     = 150;          // EVT_BAY          amount of damage done to a car before it explodes
@@ -680,6 +680,7 @@ enum _:strGnomeData
     Float:  gnomefFirstPickup,      // where (in fractional distance) the gnome was first picked up
             gnomeEntity,            // if not held, what phys prop entity is the gnome?
     bool:   gnomebAccountedFor      // if gnome is considered accounted for at this time
+
 }
 
 new const g_ciSpawnClassWeight[] =
@@ -981,11 +982,11 @@ new const String: g_csPreCacheModels[][] =
     "models/v_models/v_smg_mp5.mdl",
     "models/w_models/v_rif_m60.mdl",
     "models/v_models/v_m60.mdl",
-    
+
     "models/props_industrial/barrel_fuel.mdl",
     "models/props_industrial/barrel_fuel_partb.mdl",
     "models/props_industrial/barrel_fuel_parta.mdl",
-    
+
     // commons
     "models/infected/common_female_tanktop_jeans.mdl",
     "models/infected/common_female_tanktop_jeans_rain.mdl",
@@ -1002,7 +1003,7 @@ new const String: g_csPreCacheModels[][] =
     "models/infected/common_male_formal.mdl",
     "models/infected/common_female_formal.mdl",
     "models/infected/common_male_biker.mdl",
-    
+
     // Special
     "models/props_unique/spawn_apartment/coffeeammo.mdl",
     "models/props_junk/gnome.mdl",
@@ -1010,7 +1011,7 @@ new const String: g_csPreCacheModels[][] =
     "models/infected/common_male_jimmy.mdl",
     "models/infected/common_male_fallen_survivor.mdl",
     "models/items/l4d_gift.mdl",
-    
+
     // Melee Weapons
     "models/weapons/melee/v_bat.mdl",
     "models/weapons/melee/v_cricket_bat.mdl",
@@ -1021,7 +1022,7 @@ new const String: g_csPreCacheModels[][] =
     "models/weapons/melee/v_golfclub.mdl",
     "models/weapons/melee/v_katana.mdl",
     "models/weapons/melee/v_machete.mdl",
-    "models/weapons/melee/v_tonfa.mdl",    
+    "models/weapons/melee/v_tonfa.mdl",
     "models/weapons/melee/w_bat.mdl",
     "models/weapons/melee/w_cricket_bat.mdl",
     "models/weapons/melee/w_crowbar.mdl",
@@ -1032,17 +1033,17 @@ new const String: g_csPreCacheModels[][] =
     "models/weapons/melee/w_katana.mdl",
     "models/weapons/melee/w_machete.mdl",
     "models/weapons/melee/w_tonfa.mdl",
-    
+
     //"models/w_models/weapons/w_minigun.mdl",
     //"models/w_models/weapons/50cal.mdl",
-    
+
     // hats
     "models/props_interiors/teddy_bear.mdl",
     "models/props_lighting/light_construction02.mdl",
     "models/w_models/weapons/w_eq_medkit.mdl",
     "models/infected/limbs/exploded_boomer_head.mdl",
     "models/props_fortifications/orange_cone001_clientside.mdl",    // not used, but precache for now anyway
-    
+
     // boomette
     "models/infected/boomette.mdl",
     "models/infected/limbs/exploded_boomette.mdl"
