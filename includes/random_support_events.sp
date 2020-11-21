@@ -888,18 +888,22 @@ bool: IsEventOkayForMap( const String: sMap[], event )
     }
 
     // get keyvalues
-    if (g_kRIData != INVALID_HANDLE) { KvRewind(g_kRIData); }
-    if ( KvJumpToKey(g_kRIData, sMap) )
-    {
-        //bIsIntro = bool: (KvGetNum(g_kRIData, "intro", 0));
-        iDoors = KvGetNum(g_kRIData, "doors", iDoors);
-        bNoTank = bool: (KvGetNum(g_kRIData, "no_tank", 0));
-        bNoWitch = bool: (KvGetNum(g_kRIData, "no_witch", 0));
-        iNoStorm = KvGetNum(g_kRIData, "no_storm", iNoStorm);
-        //bNoRain = bool: (KvGetNum(g_kRIData, "no_rain", 0));
-        bIsFinale = bool: (KvGetNum(g_kRIData, "finale", (bIsFinale) ? 1 : 0 ));
+    if (g_kvRiData != null) {
+        g_kvRiData.Rewind();
+
+        if ( g_kvRiData.JumpToKey(sMap) )
+        {
+            //bIsIntro = bool: (g_kvRiData.GetNum("intro", 0));
+            iDoors = g_kvRiData.GetNum("doors", iDoors);
+            bNoTank = bool: (g_kvRiData.GetNum("no_tank", 0));
+            bNoWitch = bool: (g_kvRiData.GetNum("no_witch", 0));
+            iNoStorm = g_kvRiData.GetNum("no_storm", iNoStorm);
+            //bNoRain = bool: (g_kvRiData.GetNum("no_rain", 0));
+            bIsFinale = bool: (g_kvRiData.GetNum("finale", (bIsFinale) ? 1 : 0 ));
+        }
+
+        g_kvRiData.Rewind();
     }
-    if (g_kRIData != INVALID_HANDLE) { KvRewind(g_kRIData); }
 
     // compare event with read mapdata
 

@@ -296,7 +296,7 @@ new                     g_iHatIndex[MAXPLAYERS+1];              // Player hat en
 new                     g_iType[MAXPLAYERS+1];                  // Stores selected hat to give players.
 
 // RandomMapInfo keyvalues
-new     Handle:         g_kRIData                                           = INVALID_HANDLE;       // keyvalues handle for randommapinfo.txt
+KeyValues               g_kvRiData;                                                                 // keyvalues handle for randommapinfo.txt
 new     bool:           g_RI_bIsIntro                                       = false;                // only true for intro maps
 new     bool:           g_RI_bIsFinale                                      = false;                // only true for finale maps
 new                     g_RI_iDifficulty                                    = 0;                    // difficulty offset for this specific map

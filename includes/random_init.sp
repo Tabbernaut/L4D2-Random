@@ -588,9 +588,7 @@ INIT_PrepareAllSDKCalls()
 // -------------------------------------
 RI_KV_Close()
 {
-    if (g_kRIData == INVALID_HANDLE) { return; }
-    CloseHandle(g_kRIData);
-    g_kRIData = INVALID_HANDLE;
+    delete g_kvRiData;
 }
 
 RI_KV_Load()
@@ -598,11 +596,11 @@ RI_KV_Load()
     decl String:sNameBuff[PLATFORM_MAX_PATH];
 
     GetConVarString(g_hCvarRIKeyValuesPath, sNameBuff, sizeof(sNameBuff));
-
-    g_kRIData = CreateKeyValues("RandomMap");
     BuildPath(Path_SM, sNameBuff, sizeof(sNameBuff), sNameBuff);
 
-    if (!FileToKeyValues(g_kRIData, sNameBuff))
+    g_kvRiData = new KeyValues("RandomMap");
+
+    if (! g_kvRiData.ImportFromFile(sNameBuff))
     {
         LogError("[RI] Couldn't load RandomMapInfo data!");
         RI_KV_Close();
@@ -639,29 +637,29 @@ bool: RI_KV_UpdateRandomMapInfo()
     //if (L4D_IsMissionFinalMap()) { g_RI_bIsFinale = true; }   // can't trust this, at all
 
     // get keyvalues
-    if ( KvJumpToKey(g_kRIData, mapname) )
+    if (g_kvRiData.JumpToKey(mapname) )
     {
-        g_RI_bIsIntro = bool: (KvGetNum(g_kRIData, "intro", 0));
-        g_RI_iDifficulty = KvGetNum(g_kRIData, "difficulty", g_RI_iDifficulty);
-        g_RI_iDoors = KvGetNum(g_kRIData, "doors", g_RI_iDoors);
-        g_RI_bNoTank = bool: (KvGetNum(g_kRIData, "no_tank", 0));
-        g_RI_bNoTankVar = bool: (KvGetNum(g_kRIData, "no_tank_var", 0));
-        g_RI_bNoWitch = bool: (KvGetNum(g_kRIData, "no_witch", 0));
-        g_RI_iNoStorm = KvGetNum(g_kRIData, "no_storm", g_RI_iNoStorm);
-        g_RI_bNoRain = bool: (KvGetNum(g_kRIData, "no_rain", 0));
-        g_RI_bNoCola = bool: (KvGetNum(g_kRIData, "no_cola", 0));
-        g_RI_iTankBanStart = KvGetNum(g_kRIData, "tank_ban_start", -1);
-        g_RI_iTankBanEnd = KvGetNum(g_kRIData, "tank_ban_end", -1);
-        g_RI_iTankBanEarly = KvGetNum(g_kRIData, "tank_ban_early", 0);
-        g_RI_bWeakHittables = bool: (KvGetNum(g_kRIData, "weak_hittables", 0));
-        g_RI_iDistance = KvGetNum(g_kRIData, "distance", g_RI_iDistance);
-        g_RI_iDistanceHard = KvGetNum(g_kRIData, "distance_hard", g_RI_iDistanceHard);
-        g_RI_bIsFinale = bool: (KvGetNum(g_kRIData, "finale", (g_RI_bIsFinale) ? 1 : 0 ));
-        g_RI_fTankOddsNormal = KvGetFloat(g_kRIData, "tank_odds", g_RI_fTankOddsNormal);
-        g_RI_fTankOddsHard = KvGetFloat(g_kRIData, "tank_odds_hard", g_RI_fTankOddsHard);
-        g_RI_bNoRealHittables = bool: (KvGetNum(g_kRIData, "no_hittables", (g_RI_bNoRealHittables) ? 1 : 0 ));
+        g_RI_bIsIntro = bool: (g_kvRiData.GetNum("intro", 0));
+        g_RI_iDifficulty = g_kvRiData.GetNum("difficulty", g_RI_iDifficulty);
+        g_RI_iDoors = g_kvRiData.GetNum("doors", g_RI_iDoors);
+        g_RI_bNoTank = bool: (g_kvRiData.GetNum("no_tank", 0));
+        g_RI_bNoTankVar = bool: (g_kvRiData.GetNum("no_tank_var", 0));
+        g_RI_bNoWitch = bool: (g_kvRiData.GetNum("no_witch", 0));
+        g_RI_iNoStorm = g_kvRiData.GetNum("no_storm", g_RI_iNoStorm);
+        g_RI_bNoRain = bool: (g_kvRiData.GetNum("no_rain", 0));
+        g_RI_bNoCola = bool: (g_kvRiData.GetNum("no_cola", 0));
+        g_RI_iTankBanStart = g_kvRiData.GetNum("tank_ban_start", -1);
+        g_RI_iTankBanEnd = g_kvRiData.GetNum("tank_ban_end", -1);
+        g_RI_iTankBanEarly = g_kvRiData.GetNum("tank_ban_early", 0);
+        g_RI_bWeakHittables = bool: (g_kvRiData.GetNum("weak_hittables", 0));
+        g_RI_iDistance = g_kvRiData.GetNum("distance", g_RI_iDistance);
+        g_RI_iDistanceHard = g_kvRiData.GetNum("distance_hard", g_RI_iDistanceHard);
+        g_RI_bIsFinale = bool: (g_kvRiData.GetNum("finale", (g_RI_bIsFinale) ? 1 : 0 ));
+        g_RI_fTankOddsNormal = g_kvRiData.GetFloat("tank_odds", g_RI_fTankOddsNormal);
+        g_RI_fTankOddsHard = g_kvRiData.GetFloat("tank_odds_hard", g_RI_fTankOddsHard);
+        g_RI_bNoRealHittables = bool: (g_kvRiData.GetNum("no_hittables", (g_RI_bNoRealHittables) ? 1 : 0 ));
 
-        g_RI_iEarlyDoors = KvGetNum(g_kRIData, "earlydoors", 0);
+        g_RI_iEarlyDoors = g_kvRiData.GetNum("earlydoors", 0);
         if (g_RI_iEarlyDoors)
         {
             new Float: tmpVec[3];
@@ -670,7 +668,7 @@ bool: RI_KV_UpdateRandomMapInfo()
             {
                 Format(tmpStr, sizeof(tmpStr), "earlydoor_%i", x+1);
 
-                KvGetVector(g_kRIData, tmpStr, tmpVec, NULL_VECTOR);
+                g_kvRiData.GetVector(tmpStr, tmpVec, NULL_VECTOR);
                 if (tmpVec[0] != 0.0 && tmpVec[1] != 0.0 && tmpVec[2] != 0.0)
                 {
                     g_RI_iArEarlyDoor[x][0] = RoundFloat(tmpVec[0]);
@@ -687,10 +685,10 @@ bool: RI_KV_UpdateRandomMapInfo()
             // find current map, and if not a finale
             // set the next keyvalue-key to be the next map
 
-            if ( !g_RI_bIsFinale && KvGotoNextKey( g_kRIData, true ) )
+            if ( !g_RI_bIsFinale && g_kvRiData.GotoNextKey(true ) )
             {
                 // store next keyname as next map
-                KvGetSectionName( g_kRIData, g_sNextMap, sizeof(g_sNextMap) );
+                g_kvRiData.GetSectionName(g_sNextMap, sizeof(g_sNextMap) );
             }
             else
             {

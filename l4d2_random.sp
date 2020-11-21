@@ -1125,7 +1125,9 @@ public OnMapStart()
 
 public OnMapEnd()
 {
-    if (g_kRIData != INVALID_HANDLE) { KvRewind(g_kRIData); }
+    if (g_kvRiData != null) {
+        g_kvRiData.Rewind();
+    }
 
     // switch stripper file for next map
     INIT_StripperSwitch();
