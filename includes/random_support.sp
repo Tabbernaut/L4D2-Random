@@ -936,10 +936,10 @@ public Action: Timer_ForceSpecialEventRole(Handle:timer, any:client)
 SetSpecialRoleMemory( client )
 {
     if ( !IsClientAndInGame(client) || !IsSurvivor(client) || !IsPlayerAlive(client) || IsFakeClient(client) ) { return; }
-    
+
     if ( !CheckSpecialRoleMemory(client) )
     {
-        GetClientAuthString( client, g_sArHadRoleId[g_iHadRoleCount], 32 );
+        GetClientAuthId(client, AuthId_Engine, g_sArHadRoleId[g_iHadRoleCount], 32 );
         g_iHadRoleCount++;
     }
 }
@@ -956,8 +956,8 @@ bool: CheckSpecialRoleMemory( client, bool:dontEmpty=false )
     if ( !IsClientAndInGame(client) || IsFakeClient(client) || !g_iHadRoleCount ) { return false; }
     
     decl String: sSteamId[32];
-    GetClientAuthString( client, sSteamId, 32 );
-    
+    GetClientAuthId(client, AuthId_Engine, sSteamId, 32 );
+
     for ( new i = 0; i < g_iHadRoleCount; i++ )
     {
         if ( StrEqual( sSteamId, g_sArHadRoleId[i], false) )
@@ -1204,9 +1204,9 @@ PickTankPlayer()
         if ( IsInfected(i) && !IsFakeClient(i) )
         {
             playerCount++;
-            
-            GetClientAuthString( i, sSteamId, sizeof(sSteamId) );
-            
+
+            GetClientAuthId(i, AuthId_Engine, sSteamId, sizeof(sSteamId) );
+
             if ( !GetTrieValue(g_hTrieTankPlayers, sSteamId, tankCount) ) { tankCount = 0; }
             
             // if the player had the previous tank, exclude him from the next pick
@@ -1249,10 +1249,10 @@ PickTankPlayer()
     
     
     PrintDebug(3, "[rand tank] Randomly picking tank player %i (%N).", pick, pick);
-    
+
     if ( IsClientAndInGame(pick) && !IsFakeClient(pick) ) {
-        GetClientAuthString( pick, sSteamId, sizeof(sSteamId) );
-        
+        GetClientAuthId(pick, AuthId_Engine, sSteamId, sizeof(sSteamId) );
+
         PrintDebug(4, "[rand tank] Previous tank stored: %i for team %i ...", pick, round);
         strcopy( g_sPreviousTankClient[round], 32, sSteamId );
     } else {
@@ -1274,8 +1274,8 @@ ForceTankPlayer()
     {
         decl String: sSteamId[32];
         new tankCount;
-        GetClientAuthString( tank, sSteamId, sizeof(sSteamId) );
-        
+        GetClientAuthId(tank, AuthId_Engine, sSteamId, sizeof(sSteamId) );
+
         if ( !GetTrieValue(g_hTrieTankPlayers, sSteamId, tankCount) )
         {
             tankCount = 0;
