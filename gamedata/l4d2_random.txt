@@ -6,7 +6,7 @@
 
 		"Offsets"
 		{
-			/* from ZCS [updated 20130710] */
+			/* from ZCS [updated 20130710] -- no known update, or it stayed the same */
 			"oAbility"
 			{
 				"windows"	"928"
@@ -17,28 +17,26 @@
 
 		"Signatures"
 		{
-
-			/* from ZCS [updated 20130710] */
+			/* from ZCS [updated 2020-11-21] */
 			"SetClass"
 			{
-				"library"       "server"
-				"windows"	"\x55\x8B\x2A\x56\x8B\x2A\xE8\x2A\x2A\x2A\x2A\x83\x2A\x2A\x0F\x85\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x40"
-				"linux"         "@_ZN13CTerrorPlayer8SetClassE15ZombieClassType"
+				"library"	"server"
+				"windows"	"\x55\x8b\xec\x56\x8b\xf1\xe8****\x83\xf8*\x0f\x85****\xa1****\x40\xa3"
+				"linux"		"@_ZN13CTerrorPlayer8SetClassE15ZombieClassType"
 			}
 
 			"CreateAbility"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\x2A\x83\x2A\x2A\x56\x8B\x2A\x2A\x85\x2A\x0F\x84\x2A\x2A\x2A\x2A\x8B\x2A\xE8"
-				"linux"         "@_ZN12CBaseAbility15CreateForPlayerEP13CTerrorPlayer"
+				"windows"	"\x55\x8b\xec\x83\xec*\x56\x8b\x75*\x85\xf6\x0f\x84****\x8b\xce\xe8"
+				"linux"		"@_ZN12CBaseAbility15CreateForPlayerEP13CTerrorPlayer"
 			}
 
 
-
 			/*
-			 *	from: Explosive Cars (Silvers) [updated 20130714]
+			 *	from: Explosive Cars (Silvers) [updated 2020-11-21]
 			 *
-			 * CTerrorPlayer::Fling(Vector  const&,PlayerAnimEvent_t,CBaseCombatCharacter *,float)
+			 * CTerrorPlayer::Fling(Vector const&,PlayerAnimEvent_t,CBaseCombatCharacter *,float)
 			 *
 			 *	Vector: how target is supposed to fly, Animevent is "76" for chargerbounce, CBasePlayer is attacker, float is Incap Animation time
 			 *
@@ -48,25 +46,28 @@
 			"CTerrorPlayer_Fling"
 			{
 				"library"	"server"
-				"linux"	"@_ZN13CTerrorPlayer5FlingERK6Vector17PlayerAnimEvent_tP20CBaseCombatCharacterf"
-				"windows" "\x53\x8B\xDC\x83\xEC\x2A\x83\xE4\x2A\x83\xC4\x2A\x55\x8B\x6B\x2A\x89\x6C\x2A\x2A\x8B\xEC\x81\x2A\x2A\x2A\x2A\x2A\xA1\x58\x2A\x2A\x2A\x33\xC5\x89\x45\x2A\x8B\x43\x2A\x56\x8B\x73\x2A\x57\x6A\x2A\x8B\xF9\x89\x45"
-				/* 53 8B DC 83 EC ? 83 E4 ? 83 C4 ? 55 8B 6B ? 89 6C ? ? 8B EC 81 ? ? ? ? ? A1 58 ? ? ? 33 C5 89 45 ? 8B 43 ? 56 8B 73 ? 57 6A ? 8B F9 89 45 */
+				"linux"		"@_ZN13CTerrorPlayer5FlingERK6Vector17PlayerAnimEvent_tP20CBaseCombatCharacterf"
+				"windows"	"\x53\x8B\xDC\x83\xEC\x2A\x83\xE4\x2A\x83\xC4\x2A\x55\x8B\x6B\x2A\x89\x6C\x2A\x2A\x8B\xEC\x81\x2A\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\x2A\x8B\x43\x2A\x56\x8B\x73\x2A\x57\x6A\x2A\x8B\xF9\x89\x45"
+				/* 53 8B DC 83 EC ? 83 E4 ? 83 C4 ? 55 8B 6B ? 89 6C ? ? 8B EC 81 ? ? ? ? ? A1 ? ? ? ? 33 C5 89 45 ? 8B 43 ? 56 8B 73 ? 57 6A ? 8B F9 89 45 */
 			}
 
 			/*
-			 *  CTerrorPlayer::OnVomitedUpon(CTerrorPlayer*, bool)
-			 */
-			"CTerrorPlayer_OnVomitedUpon"
+			* CTerrorPlayer::Fling(Vector  const&,PlayerAnimEvent_t,CBaseCombatCharacter *,float)
+			*
+			*	Vector: how target is supposed to fly, Animevent is "76" for chargerbounce, CBasePlayer is attacker, float is Incap Animation time
+			*
+			*/
+			"CTerrorPlayer_Fling"
 			{
 				"library"	"server"
-				"linux"	"@_ZN13CTerrorPlayer13OnVomitedUponEPS_b"
-				"windows" "\x83\xEC\x2A\x53\x55\x56\x57\x8B\xF1\xE8\x2A\x2A\x2A\x2A\x84\xC0\x74\x2A\x8B\x06\x8B"
-				/* 83 EC ? 53 55 56 57 8B F1 E8 ? ? ? ? 84 C0 74 ? 8B 06 8B */
+				"linux"	"@_ZN13CTerrorPlayer5FlingERK6Vector17PlayerAnimEvent_tP20CBaseCombatCharacterf"
+				"windows" "\x81\xEC\x2A\x2A\x2A\x2A\x55\x57\x8B\xE9\x33\xFF\x57\x89\x2A\x2A\x2A\xE8"
+				/* 81 EC ? ? ? ? 55 57 8B E9 33 FF 57 89 ? ? ? E8 */
 			}
-			
+
 			/*
-			 *  CTerrorPlayer::OnHitByVomitJar(CBaseCombatCharacter *)
-			 */
+			*  CTerrorPlayer::OnHitByVomitJar(CBaseCombatCharacter *)
+			*/
 			"CTerrorPlayer_OnHitByVomitJar"
 			{
 				"library"	"server"
@@ -74,18 +75,17 @@
 				"windows" "\x83\xEC\x2A\x56\x8B\xF1\xE8\x2A\x2A\x2A\x2A\x84\xC0\x74\x2A\x8B\x06\x8B\x90\x2A\x2A\x2A\x2A\x8B\xCE\xFF\xD2\x84\xC0\x0F"
 				/* 83 EC ? 56 8B F1 E8 ? ? ? ? 84 C0 74 ? 8B 06 8B 90 ? ? ? ? 8B CE FF D2 84 C0 0F */
 			}
-			
+
 			/*
-			 *  Infected::OnHitByVomitJar(CBaseCombatCharacter *)
-			 */
-			"Infected_OnHitByVomitJar"
+			*  CTerrorPlayer::OnVomitedUpon(CTerrorPlayer*, bool)
+			*/
+			"CTerrorPlayer_OnVomitedUpon"
 			{
 				"library"	"server"
-				"linux"	"@_ZN8Infected15OnHitByVomitJarEP20CBaseCombatCharacter"
-				"windows" "\x56\x8B\xF1\x8B\x06\x8B\x90\x2A\x2A\x2A\x2A\xFF\xD2\x84\xC0\x0F\x2A\x2A\x2A\x2A\x2A\x8B\x06\x8B\x90\x2A\x2A\x2A\x2A\x8B\xCE\xFF\xD2\x84\xC0\x75\x2A\x56\xE8"
-				/* 56 8B F1 8B 06 8B 90 ? ? ? ? FF D2 84 C0 0F ? ? ? ? ? 8B 06 8B 90 ? ? ? ? 8B CE FF D2 84 C0 75 ? 56 E8 */
+				"linux"	"@_ZN13CTerrorPlayer13OnVomitedUponEPS_b"
+				"windows" "\x83\xEC\x2A\x53\x55\x56\x57\x8B\xF1\xE8\x2A\x2A\x2A\x2A\x84\xC0\x74\x2A\x8B\x06\x8B"
+				/* 83 EC ? 53 55 56 57 8B F1 E8 ? ? ? ? 84 C0 74 ? 8B 06 8B */
 			}
-
 		}
 	}
 }
