@@ -3,8 +3,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
-#include <left4downtown>
-#include <l4d2_direct>
+#include <left4dhooks>
 #include <l4d2_random_bonus>
 #include <l4d2_penalty_bonus>
 #include <l4d2_saferoom_detect>
@@ -31,7 +30,7 @@
 #define BURN_IGNITE_PARTICLE    "fire_small_01"
 
 
-#define PLUGIN_VERSION "1.1.9"
+#define PLUGIN_VERSION "1.2"
 
 /*
         L4D2 Random
