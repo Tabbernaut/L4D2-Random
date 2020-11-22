@@ -69,7 +69,7 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
     // cvars
-    g_hCvarDebug = CreateConVar(                "rand_debug_coop",               "2",           "Random debug mode (coop plugin). (0: only error reporting, -1: disable all reports, 1+: set debug report level)", FCVAR_PLUGIN, true, -1.0, true, 5.0);
+    g_hCvarDebug = CreateConVar(                "rand_debug_coop",               "2",           "Random debug mode (coop plugin). (0: only error reporting, -1: disable all reports, 1+: set debug report level)", FCVAR_NONE, true, -1.0, true, 5.0);
 
     // prepare weights
     //PrepareChoicesEncounters();
@@ -286,7 +286,7 @@ bool: IsInfected(client) {
 // get just any survivor client (param = false = switch to infected too)
 GetSpawningClient ( bool:onlySurvivors=false )
 {
-    for ( new i=1; i <= GetMaxClients(); i++ )
+    for ( new i=1; i <= MaxClients; i++ )
     {
         if ( IsClientConnected(i) && IsSurvivor(i) && !IsFakeClient(i) ) { return i; }
     }
@@ -294,7 +294,7 @@ GetSpawningClient ( bool:onlySurvivors=false )
     if ( onlySurvivors ) { return 0; }
 
     // since we're just using this for spawning stuff that requires a client, use infected alternatively
-    for ( new i=1; i <= GetMaxClients(); i++ )
+    for ( new i=1; i <= MaxClients; i++ )
     {
         if (IsClientConnected(i) && IsInfected(i) && !IsFakeClient(i)) { return i; }
     }
@@ -389,7 +389,7 @@ public Action: SpawnFallen( number, Float:location[3] )
 
 	SetEntityModel( zombie, FALLEN_MODEL );
 
-	new ticktime = RoundToNearest( FloatDiv( GetGameTime() , GetTickInterval() ) ) + 5;
+	new ticktime = RoundToNearest( ( GetGameTime() / GetTickInterval() ) ) + 5;
 	SetEntProp( zombie, Prop_Data, "m_nNextThinkTick", ticktime );
 
 	DispatchSpawn( zombie );
