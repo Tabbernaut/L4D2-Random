@@ -43,7 +43,7 @@ INIT_DefineCVars()
     g_hCvarClipFactorInc = CreateConVar(                    "rand_incendiary_ammo_factor",   "0.5",     "Incendiary ammo gives you a clip's normal size times this.", FCVAR_NONE, true, 0.0, true, 2.0);
     g_hCvarClipFactorExp = CreateConVar(                    "rand_explosive_ammo_factor",    "0.25",    "Explosive ammo gives you a clip's normal size times this.", FCVAR_NONE, true, 0.0, true, 2.0 );
     g_hCvarNoSupportSI = CreateConVar(                      "rand_only_cappers",             "0",       "If set, only allows cappers to spawn (useful for 2v2s 3v3s).", FCVAR_NONE, true, 0.0, true, 1.0);
-    g_hCvarRestrictMelee = CreateConVar(                    "rand_restrict_melee",           "1",       "If set, only allows normal l4d2 melee weapons to spawn.", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_hCvarRestrictMelee = CreateConVar(                    "rand_restrict_melee",           "0",       "If set, only allows original l4d2 melee weapons to spawn.", FCVAR_NONE, true, 0.0, true, 1.0);
     g_hCvarRandomTank = CreateConVar(                       "rand_tank",                     "1",       "Whether player selection for tank is purely random.", FCVAR_NONE, true, 0.0, true, 1.0);
     g_hCvarNoSpitterDuringTank = CreateConVar(              "rand_tank_nospitter",           "1",       "Block spitter while tank is up?", FCVAR_NONE, true, 0.0, true, 1.0);
     g_hCvarFreezeDistanceTank = CreateConVar(               "rand_tank_freezepoints",        "0",       "Whether to always block distance points when a tank is alive", FCVAR_NONE, true, 0.0, true, 1.0);
@@ -441,6 +441,8 @@ INIT_FillTries()
     SetTrieValue(g_hTrieMeleeType, "electric_guitar",               MELEE_NORMAL);
     SetTrieValue(g_hTrieMeleeType, "golfclub",                      MELEE_NORMAL);
     SetTrieValue(g_hTrieMeleeType, "hunting_knife",                 MELEE_WEIRD);
+    SetTrieValue(g_hTrieMeleeType, "pitchfork",                     MELEE_WEIRD);
+    SetTrieValue(g_hTrieMeleeType, "shovel",                        MELEE_WEIRD);
 
     g_hTriePenaltyItems = CreateTrie();
     SetTrieValue(g_hTriePenaltyItems, "melee",                      ITEM_PICKUP_PENALTY_MELEE);
@@ -912,6 +914,8 @@ INIT_PrecacheModels(bool: noMapStarted = false)
     PrecacheGeneric("scripts/melee/katana.txt", true);
     PrecacheGeneric("scripts/melee/machete.txt", true);
     PrecacheGeneric("scripts/melee/tonfa.txt", true);
+    PrecacheGeneric("scripts/melee/pitchfork.txt", true);
+    PrecacheGeneric("scripts/melee/shovel.txt", true);
 
     // Uncommon
     for (new i=0; i < sizeof(g_csUncommonModels); i++)
