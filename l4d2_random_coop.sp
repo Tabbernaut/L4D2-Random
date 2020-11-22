@@ -270,6 +270,7 @@ public PrintDebug(debugLevel, const String:Message[], any:...)
         decl String:DebugBuff[256];
         VFormat(DebugBuff, sizeof(DebugBuff), Message, 3);
         LogMessage(DebugBuff);
+        PrintToServer(DebugBuff);
     }
 }
 
