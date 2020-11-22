@@ -1033,7 +1033,7 @@ public Event_MissionLostCampaign(Handle:hEvent, const String:name[], bool:dontBr
 
     // reroll if tried too many times
     new max = GetConVarInt(g_hCvarCampaignStreak);
-    if ( g_bCampaignReRandomPlease || ( max && g_iCampaignFailStreak > max ) ) {
+    if ( g_bCampaignReRandomPlease || ( max && g_iCampaignFailStreak >= max ) ) {
         g_iCampaignFailStreak = 0;
         g_bCampaignForceRandom = true;
     }
