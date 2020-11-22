@@ -23,6 +23,8 @@
 #define MODEL_V_GOLFCLUB "models/weapons/melee/v_golfclub.mdl"
 #define MODEL_V_SHIELD "models/weapons/melee/v_riotshield.mdl"
 #define MODEL_V_KNIFE "models/v_models/v_knife_t.mdl"
+#define MODEL_V_PITCHFORK "models/v_models/v_pitchfork.mdl"
+#define MODEL_V_SHOVEL "models/v_models/v_shovel.mdl"
 
 #define VOMIT_PARTICLE          "boomer_vomit"
 
@@ -212,7 +214,15 @@ bool: SUPPORT_DropItemSlot(client, slot, bool:throwItem=false)
                 else if (StrEqual(item, MODEL_V_KNIFE))
                 {
                     DispatchKeyValue(index, "melee_script_name", "hunting_knife");
-                }    
+                }
+                else if (StrEqual(item, MODEL_V_PITCHFORK))
+                {
+                    DispatchKeyValue(index, "melee_script_name", "pitchfork");
+                }
+                else if (StrEqual(item, MODEL_V_SHOVEL))
+                {
+                    DispatchKeyValue(index, "melee_script_name", "shovel");
+                }
                 else return false;
             }
             else if (StrEqual(weapon, "weapon_chainsaw"))
