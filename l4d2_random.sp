@@ -1055,10 +1055,11 @@ public OnMapStart()
     new String:tmpStr[24];
     GetConVarString(FindConVar("mp_gamemode"), tmpStr, sizeof(tmpStr));
     if (    StrEqual(tmpStr, "coop", false) ||
-            StrEqual(tmpStr, "mutation4", false) ||         // hard eight
-            StrEqual(tmpStr, "mutation14", false) ||        // gib fest
-            StrEqual(tmpStr, "mutation20", false) ||        // healing gnome
-            StrEqual(tmpStr, "mutationrandomcoop", false)   // healing gnome
+            StrEqual(tmpStr, "mutation4", false) ||             // hard eight
+            StrEqual(tmpStr, "mutation14", false) ||            // gib fest
+            StrEqual(tmpStr, "mutation20", false) ||            // healing gnome
+            StrEqual(tmpStr, "mutationrandomcoop", false) ||    // my custom mutation
+            StrEqual(tmpStr, "mutationrandomcoopeasy", false)   // ..
     ) {
         g_bCampaignMode = true;
         g_bItemsFullyRandomized = true;

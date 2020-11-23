@@ -35,5 +35,9 @@ Add the following to your addons/sourcemod/config/matchmodes.txt:
         {
             "name" "Random Coop"
         }
+        "randomcoopeasy"
+        {
+            "name" "Random Coop (Easy)"
+        }
     }
 ```

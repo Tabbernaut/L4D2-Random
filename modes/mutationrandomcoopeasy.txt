@@ -1,0 +1,17 @@
+"mutationrandomcoopeasy"
+{
+    "base"      "coop"
+
+    "DisplayTitle"  "Random Coop Mutation (easy)"
+    "ShortDescription"  ""
+    "Description"   "Random Coop Mutation for infunsanity (but easier)."
+
+    "Image"     "maps/any"
+    "Author"    "Tabun"
+
+    convar
+    {
+        // Cvars go here
+    }
+}
+
