@@ -763,28 +763,6 @@ new const String: g_csItemTypeText[][] =
     "random gifts"
 };
 
-new const String: g_csItemPickName[][] =
-{
-    "no item",
-    "pistol", "magnum",
-    "mp5", "smg", "silenced smg",
-    "pumpshotgun", "chrome shotgun",
-    "sg552", "m16", "ak47", "scar",
-    "autoshotgun", "spas",
-    "hunting rifle", "military sniper", "AWP", "scout",
-    "melee",
-    "chainsaw", "grenade launcher", "m60",
-    "explosive barrel", "fireworks", "propane tank", "oxygen tank", "gas can",
-    "pills", "adrenaline",
-    "molotov", "pipe bomb", "bile bomb",
-    "medkit", "defib",
-    "ammo pile",
-    "laser sights", "explosive ammo", "incendiary ammo",
-    "cola pack", "gnome", "random gift",
-    "junk item",
-    "dual pistols"
-};
-
 new const String: g_csEventText[][] =
 {
     "\x04Item Redundancy\x01 - Higher chance of finding ",                           // will be concat'd with an item (type) name
