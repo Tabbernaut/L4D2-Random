@@ -1,7 +1,11 @@
-L4D2-Random
-============
+# L4D2-Random
 
-Plugins for making Random config possible. WIP.
+L4D2 Random config stuff.
+
+
+## Plugin code
+
+Plugins for making Random config possible.
 
 Yes, I know a lot of this code is ugly. Random started out as a bit of a joke, then slowly grew out to a fairly serious config.  If I have time to spare, I might try and clean this up, but for now it will have to do.
 
