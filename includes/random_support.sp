@@ -2327,7 +2327,14 @@ SUPPORT_StormStart()
 
 
 
-
+/* General Precaching */
+SUPPORT_PrecacheSounds()
+{
+    PrecacheSound(EXPLOSION_DEBRIS);
+    PrecacheSound(EXPLOSION_SOUND);
+    PrecacheSound(EXPLOSION_SOUND2);
+    PrecacheSound(EXPLOSION_SOUND3);
+}
 
 
 

@@ -1384,22 +1384,16 @@ CreateExplosion(Float:carPos[3], Float:power, bool:fire = false, bool:small = fa
 
     switch(GetRandomInt(1,3)) {
         case 1: {
-            if(!IsSoundPrecached(EXPLOSION_SOUND)) { PrecacheSound(EXPLOSION_SOUND); }
             EmitSoundToAll(EXPLOSION_SOUND);
         }
         case 2: {
-            if(!IsSoundPrecached(EXPLOSION_SOUND2)) { PrecacheSound(EXPLOSION_SOUND2); }
             EmitSoundToAll(EXPLOSION_SOUND2);
         }
         case 3: {
-            if(!IsSoundPrecached(EXPLOSION_SOUND3)) { PrecacheSound(EXPLOSION_SOUND3); }
             EmitSoundToAll(EXPLOSION_SOUND3);
         }
     }
 
-    if(!IsSoundPrecached(EXPLOSION_DEBRIS)) {
-        PrecacheSound(EXPLOSION_DEBRIS);
-    }
     EmitSoundToAll(EXPLOSION_DEBRIS);
 
     //BOOM!

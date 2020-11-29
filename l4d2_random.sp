@@ -261,6 +261,8 @@ public OnPluginStart()
     // load KeyValues
     RI_KV_Load();                   // get RandomMap info (cvar now set to right dir)
     RConfig_Read();                 // get basic random config values (for 'constants')
+
+    SUPPORT_PrecacheSounds();
 }
 
 
