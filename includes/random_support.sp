@@ -751,15 +751,12 @@ EVENT_HandleSkeet( skeeter=-1, victim=-1, meleeSkeet=false, sniperSkeet=false )
 }
 EVENT_HandleNonSkeet( victim, damage, bool:bOverKill=false )
 {
-    //if (g_iSpecialEvent == EVT_SKEET)
-    //{
-        if ( IsClientAndInGame(victim) && !IsFakeClient(victim) ) {
-            PrintToChatAll("\x01[\x05r\x01] \x05%N\x01 was \x04not\x01 skeeted (\x03%i\x01 damage).%s", victim, damage, (bOverKill) ? "(Would've been a skeet if hunter had not been chipped!)" : "" );
-        }
-        else {
-            PrintToChatAll("\x01[\x05r\x01] Hunter was \x04not\x01 skeeted (\x03%i\x01 damage).%s", damage, (bOverKill) ? "(Would've been a skeet if hunter had not been chipped!)" : "" );
-        }
-    //}
+    if ( IsClientAndInGame(victim) && !IsFakeClient(victim) ) {
+        PrintToChatAll("\x01[\x05r\x01] \x05%N\x01 was \x04not\x01 skeeted (\x03%i\x01 damage).%s", victim, damage, (bOverKill) ? "(Would've been a skeet if hunter had not been chipped!)" : "" );
+    }
+    else {
+        PrintToChatAll("\x01[\x05r\x01] Hunter was \x04not\x01 skeeted (\x03%i\x01 damage).%s", damage, (bOverKill) ? "(Would've been a skeet if hunter had not been chipped!)" : "" );
+    }
 }
 
 
