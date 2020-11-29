@@ -266,6 +266,11 @@ CountHumanSurvivors()
     return count;
 }
 
+bool: BotsInSurvivorTeam()
+{
+    return CountHumanSurvivors() < g_iTeamSize;
+}
+
 // make sure survivors have at least 50h solid
 SetMinimumHealthSurvivors()
 {

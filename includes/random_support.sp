@@ -546,7 +546,7 @@ public Action: EVENT_SurvivorsLeftSaferoom(Handle:timer)
 
         case EVT_KEYMASTER: {
             // first time keymaster gets picked with a visible report
-            if ( !EVENT_IsSpecialRoleOkay() ) {
+            if (! EVENT_IsSpecialRoleOkay() || EVENT_ShouldRepickSpecialRoleForIncompleteGame()) {
                 EVENT_PickSpecialEventRole(-1, false);
             } else {
                 ReportSpecialEventRole();
@@ -556,7 +556,7 @@ public Action: EVENT_SurvivorsLeftSaferoom(Handle:timer)
 
         case EVT_PROTECT: {
             // first time baby gets picked with a visible report
-            if (!EVENT_IsSpecialRoleOkay()) {
+            if (! EVENT_IsSpecialRoleOkay() || EVENT_ShouldRepickSpecialRoleForIncompleteGame()) {
                 EVENT_PickSpecialEventRole(-1, false);
             } else {
                 ReportSpecialEventRole();
@@ -566,7 +566,7 @@ public Action: EVENT_SurvivorsLeftSaferoom(Handle:timer)
 
         case EVT_MEDIC: {
             // first time medic gets picked with a visible report
-            if (!EVENT_IsSpecialRoleOkay()) {
+            if (! EVENT_IsSpecialRoleOkay() || EVENT_ShouldRepickSpecialRoleForIncompleteGame()) {
                 EVENT_PickSpecialEventRole(-1, false);
             } else {
                 ReportSpecialEventRole();
@@ -585,7 +585,7 @@ public Action: EVENT_SurvivorsLeftSaferoom(Handle:timer)
             // reset so we don't instantly vomit
             g_iBoomFluCounter = 0;
 
-            if (!EVENT_IsSpecialRoleOkay()) {
+            if (! EVENT_IsSpecialRoleOkay() || EVENT_ShouldRepickSpecialRoleForIncompleteGame()) {
                 EVENT_PickSpecialEventRole(-1, false);
             } else {
                 ReportSpecialEventRole();
@@ -995,6 +995,12 @@ bool: EVENT_IsSpecialRoleOkay( bool:allowBots=false )
     return true;
 }
 
+// In campaign games, playing with bots is pretty normal, and you don't want to just have the first
+// loaded in human to always have the special role.
+bool: EVENT_ShouldRepickSpecialRoleForIncompleteGame()
+{
+    return g_bCampaignMode && BotsInSurvivorTeam();
+}
 
 
 // Stabby's multi-witch stuff
