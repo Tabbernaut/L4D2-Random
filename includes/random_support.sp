@@ -150,14 +150,26 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
         SUPPORT_StormStart();
     }
 
-    // some things need to be delayed to work right
-    g_hTimerReport = CreateTimer( (g_bCampaignMode) ? DELAY_ROUNDPREP_COOP : DELAY_ROUNDPREP , Timer_DelayedRoundPrep, _, TIMER_FLAG_NO_MAPCHANGE);
-
     PrintDebug(1, "[rand] Round Preparation done.");
+
+    // Some things need to be delayed to work right
+    // However, in campaign mode, after mission is lost, this is not true,
+    // in fact, in that case, any delay allows players to see and pick up stuff they shouldn't!
+    if (g_bCampaignMode && g_bLostMissionPreviousAttempt) {
+        SUPPORT_DelayedRoundPreparation();
+        return;
+    }
+
+    g_hTimerReport = CreateTimer( (g_bCampaignMode) ? DELAY_ROUNDPREP_COOP : DELAY_ROUNDPREP , Timer_DelayedRoundPrep, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 // delayed call for every round start
 public Action: Timer_DelayedRoundPrep(Handle:timer)
+{
+    SUPPORT_DelayedRoundPreparation();
+}
+
+SUPPORT_DelayedRoundPreparation()
 {
     PrintDebug(1, "[rand] Delayed RoundPreparation...");
 
