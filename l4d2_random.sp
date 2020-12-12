@@ -1030,6 +1030,7 @@ public Event_MissionLostCampaign(Handle:hEvent, const String:name[], bool:dontBr
 {
     if (! g_bCampaignMode) { return; }
 
+    g_bLostMissionPreviousAttempt = true;
     g_iCampaignFailStreak++;
 
     PrintDebug(1, "[rand] Survivors failed (%i time(s) in a row).", g_iCampaignFailStreak );
@@ -1078,6 +1079,7 @@ public OnMapStart()
     {
         g_bItemsFullyRandomized = true;
         g_bRestartedOnce = true;
+        g_bLostMissionPreviousAttempt = false;
     }
 
 
@@ -1149,6 +1151,7 @@ public OnMapEnd()
     g_bMapStartDone = false;
     g_bIsFirstAttack = true;
     g_bModelsPrecached = false;
+    g_bLostMissionPreviousAttempt = false;
 
     if (!g_bVeryFirstMapLoad)
     {
