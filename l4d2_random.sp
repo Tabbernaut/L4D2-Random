@@ -141,6 +141,7 @@ public Native_ShowGnomeBonus(Handle:plugin, numParams)
 public OnPluginStart()
 {
     // Hooks
+    HookEvent("round_start_pre_entity",     Event_RoundStartPreEntity,      EventHookMode_PostNoCopy);
     HookEvent("round_start",                Event_RoundStart,               EventHookMode_PostNoCopy);
     HookEvent("round_end",                  Event_RoundEnd,                 EventHookMode_PostNoCopy);
     HookEvent("player_team",                Event_PlayerTeam,               EventHookMode_Post);
@@ -1155,13 +1156,19 @@ public OnMapEnd()
     }
 }
 
+// Happens before RoundStart
+public Event_RoundStartPreEntity(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    if (GetConVarBool(g_hCvarStopBotsAtStart)) {
+        SetConVarInt(g_hCvarBotStop, 1);
+    }
+}
+
 public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
     g_bSurvivorsLoadedIn = false;
     g_bBotsAllowedPickup = false;
     g_bRoundIsLive = false;
-
-    if (GetConVarBool(g_hCvarStopBotsAtStart)) { SetConVarInt(g_hCvarBotStop, 1); }
 
     // this is a bit silly, since roundstart gets called before onmapstart...
     // so just do the round start stuff in onmapstart
