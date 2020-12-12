@@ -1027,7 +1027,7 @@ public OnHoldOutBonusSet(bonus, distance, time, bool:distanceChanged)
 
 public Event_MissionLostCampaign(Handle:hEvent, const String:name[], bool:dontBroadcast)
 {
-    if (!g_bCampaignMode) { return; }
+    if (! g_bCampaignMode) { return; }
 
     g_iCampaignFailStreak++;
 
@@ -1035,11 +1035,10 @@ public Event_MissionLostCampaign(Handle:hEvent, const String:name[], bool:dontBr
 
     // reroll if tried too many times
     new max = GetConVarInt(g_hCvarCampaignStreak);
-    if ( g_bCampaignReRandomPlease || ( max && g_iCampaignFailStreak >= max ) ) {
+    if (g_bCampaignReRandomPlease || (max && g_iCampaignFailStreak >= max)) {
         g_iCampaignFailStreak = 0;
         g_bCampaignForceRandom = true;
-    }
-    else {
+    } else {
         g_bCampaignForceRandom = false;
     }
 
@@ -1049,26 +1048,35 @@ public Event_MissionLostCampaign(Handle:hEvent, const String:name[], bool:dontBr
     g_bPlayersLeftStart = false;
 }
 
+bool: IsCoopMode()
+{
+    new String:sGameMode[24];
+    GetConVarString(FindConVar("mp_gamemode"), sGameMode, sizeof(sGameMode));
+
+    return StrEqual(sGameMode, "coop", false) ||
+        StrEqual(sGameMode, "mutation4", false) ||             // hard eight
+        StrEqual(sGameMode, "mutation14", false) ||            // gib fest
+        StrEqual(sGameMode, "mutation20", false) ||            // healing gnome
+        StrEqual(sGameMode, "mutationrandomcoop", false) ||    // my custom mutation
+        StrEqual(sGameMode, "mutationrandomcoopeasy", false);
+}
+
+bool: IsFirstVersusMapStartAfterLoadingConfig()
+{
+    return GetConVarBool(g_hCvarConfogl) && ! g_bRestartedOnce && ! g_bCampaignMode;
+}
+
 public OnMapStart()
 {
     g_bItemsFullyRandomized = false;
 
     // check gamemode for 'coop'
-    new String:tmpStr[24];
-    GetConVarString(FindConVar("mp_gamemode"), tmpStr, sizeof(tmpStr));
-    if (    StrEqual(tmpStr, "coop", false) ||
-            StrEqual(tmpStr, "mutation4", false) ||             // hard eight
-            StrEqual(tmpStr, "mutation14", false) ||            // gib fest
-            StrEqual(tmpStr, "mutation20", false) ||            // healing gnome
-            StrEqual(tmpStr, "mutationrandomcoop", false) ||    // my custom mutation
-            StrEqual(tmpStr, "mutationrandomcoopeasy", false)   // ..
-    ) {
-        g_bCampaignMode = true;
+    g_bCampaignMode = IsCoopMode();
+
+    if (g_bCampaignMode)
+    {
         g_bItemsFullyRandomized = true;
         g_bRestartedOnce = true;
-    }
-    else {
-        g_bCampaignMode = false;
     }
 
 
@@ -1077,13 +1085,13 @@ public OnMapStart()
     INIT_GetMeleeClasses();
 
     // read in default cvars?
-    if (!g_bDefaultCvarsLoaded)
+    if (! g_bDefaultCvarsLoaded)
     {
         INIT_TryCVarsGetDefault();
     }
 
     // only do special random activation when we've seen at least one map restart
-    if (GetConVarBool(g_hCvarConfogl) && !g_bRestartedOnce && !g_bCampaignMode)
+    if (IsFirstVersusMapStartAfterLoadingConfig())
     {
         g_bRestartedOnce = true;
         g_bItemsFullyRandomized = true;
@@ -1091,7 +1099,7 @@ public OnMapStart()
         return;
     }
 
-    if (!g_bDefaultCvarsLoaded)
+    if (! g_bDefaultCvarsLoaded)
     {
         PrintDebug(0, "[rand] Default cvars were not loaded. OnMapStart preparation halted. Restart map.");
         return;
@@ -1168,7 +1176,11 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
     // this is only called once in versus games, so we know which round we're in
-    g_bSecondHalf = true;
+    if (! g_bCampaignMode)
+    {
+        g_bSecondHalf = true;
+    }
+
     g_bIsFirstAttack = true;
     g_bBotsAllowedPickup = false;
     g_bItemsFullyRandomized = false;
@@ -1185,7 +1197,7 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
         g_hWitchSpawnTimer = INVALID_HANDLE;
     }
 
-    if (g_bInRound) { g_bInRound = false; }
+    g_bInRound = false;
 }
 
 
