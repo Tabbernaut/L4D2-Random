@@ -3131,7 +3131,7 @@ public Action:Event_TankSpawned(Handle:hEvent, const String:name[], bool:dontBro
     PrintDebug(4, "[rand si] Tank spawned: %N.", client);
 
     // freeze points?
-    if ( g_bFreezeDistanceOnTank )
+    if ( g_bFreezeDistanceOnTank && ! g_bCampaignMode)
     {
         if ( g_iSpecialEvent == EVT_MINITANKS ) {
             CreateTimer( DELAY_MINITANKFREEZE, Timer_FreezePoints, (g_bReportFreezing) ? 1 : 0, TIMER_FLAG_NO_MAPCHANGE );
@@ -3213,7 +3213,7 @@ public Action: Timer_CheckTankDeath(Handle:hTimer, any:client_oldTank)
     }
 
     // unfreeze points (if no further tanks in play)
-    if ( g_bFreezeDistanceOnTank && FindTankClient() == 0 ) {
+    if ( g_bFreezeDistanceOnTank && ! g_bCampaignMode && FindTankClient() == 0 ) {
         SUPPORT_UnFreezePoints( g_bReportFreezing );
     }
 
