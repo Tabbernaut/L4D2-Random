@@ -2230,7 +2230,7 @@ public Action:Event_PlayerUse(Handle:event, const String:name[], bool:dontBroadc
                     return Plugin_Continue;
                 } else {
 
-                    SUPPORT_ToggleDoor( entity );
+                    SUPPORT_ToggleDoor(entity, client);
                     return Plugin_Continue;
                 }
             }

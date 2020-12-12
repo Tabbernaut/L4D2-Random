@@ -666,19 +666,23 @@ EVENT_ArrayRemoveBoobyTrap(index)
 }
 
 
-/*  Haunted Doors
+/*  Haunted Doors, Keymaster
     ------------------ */
-public SUPPORT_ToggleDoor( entity )
+public SUPPORT_ToggleDoor(door, player)
 {
-    new doorState = GetEntProp(entity, Prop_Data, "m_eDoorState");
+    new doorState = GetEntProp(door, Prop_Data, "m_eDoorState");
 
-    AcceptEntityInput(entity, "Unlock");
-    if (doorState != 0) {   // closed
-        AcceptEntityInput(entity, "Close");
+    AcceptEntityInput(door, "Unlock");
+    if (doorState != 0) {   // is open
+        AcceptEntityInput(door, "Close");
     } else {
-        AcceptEntityInput(entity, "Open");
+        if (player != -1) {
+            AcceptEntityInput(door, "PlayerOpen", player);
+        } else {
+            AcceptEntityInput(door, "Open");
+        }
     }
-    AcceptEntityInput(entity, "Lock");
+    AcceptEntityInput(door, "Lock");
 }
 
 public Action:Timer_DoorCircus(Handle:timer)
@@ -726,7 +730,7 @@ public Action:Timer_DoorCircus(Handle:timer)
                 // just to be on the safe side:
                 GetEdictClassname(g_iDoorCircusType[i][j], classname, sizeof(classname));
                 if (StrEqual(classname, "prop_door_rotating")) {
-                    SUPPORT_ToggleDoor( g_iDoorCircusType[i][j] );
+                    SUPPORT_ToggleDoor(g_iDoorCircusType[i][j], -1);
                 }
             }
         }
