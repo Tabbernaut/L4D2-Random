@@ -1176,8 +1176,9 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
     // this is only called once in versus games, so we know which round we're in
-    if (! g_bCampaignMode)
+    if (! g_bCampaignMode && ! g_bSecondHalf)
     {
+        PrintDebug(1, "[rand] Versus first round half end, about to play second round half.");
         g_bSecondHalf = true;
     }
 
