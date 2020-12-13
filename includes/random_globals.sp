@@ -564,7 +564,7 @@ new     Float:          g_RC_fBoomComboDudChance                            = 0.
 
 new                     g_RC_iVomitOnType                                   = 7;        // 1 = survivors; 2 = special infected; 4 = common infected [ flags ]
 new     Float:          g_RC_fVomitRange                                    = 125.0;
-new     Float:          g_RC_fVomitStreamTime                               = 3;        // time in s vomit can hit anything
+new     Float:          g_RC_fVomitStreamTime                               = 3.0;      // time in s vomit can hit anything
 
 new     Float:          g_RC_fExplosionPowerHigh                            = 30.0;
 new     Float:          g_RC_fExplosionPowerLow                             = 20.0;
