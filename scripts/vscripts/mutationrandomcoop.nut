@@ -348,6 +348,10 @@ function Update()
 
 function Notifications::OnSpawn::PlayerInfectedSpawned ( player, params )
 {
+    if (!player.IsEntityValid() || ! player.IsPlayer() || !player.IsPlayerEntityValid()) {
+        return
+    }
+
     if ( player.GetTeam() == INFECTED )
     {
         //player.GetPlayerType() == HUNTER
@@ -380,7 +384,7 @@ function Notifications::OnSpawn::PlayerInfectedSpawned ( player, params )
 
 function Notifications::OnDeath::PlayerInfectedDied ( victim, attacker, params )
 {
-    if ( !victim.IsPlayerEntityValid() ) {
+    if (!victim.IsEntityValid() || ! victim.IsPlayer() || !victim.IsPlayerEntityValid()) {
         return
     }
     
