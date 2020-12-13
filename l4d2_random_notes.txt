@@ -5,6 +5,10 @@ L4D2_Random
 
     changelog:
     ---------
+        - fixed doors opening in a weird direction in the keymaster event.
+        - fixed an issue where in coop survivors wouldn't get the right event items
+        - fixed an issue where in coop the items weren't reshuffled before players can pick stuff up.
+
         - made melee weapons and kit-type items heavier in encumbered event.
         - fixed gnome bonus varying oddly on maps with a holdout event.
         - updated exploit blocks (c7m2 fix).
@@ -14,7 +18,7 @@ L4D2_Random
         - built in jockey pounce damage with better damage to height calculations.
         - fixed rare spawn of medkit/pills in adrenaline rush event.
 
-        
+
     to test:
     --------
             - test:     m2s not always registered in m2 penalty event? debug print in place
@@ -27,11 +31,11 @@ L4D2_Random
                         L 12/15/2013 - 00:56:39: [SM] Displaying call stack trace for plugin "optional/l4d2_random.smx":
                         L 12/15/2013 - 00:56:39: [SM]   [0]  Line 4936, includes/random_random.sp::LockDoors()
                         [ happened on atrium ]
-                            
+
     to-do:
-    ------  
-            - fix:      weird black walls (instead of shopping carts) c1m3 only            
-            
+    ------
+            - fix:      weird black walls (instead of shopping carts) c1m3 only
+
             - fix:      shove penalty: first round hits don't reg.. second round they do?
                         jockey shove -- happens more often.. (doesn't show up in playstats sometimes either)
 
@@ -41,26 +45,23 @@ L4D2_Random
             - tweak:    remove static tank from c13m2, make it 25% chance of tank spawning there
             - tweak:    add optional 'show tank percent' (but not whether tank will spawn) (cvar controlled, for randhard?)
             - tweak:    women event: make magnum less effective against boomers
-            
+
             - coop:     sudden death event: give everyone full (temp?) health
             - coop:     fix adrenaline rush for coop
             - coop:     special role events - mainly medic - still not working right in coop
             - coop:     sac1: tank door should not be affected by door-affecting events (never seems to work in coop?)
-    
-    
+
+
     side considerations / 3rd party bugs
     ------------------------------------
             - note:     the netprop m_iVersus(something) for distance seems to actually work pretty well (with minor bug)
                         CRox reports. try it?
-            
+
     minor cleanup / details
     -----------------------
             - tweak:    minitanks.. don't let tank rocks give rage?
-            - wait:     gamedata: bwdefib (onrevived()) signature doesn't work for windows (can't fix for now :/)
-                            but hey, windows sigs are broken anyway
             - tweak:    find less annoying way of doing gunswap (reload before swapping?)
-            - problem:  haunted doors: sometimes doors get stuck.. detect / prevent?
-                        [ no way to detect. :/ ]
+            - problem:  haunted doors: sometimes doors get stuck.. detect / prevent? [ no way to detect. :/ ]
             - tweak:    haunted doors: synchronize double doors... (bit annoying, can't easily use current methods to 'track' these)
             - tweak:    change boomer combo: 2 => riot, 3 => (a few) jimmy gibbs (maybe)?
             - tweak:    tell infected when survivors (first) find a gnome and how many points it's worth
@@ -83,19 +84,21 @@ L4D2_Random
             - nitpick:  prevent two ammo piles spawning too close to eachother
             - nitpick:  dark carnival 1 gas cans are not randomized.. (they're a point template, I guess)
             - code:     "The SetEntProp functions have a parameter for the array index, use it instead of doing manual lookups and computing offsets."
-    
+
     notes:
     ------
             - Replacing models with SetEntityModel with survivors doesn't work well - animations are too important.
             - I tried the modelscale netprop, which worked sometimes. most of the time it glitched a LOT of things.
               It made some players practically immune to damage and so on. horrid.
-    
+
     video:
     ------
         ...
-        
+
     ideas:
     ------
+            - event:    SI can open doors like survivors can (and lock them by holding use?)
+                        OR: SI can walk straight through doors
             - event:    stalkers of some sort: make SI partially transparent
                             maybe scratch-only hunters.. kinda 'the hidden'-like gameplay
             - event:    'shooting gallery': very quick spawns, low health SI (maybe only of particular types?)
@@ -119,10 +122,13 @@ L4D2_Random
                             - deadstop penalty?
                             - high pounces (penalty)
                             - common hops
-            - event:    'firestarter': fire does insane amounts of damage to everything (mostly survivors), and there are fire items everywhere. fire ammo always  
+            - event:    'firestarter': fire does insane amounts of damage to everything (mostly survivors), and there are fire items everywhere. fire ammo always
             - event:    facemelters: direct hits with spitters = horrendous damage?
                         or: exploding spit plops
-            
+
+            - gift  - spread some spit around the gift
+            - gift  - temporary survivor damage immunity
+            - gift  - temporary survivor damage immunity for whole team
             - gift  - make SI transparant for a while?
             - gift  - gift idea: temporary deafness
             - gift  - gift idea: blindness for entire team (shorter)
@@ -132,7 +138,7 @@ L4D2_Random
             - gift  - steal weapon / ammo (on condition of not breaking event)
             - gift  - gift idea: [tom] invulnerability
             - gift: - gift idea: reverse keys
-            
+
             - MAYBE - mini-scavenge for specific rounds (decide per map) / do the research (how well possible? how much work? has anyone done it already?)
             - MAYBE - add 'rerandom' function, working on live round [ for testing / bad starts ]
 
@@ -143,15 +149,15 @@ Map tweaks
     hammerid 999999
     and
         targetname "random_special_women"       =>      appears untouched on EVT_WOMEN (not at all outside of it)
-    
 
-            
+
+
 Some stuff to keep in mind:
 ===========================
 
     useful vocalize (scenes)
-            WorldC1M2B37    // alarm started ('lets get out of here')   C, E, 
-            
+            WorldC1M2B37    // alarm started ('lets get out of here')   C, E,
+
             cough
             AskReady
             GoingToDie
@@ -159,20 +165,20 @@ Some stuff to keep in mind:
             Incoming
             help
             transitionclose
-            
+
             backup
             lookout
             waithere
-            
+
             specific for starting to open gift
             -----------
             waithere
             AskReady
-            
+
             coach:
                 TakeGrenadeLauncher01
-            
-            
+
+
 
         prop_physics    spawnflags
         --------------------------
@@ -187,16 +193,16 @@ Some stuff to keep in mind:
             4096:       "Debris with trigger interaction" : 0
             8192:       "Force server-side (Multiplayer only)" : 0
             32768:      "Enable +use glow effect" : 0
-            
+
         cvars to consider:
         ------------------
             sv_bounce
             adrenaline_revive_speedup
-            
+
             z_common_limit
             z_background_limit
             z_cull_near
-            
+
             z_hear_gunfire_range 1000
             z_hear_runner_far_range 900
             z_vision_range 1000
@@ -206,8 +212,8 @@ Some stuff to keep in mind:
             z_acquire_near_range 500
             z_close_target_notice_distance 100
             z_notice_near_range 300
-            
-            
+
+
         What's this:
         ------------
             -Member: m_nHitboxSet (offset 1104) (type integer) (bits 2)
@@ -220,12 +226,12 @@ Some stuff to keep in mind:
             -Member: m_nRenderMode (offset 277) (type integer) (bits 8)
             -Member: m_fEffects (offset 204) (type integer) (bits 10)
             -Member: m_clrRender (offset 280) (type integer) (bits 32)
-            
+
         wait.. are these start/end saferoom checks? that'd be funny
             -Member: m_isInMissionStartArea (offset 11484) (type integer) (bits 1)
             -Member: m_bInBombZone (offset 10332) (type integer) (bits 1)
             -Member: m_bInBuyZone (offset 10333) (type integer) (bits 1)
-            
+
         infected netprops:
             -Member: m_iGlowType (offset 4) (type integer) (bits 32)
             -Member: m_nGlowRange (offset 8) (type integer) (bits 32)
@@ -236,14 +242,14 @@ Some stuff to keep in mind:
             -Member: m_fEffects (offset 204) (type integer) (bits 10)
             -Member: m_clrRender (offset 280) (type integer) (bits 32)
         may be used to change/force outlines...
-        
+
         play with this..
             // experiment - test
             SetEntityGravity(entity, 400.0);
-            
+
             m_bSurvivorGlowEnabled
-            
-            
+
+
 Harder  coop:
 
     sm_cvar z_hear_gunfire_range 400
@@ -260,8 +266,8 @@ Harder  coop:
     sm_cvar z_vision_range_obscured 700
     sm_cvar z_vision_range_obscured_alert 900
     sm_cvar z_close_target_notice_distance 90
-    
-    
+
+
 L4D2_DoAnimationEvent() event list
 ----------------------------------
 
@@ -311,4 +317,3 @@ L4D2_DoAnimationEvent() event list
 96  "
 
 
- 
