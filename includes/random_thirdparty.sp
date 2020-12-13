@@ -1845,8 +1845,6 @@ public Action:Timer_VomitAdjustPosE(Handle:timer, any:vomit) {
     loc[2] -= 3.0;
 
     TeleportEntity(vomit, loc, ang, NULL_VECTOR);
-
-
 }
 
 PlayerDoVomitSound(client, Float:location[3] ) {
