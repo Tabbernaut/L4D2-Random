@@ -224,7 +224,8 @@ function Update()
                         }
                         // times out after X seconds, even if nothing actually spawned
                         SessionState.EncounterCounter = ENC_SPAWNING_TIMEOUT
-                        SessionState.CurrentStage = ENC_STAGE_SPAWNING
+                        // ENC_STAGE_SPAWNING
+                        SessionState.CurrentStage = 2
                         SessionState.EncounterActive = true
 
                         SessionState.CurrentEncounter = RandomInt( ENC_FIRST, ENC_LAST )
@@ -252,7 +253,8 @@ function Update()
                                 // not a spawning encounter, so pass on through to gracetime
                                 DoEncounter_Witches()
                                 SessionState.EncounterCounter = ENC_GRACETIME
-                                SessionState.CurrentStage = ENC_STAGE_GRACE
+                                // ENC_STAGE_GRACE
+                                SessionState.CurrentStage = 4
                                 SessionState.EncounterActive = false
                                 break;
 
@@ -260,7 +262,8 @@ function Update()
                                 printl( "[randomcoop] encounter: panic horde" )
                                 DoEncounter_PanicHorde()
                                 SessionState.EncounterCounter = ENC_GRACETIME_LONG
-                                SessionState.CurrentStage = ENC_STAGE_GRACE
+                                // ENC_STAGE_GRACE
+                                SessionState.CurrentStage = 4
                                 SessionState.EncounterActive = false
                                 break;
 
@@ -278,13 +281,15 @@ function Update()
                                 printl( "[randomcoop] encounter: fallen" )
                                 DoEncounter_Fallen()
                                 SessionState.EncounterCounter = ENC_GRACETIME
-                                SessionState.CurrentStage = ENC_STAGE_GRACE
+                                // ENC_STAGE_GRACE
+                                SessionState.CurrentStage = 4
                                 SessionState.EncounterActive = false
                                 break;
                         }
                         break;
 
-                    case ENC_STAGE_SPAWNING:
+                    // ENC_STAGE_SPAWNING
+                    case 2:
 
                         // only switch to dying if we've spawned enough of our encounter
                         if ( SessionState.CurrentSIAlive < SessionState.EncounterSpawnCount )
@@ -302,7 +307,8 @@ function Update()
                                 Utils.SayToAll( "-> DYING (encounter spawns: "+ SessionState.EncounterDeathCount +")" )
                             }
 
-                            SessionState.CurrentStage = ENC_STAGE_DYING
+                            // ENC_STAGE_DYING
+                            SessionState.CurrentStage = 3
                             EncounterResetToNothing()
 
                             if ( SessionState.EncounterDeathCount == 0 )
@@ -317,17 +323,20 @@ function Update()
                         }
                         break;
 
-                    case ENC_STAGE_DYING:
+                    // ENC_STAGE_DYING
+                    case 3:
                         printl( "DYING -> GRACE" )
                         if ( SessionState.Debug ) {
                             Utils.SayToAll( "-> GRACE" )
                         }
                         SessionState.EncounterCounter = ENC_GRACETIME
-                        SessionState.CurrentStage = ENC_STAGE_GRACE
+                        // ENC_STAGE_GRACE
+                        SessionState.CurrentStage = 4
                         SessionState.EncounterActive = false
                         break;
 
-                    case ENC_STAGE_GRACE:
+                    // ENC_STAGE_GRACE
+                    case 4:
                         printl( "GRACE -> NORMAL" )
                         if ( SessionState.Debug ) {
                             Utils.SayToAll( "-> NORMAL" )
@@ -359,7 +368,8 @@ function Notifications::OnSpawn::PlayerInfectedSpawned ( player, params )
         //printl( "[randomcoop] player infected spawned: "+ player.GetPlayerType() )
         SessionState.CurrentSIAlive++
 
-        if ( SessionState.CurrentStage == ENC_STAGE_SPAWNING )
+        // ENC_STAGE_SPAWNING
+        if ( SessionState.CurrentStage == 2)
         {
             // encounterspawncount = how many we still expect.. count it down to mark them
             SessionState.EncounterSpawnCount--
@@ -402,7 +412,8 @@ function Notifications::OnDeath::PlayerInfectedDied ( victim, attacker, params )
             SessionState.EncounterDeathCount--
 
             // if all encounter-infected have died, we're back to normal
-            if ( SessionState.CurrentStage == ENC_STAGE_DYING && SessionState.EncounterDeathCount <= 0 && SessionState.EncounterCounter > 1 )
+            // ENC_STAGE_DYING
+            if ( SessionState.CurrentStage == 3 && SessionState.EncounterDeathCount <= 0 && SessionState.EncounterCounter > 1 )
             {
                 printl( "[randomcoop] full encounter number has been killed." )
                 if ( SessionState.Debug ) {
