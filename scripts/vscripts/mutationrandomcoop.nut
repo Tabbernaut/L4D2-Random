@@ -8,16 +8,16 @@ IncludeScript("VSLib");
 
     Random Coop Mutation
     --------------------
-    
+
     Version:    1.0.1
-    
-    
-    
+
+
+
     Communicating with the l4d2_random_coop sourcemod plugin:
     ------------------
     enable random_coop_timer_a_1, _2 and _4 for bitvalues to indicate the desired effect (encounter)
     enable random_coop_timer_b_1, _2, _4 and _8 for bitvalues to indicate the desired amount of spawns
-    
+
     stripper has added these timers
     if any of the timers _a_ are enabled, the plugin will take action
 
@@ -85,10 +85,10 @@ MutationOptions <-
     CommonLimit = 25                          // HARD / Maximum number of common zombies alive in the world at the same time
  	//MegaMobSize = 20                        // Total number of common zombies in a mob. (never more than CommonLimit at one time)
  	//WanderingZombieDensityModifier = 0      // lets get rid of the wandering zombies
- 	
+
  	TankLimit = 4
  	WitchLimit = 30
-    
+
     // just the start-up situation for specials: quiet
 	BoomerLimit = 0
  	ChargerLimit = 0
@@ -96,10 +96,10 @@ MutationOptions <-
 	JockeyLimit = 0
 	SpitterLimit = 0
 	SmokerLimit = 0
-    
+
     MaxSpecials = 0
     DominatorLimit = 0
-    
+
     // ?
     //cm_AggressiveSpecials = true
     //cm_HealingGnome = true
@@ -122,28 +122,28 @@ MutationState <-
     ENC_DIFF_CI_HARD        = 25
     ENC_DIFF_CI_MEDIUM      = 20
     ENC_DIFF_CI_EASY        = 15
-    
+
     // general
     Debug = false
     Paused = false
     TimersSet = false
-    
+
     // difficulty
     CurrentDifficulty = 2   // HARD
     EncounterDiffDelay = 25 // HARD
-    
+
     // tracking
     ThinkCount = 0
     //TrackSpawns = false
-    
+
     CurrentStage = ENC_STAGE_NORMAL
     EncounterCounter = RandomInt( ENC_STARTMIN, ENC_STARTMAX )
     CurrentEncounter = -1
-    
+
     EncounterSpawnCount = 0
     EncounterDeathCount = 0
     EncounterActive = false
-    
+
     CurrentSIAlive = 0
 }
 
@@ -170,14 +170,14 @@ function OnGameEvent_player_left_start_area( params )
 function Update()
 {
     // this automatically called?
-    
+
     // once every second...
     if ( Director.HasAnySurvivorLeftSafeArea() && !SessionState.Paused )
     {
         if ( SessionState.ThinkCount++ % 10 == 0 )
         {
             SessionState.ThinkCount = 0
-            
+
             // set timers
             if ( !SessionState.TimersSet )
             {
@@ -189,9 +189,9 @@ function Update()
                 ComTimerB4 <- Entity ( "random_coop_timer_b_4" )
                 ComTimerB8 <- Entity ( "random_coop_timer_b_8" )
             }
-            
+
             if ( SessionState.EncounterCounter > 0 ) { SessionState.EncounterCounter-- }
-            
+
             if ( SessionState.EncounterCounter == 0 )
             {
                 switch ( SessionState.CurrentStage )
@@ -201,9 +201,9 @@ function Update()
                         if ( SessionState.Debug ) {
                             Utils.SayToAll( "-> BUILDUP" )
                         }
-                        
+
                         SessionState.CurrentStage = ENC_STAGE_BUILDUP
-                        
+
                         // skip buildup if there's nothing around already
                         if ( SessionState.CurrentSIAlive < 1 )
                         {
@@ -215,7 +215,7 @@ function Update()
                             EncounterBuildUp()
                         }
                         break;
-                    
+
                     case ENC_STAGE_BUILDUP:
                         printl( "BUILDUP -> SPAWNING" )
                         if ( SessionState.Debug ) {
@@ -225,9 +225,9 @@ function Update()
                         SessionState.EncounterCounter = ENC_SPAWNING_TIMEOUT
                         SessionState.CurrentStage = ENC_STAGE_SPAWNING
                         SessionState.EncounterActive = true
-                        
+
                         SessionState.CurrentEncounter = RandomInt( ENC_FIRST, ENC_LAST )
-                        
+
                         // do the encounter!
                         switch( SessionState.CurrentEncounter )
                         {
@@ -235,17 +235,17 @@ function Update()
                                 printl( "encounter: hunters" )
                                 DoEncounter_Hunters()
                                 break;
-                            
+
                             case ENC_JOCKEYS:
                                 printl( "encounter: jockeys" )
                                 DoEncounter_Jockeys()
                                 break;
-                            
+
                             case ENC_CHARGESPIT:
                                 printl( "encounter: chargespit" )
                                 DoEncounter_ChargeSpit()
                                 break;
-                            
+
                             case ENC_WITCHES:
                                 printl( "witches" )
                                 // not a spawning encounter, so pass on through to gracetime
@@ -254,7 +254,7 @@ function Update()
                                 SessionState.CurrentStage = ENC_STAGE_GRACE
                                 SessionState.EncounterActive = false
                                 break;
-                            
+
                             case ENC_PANICHORDE:
                                 printl( "encounter: panic horde" )
                                 DoEncounter_PanicHorde()
@@ -262,17 +262,17 @@ function Update()
                                 SessionState.CurrentStage = ENC_STAGE_GRACE
                                 SessionState.EncounterActive = false
                                 break;
-                            
+
                             case ENC_BIGATTACK:
                                 printl( "encounter: big attack" )
                                 DoEncounter_BigAttack()
                                 break;
-                            
+
                             case ENC_SUPPORT:
                                 printl( "encounter: support" )
                                 DoEncounter_Support()
                                 break;
-                            
+
                             case ENC_FALLEN:
                                 printl( "encounter: fallen" )
                                 DoEncounter_Fallen()
@@ -282,9 +282,9 @@ function Update()
                                 break;
                         }
                         break;
-                    
+
                     case ENC_STAGE_SPAWNING:
-                        
+
                         // only switch to dying if we've spawned enough of our encounter
                         if ( SessionState.CurrentSIAlive < SessionState.EncounterSpawnCount )
                         {
@@ -300,10 +300,10 @@ function Update()
                             if ( SessionState.Debug ) {
                                 Utils.SayToAll( "-> DYING (encounter spawns: "+ SessionState.EncounterDeathCount +")" )
                             }
-                            
+
                             SessionState.CurrentStage = ENC_STAGE_DYING
                             EncounterResetToNothing()
-                            
+
                             if ( SessionState.EncounterDeathCount == 0 )
                             {
                                 // if nothing needs to die, pass straight on to GRACE
@@ -315,7 +315,7 @@ function Update()
                             }
                         }
                         break;
-                    
+
                     case ENC_STAGE_DYING:
                         printl( "DYING -> GRACE" )
                         if ( SessionState.Debug ) {
@@ -325,7 +325,7 @@ function Update()
                         SessionState.CurrentStage = ENC_STAGE_GRACE
                         SessionState.EncounterActive = false
                         break;
-                    
+
                     case ENC_STAGE_GRACE:
                         printl( "GRACE -> NORMAL" )
                         if ( SessionState.Debug ) {
@@ -336,7 +336,7 @@ function Update()
                         EncounterResetToNormal()
                         break;
                 }
-                
+
             }
         }
     }
@@ -357,14 +357,14 @@ function Notifications::OnSpawn::PlayerInfectedSpawned ( player, params )
         //player.GetPlayerType() == HUNTER
         //printl( "player infected spawned: "+ player.GetPlayerType() )
         SessionState.CurrentSIAlive++
-        
+
         if ( SessionState.CurrentStage == ENC_STAGE_SPAWNING )
         {
             // encounterspawncount = how many we still expect.. count it down to mark them
             SessionState.EncounterSpawnCount--
             // mark up how many we expect still to die, before encounter is naturally over
             SessionState.EncounterDeathCount++
-            
+
             // if we have enough, stop the event
             if ( SessionState.EncounterSpawnCount <= 0 )
             {
@@ -374,8 +374,6 @@ function Notifications::OnSpawn::PlayerInfectedSpawned ( player, params )
                 }
                 // allow next update to start next stage
                 SessionState.EncounterCounter = 1
-                
-                
             }
         }
     }
@@ -387,19 +385,19 @@ function Notifications::OnDeath::PlayerInfectedDied ( victim, attacker, params )
     if (!victim.IsEntityValid() || ! victim.IsPlayer() || !victim.IsPlayerEntityValid()) {
         return
     }
-    
+
     if ( victim.GetTeam() == INFECTED )
     {
         if ( SessionState.CurrentSIAlive < 0 ) { SessionState.CurrentSIAlive = 0 }
         SessionState.CurrentSIAlive--
-        
+
         //printl( "player infected died: "+ victim.GetPlayerType() )
-        
+
         if ( SessionState.EncounterActive )
         {
             SessionState.EncounterSpawnCount--
             SessionState.EncounterDeathCount--
-            
+
             // if all encounter-infected have died, we're back to normal
             if ( SessionState.CurrentStage == ENC_STAGE_DYING && SessionState.EncounterDeathCount <= 0 && SessionState.EncounterCounter > 1 )
             {
@@ -487,7 +485,7 @@ function DoEncounter_Hunters()
     SessionOptions.MaxSpecials <- spawns;
     SessionOptions.DominatorLimit <- spawns;
     SessionOptions.SpecialRespawnInterval <- 1.0;
-    
+
     if ( SessionState.Debug ) {
         Utils.SayToAll( " .. Hunters: "+ SessionState.EncounterSpawnCount )
     }
@@ -507,7 +505,7 @@ function DoEncounter_Jockeys()
     SessionOptions.MaxSpecials <- spawns;
     SessionOptions.DominatorLimit <- spawns;
     SessionOptions.SpecialRespawnInterval <- 1.0;
-    
+
     if ( SessionState.Debug ) {
         Utils.SayToAll( " .. Jockeys: "+ SessionState.EncounterSpawnCount )
     }
@@ -526,7 +524,7 @@ function DoEncounter_ChargeSpit()
     SessionOptions.SpitterLimit <- 2;
     SessionOptions.JockeyLimit <- 0;
     SessionOptions.SpecialRespawnInterval <- 1.0;
-    
+
     if ( SessionState.Debug ) {
         Utils.SayToAll( " .. Charge-Spit: "+ SessionState.EncounterSpawnCount )
     }
@@ -535,17 +533,17 @@ function DoEncounter_ChargeSpit()
 function DoEncounter_Witches()
 {
     SessionState.EncounterSpawnCount <- RandomInt( ENC_WITCH_MIN, ENC_WITCH_MAX )
-    
+
     // witches = 7
     ComTimerA1.Input( "Enable" )
     ComTimerA2.Input( "Enable" )
     ComTimerA4.Input( "Enable" )
-    
+
     if ( SessionState.EncounterSpawnCount & 1 ) { ComTimerB1.Input( "Enable" ) }
     if ( SessionState.EncounterSpawnCount & 2 ) { ComTimerB2.Input( "Enable" ) }
     if ( SessionState.EncounterSpawnCount & 4 ) { ComTimerB4.Input( "Enable" ) }
     if ( SessionState.EncounterSpawnCount & 8 ) { ComTimerB8.Input( "Enable" ) }
-    
+
     if ( SessionState.Debug ) {
         Utils.SayToAll( " .. Witches [through plugin]: "+ SessionState.EncounterSpawnCount )
     }
@@ -556,7 +554,7 @@ function DoEncounter_PanicHorde()
 {
     //Director.PlayMegaMobWarningSounds()
     Utils.ForcePanicEvent()
-    
+
     if ( SessionState.Debug ) {
         Utils.SayToAll( " .. Horde." )
     }
@@ -576,7 +574,7 @@ function DoEncounter_BigAttack()
     SessionOptions.MaxSpecials <- 12;
     SessionOptions.DominatorLimit <- 12;
     SessionOptions.SpecialRespawnInterval <- 1.0;
-    
+
     if ( SessionState.Debug ) {
         Utils.SayToAll( " .. Big Attack: "+ SessionState.EncounterSpawnCount )
     }
@@ -596,7 +594,7 @@ function DoEncounter_Support()
     SessionOptions.MaxSpecials <- spawns;
     SessionOptions.DominatorLimit <- 0;
     SessionOptions.SpecialRespawnInterval <- 1.0;
-    
+
     if ( SessionState.Debug ) {
         Utils.SayToAll( " .. Support: "+ SessionState.EncounterSpawnCount )
     }
@@ -605,16 +603,16 @@ function DoEncounter_Support()
 function DoEncounter_Fallen()
 {
     SessionState.EncounterSpawnCount <- RandomInt( ENC_FALLEN_MIN, ENC_FALLEN_MAX )
-    
+
     // fallen = 6
     ComTimerA2.Input( "Enable" )
     ComTimerA4.Input( "Enable" )
-    
+
     if ( SessionState.EncounterSpawnCount & 1 ) { ComTimerB1.Input( "Enable" ) }
     if ( SessionState.EncounterSpawnCount & 2 ) { ComTimerB2.Input( "Enable" ) }
     if ( SessionState.EncounterSpawnCount & 4 ) { ComTimerB4.Input( "Enable" ) }
     if ( SessionState.EncounterSpawnCount & 8 ) { ComTimerB8.Input( "Enable" ) }
-    
+
     if ( SessionState.Debug ) {
         Utils.SayToAll( " .. Fallen Survivors [through plugin]: "+ SessionState.EncounterSpawnCount )
     }
@@ -631,37 +629,37 @@ function ForceEncounterSpawns ( type )
             // hunters = 1
             ComTimerA1.Input( "Enable" )
             break;
-        
+
         case ENC_JOCKEYS:
             // jockeys = 2
             ComTimerA2.Input( "Enable" )
             break;
-        
+
         case ENC_CHARGESPIT:
             // chargespit = 3
             ComTimerA1.Input( "Enable" )
             ComTimerA2.Input( "Enable" )
             break;
-        
+
         case ENC_SUPPORT:
             // support = 4
             ComTimerA4.Input( "Enable" )
             break;
-        
+
         case ENC_BIGATTACK:
             // big attack = 5
             ComTimerA1.Input( "Enable" )
             ComTimerA4.Input( "Enable" )
             break;
-        
+
     }
-    
+
     // send amount desired
     if ( SessionState.EncounterSpawnCount & 1 ) { ComTimerB1.Input( "Enable" ) }
     if ( SessionState.EncounterSpawnCount & 2 ) { ComTimerB2.Input( "Enable" ) }
     if ( SessionState.EncounterSpawnCount & 4 ) { ComTimerB4.Input( "Enable" ) }
     if ( SessionState.EncounterSpawnCount & 8 ) { ComTimerB8.Input( "Enable" ) }
-    
+
     if ( SessionState.Debug ) {
         Utils.SayToAll( " .... Attempting to force spawns for encounter [through plugin]: "+ SessionState.EncounterSpawnCount )
     }
@@ -676,27 +674,27 @@ function ChatTriggers::rndmut_diff ( player, args, text )
     // toggle debug state
     switch ( SessionState.CurrentDifficulty )
     {
-        case SessionState.ENC_VERYHARD: 
+        case SessionState.ENC_VERYHARD:
             Utils.SayToAll( "Random Coop Mutation: HARD Difficulty Set" )
             SessionState.CurrentDifficulty = 2
             SessionState.EncounterDiffDelay = SessionState.ENC_DIFF_STAGE_HARD
             SessionOptions.CommonLimit = SessionState.ENC_DIFF_CI_HARD
             break;
-        
+
         case SessionState.ENC_HARD:
             Utils.SayToAll( "Random Coop Mutation: MEDIUM Difficulty Set" )
             SessionState.CurrentDifficulty = 3
             SessionState.EncounterDiffDelay = SessionState.ENC_DIFF_STAGE_MEDIUM
             SessionOptions.CommonLimit = SessionState.ENC_DIFF_CI_MEDIUM
             break;
-        
+
         case SessionState.ENC_MEDIUM:
             Utils.SayToAll( "Random Coop Mutation: EASY Difficulty Set" )
             SessionState.CurrentDifficulty = 4
             SessionState.EncounterDiffDelay = SessionState.ENC_DIFF_STAGE_EASY
             SessionOptions.CommonLimit = SessionState.ENC_DIFF_CI_EASY
             break;
-        
+
         case SessionState.ENC_EASY:
             Utils.SayToAll( "Random Coop Mutation: VERY HARD Difficulty Set" )
             SessionState.CurrentDifficulty = 1
