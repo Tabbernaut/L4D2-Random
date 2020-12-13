@@ -101,7 +101,7 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     RANDOM_DetermineRandomStuff();
 
     // handle report / survivor check for second round
-    if (g_bSecondHalf) {
+    if (g_bSecondHalf || (g_bCampaignMode && g_bCampaignForceRandom)) {
         // doing this immediately now
         //CreateTimer(DELAY_SECONDHALF, Timer_RoundStart, _, TIMER_FLAG_NO_MAPCHANGE);
 
@@ -155,12 +155,12 @@ public Action: SUPPORT_RoundPreparation(Handle:timer)
     // Some things need to be delayed to work right
     // However, in campaign mode, after mission is lost, this is not true,
     // in fact, in that case, any delay allows players to see and pick up stuff they shouldn't!
-    if (g_bCampaignMode && g_bLostMissionPreviousAttempt) {
-        SUPPORT_DelayedRoundPreparation();
-        return;
-    }
-
-    g_hTimerReport = CreateTimer( (g_bCampaignMode) ? DELAY_ROUNDPREP_COOP : DELAY_ROUNDPREP , Timer_DelayedRoundPrep, _, TIMER_FLAG_NO_MAPCHANGE);
+    g_hTimerReport = CreateTimer(
+        (g_bCampaignMode ? (g_bLostMissionPreviousAttempt ? DELAY_ROUNDPREP_COOP_RETRY : DELAY_ROUNDPREP_COOP) : DELAY_ROUNDPREP),
+        Timer_DelayedRoundPrep,
+        _,
+        TIMER_FLAG_NO_MAPCHANGE
+    );
 }
 
 // delayed call for every round start
@@ -203,6 +203,12 @@ SUPPORT_DelayedRoundPreparation()
     if ( g_bSecondHalf )
     {
         EVENT_AllSurvivorsLoadedIn();
+    }
+
+    // Force a survivor items check here, because .. this breaks too easily.
+    if (g_bCampaignMode && g_bLostMissionPreviousAttempt)
+    {
+        CheckSurvivorSetup();
     }
 
     PrintDebug(1, "[rand] Delayed RoundPreparation done.");

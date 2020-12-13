@@ -43,6 +43,7 @@ const Float:    TIMER_STARTCHECK        = 0.25;         // interval for checking
 const Float:    DELAY_FIRSTMAPLOAD      = 5.0;          // how long to wait before doing round prep on the very first map loading
 const Float:    DELAY_ROUNDPREP         = 1.0;          // how long between actual round prep and item handling etc
 const Float:    DELAY_ROUNDPREP_COOP    = 6.5;          // coop 'transitions' items, so make sure we randomize after that happens (was 8)
+const Float:    DELAY_ROUNDPREP_COOP_RETRY = 0.25;      // but on mission failure, the transition stuff happens earlier.
 const Float:    DELAY_SECONDHALF        = 1.0;          // how long to wait on secondroundhalf before restoring items
 const Float:    DELAY_SECONDHALF_REP    = 1.25;         // how long to wait on secondroundhalf before doing the report
 const Float:    DELAY_SURVSETUP         = 0.25;         // how long to wait after team switch/join to set survivor startup (for GetPlayerSlot check)
