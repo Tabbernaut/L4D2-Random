@@ -1080,6 +1080,8 @@ public OnMapStart()
         g_bItemsFullyRandomized = true;
         g_bRestartedOnce = true;
         g_bLostMissionPreviousAttempt = false;
+
+        DetectDoorsForRescueClosets();
     }
 
 

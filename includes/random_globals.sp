@@ -202,6 +202,8 @@ new     bool:           g_bSurvHandout                                      = fa
 new     Float:          g_fStorageDoors         [MAX_DOORS][3];                                     // which doors should be locked this round (2 halves), origin[2]
 new                     g_iDoorsLocked          [MAX_DOORS];                                        // which doors are currently locked (this half-round), entity-number
 new                     g_iDoorsLockedTotal                                 = 0;                    // amount of doors locked
+new                     g_iDoorsForRescueClosets[MAX_DOORS];                                        // which doors are detected as nearest to a survivor rescue point
+new                     g_iDoorsRescueTotal                                 = 0;                    // amount of doors matched to rescue closets
 new                     g_iArStorageSpawns      [TEAM_SIZE]                 = {ZC_NOTINFECTED,...}; // classes for first attack
 
 new                     g_strTempItemSingle     [strEntityData];                                    // for temporary storage of 'to create' entities

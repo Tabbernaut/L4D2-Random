@@ -4725,6 +4725,39 @@ SpawnCommonItem(Float:loc[3], Float:vel[3])
 // Random Door Locking
 // ------------------------
 
+void DetectDoorsForRescueClosets()
+{
+    g_iDoorsRescueTotal = 0;
+
+    int nearestDoor, entity = -1;
+
+    while ((entity = FindEntityByClassname(entity, "info_survivor_rescue")) != -1) {
+
+        nearestDoor = GetNearestEntityTo(entity, "prop_door_rotating");
+
+        if (nearestDoor == -1 || IsDoorMarkedAsRescueClosetDoor(nearestDoor)) {
+            continue;
+        }
+
+        g_iDoorsForRescueClosets[g_iDoorsRescueTotal] = nearestDoor;
+        g_iDoorsRescueTotal++;
+    }
+
+    PrintDebug(6, "[rand] Detected %d door(s) as belonging to rescue closets", g_iDoorsRescueTotal);
+}
+
+bool IsDoorMarkedAsRescueClosetDoor(door)
+{
+    for (new i = 0; i < g_iDoorsRescueTotal; i++) {
+        if (g_iDoorsForRescueClosets[i] == door) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
 // randomize doors
 RandomizeDoors()
 {
@@ -4766,8 +4799,15 @@ RandomizeDoors()
     {
         if (!IsValidEntity(i)) { continue; }
         GetEdictClassname(i, classname, sizeof(classname));
-        if (!StrEqual(classname, "prop_door_rotating")) { continue; }
-        if (GetEntProp(i, Prop_Data, "m_spawnflags") & (1<<19)) { continue; }       //check for unbreakable flag
+        if (
+            !StrEqual(classname, "prop_door_rotating")
+            || GetEntProp(i, Prop_Data, "m_spawnflags") & (1 << 19)     // check for unbreakable flag
+            || SAFEDETECT_IsEntityInStartSaferoom(i)
+            || SAFEDETECT_IsEntityInEndSaferoom(i)
+            || (g_bCampaignMode && IsDoorMarkedAsRescueClosetDoor(i))   // stupid to lock rescue closets in coop
+        ) {
+            continue;
+        }
 
         // in locked doors event, close all doors (even if not locking them)
         if (g_iSpecialEvent == EVT_DOORS) { AcceptEntityInput(i, "Close"); }

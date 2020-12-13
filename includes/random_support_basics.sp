@@ -1024,3 +1024,27 @@ GetCurrentLogicalTeam()
         return GameRules_GetProp("m_bAreTeamsFlipped");
     }
 }
+
+public GetNearestEntityTo(startEntity, char[] sClassname)
+{
+    float fFirstVecOrigin[3], fNearestVecOrigin[3];
+    float fDistance, fNearestDistance = -1.0;
+    int nearestEntity, entity = -1;
+
+    GetEntPropVector(startEntity, Prop_Data, "m_vecOrigin", fFirstVecOrigin);
+
+    while ((entity = FindEntityByClassname(entity, sClassname)) != -1)
+    {
+        GetEntPropVector(entity, Prop_Data, "m_vecOrigin", fNearestVecOrigin);
+        fDistance = GetVectorDistance(fFirstVecOrigin, fNearestVecOrigin);
+
+        if (fDistance < fNearestDistance || fNearestDistance == -1.0)
+        {
+            nearestEntity    = entity;
+            fNearestDistance = fDistance;
+        }
+    }
+
+    return nearestEntity;
+}
+
