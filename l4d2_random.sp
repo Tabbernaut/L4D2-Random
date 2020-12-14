@@ -1281,6 +1281,13 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
             }
         }
     }
+
+    // SI can open doors...
+    if (g_iSpecialEvent == EVT_INFECTEDDOORS && GetClientTeam(client) == TEAM_INFECTED && buttons & IN_USE) {
+        EVENT_CheckDoorUse(client);
+        return Plugin_Continue;
+    }
+
     if (!IsSurvivor(client) || !IsPlayerAlive(client)) { return Plugin_Continue; }
 
 

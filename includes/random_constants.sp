@@ -74,6 +74,8 @@ const Float:    AMMO_FIX_RANGE          = 256.0;        // if ammo is deployed f
 const Float:    ITEM_USE_DISTANCE       = 16.0;         // how far a survivor can move before aborting a use-progress-bar type action
 const Float:    ITEM_USE_FREEZE_TIME    = 0.5;          // after how long of starting a progress-bar use type action you're frozen (while you hold USE)
 
+const Float:    EVENT_INFECTED_DOOR_OPEN_DST = 64.0;    // distance an SI needs to be to a door to open it
+
 const Float:    USING_TIME_DEFAULT      = 3.0;
 const Float:    USING_TIME_GIFT         = 3.5;
 
@@ -301,8 +303,9 @@ const           EVT_BOOMFLU             = 36;
 const           EVT_DOORCIRCUS          = 37;
 const           EVT_BAY                 = 38;
 const           EVT_PROHOPS             = 39;
+const           EVT_INFECTEDDOORS       = 40;
 
-const           EVT_TOTAL               = 40;
+const           EVT_TOTAL               = 41;
 
 const           EVTMNU_INFO             = 1;
 const           EVTMNU_PICK             = 2;
@@ -805,7 +808,8 @@ new const String: g_csEventText[][] =
     "\x04Boomer Flu\x01 - One survivor caught the boomer flu and is prone to vomit.",
     "\x04Haunted Doors\x01 - Evil spirits randomly open and close the doors on this map.",
     "\x04Directed by Michael Bay\x01 - Explosions everywhere.",
-    "\x04Bunnyhop Pros\x01 - Hold JUMP for automatic perfect bunnyhops."
+    "\x04Bunnyhop Pros\x01 - Hold JUMP for automatic perfect bunnyhops.",
+    "\x04Clever Infected\x01 - Special Infected can use doors."
 };
 
 new const String: g_csEventTextShort[][] =
@@ -849,7 +853,8 @@ new const String: g_csEventTextShort[][] =
     "Boomer Flu",
     "Haunted Doors",
     "Directed by Michael Bay",
-    "Bunnyhop Pros"
+    "Bunnyhop Pros",
+    "Clever Infected"
 };
 
 new const JUNK_FIRSTNONSOLID = 4;

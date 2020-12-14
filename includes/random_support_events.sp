@@ -670,9 +670,17 @@ EVENT_ArrayRemoveBoobyTrap(index)
     ------------------ */
 public SUPPORT_ToggleDoor(door, player)
 {
+    AcceptEntityInput(door, "Unlock");
+
+    SUPPORT_ToggleDoorLockless(door, player);
+
+    AcceptEntityInput(door, "Lock");
+}
+
+public SUPPORT_ToggleDoorLockless(door, player)
+{
     new doorState = GetEntProp(door, Prop_Data, "m_eDoorState");
 
-    AcceptEntityInput(door, "Unlock");
     if (doorState != 0) {   // is open
         AcceptEntityInput(door, "Close");
     } else {
@@ -682,7 +690,6 @@ public SUPPORT_ToggleDoor(door, player)
             AcceptEntityInput(door, "Open");
         }
     }
-    AcceptEntityInput(door, "Lock");
 }
 
 public Action:Timer_DoorCircus(Handle:timer)
@@ -737,6 +744,60 @@ public Action:Timer_DoorCircus(Handle:timer)
     }
 
     return Plugin_Continue;
+}
+
+/*  Clever infected
+    ---------------- */
+public EVENT_CheckDoorUse(client)
+{
+    if (g_bInfectedDoorTimeout[client]) { return; }
+
+    // check what we're aiming at
+    new entity = GetClientAimTarget(client, false);
+    if (entity == -1) { return; }
+
+    new String:sEdictClassName[32];
+    GetEdictClassname(entity, sEdictClassName, sizeof(sEdictClassName));
+
+    if (!StrEqual(sEdictClassName, "prop_door_rotating")) { return; }
+
+    // Make sure we don't toy with locked or otherwise unusable doors
+    if (
+        GetEntProp(entity, Prop_Data, "m_spawnflags") & (1 << 19)     // check for unbreakable flag
+    ) {
+        return;
+    }
+
+
+    // check if it's in reach
+    new Float:playerPos[3];
+    new Float:targetPos[3];
+    GetClientAbsOrigin(client, playerPos);
+    GetEntPropVector(entity, Prop_Send, "m_vecOrigin", targetPos);
+    new Float:distance = GetVectorDistance(playerPos, targetPos);
+
+    // Just reuse the pickup check distance
+    if (distance > EVENT_INFECTED_DOOR_OPEN_DST) {
+        return;
+    }
+
+    SUPPORT_ToggleDoorLockless(entity, -1);
+
+    g_bInfectedDoorTimeout[client] = true;
+
+    new Handle:pack = CreateDataPack();
+    WritePackCell(pack, client);
+    CreateTimer(0.25, Timer_UnblockDoorForInfected, pack);
+}
+
+public Action:Timer_UnblockDoorForInfected(Handle:timer, any:pack)
+{
+    // todo allow door use
+    ResetPack(pack);
+    new client = ReadPackCell(pack);
+    CloseHandle(pack);
+
+    g_bInfectedDoorTimeout[client] = false;
 }
 
 

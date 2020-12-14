@@ -439,6 +439,7 @@ new     Handle:         g_hCvarBotStop                                      = IN
 new     Handle:         g_hCvarPounceUncapDamage                            = INVALID_HANDLE;       // z_pounce_max_bonus_damage
 new     Handle:         g_hCvarPounceUncapRange                             = INVALID_HANDLE;       // z_pounce_damage_range_max
 
+new     bool:           g_bInfectedDoorTimeout  [MAXPLAYERS+1]              = {false,...};          // whether the infected is briefly blocked from manipulating doors
 
 new                     g_iHordeTimeMin                                     = 30;                   // these are set when round goes live
 new                     g_iHordeTimeMax                                     = 180;

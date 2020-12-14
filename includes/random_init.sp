@@ -183,6 +183,7 @@ INIT_DefineCVars()
     g_hArCvarEvtWeight[EVT_DOORCIRCUS] = CreateConVar(      "rand_weight_evt_doorcircus",    "3",       "Weight for picking special event.",        FCVAR_NONE, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_BAY] = CreateConVar(             "rand_weight_evt_bay",           "4",       "Weight for picking special event.",        FCVAR_NONE, true, 0.0, true, 100.0 );
     g_hArCvarEvtWeight[EVT_PROHOPS] = CreateConVar(         "rand_weight_evt_hops",          "2",       "Weight for picking special event.",        FCVAR_NONE, true, 0.0, true, 100.0 );
+    g_hArCvarEvtWeight[EVT_INFECTEDDOORS] = CreateConVar(   "rand_weight_evt_infdoors",      "2",       "Weight for picking special event.",        FCVAR_NONE, true, 0.0, true, 100.0 );
 
     g_hArCvarGiftWeight[GIFT_POS_HEALTH] = CreateConVar(    "rand_weight_gift_health",       "2",       "Weight for picking gift effects.",         FCVAR_NONE, true, 0.0, true, 100.0 );
     g_hArCvarGiftWeight[GIFT_POS_HEALTH_T] = CreateConVar(  "rand_weight_gift_temphealth",   "2",       "Weight for picking gift effects.",         FCVAR_NONE, true, 0.0, true, 100.0 );
