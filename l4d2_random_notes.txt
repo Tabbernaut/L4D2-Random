@@ -2,9 +2,17 @@
 L4D2_Random
 ===========
 
+    to-do after hiatus
+    ------------------
+        - test b&w defib.. update signature?
+
+
 
     changelog:
     ---------
+        - fixed double reporting of skeets
+        - don't lock respawn-closet doors (ie all unbreakable ones)
+        - make boomer flu vomit hit a half second less -- too long after animation now
         - fixed doors opening in a weird direction in the keymaster event.
         - fixed an issue where in coop survivors wouldn't get the right event items
         - fixed an issue where in coop the items weren't reshuffled before players can pick stuff up.
@@ -97,8 +105,6 @@ L4D2_Random
 
     ideas:
     ------
-            - event:    SI can open doors like survivors can (and lock them by holding use?)
-                        OR: SI can walk straight through doors
             - event:    stalkers of some sort: make SI partially transparent
                             maybe scratch-only hunters.. kinda 'the hidden'-like gameplay
             - event:    'shooting gallery': very quick spawns, low health SI (maybe only of particular types?)
@@ -126,6 +132,10 @@ L4D2_Random
             - event:    facemelters: direct hits with spitters = horrendous damage?
                         or: exploding spit plops
 
+            - gift  - temporarily speed up survivor(s)
+            - gift  - temporarily slow down survivor(s)
+            - gift  - stumbles everyone for a short while
+            - gift  - redistribute items held by survivors randomly (just swap what people are holding as sets?)
             - gift  - spread some spit around the gift
             - gift  - temporary survivor damage immunity
             - gift  - temporary survivor damage immunity for whole team
@@ -133,11 +143,21 @@ L4D2_Random
             - gift  - gift idea: temporary deafness
             - gift  - gift idea: blindness for entire team (shorter)
             - gift  - gift idea: X second slowdown (like EVT_ENCUMBERED)
+
             - gift  - gift idea: ghost-effect for survivors for X seconds (no outlines for SI) (even if running)
             - gift  - gift idea: see outlines on infected for X seconds ('telepathy')
+                Possible with glow -> see extendedsight plugin, with nice glow fade out effect aswell
+                Need to decide on a color (orange or something with a punch).
+                Need to track player spawn/become ghost to set glow, and need to disable glows again.
+                Still pretty tricky, since you don't want to break glows (it works by changing glow type)
+
             - gift  - steal weapon / ammo (on condition of not breaking event)
             - gift  - gift idea: [tom] invulnerability
-            - gift: - gift idea: reverse keys
+
+            x gift: - gift idea: reverse keys
+                    this cannot be done (well) -- you cannot change the 4 direction keys with OnPlayerRunCmd, alas.
+                    other keys are fine, but the fun stuff is impractical. Might do it with a velocity flip, but that's
+                    potentially super buggy with other direction and world interaction.
 
             - MAYBE - mini-scavenge for specific rounds (decide per map) / do the research (how well possible? how much work? has anyone done it already?)
             - MAYBE - add 'rerandom' function, working on live round [ for testing / bad starts ]
