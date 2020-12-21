@@ -6,10 +6,9 @@ L4D2_Random
     ------------------
         - test b&w defib.. update signature?
 
-
-
     changelog:
     ---------
+        - added special event where SI can manipulate doors
         - fixed double reporting of skeets
         - don't lock respawn-closet doors (ie all unbreakable ones)
         - make boomer flu vomit hit a half second less -- too long after animation now
@@ -107,6 +106,13 @@ L4D2_Random
     ------
             - event:    stalkers of some sort: make SI partially transparent
                             maybe scratch-only hunters.. kinda 'the hidden'-like gameplay
+
+                            Player transparency can be set with:
+                                SetEntityRenderFx(client, RENDERFX_HOLOGRAM);
+                                SetEntityRenderColor(client, 255, 255, 255, opacity);
+                            Note that the ragdoll does not stay transparent, so it looks weird on death. Incapped survivors stay transparent though.
+                            the ragdoll can be fixed, see Lux's model selection/chooser
+
             - event:    'shooting gallery': very quick spawns, low health SI (maybe only of particular types?)
                             maybe remove capping potential (or give set damage for a cap)
                             should be intense and fast action
