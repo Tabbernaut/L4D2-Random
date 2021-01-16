@@ -391,6 +391,11 @@ SpawnWitch(client)
 
 public Action: SpawnFallen(number, Float:location[3])
 {
+    // Don't spawn a fallen if we shouldn't
+    if (GetConVarFloat(g_hCvarFallenChance) < 0.01) {
+        return;
+    }
+
 	new zombie = CreateEntityByName("infected");
 
 	SetEntityModel(zombie, FALLEN_MODEL);
