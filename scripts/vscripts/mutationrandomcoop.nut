@@ -688,28 +688,28 @@ function ChatTriggers::rndmut_diff ( player, args, text )
     switch ( SessionState.CurrentDifficulty )
     {
         case SessionState.ENC_VERYHARD:
-            Utils.SayToAll( "Random Coop Mutation: HARD Difficulty Set" )
+            Utils.SayToAllDel( "Random Coop Mutation: HARD Difficulty Set" )
             SessionState.CurrentDifficulty = 2
             SessionState.EncounterDiffDelay = SessionState.ENC_DIFF_STAGE_HARD
             SessionOptions.CommonLimit = SessionState.ENC_DIFF_CI_HARD
             break;
 
         case SessionState.ENC_HARD:
-            Utils.SayToAll( "Random Coop Mutation: MEDIUM Difficulty Set" )
+            Utils.SayToAllDel( "Random Coop Mutation: MEDIUM Difficulty Set" )
             SessionState.CurrentDifficulty = 3
             SessionState.EncounterDiffDelay = SessionState.ENC_DIFF_STAGE_MEDIUM
             SessionOptions.CommonLimit = SessionState.ENC_DIFF_CI_MEDIUM
             break;
 
         case SessionState.ENC_MEDIUM:
-            Utils.SayToAll( "Random Coop Mutation: EASY Difficulty Set" )
+            Utils.SayToAllDel( "Random Coop Mutation: EASY Difficulty Set" )
             SessionState.CurrentDifficulty = 4
             SessionState.EncounterDiffDelay = SessionState.ENC_DIFF_STAGE_EASY
             SessionOptions.CommonLimit = SessionState.ENC_DIFF_CI_EASY
             break;
 
         case SessionState.ENC_EASY:
-            Utils.SayToAll( "Random Coop Mutation: VERY HARD Difficulty Set" )
+            Utils.SayToAllDel( "Random Coop Mutation: VERY HARD Difficulty Set" )
             SessionState.CurrentDifficulty = 1
             SessionState.EncounterDiffDelay = SessionState.ENC_DIFF_STAGE_VERYHARD
             SessionOptions.CommonLimit = SessionState.ENC_DIFF_CI_VERYHARD
@@ -725,10 +725,10 @@ function ChatTriggers::rndmut_debug ( player, args, text )
 {
     // toggle debug state
     if ( SessionState.Debug ) {
-        Utils.SayToAll( "Random Coop Mutation: Debug Prints Disabled" )
+        Utils.SayToAllDel( "Random Coop Mutation: Debug Prints Disabled" )
         SessionState.Debug = false
     } else {
-        Utils.SayToAll( "Random Coop Mutation: Debug Prints Enabled" )
+        Utils.SayToAllDel( "Random Coop Mutation: Debug Prints Enabled" )
         SessionState.Debug = true
     }
 }
@@ -737,10 +737,10 @@ function ChatTriggers::rndmut_pause ( player, args, text )
 {
     // toggle pause
     if ( SessionState.Paused ) {
-        Utils.SayToAll( "Random Coop Mutation: Unpaused" )
+        Utils.SayToAllDel( "Random Coop Mutation: Unpaused" )
         SessionState.Paused = false
     } else {
-        Utils.SayToAll( "Random Coop Mutation: Paused" )
+        Utils.SayToAllDel( "Random Coop Mutation: Paused" )
         SessionState.Paused = true
     }
 }
