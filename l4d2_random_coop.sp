@@ -25,6 +25,10 @@ const           TEAM_INFECTED           = 3;
 const           LTIMER_ENABLED          = 0;
 const           LTIMER_DISABLED         = 1;
 
+const           COOP_DIFFICULTY_EASY    = 1;
+const           COOP_DIFFICULTY_HARD    = 2;
+
+
 const           ZC_SMOKER               = 1;
 const           ZC_BOOMER               = 2;
 const           ZC_HUNTER               = 3;
@@ -53,8 +57,12 @@ new                     g_iLogicTimerEntAmount[4];
 
 new                     g_iRemainingFallen                                  = 0;                    // how many fallen survivors to spawn
 
+new                     g_iCurrentDifficulty                                = 0;
+
 new     Handle:         g_hCvarDebug                                        = INVALID_HANDLE;
 
+new     Handle:         g_hCvarPathToEasyConfig                             = INVALID_HANDLE;
+new     Handle:         g_hCvarPathToHardConfig                             = INVALID_HANDLE;
 new     Handle:         g_hCvarFallenChance                                 = INVALID_HANDLE;
 
 
@@ -75,7 +83,16 @@ public OnPluginStart()
         "Random debug mode (coop plugin). (0: only error reporting, -1: disable all reports, 1+: set debug report level)",
         FCVAR_NONE, true, -1.0, true, 5.0);
 
+    g_hCvarPathToEasyConfig = CreateConVar("rand_coop_easy_path", "cfgogl/randomcoop/COOP_difficulty_easy.cfg",
+        "The path to the cfg file with the settings for easy mode",
+        FCVAR_NONE);
+    g_hCvarPathToHardConfig = CreateConVar("rand_coop_hard_path", "cfgogl/randomcoop/COOP_difficulty_hard.cfg",
+        "The path to the cfg file with the settings for hard mode",
+        FCVAR_NONE);
+
     g_hCvarFallenChance = FindConVar("rand_fallen_chance");
+
+    RegConsoleCmd("sm_randcoop_diff", RandomDifficulty_Cmd, "Display or set the difficulty for random coop.");
 
     // prepare weights
     //PrepareChoicesEncounters();
@@ -85,6 +102,9 @@ public OnPluginStart()
 
     // start timer
     CreateTimer(1.0, Timer_CheckLogicTimer, _, TIMER_REPEAT);
+
+    g_iCurrentDifficulty = COOP_DIFFICULTY_EASY;
+    ChangeDifficulty(g_iCurrentDifficulty);
 }
 
 
@@ -408,4 +428,85 @@ public Action: SpawnFallen(number, Float:location[3])
 
 	location[2] -= 25.0; //reduce the 'drop' effect
 	TeleportEntity( zombie, location, NULL_VECTOR, NULL_VECTOR );
+}
+
+
+// ---------- Difficulty ------------
+
+
+public Action: RandomDifficulty_Cmd(client, args)
+{
+    decl String:sDifficulty[5];
+
+    if (! args) {
+        if (g_iCurrentDifficulty == COOP_DIFFICULTY_EASY) {
+            sDifficulty = "easy";
+        } else if (g_iCurrentDifficulty == COOP_DIFFICULTY_HARD) {
+            sDifficulty = "hard";
+        }
+
+        PrintToChat(client, "\x01[\x05r\x01] Current difficulty: '%s'. Change by specifying 'easy' or 'hard'", sDifficulty);
+        return Plugin_Handled;
+    }
+
+    GetCmdArg(1, sDifficulty, 5);
+    new iDifficulty = 0;
+
+    if (StrEqual(sDifficulty, "easy", false)) {
+        iDifficulty = COOP_DIFFICULTY_EASY;
+    } else if (StrEqual(sDifficulty, "hard", false)) {
+        iDifficulty = COOP_DIFFICULTY_HARD;
+    }
+
+    if (iDifficulty == 0) {
+        PrintToChat(client, "\x01[\x05r\x01] Incorrect argument: must be 'easy' or 'hard'");
+        return Plugin_Handled;
+    }
+
+    ChangeDifficulty(iDifficulty);
+
+    return Plugin_Handled;
+}
+
+
+void ChangeDifficulty(int difficulty)
+{
+    if (g_iCurrentDifficulty == difficulty) {
+        PrintToChatAll("\x01[\x05r\x01] Difficulty is already set that way.");
+        return;
+    }
+
+    decl String: sPath[64];
+    decl String: sName[5];
+
+    if (difficulty == COOP_DIFFICULTY_EASY) {
+        g_iCurrentDifficulty = COOP_DIFFICULTY_EASY;
+        sName = "easy";
+        GetConVarString(g_hCvarPathToEasyConfig, sPath, 64);
+    } else if (difficulty == COOP_DIFFICULTY_HARD) {
+        g_iCurrentDifficulty = COOP_DIFFICULTY_HARD;
+        sName = "hard";
+        GetConVarString(g_hCvarPathToHardConfig, sPath, 64);
+    }
+
+    ExecDifficultyConfig(sPath);
+
+    PrintToChatAll("\x01[\x05r\x01] Changed coop difficulty to: %s.", sName);
+}
+
+void ExecDifficultyConfig(char[] path)
+{
+    new String: sFullPath[64] = "cfg/";
+    StrCat(sFullPath, 64, path);
+
+    if (! FileExists(sFullPath)) {
+        PrintDebug(0, "[rand-coop] Could not find difficulty config file: %s", sFullPath);
+        return;
+    }
+    PrintToChatAll("\x01[\x05r\x01] Setting difficulty before 2");
+
+    PrintDebug(2, "[rand-coop] Executing config file: %s", sFullPath);
+
+    PrintToChatAll("\x01[\x05r\x01] Setting difficulty before 3");
+    ServerCommand("exec \"%s\"", path);
 }
