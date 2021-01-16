@@ -137,16 +137,13 @@ public Action: Timer_CheckLogicTimer (Handle:timer)
 
     // vscript is trying to tell us something if anything but 0
     new iEncounterValue = (
-        ((GetEntProp(g_iLogicTimerEntEncounter[0], Prop_Data, "m_iDisabled") == LTIMER_ENABLED) ? 1 : 0)
-        * 1
+        ((GetEntProp(g_iLogicTimerEntEncounter[0], Prop_Data, "m_iDisabled") == LTIMER_ENABLED) ? 1 : 0) * 1
     ) +
     (
-        ((GetEntProp(g_iLogicTimerEntEncounter[1], Prop_Data, "m_iDisabled" ) == LTIMER_ENABLED) ? 1 : 0)
-        * 2
+        ((GetEntProp(g_iLogicTimerEntEncounter[1], Prop_Data, "m_iDisabled" ) == LTIMER_ENABLED) ? 1 : 0) * 2
     ) +
     (
-        ((GetEntProp(g_iLogicTimerEntEncounter[2], Prop_Data, "m_iDisabled" ) == LTIMER_ENABLED) ? 1 : 0)
-        * 4
+        ((GetEntProp(g_iLogicTimerEntEncounter[2], Prop_Data, "m_iDisabled" ) == LTIMER_ENABLED) ? 1 : 0) * 4
     );
 
     if (iEncounterValue > 0) {
@@ -164,39 +161,32 @@ public Action: Timer_CheckLogicTimer (Handle:timer)
             ((GetEntProp( g_iLogicTimerEntAmount[3], Prop_Data, "m_iDisabled" ) == LTIMER_ENABLED) ? 1 : 0 ) * 8
         );
 
-        if ( iAmountValue > 0 )
-        {
+        if (iAmountValue > 0) {
             PrintDebug( 0, "[rndcoop] Status of timer: %i (amount: %i)", iEncounterValue, iAmountValue );
 
-            switch ( iEncounterValue )
-            {
+            switch (iEncounterValue) {
                 case ENC_HUNTERS: {
-                    for ( new i = 0; i < iAmountValue; i++ )
-                    {
+                    for (new i = 0; i < iAmountValue; i++) {
                         CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_HUNTER, TIMER_FLAG_NO_MAPCHANGE );
                     }
                 }
                 case ENC_JOCKEYS: {
-                    for ( new i = 0; i < iAmountValue; i++ )
-                    {
+                    for (new i = 0; i < iAmountValue; i++) {
                         CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_JOCKEY, TIMER_FLAG_NO_MAPCHANGE );
                     }
                 }
                 case ENC_CHARGESPIT: {
-                    for ( new i = 0; i < iAmountValue; i++ )
-                    {
+                    for (new i = 0; i < iAmountValue; i++) {
                         CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, (GetRandomInt(0,2)) ? ZC_CHARGER : ZC_SPITTER, TIMER_FLAG_NO_MAPCHANGE );
                     }
                 }
                 case ENC_SUPPORT: {
-                    for ( new i = 0; i < iAmountValue; i++ )
-                    {
+                    for (new i = 0; i < iAmountValue; i++) {
                         CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, (GetRandomInt(0,1)) ? ZC_BOOMER : ZC_SPITTER, TIMER_FLAG_NO_MAPCHANGE );
                     }
                 }
                 case ENC_BIGATTACK: {
-                    for ( new i = 0; i < iAmountValue; i++ )
-                    {
+                    for (new i = 0; i < iAmountValue; i++) {
                         CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, GetRandomInt(ZC_SMOKER, ZC_CHARGER), TIMER_FLAG_NO_MAPCHANGE );
                     }
                 }
@@ -204,28 +194,26 @@ public Action: Timer_CheckLogicTimer (Handle:timer)
                     // spawn some commons => fallen
                     new spawningclient = GetSpawningClient(true);
                     g_iRemainingFallen = iAmountValue;
-                    if ( IsClientAndInGame(spawningclient) ) {
-                        SpawnCommon( spawningclient, iAmountValue );
+                    if (IsClientAndInGame(spawningclient)) {
+                        SpawnCommon(spawningclient, iAmountValue);
                     }
                 }
                 case ENC_WITCHES: {
-                    for ( new i = 0; i < iAmountValue; i++ )
-                    {
-                        CreateTimer( GetRandomFloat( 0.0, SPAWN_VARY_MAX ), Timer_SpawnSomething, ZC_WITCH, TIMER_FLAG_NO_MAPCHANGE );
+                    for (new i = 0; i < iAmountValue; i++) {
+                        CreateTimer(GetRandomFloat(0.0, SPAWN_VARY_MAX), Timer_SpawnSomething, ZC_WITCH, TIMER_FLAG_NO_MAPCHANGE);
                     }
                 }
             }
-
         }
 
         // reset all timers back to 0
-        AcceptEntityInput( g_iLogicTimerEntEncounter[0], "Disable" );
-        AcceptEntityInput( g_iLogicTimerEntEncounter[1], "Disable" );
-        AcceptEntityInput( g_iLogicTimerEntEncounter[2], "Disable" );
-        AcceptEntityInput( g_iLogicTimerEntAmount[0], "Disable" );
-        AcceptEntityInput( g_iLogicTimerEntAmount[1], "Disable" );
-        AcceptEntityInput( g_iLogicTimerEntAmount[2], "Disable" );
-        AcceptEntityInput( g_iLogicTimerEntAmount[3], "Disable" );
+        AcceptEntityInput(g_iLogicTimerEntEncounter[0], "Disable");
+        AcceptEntityInput(g_iLogicTimerEntEncounter[1], "Disable");
+        AcceptEntityInput(g_iLogicTimerEntEncounter[2], "Disable");
+        AcceptEntityInput(g_iLogicTimerEntAmount[0], "Disable");
+        AcceptEntityInput(g_iLogicTimerEntAmount[1], "Disable");
+        AcceptEntityInput(g_iLogicTimerEntAmount[2], "Disable");
+        AcceptEntityInput(g_iLogicTimerEntAmount[3], "Disable");
     }
 
     return Plugin_Continue;
@@ -236,14 +224,15 @@ public Action: Timer_SpawnSomething (Handle:timer, any:what)
     // relay to spawn function
     new client = GetSpawningClient(true);
 
-    PrintDebug( 3, "[rand-coop] Spawning... client: %i.", client );
+    PrintDebug(3, "[rand-coop] Spawning... client: %i.", client);
 
-    if ( !IsClientAndInGame( client ) ) { return Plugin_Continue; }
+    if (! IsClientAndInGame(client)) {
+        return Plugin_Continue;
+    }
 
-    PrintDebug( 3, "[rand-coop] Spawning something: %i.", what );
+    PrintDebug(3, "[rand-coop] Spawning something: %i.", what);
 
-    switch ( what )
-    {
+    switch (what) {
         case ZC_SMOKER: { SpawnSpecial( client, what ); }
         case ZC_BOOMER: { SpawnSpecial( client, what ); }
         case ZC_HUNTER: { SpawnSpecial( client, what ); }
@@ -261,10 +250,11 @@ public Action: Timer_SpawnSomething (Handle:timer, any:what)
 
 public OnEntityCreated(entity, const String:classname[])
 {
-	if ( !StrEqual(classname, "infected", false)) { return; }
+	if (! StrEqual(classname, "infected", false)) {
+        return;
+    }
 
-	if ( g_iRemainingFallen )
-    {
+	if (g_iRemainingFallen) {
         g_iRemainingFallen--;
         SetEntityModel(entity, FALLEN_MODEL);
 	}
@@ -275,8 +265,7 @@ public OnEntityCreated(entity, const String:classname[])
 
 public PrintDebug(debugLevel, const String:Message[], any:...)
 {
-    if (debugLevel <= GetConVarInt(g_hCvarDebug))
-    {
+    if (debugLevel <= GetConVarInt(g_hCvarDebug)) {
         decl String:DebugBuff[256];
         VFormat(DebugBuff, sizeof(DebugBuff), Message, 3);
         LogMessage(DebugBuff);
@@ -284,18 +273,29 @@ public PrintDebug(debugLevel, const String:Message[], any:...)
     }
 }
 
-bool: IsClientAndInGame(index) return (index > 0 && index <= MaxClients && IsClientInGame(index));
-bool: IsSurvivor(client) {
-    if (IsClientAndInGame(client)) { return GetClientTeam(client) == TEAM_SURVIVOR; }
+bool: IsClientAndInGame(index)
+{
+    return (index > 0 && index <= MaxClients && IsClientInGame(index));
+}
+
+bool: IsSurvivor(client)
+{
+    if (IsClientAndInGame(client)) {
+        return GetClientTeam(client) == TEAM_SURVIVOR;
+    }
     return false;
 }
-bool: IsInfected(client) {
-    if (IsClientAndInGame(client)) { return GetClientTeam(client) == TEAM_INFECTED; }
+
+bool: IsInfected(client)
+{
+    if (IsClientAndInGame(client)) {
+        return GetClientTeam(client) == TEAM_INFECTED;
+    }
     return false;
 }
 
 // get just any survivor client (param = false = switch to infected too)
-GetSpawningClient ( bool:onlySurvivors=false )
+int GetSpawningClient (bool:onlySurvivors = false)
 {
     for (new i = 1; i <= MaxClients; i++) {
         if (IsClientConnected(i) && IsSurvivor(i) && !IsFakeClient(i) ) {
@@ -323,7 +323,7 @@ GetSpawningClient ( bool:onlySurvivors=false )
 //  ------------------
 
 // spawning a zombie (cheap way :()
-SpawnCommon(client, mobs = 1)
+void SpawnCommon(client, mobs = 1)
 {
     if (USE_OLD_SPAWN) {
         new flags = GetCommandFlags("z_spawn_old");
@@ -345,7 +345,7 @@ SpawnCommon(client, mobs = 1)
 // spawning a SI
 SpawnSpecial(client, siClass)
 {
-    PrintDebug( 4, "[rand-coop] Spawning something..." );
+    PrintDebug(4, "[rand-coop] Spawning something...");
 
     if (USE_OLD_SPAWN) {
         new flags = GetCommandFlags("z_spawn_old");
@@ -396,9 +396,9 @@ public Action: SpawnFallen(number, Float:location[3])
         return;
     }
 
-	new zombie = CreateEntityByName("infected");
+    new zombie = CreateEntityByName("infected");
 
-	SetEntityModel(zombie, FALLEN_MODEL);
+    SetEntityModel(zombie, FALLEN_MODEL);
 
 	new ticktime = RoundToNearest((GetGameTime() / GetTickInterval())) + 5;
 	SetEntProp(zombie, Prop_Data, "m_nNextThinkTick", ticktime);
