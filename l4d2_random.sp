@@ -1060,6 +1060,7 @@ bool: IsCoopMode()
         StrEqual(sGameMode, "mutation14", false) ||            // gib fest
         StrEqual(sGameMode, "mutation20", false) ||            // healing gnome
         StrEqual(sGameMode, "mutationrandomcoop", false) ||    // my custom mutation
+        StrEqual(sGameMode, "mutationrandomeasy", false) ||    // my custom mutation
         StrEqual(sGameMode, "mutationrandomcoopeasy", false);
 }
 
