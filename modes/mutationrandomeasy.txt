@@ -1,4 +1,4 @@
-"mutationrandomcoopeasy"
+"mutationrandomeasy"
 {
     "base"      "coop"
 
