@@ -1,5 +1,5 @@
 /*  
- * Copyright (c) 2013 LuKeM aka Neil - 119
+ * Copyright (c) 2013 LuKeM aka Neil - 119 and Rayman1103
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"), to deal in the Software without
@@ -17,7 +17,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  */
-
 
 
 /**
@@ -72,7 +71,7 @@ function VSLib::FileIO::SerializeTable(object, predicateStart = "{\n", predicate
 				break;
 			
 			case "string":
-				baseString += preCompileString + "\"" + ::VSLib.Utils.StringReplace(val, "\"", "\\\"") + "\"\n"; // "
+				baseString += preCompileString + "\"" + ::VSLib.Utils.StringReplace(::VSLib.Utils.StringReplace(val, "\"", "{VSQUOTE}"), @"\\", "{VSSLASH}") + "\"\n"; // "
 				break;
 			
 			case "integer":
@@ -105,7 +104,23 @@ function VSLib::FileIO::SerializeTable(object, predicateStart = "{\n", predicate
 function VSLib::FileIO::SaveTable(fileName, table)
 {
 	fileName += ".tbl";
-	StringToFile(fileName, ::VSLib.FileIO.SerializeTable(table));
+	return StringToFile(fileName, ::VSLib.FileIO.SerializeTable(table));
+}
+
+/**
+ * This function will clean table input.
+ */
+function VSLib::FileIO::DeserializeReviseTable(t)
+{
+	foreach (idx, val in t)
+	{
+		if (typeof val == "string")
+			t[idx] = ::VSLib.Utils.StringReplace(::VSLib.Utils.StringReplace(val, "{VSQUOTE}", "\""), "{VSSLASH}", @"\"); // "
+		else if (typeof val == "table")
+			t[idx] = DeserializeReviseTable(val);
+	}
+	
+	return t;
 }
 
 /**
@@ -133,8 +148,11 @@ function VSLib::FileIO::LoadTable(fileName)
 		}
 	}
 	
+	t = DeserializeReviseTable(t);
+	
 	return t;
 }
+
 
 /**
  * This function will make the filename unique for each mapname.
@@ -142,7 +160,7 @@ function VSLib::FileIO::LoadTable(fileName)
  */
 function VSLib::FileIO::MakeFileName( mapname, modename )
 {
-	return  "VSLib_" + mapname + "_" + modename;
+	return "VSLib_" + mapname + "_" + modename;
 }
 
 /**
@@ -152,7 +170,7 @@ function VSLib::FileIO::MakeFileName( mapname, modename )
  */
 function VSLib::FileIO::SaveTableFileName(mapname, modename, table)
 {
-	::VSLib.FileIO.SaveTable(::VSLib.FileIO.MakeFileName( mapname, modename ), table);
+	return ::VSLib.FileIO.SaveTable(::VSLib.FileIO.MakeFileName( mapname, modename ), table);
 }
 
 /**

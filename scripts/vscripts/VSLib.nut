@@ -1,5 +1,5 @@
 /*  
- * Copyright (c) 2013 LuKeM
+ * Copyright (c) 2013 LuKeM aka Neil - 119 and Rayman1103
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"), to deal in the Software without
@@ -18,23 +18,28 @@
  * 
  */
 
-::__VSLIB_VERSION__ <- 1.5;
+::__VSLIB_VERSION__ <- 4.0;
 
 /*
  * Create global namespace
  */
-::VSLib <- { GlobalCache = {} };
+::VSLib <-
+{
+	GlobalCache = {}
+	GlobalCacheSession = {}
+}
 
 /*
  * Include sub-files
  */
-IncludeScript ("VSLib/Utils.nut");
-IncludeScript ("VSLib/Timer.nut");
-IncludeScript ("VSLib/Entity.nut");
-IncludeScript ("VSLib/Player.nut");
-IncludeScript ("VSLib/EasyLogic.nut");
-IncludeScript ("VSLib/HUD.nut");
-IncludeScript ("VSLib/RandomItemSpawner.nut");
-IncludeScript ("VSLib/FileIO.nut");
+IncludeScript("VSLib/Utils.nut");
+IncludeScript("VSLib/Timer.nut");
+IncludeScript("VSLib/Entity.nut");
+IncludeScript("VSLib/Player.nut");
+IncludeScript("VSLib/FileIO.nut");
+IncludeScript("VSLib/HUD.nut");
+IncludeScript("VSLib/EasyLogic.nut");
+IncludeScript("VSLib/ResponseRules.nut");
+IncludeScript("VSLib/RandomItemSpawner.nut");
 
-printf( "\n\n\n\nLoaded VSLib version %f\n\n\n\n", __VSLIB_VERSION__);
+printf( "Loaded VSLib version %f", __VSLIB_VERSION__ );
