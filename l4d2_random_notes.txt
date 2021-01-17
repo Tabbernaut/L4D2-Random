@@ -8,6 +8,8 @@ L4D2_Random
 
     changelog:
     ---------
+        - made randomcoop config have different difficulty settings (use sm_randcoop_diff & "!rndmut_diff")
+        - made m. bay event less annoying (reduced damage from explosions, reduced odds on SI exploding)
         - added special event where SI can manipulate doors
         - fixed double reporting of skeets
         - don't lock respawn-closet doors (ie all unbreakable ones)
