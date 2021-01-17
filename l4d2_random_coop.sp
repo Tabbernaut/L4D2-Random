@@ -83,12 +83,42 @@ public OnPluginStart()
         "Random debug mode (coop plugin). (0: only error reporting, -1: disable all reports, 1+: set debug report level)",
         FCVAR_NONE, true, -1.0, true, 5.0);
 
-    g_hCvarPathToEasyConfig = CreateConVar("rand_coop_easy_path", "cfgogl/randomcoop/COOP_difficulty_easy.cfg",
+    g_hCvarPathToEasyConfig = CreateConVar("rand_coop_easy_path", "cfgogl/randomcoop/difficulty_easy.cfg",
         "The path to the cfg file with the settings for easy mode",
         FCVAR_NONE);
-    g_hCvarPathToHardConfig = CreateConVar("rand_coop_hard_path", "cfgogl/randomcoop/COOP_difficulty_hard.cfg",
+    g_hCvarPathToHardConfig = CreateConVar("rand_coop_hard_path", "cfgogl/randomcoop/difficulty_hard.cfg",
         "The path to the cfg file with the settings for hard mode",
         FCVAR_NONE);
+
+    CreateConVar("rand_vscript_hunter_min", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_hunter_max", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_charger_min", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_charger_max", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_jockey_min", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_jockey_max", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_support_min", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_support_max", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+
+    CreateConVar("rand_vscript_spawning_timeout", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_encounter_timeout", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_buildup", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_gracetime", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_gracetime_long", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+
+    CreateConVar("rand_vscript_normal_enc_interval", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_normal_jockey_interval", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+
+    CreateConVar("rand_vscript_chargespit_total", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_chargespit_dom", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_chargespit_charger", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_chargespit_spitter", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+
+    CreateConVar("rand_vscript_bigattack_total", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_bigattack_dom", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_bigattack_boomer", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_bigattack_smoker", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_bigattack_spitter", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
+    CreateConVar("rand_vscript_bigattack_jockey", "0", "Vscript cvar for difficulty switching", FCVAR_NONE);
 
     g_hCvarFallenChance = FindConVar("rand_fallen_chance");
 

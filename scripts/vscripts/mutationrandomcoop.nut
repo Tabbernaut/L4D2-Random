@@ -3,6 +3,7 @@ Msg("Loaded random_coop mutation script.\n");
 
 // Include the VScript Library
 IncludeScript("VSLib");
+IncludeScript("randomcooputils");
 
 /*
 
@@ -42,24 +43,11 @@ ENC_STAGE_SPAWNING  <- 2        // spawning encounter spawns
 ENC_STAGE_DYING     <- 3        // waiting for encounter spawns to all die
 ENC_STAGE_GRACE     <- 4        // grace period after hefty attack
 
-ENC_HUNTER_MIN      <- 4
-ENC_HUNTER_MAX      <- 12
-ENC_JOCKEY_MIN      <- 4
-ENC_JOCKEY_MAX      <- 9
-ENC_CHARGER_MIN     <- 3
-ENC_CHARGER_MAX     <- 6
-ENC_SUPPORT_MIN     <- 10
-ENC_SUPPORT_MAX     <- 12
 ENC_WITCH_MIN       <- 3
 ENC_WITCH_MAX       <- 9
 ENC_FALLEN_MIN      <- 5
 ENC_FALLEN_MAX      <- 20
 
-ENC_SPAWNING_TIMEOUT    <- 9    // how much time the encounter is given to fully time out (after all of its infected have spawned)
-ENC_ENCOUNTER_TIMEOUT   <- 25   // how much time the encounter is given to fully time out (after all of its infected have spawned)
-ENC_BUILDUP             <- 8
-ENC_GRACETIME           <- 3    // how many seconds gracetime survivors get after fully killing an encounter's SI
-ENC_GRACETIME_LONG      <- 10
 ENC_INTERVALMIN         <- 25   // how much time (min) between grace and buildup
 ENC_INTERVALMAX         <- 50
 
@@ -211,7 +199,7 @@ function Update()
                         }
                         else
                         {
-                            SessionState.EncounterCounter = ENC_BUILDUP
+                            SessionState.EncounterCounter = RandCoop.GetSpecialConvarValue(RandCoop.RCTP_BUILDUP)
                             EncounterBuildUp()
                         }
                         break;
@@ -222,12 +210,13 @@ function Update()
                             Utils.SayToAll( "-> ENCOUNTER" )
                         }
                         // times out after X seconds, even if nothing actually spawned
-                        SessionState.EncounterCounter = ENC_SPAWNING_TIMEOUT
+                        SessionState.EncounterCounter = RandCoop.GetSpecialConvarValue(RandCoop.RCTP_SPAWNING_TIMEOUT)
                         // ENC_STAGE_SPAWNING
                         SessionState.CurrentStage = 2
                         SessionState.EncounterActive = true
 
                         SessionState.CurrentEncounter = RandomInt( ENC_FIRST, ENC_LAST )
+
 
                         // do the encounter!
                         switch( SessionState.CurrentEncounter )
@@ -251,7 +240,7 @@ function Update()
                                 printl( "[randomcoop] witches" )
                                 // not a spawning encounter, so pass on through to gracetime
                                 DoEncounter_Witches()
-                                SessionState.EncounterCounter = ENC_GRACETIME
+                                SessionState.EncounterCounter = RandCoop.GetSpecialConvarValue(RandCoop.RCTP_GRACETIME)
                                 // ENC_STAGE_GRACE
                                 SessionState.CurrentStage = 4
                                 SessionState.EncounterActive = false
@@ -260,7 +249,7 @@ function Update()
                             case ENC_PANICHORDE:
                                 printl( "[randomcoop] encounter: panic horde" )
                                 DoEncounter_PanicHorde()
-                                SessionState.EncounterCounter = ENC_GRACETIME_LONG
+                                SessionState.EncounterCounter = RandCoop.GetSpecialConvarValue(RandCoop.RCTP_GRACETIME_LONG)
                                 // ENC_STAGE_GRACE
                                 SessionState.CurrentStage = 4
                                 SessionState.EncounterActive = false
@@ -277,9 +266,13 @@ function Update()
                                 break;
 
                             case ENC_FALLEN:
+                                if ( Convars.GetFloat("rand_fallen_chance") < 0.001 ) {
+                                    printl( "[randomcoop] encounter: fallen (skipping)" )
+                                    break;
+                                }
                                 printl( "[randomcoop] encounter: fallen" )
                                 DoEncounter_Fallen()
-                                SessionState.EncounterCounter = ENC_GRACETIME
+                                SessionState.EncounterCounter = RandCoop.GetSpecialConvarValue(RandCoop.RCTP_GRACETIME)
                                 // ENC_STAGE_GRACE
                                 SessionState.CurrentStage = 4
                                 SessionState.EncounterActive = false
@@ -297,7 +290,7 @@ function Update()
                                 Utils.SayToAll( "-> not switching to DYING yet, still waiting for "+ SessionState.EncounterSpawnCount +" more SI to spawn (attempting to force)" )
                             }
                             ForceEncounterSpawns( SessionState.CurrentEncounter )
-                            SessionState.EncounterCounter = ENC_SPAWNING_TIMEOUT
+                            SessionState.EncounterCounter = RandCoop.GetSpecialConvarValue(RandCoop.RCTP_SPAWNING_TIMEOUT)
                         }
                         else
                         {
@@ -317,7 +310,7 @@ function Update()
                             }
                             else
                             {
-                                SessionState.EncounterCounter = ENC_ENCOUNTER_TIMEOUT
+                                SessionState.EncounterCounter = RandCoop.GetSpecialConvarValue(RandCoop.RCTP_ENCOUNTER_TIMEOUT)
                             }
                         }
                         break;
@@ -328,7 +321,7 @@ function Update()
                         if ( SessionState.Debug ) {
                             Utils.SayToAll( "-> GRACE" )
                         }
-                        SessionState.EncounterCounter = ENC_GRACETIME
+                        SessionState.EncounterCounter = RandCoop.GetSpecialConvarValue(RandCoop.RCTP_GRACETIME)
                         // ENC_STAGE_GRACE
                         SessionState.CurrentStage = 4
                         SessionState.EncounterActive = false
@@ -384,8 +377,6 @@ function Notifications::OnSpawn::PlayerInfectedSpawned ( player, params )
                 }
                 // allow next update to start next stage
                 SessionState.EncounterCounter = 1
-
-
             }
         }
     }
@@ -479,7 +470,7 @@ function EncounterResetToNormal()
     SessionOptions.JockeyLimit <- 3;
     SessionOptions.MaxSpecials <- 8;
     SessionOptions.DominatorLimit <- 5;
-    SessionOptions.SpecialRespawnInterval <- 10.0;
+    SessionOptions.SpecialRespawnInterval <- RandCoop.GetSpecialConvarValue(RandCoop.RCTP_NORMAL_ENC_INTERVAL);
 }
 
 
@@ -487,7 +478,7 @@ function EncounterResetToNormal()
 function DoEncounter_Hunters()
 {
     SessionState.EncounterDeathCount = SessionState.CurrentSIAlive
-    local spawns = RandomInt( ENC_HUNTER_MIN, ENC_HUNTER_MAX )
+    local spawns = RandomInt( RandCoop.GetSpecialMinMaxConvarValue(RandCoop.RCTP_HUNTER, RandCoop.RCTP_MIN), RandCoop.GetSpecialMinMaxConvarValue(RandCoop.RCTP_HUNTER, RandCoop.RCTP_MAX) )
     SessionState.EncounterSpawnCount <- spawns
     SessionOptions.BoomerLimit <- 0;
     SessionOptions.SmokerLimit <- 0;
@@ -507,7 +498,7 @@ function DoEncounter_Hunters()
 function DoEncounter_Jockeys()
 {
     SessionState.EncounterDeathCount = SessionState.CurrentSIAlive
-    local spawns = RandomInt( ENC_JOCKEY_MIN, ENC_JOCKEY_MAX )
+    local spawns = RandomInt( RandCoop.GetSpecialMinMaxConvarValue(RandCoop.RCTP_JOCKEY, RandCoop.RCTP_MIN), RandCoop.GetSpecialMinMaxConvarValue(RandCoop.RCTP_JOCKEY, RandCoop.RCTP_MIN) )
     SessionState.EncounterSpawnCount <- spawns
     SessionOptions.BoomerLimit <- 0;
     SessionOptions.SmokerLimit <- 0;
@@ -517,7 +508,7 @@ function DoEncounter_Jockeys()
     SessionOptions.JockeyLimit <- spawns;
     SessionOptions.MaxSpecials <- spawns;
     SessionOptions.DominatorLimit <- spawns;
-    SessionOptions.SpecialRespawnInterval <- 1.0;
+    SessionOptions.SpecialRespawnInterval <- RandCoop.GetSpecialConvarValue(RandCoop.RCTP_NORMAL_JOCKEY_INTERVAL);
 
     if ( SessionState.Debug ) {
         Utils.SayToAll( " .. Jockeys: "+ SessionState.EncounterSpawnCount )
@@ -527,14 +518,14 @@ function DoEncounter_Jockeys()
 function DoEncounter_ChargeSpit()
 {
     SessionState.EncounterDeathCount = SessionState.CurrentSIAlive
-    SessionState.EncounterSpawnCount = 8
-    SessionOptions.MaxSpecials <- 8;
-    SessionOptions.DominatorLimit <- 4;
+    SessionState.EncounterSpawnCount = RandomInt(RandCoop.GetSpecialConvarValue(RandCoop.RCTP_CHARGESPIT_TOTAL), RandCoop.GetSpecialConvarValue(RandCoop.RCTP_CHARGESPIT_TOTAL))
+    SessionOptions.MaxSpecials <- RandCoop.GetSpecialConvarValue(RandCoop.RCTP_CHARGESPIT_TOTAL);
+    SessionOptions.DominatorLimit <- RandCoop.GetSpecialConvarValue(RandCoop.RCTP_CHARGESPIT_DOMINATOR);
     SessionOptions.BoomerLimit <- 0;
     SessionOptions.SmokerLimit <- 0;
     SessionOptions.HunterLimit <- 0;
-    SessionOptions.ChargerLimit <- 4;
-    SessionOptions.SpitterLimit <- 2;
+    SessionOptions.ChargerLimit <- RandCoop.GetSpecialConvarValue(RandCoop.RCTP_CHARGESPIT_CHARGER);
+    SessionOptions.SpitterLimit <- RandCoop.GetSpecialConvarValue(RandCoop.RCTP_CHARGESPIT_SPITTER);
     SessionOptions.JockeyLimit <- 0;
     SessionOptions.SpecialRespawnInterval <- 1.0;
 
@@ -577,15 +568,15 @@ function DoEncounter_BigAttack()
 {
     // just a huge attack with some 'balance'
     SessionState.EncounterDeathCount = SessionState.CurrentSIAlive
-    SessionState.EncounterSpawnCount <- 12
-    SessionOptions.BoomerLimit <- 1;
-    SessionOptions.SmokerLimit <- 2;
+    SessionState.EncounterSpawnCount <- RandCoop.GetSpecialConvarValue(RandCoop.RCTP_BIGATTACK_TOTAL)
+    SessionOptions.BoomerLimit <- RandCoop.GetSpecialConvarValue(RandCoop.RCTP_BIGATTACK_BOOMER);
+    SessionOptions.SmokerLimit <- RandCoop.GetSpecialConvarValue(RandCoop.RCTP_BIGATTACK_SMOKER);
     SessionOptions.HunterLimit <- 3;
     SessionOptions.ChargerLimit <- 3;
-    SessionOptions.SpitterLimit <- 1;
-    SessionOptions.JockeyLimit <- 2;
+    SessionOptions.SpitterLimit <- RandCoop.GetSpecialConvarValue(RandCoop.RCTP_BIGATTACK_SPITTER);
+    SessionOptions.JockeyLimit <- RandCoop.GetSpecialConvarValue(RandCoop.RCTP_BIGATTACK_JOCKEY);
     SessionOptions.MaxSpecials <- 12;
-    SessionOptions.DominatorLimit <- 12;
+    SessionOptions.DominatorLimit <- RandCoop.GetSpecialConvarValue(RandCoop.RCTP_BIGATTACK_DOMINATOR);
     SessionOptions.SpecialRespawnInterval <- 1.0;
 
     if ( SessionState.Debug ) {
@@ -596,7 +587,7 @@ function DoEncounter_BigAttack()
 function DoEncounter_Support()
 {
     SessionState.EncounterDeathCount = SessionState.CurrentSIAlive
-    local spawns = RandomInt( ENC_SUPPORT_MIN, ENC_SUPPORT_MAX )
+    local spawns = RandomInt( RandCoop.GetSpecialMinMaxConvarValue(RandCoop.RCTP_SUPPORT, RandCoop.RCTP_MIN), RandCoop.GetSpecialMinMaxConvarValue(RandCoop.RCTP_SUPPORT, RandCoop.RCTP_MIN) )
     SessionState.EncounterSpawnCount <- spawns
     SessionOptions.BoomerLimit <- spawns;
     SessionOptions.SmokerLimit <- 0;
