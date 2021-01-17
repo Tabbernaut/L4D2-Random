@@ -408,6 +408,7 @@ new     Handle:         g_hCvarFinaleAmmoChance                             = IN
 new     Handle:         g_hCvarAlarmedCarChance                             = INVALID_HANDLE;       // cvar the odds that a car is alarmed
 new     Handle:         g_hCvarT2StartChance                                = INVALID_HANDLE;       // cvar odds that t2's are allowed in start saferoom
 new     Handle:         g_hCvarCarExplodeChance                             = INVALID_HANDLE;       // cvar chances a car can explode
+new     Handle:         g_hCvarExplodeDamage                                = INVALID_HANDLE;       // cvar damage from explosions
 
 new     Handle:         g_hCvarStaticBonus                                  = INVALID_HANDLE;       // cvar: the static survival bonus to use
 new     Handle:         g_hCvarRandDistance                                 = INVALID_HANDLE;       // cvar whether we're using random distance points (mode)
@@ -560,7 +561,7 @@ new     Float:          g_RC_fEventWitchesSpawnFreq                         = 30
 new                     g_RC_iEventBoomFluMinInt                            = 20;
 new                     g_RC_iEventBoomFluMaxInt                            = 55;
 
-new     Float:          g_RC_fEventBaySIChance                              = 0.55;
+new     Float:          g_RC_fEventBaySIChance                              = 0.25;
 new     Float:          g_RC_fEventBayCIChance                              = 0.025;
 
 new     Float:          g_RC_fBoomComboDudChance                            = 0.66;     // chance a pipe will dud till 10s after combo
@@ -569,8 +570,8 @@ new                     g_RC_iVomitOnType                                   = 7;
 new     Float:          g_RC_fVomitRange                                    = 125.0;
 new     Float:          g_RC_fVomitStreamTime                               = 3.0;      // time in s vomit can hit anything
 
-new     Float:          g_RC_fExplosionPowerHigh                            = 30.0;
-new     Float:          g_RC_fExplosionPowerLow                             = 20.0;
+new     Float:          g_RC_fExplosionPowerHigh                            = 20.0;
+new     Float:          g_RC_fExplosionPowerLow                             = 15.0;
 
 new     Float:          g_RC_fBlindTime                                     = 15.0;
 

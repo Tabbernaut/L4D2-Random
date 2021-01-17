@@ -1376,7 +1376,7 @@ CreateExplosion(Float:carPos[3], Float:power, bool:fire = false, bool:small = fa
     if (!bJustForShow) {
         DispatchKeyValue(exHurt, "DamageRadius", sRadius);
         DispatchKeyValue(exHurt, "DamageDelay", "0.5");
-        DispatchKeyValue(exHurt, "Damage", "5");
+        DispatchKeyValue(exHurt, "Damage", GetConVarInt(g_hCvarExplodeDamage));
         DispatchKeyValue(exHurt, "DamageType", "8");
         DispatchSpawn(exHurt);
         TeleportEntity(exHurt, carPos, NULL_VECTOR, NULL_VECTOR);

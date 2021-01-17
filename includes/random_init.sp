@@ -87,6 +87,7 @@ INIT_DefineCVars()
     g_hCvarAlarmedCarChance = CreateConVar(                 "rand_caralarm_chance",          "0.2",     "Chances of a car being alarmed.", FCVAR_NONE, true, 0.0, true, 1.0);
     g_hCvarT2StartChance = CreateConVar(                    "rand_t2saferoom_chance",        "0.0",     "Chances of allowing tier 2 in start saferoom.", FCVAR_NONE, true, 0.0, true, 1.0);
     g_hCvarCarExplodeChance = CreateConVar(                 "rand_carexplode_chance",        "0.05",    "Chances of spawned cars being able to explode when shot.", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_hCvarExplodeDamage = CreateConVar(                 "rand_explosion_damage",         "3",       "Base point hurt damage value for custom explosions.", FCVAR_NONE, true, 0.0);
 
     g_hCvarFinaleItemUseful =  CreateConVar(                "rand_item_finale_useful",       "0.25",    "Factor by which non-useful items are adjusted for finale maps (lower = easier map).", FCVAR_NONE, true, 0.0, true, 1.0);
     g_hCvarStartItemNoJunk =  CreateConVar(                 "rand_item_start_nojunk",        "0.25",    "Chances items in start saferoom will be converted to something useful.", FCVAR_NONE, true, 0.0, true, 1.0);
